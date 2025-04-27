@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Allow: /story/
+Allow: /stories/
+Allow: /categories-story/
+Allow: /search
+Allow: /login
+Allow: /register
+Allow: /assets/images/logo/logo_site.webp
+
+Disallow: /admin/
+Disallow: /password/
+Disallow: /storage/
+Disallow: /assets/images/admin/
+Disallow: /update-profile/
+Disallow: /update-avatar
+Disallow: /update-password
+Disallow: /comment/store
+Disallow: /ratings
+
+# Sitemaps
+Sitemap: https://cakhonho.com/sitemap.xml
+Crawl-delay: 10
