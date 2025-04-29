@@ -23,7 +23,7 @@
     <meta name="robots" content="index, follow">
     <meta property="og:type" content="website">
     <meta property="og:title" content="@yield('title', 'Trang chủ - Pink Novel')">
-    <meta property="og:description" content="@yield('description', 'Truyện Pink Novel - Đọc truyện online, tiểu thuyết, truyện tranh, tiểu thuyết hay nhất')">')">
+    <meta property="og:description" content="@yield('description', 'Truyện Pink Novel - Đọc truyện online, tiểu thuyết, truyện tranh, tiểu thuyết hay nhất')">
     <meta property="og:url" content="{{ url()->full() }}">
     <meta property="og:site_name" content="{{ config('app.name') }}">
     <meta property="og:locale" content="vi_VN">
@@ -34,7 +34,7 @@
     <meta property="og:image:alt" content="@yield('title', 'Trang chủ - Pink Novel')">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', 'Trang chủ - Pink Novel')">
-    <meta name="twitter:description" content="@yield('description', 'Truyện Pink Novel - Đọc truyện online, tiểu thuyết, truyện tranh, tiểu thuyết hay nhất')">')">
+    <meta name="twitter:description" content="@yield('description', 'Truyện Pink Novel - Đọc truyện online, tiểu thuyết, truyện tranh, tiểu thuyết hay nhất')">
     <meta name="twitter:image" content="{{ $logoPath }}">
     <meta name="twitter:image:alt" content="@yield('title', 'Trang chủ - Pink Novel')">
     <link rel="icon" href="{{ $faviconPath }}" type="image/x-icon">
