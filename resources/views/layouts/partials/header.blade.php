@@ -9,16 +9,20 @@
     @php
         // Get the logo and favicon from LogoSite model
         $logoSite = \App\Models\LogoSite::first();
-        $logoPath = $logoSite && $logoSite->logo ? Storage::url($logoSite->logo) : asset('assets/images/logo/logo_site.webp');
-        $faviconPath = $logoSite && $logoSite->favicon ? Storage::url($logoSite->favicon) : asset('assets/images/logo/favicon.ico');
+        $logoPath =
+            $logoSite && $logoSite->logo ? Storage::url($logoSite->logo) : asset('assets/images/logo/logo_site.webp');
+        $faviconPath =
+            $logoSite && $logoSite->favicon
+                ? Storage::url($logoSite->favicon)
+                : asset('assets/images/logo/favicon.ico');
     @endphp
 
-    <title>@yield('title', 'Truyện Cá Khô Nhỏ - Đọc Truyện Online Miễn Phí')</title>
+    <title>@yield('title', 'Trang chủ - Pink Novel')</title>
     <meta name="description" content="@yield('description', 'Truyện Cá Khô Nhỏ - Kho truyện full, truyện tranh, tiểu thuyết online cập nhật nhanh nhất, giao diện thân thiện, dễ đọc.')">
     <meta name="keywords" content="@yield('keywords', 'truyện hay, đọc truyện online, truyện tranh, tiểu thuyết, truyện full, Truyện Cá Khô Nhỏ')">
     <meta name="robots" content="index, follow">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="@yield('title', 'Truyện Cá Khô Nhỏ - Đọc Truyện Online Miễn Phí')">
+    <meta property="og:title" content="@yield('title', 'Trang chủ - Pink Novel')">
     <meta property="og:description" content="@yield('description', 'Truyện Cá Khô Nhỏ - Kho truyện full, truyện tranh, tiểu thuyết online cập nhật nhanh nhất, giao diện thân thiện, dễ đọc.')">
     <meta property="og:url" content="{{ url()->full() }}">
     <meta property="og:site_name" content="{{ config('app.name') }}">
@@ -27,19 +31,19 @@
     <meta property="og:image:secure_url" content="{{ $logoPath }}">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="@yield('title', 'Truyện Cá Khô Nhỏ - Đọc Truyện Online Miễn Phí')">
+    <meta property="og:image:alt" content="@yield('title', 'Trang chủ - Pink Novel')">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="@yield('title', 'Truyện Cá Khô Nhỏ - Đọc Truyện Online Miễn Phí')">
+    <meta name="twitter:title" content="@yield('title', 'Trang chủ - Pink Novel')">
     <meta name="twitter:description" content="@yield('description', 'Truyện Cá Khô Nhỏ - Kho truyện full, truyện tranh, tiểu thuyết online cập nhật nhanh nhất, giao diện thân thiện, dễ đọc.')">
     <meta name="twitter:image" content="{{ $logoPath }}">
-    <meta name="twitter:image:alt" content="@yield('title', 'Truyện Cá Khô Nhỏ - Đọc Truyện Online Miễn Phí')">
+    <meta name="twitter:image:alt" content="@yield('title', 'Trang chủ - Pink Novel')">
     <link rel="icon" href="{{ $faviconPath }}" type="image/x-icon">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="shortcut icon" href="{{ $faviconPath }}" type="image/x-icon">
     <meta name="author" content="Truyện Cá Khô Nhỏ">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="canonical" href="{{ url()->current() }}">
-    
+
     <meta name="google-site-verification" content="" />
 
     <script type="application/ld+json">
@@ -54,7 +58,7 @@
     @stack('meta')
 
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet">
     <!-- Bootstrap CSS -->
 
     {{-- styles --}}
@@ -68,73 +72,84 @@
 </head>
 
 <body>
-    <header class="container">
+    <header>
         <nav
-            class="navbar navbar-expand-lg fixed-top transition-header chapter-header scrolled bg-white shadow-sm py-2">
-            <div class="container">
-                <div class="d-flex align-items-center w-100">
+            class="navbar navbar-expand-lg fixed-top transition-header chapter-header scrolled bg-site shadow-sm py-2 d-block">
+            <div class="">
+                <div class="d-flex align-items-center justify-content-between w-100">
                     <!-- Logo -->
                     <a class="navbar-brand p-0" href="{{ route('home') }}">
                         <img height="70" src="{{ $logoPath }}" alt="{{ config('app.name') }} logo">
                     </a>
 
-                    <div class="d-flex align-items-center w-100 justify-content-between flex-lg-row">
-                        <!-- Desktop Menu - Visible on lg screens and up -->
-                        <div class="list-menu d-none d-lg-block">
-                            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                                <li class="nav-item">
-                                    <a class="text-dark nav-link" href="{{ route('home') }}">
-                                        <i class="fa-solid fa-home fa-lg"></i> Trang chủ
-                                    </a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="text-dark nav-link dropdown-toggle" href="#" role="button"
-                                        data-bs-toggle="dropdown" aria-expanded="false">
-                                        <i class="fa-solid fa-layer-group fa-lg"></i> Thể loại
-                                    </a>
-                                    <ul class="dropdown-menu category-menu">
-                                        <div class="row px-2">
-                                            @foreach ($categories->chunk(ceil($categories->count() / 3)) as $categoryGroup)
-                                                <div class="col-4">
-                                                    @foreach ($categoryGroup as $category)
-                                                        <li>
-                                                            <a class="dropdown-item"
-                                                                href="{{ route('categories.story.show', $category->slug) }}">
-                                                                {{ $category->name }}
-                                                                <span
-                                                                    class="badge bg-secondary float-end">{{ $category->stories_count }}</span>
-                                                            </a>
-                                                        </li>
-                                                    @endforeach
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
+                    <div class="list-menu d-none d-lg-block">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
 
-                        <div>
-                            <div class="search-container d-flex align-items-center">
-                                <div class="position-relative">
-                                    <form action="{{ route('searchHeader') }}" method="GET">
-                                        <input type="text" name="query" class="form-control search-input"
-                                            placeholder="Tìm kiếm truyện..." value="{{ request('query') }}">
-                                        <button type="submit" class="btn search-btn">
-                                            <i class="fas fa-search"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                            <li class="nav-item dropdown">
+                                <a class="text-white nav-link dropdown-toggle fw-bold" href="#" role="button"
+                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                    Thể loại
+                                </a>
+                                <ul class="dropdown-menu category-menu">
+                                    <div class="row px-2">
+                                        @foreach ($categories->chunk(ceil($categories->count() / 3)) as $categoryGroup)
+                                            <div class="col-4">
+                                                @foreach ($categoryGroup as $category)
+                                                    <li>
+                                                        <a class="dropdown-item"
+                                                            href="{{ route('categories.story.show', $category->slug) }}">
+                                                            {{ $category->name }}
+                                                            <span
+                                                                class="badge bg-secondary float-end">{{ $category->stories_count }}</span>
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </ul>
+                            </li>
+                            <li class="nav-item">
+                                <a class="text-white nav-link fw-bold" href="">
+                                    Truyện hot
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="text-white nav-link fw-bold" href="">
+                                    Truyện mới
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="text-white nav-link fw-bold" href="">
+                                    Truyện full
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="text-white nav-link fw-bold" href="">
+                                    Hướng dẫn
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <div class="search-container d-flex align-items-center">
+                            <div class="position-relative">
+                                <form action="{{ route('searchHeader') }}" method="GET">
+                                    <input type="text" name="query" class="form-control search-input"
+                                        placeholder="Tìm kiếm truyện..." value="{{ request('query') }}">
+                                    <button type="submit" class="btn search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </form>
                             </div>
                         </div>
 
-
-
                         @auth
-                            <a class="text-dark nav-link d-none d-lg-block" href="{{ route('login') }}">
+                            <a class="text-white fw-bold nav-link d-none d-lg-block" href="{{ route('login') }}">
                                 <div class="dropdown">
                                     <a href="#"
-                                        class="d-none d-lg-block d-flex align-items-center text-decoration-none dropdown-toggle text-dark"
+                                        class="d-none d-lg-block d-flex align-items-center text-decoration-none dropdown-toggle text-white fw-bold"
                                         data-bs-toggle="dropdown">
                                         <img src="{{ auth()->user()->avatar ? Storage::url(auth()->user()->avatar) : asset('assets/images/avatar_default.jpg') }}"
                                             class="rounded-circle" width="40" height="40" alt="avatar"
@@ -165,22 +180,18 @@
                                         </li>
                                     </ul>
                                 </div>
-
-
                             </a>
                         @else
-                            <a href="{{ route('login') }}" class="btn d-none d-lg-block"> <i
+                            <a href="{{ route('login') }}" class="btn d-none d-lg-block fw-bold text-white"> <i
                                     class="fa-regular fa-circle-user fa-lg"></i> Đăng nhập</a>
                         @endauth
-
-
-                        <!-- Mobile Menu Toggle Button - Visible on screens smaller than lg -->
-                        <button class="navbar-toggler border-0 d-lg-none" type="button" data-bs-toggle="offcanvas"
-                            data-bs-target="#offcanvasExample">
-                            <i class="fa-solid fa-bars fa-xl"></i>
-                        </button>
                     </div>
 
+                    <!-- Mobile Menu Toggle Button - Visible on screens smaller than lg -->
+                    <button class="navbar-toggler border-0 d-lg-none" type="button" data-bs-toggle="offcanvas"
+                        data-bs-target="#offcanvasExample">
+                        <i class="fa-solid fa-bars fa-xl"></i>
+                    </button>
 
                 </div>
             </div>
@@ -237,7 +248,7 @@
 
                         <hr class="divider my-3">
 
-                        
+
 
 
                         @auth
@@ -327,4 +338,5 @@
         });
     </script>
 </body>
+
 </html>

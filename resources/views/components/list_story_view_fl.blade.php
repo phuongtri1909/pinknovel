@@ -1,44 +1,52 @@
 <section class="new-stories-section mt-4">
     <div class="row">
         <!-- Main Content - New Stories -->
-        <div class="col-12 col-md-7 col-lg-8">
-            <div class="content-wrapper">
-                <div class="section-header">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h2 class="fs-5 m-0 text-dark">
-                            <i class="fas fa-clock text-primary me-2 fa-xl cl-00b894"></i>Mới Cập Nhật
-                        </h2>
-                        <div class="category-filter">
-                            <select class="form-select custom-select rounded-4" id="newStoryCategoryFilter">
-                                <option value="">Tất cả thể loại</option>
-                                @foreach ($categories as $category)
-                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                @endforeach
-                            </select>
+        <div class="col-12 col-lg-8">
+            <section class="bg-list rounded px-4 pb-4">
+                <div class="row">
+                    <div class="col-12 col-md-6">
+
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
+                            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-eye text-primary"></i> Xem nhiều</h2>
+                            <div>
+                                <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                                        class="fa-solid fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+
+                        <!-- Stories Grid -->
+                        <div class="bg-white rounded-3 p-3">
+                            @foreach ($newStories as $story)
+                                @include('components.story_new_rating', ['story' => $story])
+                            @endforeach
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
+                            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-bookmark me-2" style="color:#ef4444"></i>Theo dõi nhiều</h2>
+                            <div>
+                                <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                                        class="fa-solid fa-arrow-right"></i></a>
+                            </div>
+                        </div>
+
+                        <div class="bg-white rounded-3 p-3">
+                            @foreach ($newStories as $story)
+                                @include('components.story_new_rating', ['story' => $story])
+                            @endforeach
                         </div>
                     </div>
                 </div>
-                <div class="stories-container">
-                    <div class="list-stories">
-                        @include('components.story-list-items', ['newStories' => $newStories])
-                    </div>
-                </div>
-            </div>
+            </section>
+
         </div>
 
         <!-- Sidebar -->
-        <div class="col-12 col-md-5 col-lg-4 mt-3 mt-sm-0">
+        <div class="col-12 col-lg-4 mt-3 mt-sm-0">
 
             {{-- hot stories --}}
             @include('components.hot_stories')
 
-            {{-- full stories --}}
-
-            <!-- Recently Read Stories -->
-            @include('components.recent-reads')
-
-            <!-- Categories Widget -->
-            <x-categories-widget :categories="$categories" :is-search="true" />
         </div>
     </div>
 </section>
@@ -141,7 +149,7 @@
                 color: #007bff;
             }
 
-           
+
             /* Responsive adjustments */
             @media (max-width: 768px) {
                 .story-title {
@@ -152,8 +160,6 @@
                     font-size: 0.85rem;
                 }
             }
-
-            
         </style>
     @endpush
 
@@ -163,11 +169,11 @@
                 $('#newStoryCategoryFilter').change(function() {
                     const categoryId = $(this).val();
                     const storiesContainer = $('.list-stories');
-                    
+
                     storiesContainer.addClass('loading');
-                    
+
                     $.ajax({
-                        url: '{{ route("home") }}',
+                        url: '{{ route('home') }}',
                         method: 'GET',
                         data: {
                             category_id: categoryId,

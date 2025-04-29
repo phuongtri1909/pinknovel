@@ -142,14 +142,25 @@ class BannerController extends Controller
     private function validateBanner(Request $request, $id = null)
     {
         $rules = [
-            'image' => $id ? 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048' : 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => $id ? 'nullable|image|mimes:jpeg,png,jpg,gif' : 'required|image|mimes:jpeg,png,jpg,gif',
             'link' => 'nullable|url|max:255',
             'story_id' => 'nullable|exists:stories,id',
             'status' => 'required|boolean',
             'link_aff' => 'nullable|url',
         ];
 
-        return $request->validate($rules);
+        $messages = [
+            'image.required' => 'Hình ảnh là bắt buộc',
+            'image.image' => 'Tập tin phải là hình ảnh',
+            'image.mimes' => 'Hình ảnh phải có định dạng jpeg, png, jpg hoặc gif',
+            'link.url' => 'Link không hợp lệ',
+            'link.max' => 'Link không được vượt quá 255 ký tự',
+            'story_id.exists' => 'Truyện không tồn tại',
+            'status.required' => 'Trạng thái là bắt buộc',
+            'status.boolean' => 'Trạng thái không hợp lệ',
+        ];
+
+        return $request->validate($rules, $messages);
     }
 
     /**

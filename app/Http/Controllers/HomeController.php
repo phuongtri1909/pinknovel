@@ -206,8 +206,11 @@ class HomeController extends Controller
                 'status',
                 'completed'
             ])
+            ->withCount(['chapters' => function ($query) {
+                $query->where('status', 'published');
+            }])
             ->whereHas('chapters', function ($query) {
-                $query->where('status', 'published'); // Chỉ lấy truyện có chương đã xuất bản
+                $query->where('status', 'published');
             });
 
         // Áp dụng bộ lọc danh mục nếu có

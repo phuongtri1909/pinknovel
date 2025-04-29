@@ -1,8 +1,9 @@
 <section>
     <div class="mt-4 bg-list rounded px-0 p-md-4 pb-4">
         <!-- Header Section -->
-        <div class="d-flex justify-content-between align-items-center pt-1 pb-3 rounded-top-custom">
-            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-check-circle" style="color: #57f17d"></i> Hoàn thành</h2>
+        <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
+            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-brush" style="color: #39cde0"></i> Truyện
+                mới phát hành</h2>
             <div>
                 <a class="color-3 text-decoration-none" href="">Xem tất cả <i
                         class="fa-solid fa-arrow-right"></i></a>
@@ -11,12 +12,12 @@
 
         <!-- Stories Slider -->
         <div id="storiesContainerNewSlide" class="rounded-bottom-custom">
-            <div class="swiper storyFullSwiper">
+            <div class="swiper newStoriesSwiper">
                 <div class="swiper-wrapper">
                     @forelse ($newStories as $story)
                         <div class="swiper-slide">
                             <div class="story-item">
-                                @include('components.item-story-full', ['story' => $story])
+                                @include('components.stories-grid', ['story' => $story])
                             </div>
                         </div>
                     @empty
@@ -41,8 +42,8 @@
     @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
         <style>
-            .storyFullSwiper .swiper-button-next,
-            .storyFullSwiper .swiper-button-prev {
+            .newStoriesSwiper .swiper-button-next,
+            .newStoriesSwiper .swiper-button-prev {
                 width: 40px;
                 height: 40px;
                 background: rgba(255, 255, 255, 0.9);
@@ -52,26 +53,26 @@
                 transition: all 0.3s ease;
             }
 
-            .storyFullSwiper .swiper-button-next:hover,
-            .storyFullSwiper .swiper-button-prev:hover {
+            .newStoriesSwiper .swiper-button-next:hover,
+            .newStoriesSwiper .swiper-button-prev:hover {
                 background: var(--primary-color-3);
                 color: white;
                 transform: scale(1.1);
             }
 
-            .storyFullSwiper .swiper-button-next:after,
-            .storyFullSwiper .swiper-button-prev:after {
+            .newStoriesSwiper .swiper-button-next:after,
+            .newStoriesSwiper .swiper-button-prev:after {
                 font-size: 18px;
                 font-weight: bold;
             }
 
-            .storyFullSwiper .swiper-pagination-bullet {
+            .newStoriesSwiper .swiper-pagination-bullet {
                 width: 10px;
                 height: 10px;
                 transition: all 0.3s ease;
             }
 
-            .storyFullSwiper .swiper-pagination-bullet-active {
+            .newStoriesSwiper .swiper-pagination-bullet-active {
                 background: var(--primary-color-3);
                 width: 24px;
                 border-radius: 5px;
@@ -88,10 +89,10 @@
     @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
         <script>
-            new Swiper('.storyFullSwiper', {
+            new Swiper('.newStoriesSwiper', {
                 slidesPerView: 1,
                 spaceBetween: 10,
-                loop: true,
+                loop: true, // Thêm loop
                 loopFillGroupWithBlank: true,
                 pagination: {
                     el: '.swiper-pagination',
@@ -106,17 +107,24 @@
                         slidesPerView: 1,
                         spaceBetween: 10,
                     },
-                    540: {
+                    425: {
                         slidesPerView: 2,
                         spaceBetween: 10,
                     },
-                    
-                    768: {
+                    640: {
                         slidesPerView: 3,
                         spaceBetween: 20,
                     },
-                    1024: {
+                    768: {
                         slidesPerView: 4,
+                        spaceBetween: 20,
+                    },
+                    1024: {
+                        slidesPerView: 5,
+                        spaceBetween: 20,
+                    },
+                    1200: {
+                        slidesPerView: 6,
                         spaceBetween: 20,
                     },
                 },
@@ -124,8 +132,8 @@
                     delay: 3000,
                     disableOnInteraction: false,
                 },
-                speed: 800,
-                effect: "slide",
+                speed: 800, // Thêm tốc độ chuyển slide mượt hơn
+                effect: "slide", // Hiệu ứng slide
             });
         </script>
     @endpush
