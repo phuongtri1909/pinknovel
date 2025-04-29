@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $story->title . ' - Truyện Cá Khô Nhỏ - Đọc Truyện Online Miễn Phí | ' . config('app.name'))
+@section('title', $story->title . ' - Truyện Pink novel - Đọc Truyện Online Miễn Phí | ' . config('app.name'))
 
 @section('description', Str::limit(strip_tags($story->description), 160))
 
@@ -10,7 +10,7 @@
     'truyện online', 
     $story->categories->pluck('name')->implode(', '),
     $story->user->name ?? 'tác giả',
-    'Truyện Cá Khô Nhỏ - Đọc Truyện Online Miễn Phí',
+    'Truyện Pink novel - Đọc Truyện Online Miễn Phí',
     $story->completed ? 'truyện hoàn thành' : 'truyện đang cập nhật',
     'novel', 
     'web đọc truyện'
