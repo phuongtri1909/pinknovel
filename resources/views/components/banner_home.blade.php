@@ -2,20 +2,28 @@
 
 @if ($banners && $banners->count() > 0)
     <section class="banner-carousel-section py-4 container">
-        <div class="swiper banner-home-swiper">
-            <div class="swiper-wrapper">
-                @foreach ($banners as $banner)
-                    <div class="swiper-slide rounded-4">
-                        <a href="{{ $banner->link ?? '#' }}" target="_blank" rel="noopener noreferrer">
-                            <img src="{{ asset('storage/' . $banner->image) ?? asset('assets/images/banner_default.jpg') }}"
-                                alt="{{ $banner->alt_text ?? 'Banner Image' }}" class="banner-home-image">
-                        </a>
-                    </div>
-                @endforeach
+        <div class="swiper-container">
+            <div class="swiper banner-home-swiper">
+                <div class="swiper-wrapper">
+                    @foreach ($banners as $banner)
+                        <div class="swiper-slide">
+                            <div class="slide-content">
+                                <a href="{{ $banner->link ?? '#' }}" target="_blank" rel="noopener noreferrer">
+                                    <img src="{{ asset('storage/' . $banner->image) ?? asset('assets/images/banner_default.jpg') }}"
+                                        alt="{{ $banner->alt_text ?? 'Banner Image' }}" loading="lazy">
+                                </a>
+                                @if($banner->title)
+                                <div class="title">
+                                    <span>{{ $banner->title }}</span>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
             </div>
-            <div class="swiper-pagination banner-home-pagination"></div>
-            <div class="swiper-button-prev banner-home-prev"></div>
-            <div class="swiper-button-next banner-home-next"></div>
         </div>
     </section>
 
@@ -23,99 +31,77 @@
         @push('styles')
             <style>
                 .banner-carousel-section {
-                    overflow: hidden;
+                    font-size: 3rem;
+                    color: var(--primary);
+                    padding: 2rem 0;
+                }
+
+                .swiper-container {
+                    position: relative;
                 }
 
                 .banner-home-swiper {
                     width: 100%;
-                    padding-top: 25px;
-                    padding-bottom: 35px;
+                    padding: -70px 0;
                 }
 
                 .banner-home-swiper .swiper-slide {
-                    background-position: center;
-                    background-size: cover;
-                    width: 23%;              
-                    opacity: 1;
-                    transform: scale(0.8);
-                    transition: transform 0.5s ease;
+                    width: 300px;
+                    height: 404px;
+                    position: relative;
+                    border-radius: 10px;
+                }
+
+                .banner-home-swiper .swiper-slide img {
+                    width: 300px;
+                    height: 404px;
+                    border-radius: 15px;
+                    object-fit: cover;
+                }
+
+                .banner-home-swiper .title {
+                    position: absolute;
+                    bottom: 5px;
+                    left: 50%;
+                    transform: translate(-50%, -20%);
+                    width: max-content;
+                    text-align: center;
+                    padding: 10px 15px;
+                    background: rgba(46, 39, 39, 0.4);
                     border-radius: 6px;
-                    overflow: hidden;
-                    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-                    margin: 0;
+                    border: 2px solid rgba(165, 117, 44, 0.4);
+                    box-shadow: 0 3px 28px rgba(0, 0, 0, 0.2);
+                    color: #fff;
                 }
 
-                .banner-home-swiper .swiper-slide img.banner-home-image {
-                    display: block;
-                    width: 100%;
-                    height: auto;
+                .banner-home-swiper .swiper-slide-active .title {
+                    box-shadow: 0 20px 30px 2px rgba(165, 117, 44, 0.4);
                 }
 
-                /* Center slide */
-                .banner-home-swiper .swiper-slide-active {
-                    transform: scale(1);
-                    z-index: 1;
-                }
-
-                /* Slide kế tiếp/trước */
-                .banner-home-swiper .swiper-slide-next,
-                .banner-home-swiper .swiper-slide-prev {
-                    transform: scale(0.8);
-                    z-index: 0;
-                    margin: 0;
-                }
-
-                /* Slide thứ hai kế tiếp/trước */
-                .banner-home-swiper .swiper-slide-next+.swiper-slide,
-                .banner-home-swiper .swiper-slide-prev .swiper-slide-prev {
-                    transform: scale(0.8);
-                    z-index: -1;
-                }
-
-                /* Slide thứ ba */
-                .banner-home-swiper .swiper-slide-next+.swiper-slide+.swiper-slide {
-                    transform: scale(0.8);
-                    z-index: -2;
-                }
-
-                .banner-home-pagination .swiper-pagination-bullet {
-                    background-color: var(--primary-color-3);
-                    opacity: 0.5;
-                }
-
-                .banner-home-pagination .swiper-pagination-bullet-active {
-                    opacity: 1;
-                    width: 12px;
-                    height: 8px;
-                    border-radius: 4px;
-                }
-
-                /* Điều chỉnh cho màn hình nhỏ */
-                @media (max-width: 768px) {
-                    .banner-home-swiper .swiper-slide {
-                        width: 50%;
-                    }
-
-                    .banner-home-swiper .swiper-slide-next,
-                    .banner-home-swiper .swiper-slide-prev {
-                        transform: scale(0.8);
-                    }
-
-                    .banner-home-swiper .swiper-slide-next+.swiper-slide,
-                    .banner-home-swiper .swiper-slide-prev .swiper-slide-prev {
-                        opacity: 0;
-                        transform: scale(0.5);
+                @media (min-width: 760px) {
+                    .swiper-button-prev,
+                    .swiper-button-next {
+                        display: flex;
                     }
                 }
 
-                .swiper-button-prev,
-                .swiper-button-next {
-                    color: var(--primary-color-3) !important;
+                .swiper-pagination-bullet-active {
+                    background: #facece;
                 }
 
-                .swiper-button-prev:after,
-                .swiper-button-next:after {
-                    font-size: 20px;
+                .swiper-slide-active .title {
+                    display: initial;
+                }
+
+                .swiper-button-next,
+                .swiper-button-prev {
+                    color: #facece !important;
+                    transition: all .2s ease;
+                }
+
+                .swiper-button-next:hover,
+                .swiper-button-prev:hover {
+                    color: #900 !important;
                 }
             </style>
         @endpush
@@ -124,45 +110,29 @@
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const bannerSwiper = new Swiper('.banner-home-swiper', {
+                        autoplay: {
+                            delay: 2500,
+                            disableOnInteraction: false,
+                        },
                         effect: 'coverflow',
                         grabCursor: true,
                         centeredSlides: true,
-                        slidesPerView: 'auto',
                         loop: true,
-                        autoplay: {
-                            delay: 400000,
-                            disableOnInteraction: false,
-                        },
+                        slidesPerView: 'auto',
                         coverflowEffect: {
                             rotate: 0,
-                           
-                            stretch: -20,
-                        
+                            stretch: 0,
                             depth: 100,
-                            modifier: 1,
-                            slideShadows: false,
+                            modifier: 2.5,
+                            slideShadows: false
                         },
                         pagination: {
-                            el: '.banner-home-pagination',
+                            el: '.swiper-pagination',
                             clickable: true,
                         },
                         navigation: {
                             nextEl: '.swiper-button-next',
                             prevEl: '.swiper-button-prev',
-                        },
-                        breakpoints: {
-                            768: {
-                                coverflowEffect: {
-                                    stretch: -30,
-                                    depth: 120
-                                },
-                            },
-                            1024: {
-                                coverflowEffect: {
-                                    stretch: -35,
-                                    depth: 150,
-                                },
-                            }
                         }
                     });
                 });
