@@ -7,7 +7,7 @@
                     <div class="col-12 col-md-6">
 
                         <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
-                            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-eye text-primary"></i> Xem nhiều</h2>
+                            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-eye text-primary"></i> Xem Nhiều</h2>
                             <div>
                                 <a class="color-3 text-decoration-none" href="">Xem tất cả <i
                                         class="fa-solid fa-arrow-right"></i></a>
@@ -23,7 +23,7 @@
                     </div>
                     <div class="col-12 col-md-6">
                         <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
-                            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-bookmark me-2" style="color:#ef4444"></i>Theo dõi nhiều</h2>
+                            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-bookmark me-2" style="color:#ef4444"></i>Theo Dõi Nhiều</h2>
                             <div>
                                 <a class="color-3 text-decoration-none" href="">Xem tất cả <i
                                         class="fa-solid fa-arrow-right"></i></a>

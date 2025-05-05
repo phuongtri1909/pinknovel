@@ -4,7 +4,7 @@
 
             <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
                 <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-book-open" style="color: #22c55e;"></i> Truyện
-                    mới</h2>
+                    Mới</h2>
                 <div>
                     <a class="color-3 text-decoration-none" href="">Xem tất cả <i
                             class="fa-solid fa-arrow-right"></i></a>
