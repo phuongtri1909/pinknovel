@@ -8,7 +8,7 @@
         <div>
             <div class="row mt-3">
                 @foreach ($categories as $category)
-                    <div class="col-4 col-md-3 col-lg-2 mb-3">
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
                         <a href="" class="link-category text-decoration-none text-dark hover-color-3">
                             <i class="fas fa-chevron-right category-icon"></i>
                             <span class="fw-semibold">{{ $category->name }}</span> <span

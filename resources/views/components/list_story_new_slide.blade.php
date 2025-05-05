@@ -16,7 +16,7 @@
                 <div class="swiper-wrapper">
                     @forelse ($newStories as $story)
                         <div class="swiper-slide">
-                            <div class="story-item">
+                            <div class="story-new-slide story-item">
                                 @include('components.stories-grid', ['story' => $story])
                             </div>
                         </div>
@@ -32,7 +32,6 @@
                 </div>
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
-                <div class="swiper-pagination"></div>
             </div>
         </div>
     </div>
@@ -40,7 +39,7 @@
 
 @once
     @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
         <style>
             .newStoriesSwiper .swiper-button-next,
             .newStoriesSwiper .swiper-button-prev {
@@ -49,7 +48,7 @@
                 background: rgba(255, 255, 255, 0.9);
                 border-radius: 50%;
                 color: var(--primary-color-3);
-                box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
                 transition: all 0.3s ease;
             }
 
@@ -83,57 +82,55 @@
                 transform: translateY(20px);
                 animation: fadeInUp 0.6s ease forwards;
             }
+
+          
         </style>
     @endpush
 
     @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
         <script>
             new Swiper('.newStoriesSwiper', {
                 slidesPerView: 1,
-                spaceBetween: 10,
-                loop: true, // Thêm loop
+                spaceBetween: 0,
+                loop: true,
                 loopFillGroupWithBlank: true,
-                pagination: {
-                    el: '.swiper-pagination',
-                    clickable: true,
-                },
                 navigation: {
                     nextEl: '.swiper-button-next',
                     prevEl: '.swiper-button-prev',
                 },
                 breakpoints: {
-                    320: {
-                        slidesPerView: 1,
-                        spaceBetween: 10,
-                    },
-                    425: {
+                    0: {
                         slidesPerView: 2,
-                        spaceBetween: 10,
+                       
                     },
-                    640: {
+
+                    580: {
                         slidesPerView: 3,
-                        spaceBetween: 20,
+                        
                     },
                     768: {
                         slidesPerView: 4,
-                        spaceBetween: 20,
+                        spaceBetween: 10,
+                       
                     },
                     1024: {
                         slidesPerView: 5,
-                        spaceBetween: 20,
+                        spaceBetween: 10,
+                       
                     },
-                    1200: {
+                    1300: {
                         slidesPerView: 6,
-                        spaceBetween: 20,
+                        spaceBetween: 10,
+                       
                     },
                 },
                 autoplay: {
                     delay: 3000,
                     disableOnInteraction: false,
                 },
-                speed: 800, // Thêm tốc độ chuyển slide mượt hơn
-                effect: "slide", // Hiệu ứng slide
+                speed: 800,
+                effect: "slide",
             });
         </script>
     @endpush

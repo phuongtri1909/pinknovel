@@ -192,10 +192,9 @@ class HomeController extends Controller
 
     private function getNewStories($request)
     {
-        // Truy vấn truyện với chương mới nhất
         $query = Story::with(['latestChapter' => function ($query) {
             $query->select('id', 'story_id', 'title', 'slug', 'number', 'views', 'created_at', 'status')
-                ->where('status', 'published'); // Chỉ lấy chương đã xuất bản
+                ->where('status', 'published');
         }, 'categories'])
             ->published()
             ->select([
@@ -225,11 +224,11 @@ class HomeController extends Controller
             $query->select('created_at')
                 ->from('chapters')
                 ->whereColumn('story_id', 'stories.id')
-                ->where('status', 'published') // Chỉ xét chương đã xuất bản
+                ->where('status', 'published')
                 ->latest()
                 ->limit(1);
         })
-            ->take(20)
+            ->take(6)
             ->get();
     }
     public function showStory(Request $request, $slug)

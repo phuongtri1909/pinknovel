@@ -30,7 +30,7 @@
 
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex flex-wrap gap-1 my-2 text-sm">
-                @foreach ($story->categories as $category)
+                @foreach ($story->categories->take(2) as $category)
                     <span class="badge bg-1 text-white small rounded-pill d-flex align-items-center">{{ $category->name }}</span>
                 @endforeach
                 <p class="mb-0">{{ $story->chapters_count }} chương</p>

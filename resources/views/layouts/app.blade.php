@@ -8,7 +8,7 @@
         @yield('content')
         @include('components.top_button')
     </div>
-    <div id="fb-root"></div>
+    <div id="fb-root" class="w-100"></div>
     @stack('scripts')
 </body>
 

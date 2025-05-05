@@ -6,13 +6,22 @@
     --primary-color-5: #f9b7bb;
     --purple-color-1: #d8a0db;
     --purple-color-2: #e9c9f9;
-    --bg-list: #e3e3e3;
+    --bg-list: #fafafa;
     --color-text: #333;
     --tw-text-opacity: 1;
+    --success-color: #28a745;
 }
 
 body {
     font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+.color-success-custom {
+    color: var(--success-color) !important;
+}
+
+.bg-success-custom {
+    background: var(--success-color) !important;
 }
 
 .hover-color-1:hover {
@@ -1279,7 +1288,7 @@ body {
     }
 
     .story-item {
-        padding: 1rem;
+        padding: 0.5rem;
     }
 }
 

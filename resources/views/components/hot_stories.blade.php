@@ -1,19 +1,21 @@
 <!-- filepath: d:\truyen\pinknovel\resources\views\components\hot_stories.blade.php -->
 <!-- Hot Stories Widget -->
 
-<div class="sidebar-widget recent-reads rounded-3 shadow-sm">
+<div class="sidebar-widget recent-reads rounded shadow-sm">
     <div class="widget-header bg-2">
-        <ul class="nav nav-tabs nav-fill" id="hotStoriesTabs" role="tablist">
+        <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-fire fa-lg" style="color: #ef4444;"></i> Truyện Hot
+        </h2>
+        <ul class="nav nav-tabs nav-fill mt-3" id="hotStoriesTabs" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="daily-tab" data-bs-toggle="tab" data-bs-target="#daily"
                     type="button" role="tab">
-                   Hôm nay
+                    Hôm nay
                 </button>
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="weekly-tab" data-bs-toggle="tab" data-bs-target="#weekly" type="button"
                     role="tab">
-                   Tuần này
+                    Tuần này
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -25,7 +27,7 @@
         </ul>
     </div>
     <div class="widget-content">
-        
+
 
         <!-- Tab Content -->
         <div class="tab-content" id="hotStoriesContent">
@@ -34,8 +36,10 @@
                 <div class="hot-stories-list">
                     @foreach ($dailyHotStories as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="story-rank">
-                                {{ $index + 1 }}
+                            <div class="d-flex align-items-center">
+                                <span class="story-rank">
+                                    {{ $index + 1 }}
+                                </span>
                             </div>
                             <div class="story-cover me-2">
                                 <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
@@ -43,26 +47,28 @@
                                         class="hot-story-thumb">
                                 </a>
                             </div>
-                            <div class="story-info flex-grow-1">
+                            <div class="story-info w-100">
                                 <h4 class="hot-story-title">
-                                    <a class="text-decoration-none text-dark" href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
+                                    <a class="text-decoration-none text-dark"
+                                        href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
                                 </h4>
-                                <!-- Latest two chapters -->
-                                @php
-                                    $latestChapters = $story->chapters()->published()->latest()->take(2)->get();
-                                @endphp
-                                @foreach($latestChapters as $chapter)
-                                    <div class="badge bg-1 small rounded-pill">
-                                        <a class="text-decoration-none color-3  fw-normal"
-                                            href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}">
-                                            {{ $chapter->title }}
-                                        </a>
+                                <div class="d-flex">
+                                    @foreach ($story->categories->take(2) as $category)
+                                        <span
+                                            class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
+                                    @endforeach
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
+
+                                    <div class="text-muted text-sm">
+                                        @if ($story->latestChapter)
+                                            {{ $story->latestChapter->created_at->diffForHumans() }}
+                                        @else
+                                            Chưa cập nhật
+                                        @endif
                                     </div>
-                                    <div class="publish-date small text-muted">
-                                        <i class="far fa-clock me-1"></i>{{ $chapter->created_at ? $chapter->created_at->format('d/m/Y') : '' }}
-                                    </div>
-                                @endforeach
-                                
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -74,8 +80,10 @@
                 <div class="hot-stories-list">
                     @foreach ($weeklyHotStories as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="story-rank">
-                                {{ $index + 1 }}
+                            <div class="d-flex align-items-center">
+                                <span class="story-rank">
+                                    {{ $index + 1 }}
+                                </span>
                             </div>
                             <div class="story-cover me-2">
                                 <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
@@ -83,25 +91,27 @@
                                         class="hot-story-thumb">
                                 </a>
                             </div>
-                            <div class="story-info flex-grow-1">
+                            <div class="story-info w-100">
                                 <h4 class="hot-story-title">
-                                    <a class="text-decoration-none text-dark" href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
+                                    <a class="text-decoration-none text-dark"
+                                        href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
                                 </h4>
-                                <!-- Latest two chapters -->
-                                @php
-                                    $latestChapters = $story->chapters()->published()->latest()->take(2)->get();
-                                @endphp
-                                @foreach($latestChapters as $chapter)
-                                    <div class="badge bg-1 text-white small rounded-pill">
-                                        <a class="text-decoration-none"
-                                            href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}">
-                                           {{ $chapter->title }}
-                                        </a>
+                                <div class="d-flex">
+                                    @foreach ($story->categories->take(2) as $category)
+                                        <span
+                                            class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
+                                    @endforeach
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
+
+                                    <div class="text-muted text-sm">
+                                        @if ($story->latestChapter)
+                                            {{ $story->latestChapter->created_at->diffForHumans() }}
+                                        @else
+                                            Chưa cập nhật
+                                        @endif
                                     </div>
-                                @endforeach
-                                <!-- Publishing date -->
-                                <div class="publish-date small text-muted">
-                                    <i class="far fa-clock me-1"></i>{{ $story->latestChapter ? $story->latestChapter->created_at->format('d/m/Y H:i') : '' }}
                                 </div>
                             </div>
                         </div>
@@ -114,34 +124,38 @@
                 <div class="hot-stories-list">
                     @foreach ($monthlyHotStories as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="story-rank">
-                                {{ $index + 1 }}
+                            <div class="d-flex align-items-center">
+                                <span class="story-rank">
+                                    {{ $index + 1 }}
+                                </span>
                             </div>
                             <div class="story-cover me-2">
-                                <a href="{{ route('show.page.story', $story->slug) }}">
+                                <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
                                     <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
                                         class="hot-story-thumb">
                                 </a>
                             </div>
-                            <div class="story-info flex-grow-1">
+                            <div class="story-info w-100">
                                 <h4 class="hot-story-title">
-                                    <a class="text-decoration-none text-dark" href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
+                                    <a class="text-decoration-none text-dark"
+                                        href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
                                 </h4>
-                                <!-- Latest two chapters -->
-                                @php
-                                    $latestChapters = $story->chapters()->published()->latest()->take(2)->get();
-                                @endphp
-                                @foreach($latestChapters as $chapter)
-                                    <div class="latest-chapter small mb-1">
-                                        <a class="text-decoration-none"
-                                            href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}">
-                                            <i class="fas fa-book-open me-1 cl-8ed7ff"></i>{{ $chapter->title }}
-                                        </a>
+                                <div class="d-flex">
+                                    @foreach ($story->categories->take(2) as $category)
+                                        <span
+                                            class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
+                                    @endforeach
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
+
+                                    <div class="text-muted text-sm">
+                                        @if ($story->latestChapter)
+                                            {{ $story->latestChapter->created_at->diffForHumans() }}
+                                        @else
+                                            Chưa cập nhật
+                                        @endif
                                     </div>
-                                @endforeach
-                                <!-- Publishing date -->
-                                <div class="publish-date small text-muted">
-                                    <i class="far fa-clock me-1"></i>{{ $story->latestChapter ? $story->latestChapter->created_at->format('d/m/Y H:i') : '' }}
                                 </div>
                             </div>
                         </div>
@@ -156,11 +170,9 @@
 @once
     @push('styles')
         <style>
-            /* Existing styles... */
-
             /* Hot Stories Styles */
             .hot-stories-list {
-                max-height: 600px;
+                max-height: 812px;
                 overflow-y: auto;
             }
 
@@ -178,7 +190,8 @@
                 min-height: 30px;
                 width: 30px;
                 height: 30px;
-                flex: 0 0 30px; /* Prevents shrinking */
+                flex: 0 0 30px;
+                /* Prevents shrinking */
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -191,8 +204,8 @@
             }
 
             .hot-story-thumb {
-                width: 60px;
-                height: 80px;
+                width: 85px;
+                height: 140px;
                 object-fit: cover;
                 border-radius: 4px;
             }

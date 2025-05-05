@@ -2,7 +2,8 @@
     <div class="mt-4 bg-list rounded px-0 p-md-4 pb-4">
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
-            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-fire fa-xl" style="color: #ef4444;"></i>Truyện Đề Cử</h2>
+            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-fire fa-xl" style="color: #ef4444;"></i> Truyện Đề
+                Cử</h2>
             <div>
                 <a class="color-3 text-decoration-none" href="">Xem tất cả <i
                         class="fa-solid fa-arrow-right"></i></a>
@@ -13,9 +14,9 @@
         <div id="storiesContainer" class="rounded-bottom-custom">
             <div class="row gx-0 gx-md-3">
                 @forelse ($hotStories as $story)
-                <div class="col-6 col-md-3 col-lg-2 story-item bg-none my-0 mt-3">
-                    @include('components.stories-grid', ['story' => $story])
-                </div>
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 story-item bg-none my-0 mt-3">
+                        @include('components.stories-grid', ['story' => $story])
+                    </div>
                 @empty
                     <div class="col-12">
                         <div class="alert alert-info text-center py-4 mb-4">
