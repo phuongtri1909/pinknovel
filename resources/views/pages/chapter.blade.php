@@ -475,6 +475,72 @@
                 navigator.sendBeacon('{{ route("reading.save-progress") }}', data);
             }
         });
+
+        // Thêm vào phần script của trang đọc chương
+        $(document).ready(function() {
+            // Biến để lưu vị trí cuộn
+            let lastScrollPosition = 0;
+            let isScrollingTimer;
+            let contentHeight = $('.chapter-content').height();
+            let windowHeight = $(window).height();
+            
+            // Theo dõi vị trí cuộn trong khi đọc
+            $(window).scroll(function() {
+                clearTimeout(isScrollingTimer);
+                
+                // Tính toán phần trăm đã đọc
+                lastScrollPosition = window.scrollY;
+                let totalScrollHeight = $(document).height() - windowHeight;
+                let progressPercent = Math.min(Math.round((lastScrollPosition / totalScrollHeight) * 100), 100);
+                
+                // Chờ người dùng dừng cuộn rồi mới cập nhật
+                isScrollingTimer = setTimeout(function() {
+                    saveReadingProgress(progressPercent);
+                }, 1000);
+            });
+            
+            // Lưu tiến độ đọc khi người dùng rời khỏi trang
+            $(window).on('beforeunload', function() {
+                let totalScrollHeight = $(document).height() - windowHeight;
+                let progressPercent = Math.min(Math.round((lastScrollPosition / totalScrollHeight) * 100), 100);
+                saveReadingProgress(progressPercent);
+            });
+            
+            // Hàm lưu tiến độ đọc
+            function saveReadingProgress(progressPercent) {
+                $.ajax({
+                    url: "{{ route('reading.save-progress') }}",
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        story_id: {{ $story->id }},
+                        chapter_id: {{ $chapter->id }},
+                        progress_percent: progressPercent
+                    },
+                    success: function(response) {
+                        console.log("Đã lưu tiến độ đọc: " + progressPercent + "%");
+                    },
+                    error: function(xhr) {
+                        console.error("Lỗi khi lưu tiến độ đọc");
+                    }
+                });
+            }
+            
+            // Khôi phục vị trí cuộn nếu quay lại chương đã đọc dở
+            function restoreScrollPosition() {
+                @if(isset($userReading) && $userReading)
+                    let savedPosition = {{ $userReading->progress_percent }};
+                    if (savedPosition > 0) {
+                        let totalScrollHeight = $(document).height() - windowHeight;
+                        let scrollToPosition = (savedPosition / 100) * totalScrollHeight;
+                        window.scrollTo(0, scrollToPosition);
+                    }
+                @endif
+            }
+            
+            // Khôi phục vị trí khi tải trang
+            restoreScrollPosition();
+        });
     </script>
 @endpush
 

@@ -57,7 +57,19 @@
                                 <a href="{{ route('forgot-password') }}" class="auth-link">Quên mật khẩu?</a>
                             </div>
 
-                            <button type="submit" class="auth-btn btn w-100 mb-4">Đăng Nhập</button>
+                            <button type="submit" class="auth-btn btn w-100">Đăng Nhập</button>
+
+                            <div class="text-center">
+                                <div class="divider d-flex align-items-center my-4">
+                                    <p class="text-center mx-3 mb-0">Hoặc</p>
+                                </div>
+
+                                <a href="{{ route('login.google') }}" class="btn w-100 mb-3 btn-outline-secondary">
+                                    <img src="{{ asset('assets/images/icons/google.svg') }}" alt="Google" class="me-2"
+                                        height="20">
+                                    Đăng nhập với Google
+                                </a>
+                            </div>
 
                             <div class="text-center">
                                 <span>Chưa có tài khoản? </span>

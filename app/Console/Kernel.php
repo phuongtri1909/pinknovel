@@ -12,7 +12,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Kiểm tra và xuất bản các chương đã hẹn giờ mỗi phút
+        $schedule->command('chapters:publish-scheduled')
+                ->everyMinute()
+                ->withoutOverlapping()
+                ->appendOutputTo(storage_path('logs/scheduler.log'));
     }
 
     /**

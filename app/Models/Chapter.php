@@ -20,6 +20,15 @@ class Chapter extends Model
         'story_id',
         'user_id',
         'link_aff',
+        'price',
+        'password',
+        'is_free',
+        'scheduled_publish_at',
+    ];
+
+    protected $casts = [
+        'is_free' => 'boolean',
+        'scheduled_publish_at' => 'datetime',
     ];
 
     public function user()

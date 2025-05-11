@@ -19,6 +19,9 @@ class Story extends Model
         'cover_thumbnail',
         'completed',
         'link_aff',
+        'story_type',
+        'author_name',
+        'is_18_plus'
     ];
 
 
@@ -84,6 +87,47 @@ class Story extends Model
         return $this->hasOne(Chapter::class)
             ->where('status', 'published')
             ->orderByDesc('number');
+    }
+    /**
+     * Get the bookmarks for the story.
+     */
+    public function bookmarks()
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    public function deposits()
+    {
+        return $this->hasMany(Deposit::class);
+    }
+
+    public function scopeOriginal($query)
+    {
+        return $query->where('story_type', 'original');
+    }
+
+    /**
+     * Get the edit requests for the story
+     */
+    public function editRequests()
+    {
+        return $this->hasMany(StoryEditRequest::class);
+    }
+
+    /**
+     * Check if the story has a pending edit request
+     */
+    public function hasPendingEditRequest()
+    {
+        return $this->editRequests()->where('status', 'pending')->exists();
+    }
+
+    /**
+     * Get the latest pending edit request for the story
+     */
+    public function latestPendingEditRequest()
+    {
+        return $this->editRequests()->where('status', 'pending')->latest()->first();
     }
 
     protected $with = ['categories'];

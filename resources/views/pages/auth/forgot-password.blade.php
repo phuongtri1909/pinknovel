@@ -22,7 +22,7 @@
                 height: 50px;
             }
         }
-        
+
         .cursor-pointer {
             cursor: pointer;
         }
@@ -66,9 +66,21 @@
                             <div id="passwordContainer"></div>
 
                             <div class="box-button">
-                                <button type="submit" class="auth-btn btn w-100 mb-4" id="btn-send">
+                                <button type="submit" class="auth-btn btn w-100" id="btn-send">
                                     Tiếp Tục
                                 </button>
+                            </div>
+
+                            <div class="text-center">
+                                <div class="divider d-flex align-items-center my-4">
+                                    <p class="text-center mx-3 mb-0 text-dark">Hoặc</p>
+                                </div>
+
+                                <a href="{{ route('login.google') }}" class="btn w-100 mb-3 btn-outline-secondary">
+                                    <img src="{{ asset('assets/images/icons/google.svg') }}" alt="Google" class="me-2"
+                                        height="20">
+                                    Đăng nhập với Google
+                                </a>
                             </div>
 
                             <div class="text-center">
@@ -184,77 +196,171 @@
                                             $('.box-button').html(`
                                                 <button class="auth-btn btn w-100 mb-4" type="button" id="submitPassword">Xác nhận</button>
                                             `);
-                                            
+
                                             // Add toggle password functionality
-                                            $('#togglePassword').on('click', function() {
-                                                const passwordInput = $('#password');
-                                                const type = passwordInput.attr('type') === 'password' ? 'text' : 'password';
-                                                passwordInput.attr('type', type);
-                                                $(this).toggleClass('fa-eye fa-eye-slash');
-                                            });
-
-                                            $('#submitPassword').on('click', function() {
-                                                const passwordInput = $('#password');
-                                                const password = passwordInput.val();
-
-                                                removeInvalidFeedback(passwordInput);
-
-                                                $.ajax({
-                                                    url: '{{ route('forgot.password') }}',
-                                                    method: 'POST',
-                                                    headers: {
-                                                        'Content-Type': 'application/json',
-                                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                                    },
-                                                    data: JSON.stringify({
-                                                        email: email,
-                                                        otp: otp,
-                                                        password: password
-                                                    }),
-                                                    success: function(response) {
-                                                        if (response.status === 'success') {
-                                                            showToast(response.message, 'success');
-                                                            saveToast(response.message, response.status);
-                                                            window.location.href = response.url;
-                                                        } else {
-                                                            showToast(response.message, 'error');
-                                                        }
-                                                    },
-                                                    error: function(xhr) {
-                                                        const response = xhr.responseJSON;
-                                                        
-                                                        if (response && response.status === 'error') {
-                                                            if (response.message.password) {
-                                                                response.message.password.forEach(error => {
-                                                                    const invalidFeedback = $('<div class="invalid-feedback"></div>').text(error);
-                                                                    passwordInput.addClass('is-invalid').parent().append(invalidFeedback);
-                                                                });
-                                                            }
-                                                        } else {
-                                                            showToast('Đã xảy ra lỗi, vui lòng thử lại.', 'error');
-                                                        }
-                                                    }
+                                            $('#togglePassword').on('click',
+                                                function() {
+                                                    const
+                                                        passwordInput =
+                                                        $('#password');
+                                                    const type =
+                                                        passwordInput
+                                                        .attr(
+                                                        'type') ===
+                                                        'password' ?
+                                                        'text' :
+                                                        'password';
+                                                    passwordInput.attr(
+                                                        'type', type
+                                                        );
+                                                    $(this).toggleClass(
+                                                        'fa-eye fa-eye-slash'
+                                                        );
                                                 });
-                                            });
+
+                                            $('#submitPassword').on('click',
+                                                function() {
+                                                    const
+                                                        passwordInput =
+                                                        $('#password');
+                                                    const password =
+                                                        passwordInput
+                                                        .val();
+
+                                                    removeInvalidFeedback
+                                                        (passwordInput);
+
+                                                    $.ajax({
+                                                        url: '{{ route('forgot.password') }}',
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Content-Type': 'application/json',
+                                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                                        },
+                                                        data: JSON
+                                                            .stringify({
+                                                                email: email,
+                                                                otp: otp,
+                                                                password: password
+                                                            }),
+                                                        success: function(
+                                                            response
+                                                            ) {
+                                                            if (response
+                                                                .status ===
+                                                                'success'
+                                                                ) {
+                                                                showToast
+                                                                    (response
+                                                                        .message,
+                                                                        'success'
+                                                                        );
+                                                                saveToast
+                                                                    (response
+                                                                        .message,
+                                                                        response
+                                                                        .status
+                                                                        );
+                                                                window
+                                                                    .location
+                                                                    .href =
+                                                                    response
+                                                                    .url;
+                                                            } else {
+                                                                showToast
+                                                                    (response
+                                                                        .message,
+                                                                        'error'
+                                                                        );
+                                                            }
+                                                        },
+                                                        error: function(
+                                                            xhr
+                                                            ) {
+                                                            const
+                                                                response =
+                                                                xhr
+                                                                .responseJSON;
+
+                                                            if (response &&
+                                                                response
+                                                                .status ===
+                                                                'error'
+                                                                ) {
+                                                                if (response
+                                                                    .message
+                                                                    .password
+                                                                    ) {
+                                                                    response
+                                                                        .message
+                                                                        .password
+                                                                        .forEach(
+                                                                            error => {
+                                                                                const
+                                                                                    invalidFeedback =
+                                                                                    $(
+                                                                                        '<div class="invalid-feedback"></div>')
+                                                                                    .text(
+                                                                                        error
+                                                                                        );
+                                                                                passwordInput
+                                                                                    .addClass(
+                                                                                        'is-invalid'
+                                                                                        )
+                                                                                    .parent()
+                                                                                    .append(
+                                                                                        invalidFeedback
+                                                                                        );
+                                                                            }
+                                                                            );
+                                                                }
+                                                            } else {
+                                                                showToast
+                                                                    ('Đã xảy ra lỗi, vui lòng thử lại.',
+                                                                        'error'
+                                                                        );
+                                                            }
+                                                        }
+                                                    });
+                                                });
                                         } else {
-                                            showToast(response.message, 'error');
+                                            showToast(response.message,
+                                                'error');
                                         }
                                     },
                                     error: function(xhr) {
                                         const response = xhr.responseJSON;
-                                        
-                                        if (response && response.status === 'error') {
+
+                                        if (response && response.status ===
+                                            'error') {
                                             if (response.message.email) {
-                                                response.message.email.forEach(error => {
-                                                    const invalidFeedback = $('<div class="invalid-feedback"></div>').text(error);
-                                                    emailInput.addClass('is-invalid').parent().append(invalidFeedback);
-                                                });
+                                                response.message.email
+                                                    .forEach(error => {
+                                                        const
+                                                            invalidFeedback =
+                                                            $(
+                                                                '<div class="invalid-feedback"></div>')
+                                                            .text(
+                                                            error);
+                                                        emailInput
+                                                            .addClass(
+                                                                'is-invalid'
+                                                                )
+                                                            .parent()
+                                                            .append(
+                                                                invalidFeedback
+                                                                );
+                                                    });
                                             }
                                             if (response.message.otp) {
-                                                input_otp.append(`<div class="invalid-otp text-danger fs-7">${response.message.otp[0]}</div>`);
+                                                input_otp.append(
+                                                    `<div class="invalid-otp text-danger fs-7">${response.message.otp[0]}</div>`
+                                                    );
                                             }
                                         } else {
-                                            showToast('Đã xảy ra lỗi, vui lòng thử lại.', 'error');
+                                            showToast(
+                                                'Đã xảy ra lỗi, vui lòng thử lại.',
+                                                'error');
                                         }
                                     }
                                 });
@@ -267,11 +373,14 @@
                     },
                     error: function(xhr) {
                         const response = xhr.responseJSON;
-                        
+
                         if (response && response.message && response.message.email) {
                             response.message.email.forEach(error => {
-                                const invalidFeedback = $('<div class="invalid-feedback"></div>').text(error);
-                                emailInput.addClass('is-invalid').parent().append(invalidFeedback);
+                                const invalidFeedback = $(
+                                    '<div class="invalid-feedback"></div>').text(
+                                    error);
+                                emailInput.addClass('is-invalid').parent().append(
+                                    invalidFeedback);
                             });
                         } else {
                             showToast('Đã xảy ra lỗi, vui lòng thử lại.', 'error');
@@ -281,7 +390,7 @@
                     }
                 });
             });
-            
+
             // Helper function to remove invalid feedback
             function removeInvalidFeedback(input) {
                 const oldInvalidFeedback = input.parent().find('.invalid-feedback');

@@ -12,6 +12,8 @@ use Illuminate\Support\Str;
 
 class ReadingHistoryService
 {
+
+    
     /**
      * Lưu tiến độ đọc của người dùng
      */

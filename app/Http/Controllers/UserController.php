@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Bank;
 use App\Models\User;
+use App\Models\Bookmark;
 use App\Models\Banned_ip;
+use App\Models\UserReading;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -15,10 +17,18 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Redis;
 use Intervention\Image\Facades\Image;
+use App\Services\ReadingHistoryService;
 use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
+
+    protected $readingHistoryService;
+    
+    public function __construct(ReadingHistoryService $readingHistoryService)
+    {
+        $this->readingHistoryService = $readingHistoryService;
+    }
 
     public function show($id)
     {
@@ -378,7 +388,127 @@ class UserController extends Controller
     {
         $user = Auth::user();
 
-        return view('pages.information.index', compact('user'));
+        return view('pages.information.profile', compact('user'));
+    }
+
+    public function readingHistory()
+    {
+        // Lấy danh sách lịch sử đọc từ service
+        $readingHistory = $this->readingHistoryService->getRecentReadings(20);
+        return view('pages.information.reading_history', compact('readingHistory'));
+    }
+    
+    // Clear reading history
+    public function clearReadingHistory(Request $request)
+    {
+        // Xóa bản ghi lịch sử đọc
+        $deviceKey = $this->readingHistoryService->getOrCreateDeviceKey();
+        
+        if (Auth::check()) {
+            // Xóa lịch sử của user đã đăng nhập
+            $deleted = UserReading::where('user_id', Auth::id())->delete();
+        } else {
+            // Xóa lịch sử dựa trên session
+            $deleted = UserReading::where('session_id', $deviceKey)
+                ->whereNull('user_id')
+                ->delete();
+        }
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Đã xóa lịch sử đọc truyện'
+            ]);
+        }
+        
+        return redirect()->back()->with('success', 'Đã xóa lịch sử đọc truyện');
+    }
+    
+    public function bookmarks()
+    {
+        $user = Auth::user();
+        $bookmarks = Bookmark::where('user_id', $user->id)
+            ->with(['story' => function($query) {
+                $query->with('latestChapter');
+            }])
+            ->orderBy('created_at', 'desc')
+            ->get();
+            
+        return view('pages.information.bookmarks', compact('bookmarks'));
+    }
+
+
+    public function toggleBookmark(Request $request)
+    {
+        $request->validate([
+            'story_id' => 'required|exists:stories,id',
+        ]);
+        
+        $result = Bookmark::toggleBookmark(Auth::id(), $request->story_id);
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'bookmark_status' => $result['status'],
+                'message' => $result['message']
+            ]);
+        }
+        
+        return redirect()->back()->with('success', $result['message']);
+    }
+    
+    // Remove bookmark
+    public function removeBookmark(Request $request)
+    {
+        $request->validate([
+            'bookmark_id' => 'required|exists:bookmarks,id',
+        ]);
+        
+        $bookmark = Bookmark::findOrFail($request->bookmark_id);
+        
+        // Check if the bookmark belongs to the current user
+        if ($bookmark->user_id != Auth::id()) {
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Bạn không có quyền thực hiện hành động này'
+                ], 403);
+            }
+            return redirect()->back()->with('error', 'Bạn không có quyền thực hiện hành động này');
+        }
+        
+        $bookmark->delete();
+        
+        if ($request->ajax()) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Đã xóa truyện khỏi danh sách theo dõi'
+            ]);
+        }
+        
+        return redirect()->back()->with('success', 'Đã xóa truyện khỏi danh sách theo dõi');
+    }
+    
+    // Toggle bookmark notification
+    public function toggleBookmarkNotification(Request $request)
+    {
+        $request->validate([
+            'bookmark_id' => 'required|exists:bookmarks,id',
+        ]);
+        
+        $bookmark = Bookmark::findOrFail($request->bookmark_id);
+        
+        // Check if the bookmark belongs to the current user
+        if ($bookmark->user_id != Auth::id()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Bạn không có quyền thực hiện hành động này'
+            ], 403);
+        }
+        
+        $result = Bookmark::toggleNotification($request->bookmark_id);
+        
+        return response()->json($result);
     }
 
     private function processAndSaveAvatar($imageFile)
@@ -487,16 +617,16 @@ class UserController extends Controller
                     'name.max' => 'Tên không được vượt quá 255 ký tự'
                 ]);
             } catch (\Illuminate\Validation\ValidationException $e) {
-                return redirect()->route('profile')->with('error', $e->errors());
+                return redirect()->route('user.profile')->with('error', $e->errors());
             }
 
             try {
                 $user = Auth::user();
                 $user->name = $request->name;
                 $user->save();
-                return redirect()->route('profile')->with('success', 'Cập nhật tên thành công');
+                return redirect()->route('user.profile')->with('success', 'Cập nhật tên thành công');
             } catch (\Exception $e) {
-                return redirect()->route('profile')->with('error', 'Cập nhật tên thất bại');
+                return redirect()->route('user.profile')->with('error', 'Cập nhật tên thất bại');
             }
         } elseif ($request->has('phone')) {
 
@@ -510,16 +640,16 @@ class UserController extends Controller
                     'phone.max' => 'Số điện thoại không được vượt quá 10 ký tự'
                 ]);
             } catch (\Illuminate\Validation\ValidationException $e) {
-                return redirect()->route('profile')->with('error', $e->errors());
+                return redirect()->route('user.profile')->with('error', $e->errors());
             }
 
             try {
                 $user = Auth::user();
                 $user->phone = $request->phone;
                 $user->save();
-                return redirect()->route('profile')->with('success', 'Cập nhật số điện thoại thành công');
+                return redirect()->route('user.profile')->with('success', 'Cập nhật số điện thoại thành công');
             } catch (\Exception $e) {
-                return redirect()->route('profile')->with('error', 'Cập nhật số điện thoại thất bại');
+                return redirect()->route('user.profile')->with('error', 'Cập nhật số điện thoại thất bại');
             }
         } else {
             return response()->json([

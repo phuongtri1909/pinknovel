@@ -63,13 +63,16 @@ class Kernel extends HttpKernel
         'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'role.admin' => \App\Http\Middleware\RoleAdmin::class,
-        'role.admin.user' => \App\Http\Middleware\RoleAdminUser::class,
-        'role.user' => \App\Http\Middleware\RoleUser::class,
+        'role' => \App\Http\Middleware\CheckRole::class,
         'check.ip.ban' => \App\Http\Middleware\CheckIpBan::class,
         'check.ban' => \App\Http\Middleware\CheckBan::class,
-        'role.admin.mod' => \App\Http\Middleware\RoleAdminMod::class,
         'chapter.api' => \App\Http\Middleware\ChapterApiKey::class,
         'affiliate.redirect' => \App\Http\Middleware\AffiliateRedirect::class,
+        
+        // Các alias cũ giữ lại để tương thích ngược
+        'role.admin' => \App\Http\Middleware\RoleAdmin::class,
+        'role.admin.user' => \App\Http\Middleware\RoleAdminUser::class, 
+        'role.user' => \App\Http\Middleware\RoleUser::class,
+        'role.admin.mod' => \App\Http\Middleware\RoleAdminMod::class,
     ];
 }

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('avatar')->nullable();
-            $table->enum('role', ['admin','mod','user'])->default('user');
+            $table->enum('role', ['admin','author','user'])->default('user');
             $table->enum('active', ['active', 'inactive'])->default('inactive');
             $table->string('key_active')->nullable();
             $table->string('key_reset_password')->nullable();

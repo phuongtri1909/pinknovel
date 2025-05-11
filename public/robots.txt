@@ -12,9 +12,9 @@ Disallow: /admin/
 Disallow: /password/
 Disallow: /storage/
 Disallow: /assets/images/admin/
-Disallow: /update-profile/
-Disallow: /update-avatar
-Disallow: /update-password
+Disallow: /user/update-profile/
+Disallow: /user/update-avatar
+Disallow: /user/update-password
 Disallow: /comment/store
 Disallow: /ratings
 

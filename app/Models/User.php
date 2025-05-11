@@ -76,6 +76,61 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    /**
+     * Get the bookmarks for the user.
+     */
+    public function bookmarks()
+    {
+        return $this->hasMany(Bookmark::class);
+    }
+
+    // Thêm vào model User.php
+    public function deposits()
+    {
+        return $this->hasMany(Deposit::class);
+    }
+
+    public function stories()
+    {
+        return $this->hasMany(Story::class);
+    }
+
+    public function hasRole($role)
+    {
+        return $this->role === $role;
+    }
+
+    /**
+     * Get the author applications for the user
+     */
+    public function authorApplications()
+    {
+        return $this->hasMany(AuthorApplication::class);
+    }
+
+    /**
+     * Check if the user has a pending author application
+     */
+    public function hasPendingAuthorApplication()
+    {
+        return $this->authorApplications()->where('status', 'pending')->exists();
+    }
+
+    /**
+     * Check if the user has an approved author application
+     */
+    public function hasApprovedAuthorApplication()
+    {
+        return $this->authorApplications()->where('status', 'approved')->exists();
+    }
+
+    /**
+     * Get the latest author application
+     */
+    public function latestAuthorApplication()
+    {
+        return $this->authorApplications()->latest()->first();
+    }
 
     /**
      * The attributes that should be hidden for serialization.

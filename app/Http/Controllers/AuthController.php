@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
 use App\Services\ReadingHistoryService;
 use Illuminate\Support\Facades\Storage;
+use Laravel\Socialite\Facades\Socialite;
 
 class AuthController extends Controller
 {
@@ -23,6 +24,61 @@ class AuthController extends Controller
     public function __construct(ReadingHistoryService $readingService)
     {
         $this->readingService = $readingService;
+    }
+
+    public function redirectToGoogle()
+    {
+        return Socialite::driver('google')->redirect();
+    }
+
+    public function handleGoogleCallback()
+    {
+        try {
+            $googleUser = Socialite::driver('google')->user();
+            $existingUser = User::where('email', $googleUser->getEmail())->first();
+
+            if ($existingUser) {
+                $existingUser->active = 'active';
+                $existingUser->save();
+                Auth::login($existingUser);
+                $readingService = new ReadingHistoryService();
+                $readingService->migrateSessionReadingsToUser($existingUser->id);
+
+                if ($existingUser->role == 'admin') {
+                    return redirect()->route('admin.dashboard');
+                }
+
+                return redirect()->route('home');
+            } else {
+                $user = new User();
+                $user->name = $googleUser->getName();
+                $user->email = $googleUser->getEmail();
+                $user->password = bcrypt(Str::random(16)); 
+                $user->active = 'active';
+                
+                if ($googleUser->getAvatar()) {
+                    try {
+                        $avatar = file_get_contents($googleUser->getAvatar());
+                        $tempFile = tempnam(sys_get_temp_dir(), 'avatar');
+                        file_put_contents($tempFile, $avatar);
+
+                        $avatarPaths = $this->processAndSaveAvatar($tempFile);
+                        $user->avatar = $avatarPaths['original'];
+                        unlink($tempFile);
+                    } catch (\Exception $e) {
+                        \Log::error('Error processing Google avatar:', ['error' => $e->getMessage()]);
+                    }
+                }
+
+                $user->save();
+                Auth::login($user);
+
+                return redirect()->route('home');
+            }
+        } catch (\Exception $e) {
+            \Log::error('Google login error:', ['error' => $e->getMessage()]);
+            return redirect()->route('login')->with('error', 'Đăng nhập bằng Google thất bại. Vui lòng thử lại sau.');
+        }
     }
 
     private function processAndSaveAvatar($imageFile)
