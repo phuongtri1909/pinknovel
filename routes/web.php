@@ -25,6 +25,7 @@ use App\Http\Controllers\RecentlyReadController;
 use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\CommentReactionController;
 use App\Http\Controllers\StoryEditRequestController;
+use App\Http\Controllers\Admin\BankController as AdminBankController;
 
 /*
 |--------------------------------------------------------------------------
@@ -80,8 +81,9 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::post('/bookmark/remove', [UserController::class, 'removeBookmark'])->name('bookmark.remove');
             Route::post('/bookmark/notification', [UserController::class, 'toggleBookmarkNotification'])->name('bookmark.notification');
 
-            // Routes cho nạp xu
+            // Deposit Routes
             Route::get('/deposit', [DepositController::class, 'index'])->name('deposit');
+            Route::post('/deposit/validate', [DepositController::class, 'validatePayment'])->name('deposit.validate');
             Route::post('/deposit', [DepositController::class, 'store'])->name('deposit.store');
 
             // Routes cho tác giả - sử dụng middleware 'role' mới
@@ -179,6 +181,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::get('/deposits', [DepositController::class, 'adminIndex'])->name('deposits.index');
                     Route::post('/deposits/{deposit}/approve', [DepositController::class, 'approve'])->name('deposits.approve');
                     Route::post('/deposits/{deposit}/reject', [DepositController::class, 'reject'])->name('deposits.reject');
+                    
 
                     // Story Edit Requests
                     Route::get('/edit-requests', [StoryEditRequestController::class, 'index'])->name('edit-requests.index');
@@ -191,6 +194,11 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::get('/author-applications/{application}', [AuthorApplicationController::class, 'showApplication'])->name('admin.author-applications.show');
                     Route::post('/author-applications/{application}/approve', [AuthorApplicationController::class, 'approveApplication'])->name('admin.author-applications.approve');
                     Route::post('/author-applications/{application}/reject', [AuthorApplicationController::class, 'rejectApplication'])->name('admin.author-applications.reject');
+                
+                    Route::group(['as' => 'admin.'], function () {      
+                        // Quản lý ngân hàng
+                        Route::resource('banks', AdminBankController::class);
+                    });
                 });
             });
         });

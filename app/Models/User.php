@@ -33,7 +33,8 @@ class User extends Authenticatable
         'ban_read',
         'ip_address',
         'rating',
-        'recently_read'
+        'recently_read',
+        'coins'
     ];
     public function ratings()
     {

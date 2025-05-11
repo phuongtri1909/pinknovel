@@ -996,3 +996,580 @@ label.form-label {
       background-position: -100% 0;
   }
 }
+
+/* Deposit System Styles */
+.deposit-container {
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.deposit-card {
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    margin-bottom: 24px;
+}
+
+.deposit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.deposit-card-header {
+    background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.1));
+    border-bottom: 1px solid rgba(var(--primary-rgb), 0.1);
+    padding: 16px 20px;
+}
+
+.deposit-card-body {
+    padding: 20px;
+}
+
+.deposit-method {
+    border: 2px solid rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.deposit-method:hover {
+    border-color: rgba(var(--primary-rgb), 0.3);
+    background-color: rgba(var(--primary-rgb), 0.02);
+}
+
+.deposit-method.active {
+    border-color: rgba(var(--primary-rgb), 0.5);
+    background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.deposit-method.active::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--primary-color-2), var(--primary-color-3));
+}
+
+.deposit-method-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(var(--primary-rgb), 0.1);
+    color: var(--primary-color-3);
+    margin-right: 16px;
+    transition: all 0.3s ease;
+}
+
+.deposit-method:hover .deposit-method-icon,
+.deposit-method.active .deposit-method-icon {
+    transform: scale(1.1);
+    background-color: rgba(var(--primary-rgb), 0.2);
+}
+
+.bank-option {
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.bank-option:nth-child(1) { animation-delay: 0.1s; }
+.bank-option:nth-child(2) { animation-delay: 0.2s; }
+.bank-option:nth-child(3) { animation-delay: 0.3s; }
+.bank-option:nth-child(4) { animation-delay: 0.4s; }
+.bank-option:nth-child(5) { animation-delay: 0.5s; }
+
+.bank-option:hover {
+    border-color: rgba(var(--primary-rgb), 0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transform: translateY(-3px);
+}
+
+.bank-option.selected {
+    border-color: rgba(var(--primary-rgb), 0.5);
+    background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.bank-option.selected::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 0 12px 0 12px;
+    background-color: var(--primary-color-3);
+}
+
+.bank-option.selected::before {
+    content: '✓';
+    position: absolute;
+    top: 4px;
+    right: 10px;
+    color: white;
+    font-size: 14px;
+    z-index: 1;
+}
+
+.bank-logo {
+    width: 80px;
+    height: 40px;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+.bank-option:hover .bank-logo,
+.bank-option.selected .bank-logo {
+    transform: scale(1.05);
+}
+
+.deposit-amount-container {
+    margin-top: 24px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: 0.6s;
+}
+
+.deposit-amount-input {
+    border: 2px solid rgba(0,0,0,0.08);
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.deposit-amount-input:focus {
+    border-color: rgba(var(--primary-rgb), 0.5);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+.deposit-coin-preview {
+    background: linear-gradient(45deg, var(--primary-color-2), var(--primary-color-3));
+    color: white;
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 24px;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: 0.7s;
+}
+
+.coin-preview-value {
+    font-size: 24px;
+    font-weight: 600;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.payment-btn {
+    background: linear-gradient(45deg, var(--primary-color-2), var(--primary-color-3));
+    border: none;
+    color: white;
+    border-radius: 30px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+    margin-top: 24px;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.5s ease-out forwards;
+    animation-delay: 0.8s;
+}
+
+.payment-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.3);
+}
+
+.payment-btn:active {
+    transform: translateY(-1px);
+}
+
+.payment-btn i {
+    margin-right: 8px;
+}
+
+.payment-modal .modal-content {
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.payment-modal .modal-header {
+    background: linear-gradient(90deg, rgba(var(--primary-rgb), 0.05), rgba(var(--primary-rgb), 0.1));
+    border-bottom: 1px solid rgba(var(--primary-rgb), 0.1);
+}
+
+.payment-modal .modal-body {
+    padding: 24px;
+}
+
+.payment-qr-code {
+    max-width: 240px;
+    margin: 0 auto;
+    border-radius: 12px;
+    padding: 12px;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1), 0 8px 20px rgba(0,0,0,0.1);
+    animation: pulseGlow 3s infinite;
+}
+
+.payment-qr-code img {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.payment-info {
+    padding: 16px;
+    border-radius: 12px;
+    background-color: rgba(var(--primary-rgb), 0.05);
+    border: 1px solid rgba(var(--primary-rgb), 0.1);
+    margin-top: 24px;
+}
+
+.payment-info-item {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.payment-info-label {
+    font-weight: 500;
+    color: #555;
+}
+
+.payment-info-value {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.copy-button {
+    background-color: rgba(var(--primary-rgb), 0.1);
+    color: var(--primary-color-3);
+    border: none;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-left: 8px;
+}
+
+.copy-button:hover {
+    background-color: rgba(var(--primary-rgb), 0.2);
+}
+
+.payment-confirmation {
+    margin-top: 24px;
+    text-align: center;
+}
+
+.confirm-payment-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    padding: 12px 24px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    width: 100%;
+}
+
+.confirm-payment-btn:hover {
+    background-color: #3d8b40;
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+}
+
+.transaction-image-upload {
+    margin-top: 24px;
+    padding: 16px;
+    border-radius: 12px;
+    border: 2px dashed rgba(var(--primary-rgb), 0.3);
+    background-color: rgba(var(--primary-rgb), 0.02);
+    transition: all 0.3s ease;
+}
+
+.transaction-image-upload:hover {
+    background-color: rgba(var(--primary-rgb), 0.05);
+}
+
+.upload-icon {
+    font-size: 48px;
+    color: rgba(var(--primary-rgb), 0.4);
+    margin-bottom: 16px;
+}
+
+.transaction-image-preview {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-top: 16px;
+}
+
+/* Transaction history section */
+.transaction-history {
+    margin-top: 32px;
+}
+
+.transaction-item {
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+    background-color: white;
+}
+
+.transaction-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.transaction-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.transaction-id {
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.transaction-status {
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: #ffd54f;
+    color: #7e6514;
+}
+
+.status-approved {
+    background-color: #a5d6a7;
+    color: #2e7d32;
+}
+
+.status-rejected {
+    background-color: #ef9a9a;
+    color: #c62828;
+}
+
+.transaction-body {
+    padding: 16px;
+}
+
+.transaction-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin-bottom: 16px;
+}
+
+.transaction-detail {
+    min-width: 120px;
+}
+
+.transaction-detail-label {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.transaction-detail-value {
+    font-weight: 500;
+    color: var(--color-text);
+}
+
+.transaction-image-container {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: all 0.3s ease;
+}
+
+.transaction-image-container:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.transaction-image {
+    width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+}
+
+.transaction-feedback {
+    margin-top: 16px;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+.transaction-feedback.rejected {
+    background-color: #ffebee;
+    border-left: 4px solid #ef5350;
+}
+
+.transaction-footer {
+    padding: 12px 16px;
+    background-color: rgba(0,0,0,0.02);
+    border-top: 1px solid rgba(0,0,0,0.05);
+    font-size: 13px;
+    color: #666;
+}
+
+/* Empty state for transactions */
+.empty-transactions {
+    text-align: center;
+    padding: 48px 24px;
+    animation: fadeInUp 0.5s ease-out;
+}
+
+.empty-transactions-icon {
+    font-size: 64px;
+    color: rgba(var(--primary-rgb), 0.2);
+    margin-bottom: 16px;
+}
+
+.empty-transactions-text {
+    color: #666;
+    margin-bottom: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Coins display panel */
+.coins-panel {
+    background: linear-gradient(135deg, var(--primary-color-2), var(--primary-color-3));
+    border-radius: 16px;
+    padding: 24px;
+    color: white;
+    box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.2);
+    animation: fadeInUp 0.5s ease-out;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.coins-panel::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    right: -30px;
+    width: 150px;
+    height: 150px;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" opacity="0.1"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>');
+    background-repeat: no-repeat;
+    transform: rotate(30deg);
+    opacity: 0.1;
+}
+
+.coins-balance {
+    font-size: 42px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.coins-icon {
+    font-size: 32px;
+    animation: coinPulse 2s infinite;
+}
+
+@keyframes coinPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.coins-label {
+    font-size: 16px;
+    opacity: 0.8;
+    margin-top: 8px;
+    margin-bottom: 24px;
+}
+
+.coins-info {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .deposit-method {
+        padding: 12px;
+    }
+    
+    .bank-option {
+        padding: 12px;
+    }
+    
+    .bank-logo {
+        width: 60px;
+        height: 30px;
+    }
+    
+    .transaction-details {
+        gap: 16px;
+    }
+    
+    .coins-balance {
+        font-size: 32px;
+    }
+    
+    .coins-icon {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 576px) {
+    .deposit-card-body {
+        padding: 16px;
+    }
+    
+    .payment-qr-code {
+        max-width: 200px;
+    }
+    
+    .transaction-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .transaction-status {
+        margin-top: 8px;
+    }
+}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Bank;
+use App\Models\Config;
 use App\Models\Deposit;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -19,9 +20,75 @@ class DepositController extends Controller
     {
         $user = Auth::user();
         $banks = Bank::where('status', true)->get();
-        $deposits = $user->deposits()->latest()->paginate(10);
+        $deposits = Deposit::where('user_id', $user->id)->latest()->paginate(10);
+        
+        // Get discount rates and exchange rate from config
+        $bankTransferDiscount = Config::getConfig('bank_transfer_discount', 0);
+        $cardPaymentDiscount = Config::getConfig('card_payment_discount', 10);
+        $coinExchangeRate = Config::getConfig('coin_exchange_rate', 1000);
 
-        return view('pages.information.deposit.deposit', compact('banks', 'deposits'));
+        return view('pages.information.deposit.deposit', compact(
+            'banks', 
+            'deposits',
+            'bankTransferDiscount',
+            'cardPaymentDiscount',
+            'coinExchangeRate'
+        ));
+    }
+
+    // First step - validate bank and amount information
+    public function validatePayment(Request $request)
+    {
+        $request->validate([
+            'bank_id' => 'required|exists:banks,id',
+            'amount' => 'required|numeric|min:10000',
+        ], [
+            'bank_id.required' => 'Vui lòng chọn ngân hàng',
+            'bank_id.exists' => 'Ngân hàng không tồn tại',
+            'amount.required' => 'Vui lòng nhập số tiền',
+            'amount.numeric' => 'Số tiền phải là số',
+            'amount.min' => 'Số tiền tối thiểu là 10.000 VNĐ',
+        ]);
+
+        // Calculate coins and apply discount
+        $amount = $request->amount;
+        $exchangeRate = Config::getConfig('coin_exchange_rate', 1000);
+        $discount = Config::getConfig('bank_transfer_discount', 0);
+        
+        $bank = Bank::findOrFail($request->bank_id);
+        
+        // Base coins calculation
+        $baseCoins = floor($amount / $exchangeRate);
+        
+        // Calculate bonus coins based on discount
+        $bonusCoins = floor($baseCoins * ($discount / 100));
+        
+        // Total coins
+        $totalCoins = $baseCoins + $bonusCoins;
+        
+        // Create transaction code
+        $transactionCode = 'TX' . strtoupper(Str::random(8)) . Carbon::now()->format('dmy');
+        
+        // Return validation success with payment details
+        return response()->json([
+            'success' => true,
+            'bank' => [
+                'id' => $bank->id,
+                'name' => $bank->name,
+                'code' => $bank->code,
+                'account_number' => $bank->account_number,
+                'account_name' => $bank->account_name,
+                'qr_code' => $bank->qr_code ? Storage::url($bank->qr_code) : null,
+            ],
+            'payment' => [
+                'amount' => $amount,
+                'base_coins' => $baseCoins,
+                'bonus_coins' => $bonusCoins,
+                'total_coins' => $totalCoins,
+                'discount' => $discount,
+                'transaction_code' => $transactionCode,
+            ]
+        ]);
     }
 
     // Tạo yêu cầu nạp xu mới
@@ -30,6 +97,8 @@ class DepositController extends Controller
         $request->validate([
             'bank_id' => 'required|exists:banks,id',
             'amount' => 'required|numeric|min:10000',
+            'transaction_code' => 'required|string',
+            'coins' => 'required|numeric|min:1',
             'transaction_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096',
         ], [
             'bank_id.required' => 'Vui lòng chọn ngân hàng',
@@ -37,6 +106,8 @@ class DepositController extends Controller
             'amount.required' => 'Vui lòng nhập số tiền',
             'amount.numeric' => 'Số tiền phải là số',
             'amount.min' => 'Số tiền tối thiểu là 10.000 VNĐ',
+            'transaction_code.required' => 'Mã giao dịch không hợp lệ',
+            'coins.required' => 'Số xu không hợp lệ',
             'transaction_image.required' => 'Vui lòng tải lên ảnh chứng minh chuyển khoản',
             'transaction_image.image' => 'File tải lên phải là hình ảnh',
             'transaction_image.mimes' => 'Định dạng hình ảnh phải là jpeg, png, jpg hoặc gif',
@@ -48,19 +119,13 @@ class DepositController extends Controller
             // Xử lý ảnh chứng minh chuyển khoản
             $imagePath = $this->processAndSaveDepositImage($request->file('transaction_image'));
 
-            // Tính số xu dựa trên số tiền (ví dụ: 1.000 VNĐ = 1 xu)
-            $coins = floor($request->amount / 1000);
-
-            // Tạo mã giao dịch ngẫu nhiên
-            $transactionCode = 'TX' . strtoupper(Str::random(8)) . Carbon::now()->format('dmy');
-
             // Tạo yêu cầu nạp xu mới
             Deposit::create([
                 'user_id' => Auth::id(),
                 'bank_id' => $request->bank_id,
-                'transaction_code' => $transactionCode,
+                'transaction_code' => $request->transaction_code,
                 'amount' => $request->amount,
-                'coins' => $coins,
+                'coins' => $request->coins,
                 'image' => $imagePath,
                 'status' => 'pending',
             ]);
@@ -115,7 +180,7 @@ class DepositController extends Controller
     // Xử lý phê duyệt giao dịch (cho admin)
     public function approve(Deposit $deposit)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (!auth()->user() || auth()->user()->role !== 'admin') {
             return redirect()->back()->with('error', 'Bạn không có quyền thực hiện chức năng này.');
         }
 
@@ -145,7 +210,7 @@ class DepositController extends Controller
     // Xử lý từ chối giao dịch (cho admin)
     public function reject(Request $request, Deposit $deposit)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (!auth()->user() || auth()->user()->role !== 'admin') {
             return redirect()->back()->with('error', 'Bạn không có quyền thực hiện chức năng này.');
         }
 
@@ -172,7 +237,7 @@ class DepositController extends Controller
     // Hiển thị trang quản lý giao dịch (cho admin)
     public function adminIndex(Request $request)
     {
-        if (!Auth::user()->isAdmin()) {
+        if (!auth()->user() || auth()->user()->role !== 'admin') {
             return redirect()->route('home')->with('error', 'Bạn không có quyền truy cập trang này.');
         }
 
@@ -193,7 +258,7 @@ class DepositController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
-        $deposits = $query->latest()->paginate(15)->withQueryString();
+        $deposits = $query->latest()->paginate(15);
 
         return view('admin.pages.deposits.index', compact('deposits'));
     }

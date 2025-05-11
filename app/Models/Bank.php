@@ -15,7 +15,8 @@ class Bank extends Model
         'logo',
         'account_number',
         'account_name',
-        'status'
+        'status',
+        'qr_code'
     ];
 
     public function deposits()
