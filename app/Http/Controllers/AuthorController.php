@@ -191,6 +191,7 @@ class AuthorController extends Controller
     // Xử lý cập nhật truyện
     public function update(Request $request, Story $story)
     {
+        dd($request->all());
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id !== Auth::id()) {
             return redirect()->route('user.author.index')
@@ -808,7 +809,17 @@ class AuthorController extends Controller
             ],
             'is_free' => 'required|boolean',
             'price' => 'required_if:is_free,0|nullable|integer|min:1',
-            'password' => 'nullable|required_if:has_password,1|string|max:50',
+            // Thay đổi validation rule cho mật khẩu
+            'password' => [
+                'nullable',
+                function ($attribute, $value, $fail) use ($request, $chapter) {
+                    if ($request->is_free && $request->has_password == 1 && empty($chapter->password) && empty($value)) {
+                        $fail('Vui lòng nhập mật khẩu cho chương');
+                    }
+                },
+                'string',
+                'max:50'
+            ],
             'has_password' => 'required_if:is_free,1|boolean',
             'scheduled_publish_at' => 'nullable|date|after:now',
             'status' => 'required|in:draft,published',

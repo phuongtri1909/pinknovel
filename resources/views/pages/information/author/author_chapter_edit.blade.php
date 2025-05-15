@@ -147,14 +147,16 @@
                     <label for="password" class="form-label">Mật khẩu chương <span class="text-danger">*</span></label>
                     <div class="input-group">
                         <input type="password" class="form-control @error('password') is-invalid @enderror"
-                            id="password" name="password" placeholder="{{ !empty($chapter->password) ? '********' : '' }}">
+                            id="password" name="password"
+                            placeholder="{{ !empty($chapter->password) ? '********' : '' }}">
                         <span class="input-group-text toggle-password" onclick="togglePasswordVisibility()">
                             <i class="fas fa-eye"></i>
                         </span>
                     </div>
-                    @if(!empty($chapter->password))
+                    @if (!empty($chapter->password))
                         <div class="form-text text-muted">
-                            <i class="fas fa-info-circle me-1"></i> Chương này đã có mật khẩu. Để giữ nguyên mật khẩu hiện tại, hãy để trống trường này.
+                            <i class="fas fa-info-circle me-1"></i> Chương này đã có mật khẩu. Để giữ nguyên mật khẩu hiện
+                            tại, hãy để trống trường này.
                         </div>
                     @else
                         <div class="form-text text-muted">Người đọc cần nhập đúng mật khẩu để xem chương này.</div>
@@ -186,26 +188,6 @@
                         </label>
                         <div class="form-text text-muted">Chương sẽ được công khai ngay sau khi lưu.</div>
                     </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label d-flex align-items-center">
-                        <input type="checkbox" class="form-check-input me-2" id="enableSchedule"
-                            onchange="toggleScheduleField()"
-                            {{ old('scheduled_publish_at', $chapter->scheduled_publish_at) ? 'checked' : '' }}>
-                        Hẹn giờ xuất bản
-                    </label>
-                    <div id="scheduleField"
-                        style="{{ old('scheduled_publish_at', $chapter->scheduled_publish_at) ? '' : 'display: none;' }}">
-                        <input type="datetime-local"
-                            class="form-control @error('scheduled_publish_at') is-invalid @enderror"
-                            id="scheduled_publish_at" name="scheduled_publish_at"
-                            value="{{ old('scheduled_publish_at', $chapter->scheduled_publish_at ? $chapter->scheduled_publish_at->format('Y-m-d\TH:i') : '') }}">
-                        <div class="form-text text-muted">Chương sẽ tự động xuất bản vào thời gian đã chọn.</div>
-                    </div>
-                    @error('scheduled_publish_at')
-                        <div class="text-danger small mt-1">{{ $message }}</div>
-                    @enderror
                 </div>
             </div>
         </div>
