@@ -539,7 +539,7 @@ class AuthorController extends Controller
                 'updated_content_at' => now(),
                 'is_free' => $request->is_free,
                 'price' => !$request->is_free ? $request->price : null,
-                'password' => ($request->is_free && $request->has_password) ? $request->password : null,
+                'password' => ($request->is_free && $request->has_password) ? bcrypt($request->password) : null,
                 'scheduled_publish_at' => $request->scheduled_publish_at,
             ]);
 
@@ -679,7 +679,49 @@ class AuthorController extends Controller
         $skippedChapters = [];
         $duplicateSlugs = [];
         $successCount = 0;
+        $duplicateFound = false;
+        
+        // Kiểm tra trước để phát hiện các chương trùng lặp
+        foreach ($chapters as $chapterData) {
+            $chapterNumber = $chapterData['number'];
+            $title = $chapterData['title'];
+            
+            // Tạo slug dự kiến để kiểm tra
+            $proposedSlug = 'chuong-' . $chapterNumber . '-' . Str::slug(Str::limit($title, 100));
+            
+            // Kiểm tra xem chương đã tồn tại chưa
+            if (in_array($chapterNumber, $existingChapterNumbers)) {
+                $skippedChapters[] = "Chương $chapterNumber"; // Thêm vào danh sách chương bị bỏ qua
+                $duplicateFound = true;
+            }
+            
+            // Kiểm tra xem slug đã tồn tại chưa
+            if (in_array($proposedSlug, $existingSlugs)) {
+                $duplicateSlugs[] = "Chương $chapterNumber ($title)"; // Thêm vào danh sách slug bị trùng
+                $duplicateFound = true;
+            }
+        }
+        
+        // Nếu phát hiện có chương trùng lặp, thông báo và quay lại form
+        if ($duplicateFound) {
+            $errorMessage = "Phát hiện chương bị trùng lặp:";
+            
+            if (!empty($skippedChapters)) {
+                $errorMessage .= " Trùng số chương: " . implode(', ', $skippedChapters) . ".";
+            }
+            
+            if (!empty($duplicateSlugs)) {
+                $errorMessage .= " Trùng slug (do tiêu đề tương tự): " . implode(', ', $duplicateSlugs) . ".";
+            }
+            
+            $errorMessage .= " Vui lòng chỉnh sửa nội dung và thử lại.";
+            
+            return redirect()->back()
+                ->with('error', $errorMessage)
+                ->withInput();
+        }
 
+        // Nếu không có trùng lặp, tiến hành lưu các chương
         DB::beginTransaction();
         try {
             foreach ($chapters as $chapterData) {
@@ -687,20 +729,8 @@ class AuthorController extends Controller
                 $title = $chapterData['title'];
                 $content = $chapterData['content'];
 
-                // Tạo slug dự kiến để kiểm tra
+                // Tạo slug
                 $proposedSlug = 'chuong-' . $chapterNumber . '-' . Str::slug(Str::limit($title, 100));
-
-                // Kiểm tra xem chương đã tồn tại chưa
-                if (in_array($chapterNumber, $existingChapterNumbers)) {
-                    $skippedChapters[] = "Chương $chapterNumber"; // Thêm vào danh sách chương bị bỏ qua
-                    continue; // Bỏ qua chương đã tồn tại
-                }
-
-                // Kiểm tra xem slug đã tồn tại chưa
-                if (in_array($proposedSlug, $existingSlugs)) {
-                    $duplicateSlugs[] = "Chương $chapterNumber ($title)"; // Thêm vào danh sách slug bị trùng
-                    continue; // Bỏ qua chương có slug trùng
-                }
 
                 $chapter = $story->chapters()->create([
                     'slug' => $proposedSlug,
@@ -712,7 +742,7 @@ class AuthorController extends Controller
                     'updated_content_at' => now(),
                     'is_free' => $request->is_free,
                     'price' => !$request->is_free ? $request->price : null,
-                    'password' => ($request->is_free && $request->has_password) ? $request->password : null,
+                    'password' => ($request->is_free && $request->has_password) ? bcrypt($request->password) : null,
                     'scheduled_publish_at' => $request->scheduled_publish_at,
                 ]);
 
@@ -726,20 +756,8 @@ class AuthorController extends Controller
 
             DB::commit();
 
-            $message = "Đã tạo thành công {$successCount} chương mới.";
-
-            // Thêm thông báo về chương bị bỏ qua nếu có
-            if (!empty($skippedChapters)) {
-                $message .= " Các chương đã tồn tại và bị bỏ qua: " . implode(', ', $skippedChapters);
-            }
-
-            // Thêm thông báo về slug bị trùng nếu có
-            if (!empty($duplicateSlugs)) {
-                $message .= " Các chương có tiêu đề trùng lặp: " . implode(', ', $duplicateSlugs);
-            }
-
             return redirect()->route('user.author.stories.chapters', $story->id)
-                ->with('success', $message);
+                ->with('success', "Đã tạo thành công {$successCount} chương mới.");
         } catch (\Exception $e) {
             DB::rollBack();
             return redirect()->back()
@@ -820,6 +838,19 @@ class AuthorController extends Controller
                     ->withInput();
             }
 
+            $passwordUpdate = ($request->is_free && $request->has_password);
+            $password = null;
+
+            if ($passwordUpdate) {
+                // Nếu mật khẩu được nhập, mã hóa mật khẩu mới
+                if (!empty($request->password)) {
+                    $password = bcrypt($request->password);
+                }
+                // Nếu không nhập mật khẩu mới, giữ lại mật khẩu cũ
+                else if (!empty($chapter->password)) {
+                    $password = $chapter->password;
+                }
+            }
             $chapter->update([
                 'slug' => $proposedSlug,
                 'title' => $request->title,
@@ -829,7 +860,7 @@ class AuthorController extends Controller
                 'updated_content_at' => now(),
                 'is_free' => $request->is_free,
                 'price' => !$request->is_free ? $request->price : null,
-                'password' => ($request->is_free && $request->has_password) ? $request->password : null,
+                'password' => $password,
                 'scheduled_publish_at' => $request->scheduled_publish_at,
             ]);
 

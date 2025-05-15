@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -24,6 +25,10 @@ class Chapter extends Model
         'password',
         'is_free',
         'scheduled_publish_at',
+    ];
+
+    protected $hidden = [
+        'password',
     ];
 
     protected $casts = [
@@ -56,5 +61,11 @@ class Chapter extends Model
         return $query->where('status', 'draft');
     }
 
-
+    public function checkPassword($password)
+    {
+        if (empty($this->password)) {
+            return false;
+        }
+        return Hash::check($password, $this->password);
+    }
 }

@@ -181,7 +181,7 @@
             <table class="table table-hover">
                 <thead class="table-light">
                     <tr>
-                        <th scope="col" width="10">Số</th>
+                        <th scope="col" width="10">Chương</th>
                         <th scope="col">Tên chương</th>
                         <th scope="col">Coin</th>
                         <th scope="col" width="120">Trạng thái</th>
@@ -202,6 +202,9 @@
                             <td>
                                 @if ($chapter->is_free == true)
                                     <span class="badge bg-secondary">Miễn phí</span>
+                                    @if($chapter->password)
+                                        <span class="badge bg-warning text-dark"><i class="fa-solid fa-lock"></i></span>
+                                    @endif
                                 @else
                                     <span class="badge bg-warning text-dark">{{ $chapter->price }} <i
                                             class="fa-solid fa-sack-dollar"></i></span>
@@ -397,7 +400,7 @@
                     // Cập nhật ngay lập tức
                     updateCountdown(countdownText, targetTimestamp, chapterId);
                 });
-
+ 
                 // Cập nhật tất cả đồng hồ mỗi giây
                 setInterval(() => {
                     timers.forEach(timer => {
