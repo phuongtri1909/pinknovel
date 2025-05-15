@@ -20,6 +20,7 @@ class StoryEditRequest extends Model
         'cover_thumbnail',
         'author_name',
         'story_type',
+        'is_18_plus',
         'categories_data',
         'review_note',
         'status',

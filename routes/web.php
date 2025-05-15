@@ -21,10 +21,11 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LogoSiteController;
+use App\Http\Controllers\StoryComboController;
 use App\Http\Controllers\RecentlyReadController;
-use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\CommentReactionController;
 use App\Http\Controllers\StoryEditRequestController;
+use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
 
 /*
@@ -91,7 +92,10 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 // Routes cho tác giả
                 Route::get('/', [AuthorController::class, 'index'])->name('index');
 
-                
+                Route::group(['prefix' => 'stories', 'as' => 'stories.'], function () {
+                    
+                });
+
                 Route::get('/stories', [AuthorController::class, 'stories'])->name('stories');
                 Route::get('/stories/create', [AuthorController::class, 'create'])->name('stories.create');
                 Route::post('/stories', [AuthorController::class, 'store'])->name('stories.store');
@@ -109,15 +113,21 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 Route::get('/stories/{story}/chapters/{chapter}/edit', [AuthorController::class, 'editChapter'])->name('stories.chapters.edit');
                 Route::put('/stories/{story}/chapters/{chapter}', [AuthorController::class, 'updateChapter'])->name('stories.chapters.update');
                 Route::delete('/stories/{story}/chapters/{chapter}', [AuthorController::class, 'destroyChapter'])->name('stories.chapters.destroy');
-            
-               
+
+                Route::put('/stories/{story}/mark-complete', [AuthorController::class, 'markComplete'])->name('stories.mark-complete');
+
+                Route::group(['prefix' => '/stories/combo', 'as' => 'stories.combo.'], function () {
+                    Route::get('/create/{story}', [StoryComboController::class, 'create'])->name('create');
+                    Route::post('/{story}', [StoryComboController::class, 'store'])->name('store');
+                    Route::get('/edit/{story}', [StoryComboController::class, 'edit'])->name('edit');
+                    Route::put('/{story}', [StoryComboController::class, 'update'])->name('update');
+                    Route::delete('/{story}', [StoryComboController::class, 'destroy'])->name('destroy');
+                });
             });
 
-             // Author application routes
-             Route::get('/author-application', [AuthorApplicationController::class, 'showApplicationForm'])->name('author.application');
-             Route::post('/author-application', [AuthorApplicationController::class, 'submitApplication'])->name('author.submit');
-
-           
+            // Author application routes
+            Route::get('/author-application', [AuthorApplicationController::class, 'showApplicationForm'])->name('author.application');
+            Route::post('/author-application', [AuthorApplicationController::class, 'submitApplication'])->name('author.submit');
         });
 
         Route::group(['middleware' => 'auth'], function () {
@@ -176,12 +186,12 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
                     // Duyệt truyện
                     Route::post('/stories/{story}/approve', [AuthorController::class, 'approve'])->name('stories.approve');
-                    
+
                     // Quản lý giao dịch nạp xu
                     Route::get('/deposits', [DepositController::class, 'adminIndex'])->name('deposits.index');
                     Route::post('/deposits/{deposit}/approve', [DepositController::class, 'approve'])->name('deposits.approve');
                     Route::post('/deposits/{deposit}/reject', [DepositController::class, 'reject'])->name('deposits.reject');
-                    
+
 
                     // Story Edit Requests
                     Route::get('/edit-requests', [StoryEditRequestController::class, 'index'])->name('edit-requests.index');
@@ -194,8 +204,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::get('/author-applications/{application}', [AuthorApplicationController::class, 'showApplication'])->name('admin.author-applications.show');
                     Route::post('/author-applications/{application}/approve', [AuthorApplicationController::class, 'approveApplication'])->name('admin.author-applications.approve');
                     Route::post('/author-applications/{application}/reject', [AuthorApplicationController::class, 'rejectApplication'])->name('admin.author-applications.reject');
-                
-                    Route::group(['as' => 'admin.'], function () {      
+
+                    Route::group(['as' => 'admin.'], function () {
                         // Quản lý ngân hàng
                         Route::resource('banks', AdminBankController::class);
                     });

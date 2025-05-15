@@ -102,6 +102,19 @@
                     @enderror
                 </div>
 
+                <div class="mb-3 mt-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is_18_plus" name="is_18_plus" value="1" {{ old('is_18_plus') ? 'checked' : '' }}>
+                        <label class="form-check-label" for="is_18_plus">
+                            <span class="badge bg-danger me-1"><i class="fas fa-exclamation-triangle"></i> 18+</span>
+                            Truyện có nội dung người lớn
+                        </label>
+                        <div class="form-text text-danger">
+                            Chọn nếu truyện có nội dung nhạy cảm, bạo lực hoặc tình dục không phù hợp với độc giả dưới 18 tuổi.
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label for="cover" class="form-label">Ảnh bìa <span class="text-danger">*</span></label>
                     <input type="file" class="form-control @error('cover') is-invalid @enderror" 

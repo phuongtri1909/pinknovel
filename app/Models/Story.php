@@ -21,7 +21,9 @@ class Story extends Model
         'link_aff',
         'story_type',
         'author_name',
-        'is_18_plus'
+        'is_18_plus',
+        'combo_price',
+        'has_combo',
     ];
 
 
@@ -128,6 +130,43 @@ class Story extends Model
     public function latestPendingEditRequest()
     {
         return $this->editRequests()->where('status', 'pending')->latest()->first();
+    }
+
+    /**
+     * Trạng thái hoàn thành để tạo combo
+     */
+    public function getCanCreateComboAttribute()
+    {
+        return $this->completed && $this->chapters()->where('status', 'published')->count() > 0;
+    }
+
+    /**
+     * Check if the story has a combo
+     */
+    public function hasCombo()
+    {
+        return $this->has_combo;
+    }
+
+    /**
+     * Get the total chapter price
+     */
+    public function getTotalChapterPriceAttribute()
+    {
+        return $this->chapters()->where('status', 'published')->sum('price');
+    }
+
+     /**
+     * Get discount percentage for combo
+     */
+    public function getDiscountPercentageAttribute()
+    {
+        if (!$this->has_combo || $this->combo_price <= 0 || $this->total_chapter_price <= 0) {
+            return 0;
+        }
+        
+        $discount = (($this->total_chapter_price - $this->combo_price) / $this->total_chapter_price) * 100;
+        return round($discount);
     }
 
     protected $with = ['categories'];

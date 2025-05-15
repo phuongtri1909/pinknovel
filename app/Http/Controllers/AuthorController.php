@@ -22,61 +22,61 @@ class AuthorController extends Controller
         // Dashboard của tác giả - Trang chính
         $stories = auth()->user()->stories()->latest()->paginate(5);
         $pendingCount = auth()->user()->stories()->where('status', 'pending')->count();
-        
+
         // Thêm các biến thống kê cho dashboard
         $totalViews = auth()->user()->stories()->withCount('chapters')->get()->sum('views');
         $totalChapters = auth()->user()->stories()->withCount('chapters')->get()->sum('chapters_count');
         $totalComments = auth()->user()->stories()->withCount('comments')->get()->sum('comments_count');
         $totalFollowers = Bookmark::where('story_id', 'in', auth()->user()->stories()->pluck('id'))->count();
-    
+
         // Có thể thêm hoạt động gần đây nếu bạn có bảng dữ liệu tương ứng
         // $recentActivities = Activity::where('user_id', auth()->id())->latest()->take(5)->get();
-        
+
         return view('pages.information.author.author', compact(
-            'stories', 
-            'pendingCount', 
-            'totalViews', 
-            'totalChapters', 
-            'totalComments', 
+            'stories',
+            'pendingCount',
+            'totalViews',
+            'totalChapters',
+            'totalComments',
             'totalFollowers'
         ));
     }
-    
+
     public function stories(Request $request)
     {
         // Trang danh sách truyện
         $query = auth()->user()->stories();
-        
+
         // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         // Lọc theo phê duyệt
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
-        
+
         // Tìm kiếm theo tên
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
-        
+
         $stories = $query->latest()->paginate(10);
-        
+
         // Thống kê
         $publishedCount = auth()->user()->stories()->where('status', 'published')->count();
         $pendingCount = auth()->user()->stories()->where('status', 'pending')->count();
         $draftCount = auth()->user()->stories()->where('status', 'draft')->count();
-        
+
         return view('pages.information.author.author_stories', compact(
-            'stories', 
-            'publishedCount', 
-            'pendingCount', 
+            'stories',
+            'publishedCount',
+            'pendingCount',
             'draftCount'
         ));
     }
@@ -97,6 +97,7 @@ class AuthorController extends Controller
             'cover' => 'required|image|mimes:jpeg,png,jpg,gif',
             'author_name' => 'required|max:255',
             'story_type' => 'required|in:collected,original,translated',
+            'is_18_plus' => 'nullable|boolean',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -110,6 +111,7 @@ class AuthorController extends Controller
             'author_name.max' => 'Tên tác giả không được quá 255 ký tự.',
             'story_type.required' => 'Loại truyện không được để trống.',
             'story_type.in' => 'Loại truyện không hợp lệ.',
+            'is_18_plus.boolean' => 'Trạng thái 18+ không hợp lệ.',
         ]);
 
         DB::beginTransaction();
@@ -123,13 +125,13 @@ class AuthorController extends Controller
                 'title' => $request->title,
                 'slug' => Str::slug($request->title),
                 'description' => $request->description,
-                'status' => 'draft', // Trạng thái mặc định là nháp
+                'status' => 'draft',
                 'cover' => $coverPaths['original'],
                 'cover_medium' => $coverPaths['medium'],
                 'cover_thumbnail' => $coverPaths['thumbnail'],
                 'author_name' => $request->author_name,
                 'story_type' => $request->story_type,
-                'approved' => false, // Chưa được duyệt
+                'is_18_plus' => $request->has('is_18_plus'),
             ]);
 
             // Xử lý categories
@@ -202,6 +204,7 @@ class AuthorController extends Controller
             'cover' => 'nullable|image|mimes:jpeg,png,jpg,gif',
             'author_name' => 'required|max:255',
             'story_type' => 'required|in:collected,original,translated',
+            'is_18_plus' => 'nullable|boolean',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -214,6 +217,7 @@ class AuthorController extends Controller
             'author_name.max' => 'Tên tác giả không được quá 255 ký tự.',
             'story_type.required' => 'Loại truyện không được để trống.',
             'story_type.in' => 'Loại truyện không hợp lệ.',
+            'is_18_plus.boolean' => 'Trạng thái 18+ không hợp lệ.',
         ]);
 
         // Xử lý categories
@@ -246,30 +250,32 @@ class AuthorController extends Controller
             // Kiểm tra trạng thái của truyện
             if ($story->status === 'published') {
                 // Nếu story đã xuất bản, tạo edit request thay vì cập nhật trực tiếp
-                
+
                 // Kiểm tra xem đã có edit request nào đang chờ duyệt chưa
                 if ($story->hasPendingEditRequest()) {
                     return redirect()->back()
                         ->with('error', 'Đã có một yêu cầu chỉnh sửa đang chờ duyệt. Vui lòng đợi admin xét duyệt.')
                         ->withInput();
                 }
-                
+
                 // Kiểm tra xem có thay đổi thực sự nào không
                 $hasChanges = false;
-                
+
                 // Kiểm tra các trường văn bản có thay đổi không
-                if ($story->title !== $request->title ||
+                if (
+                    $story->title !== $request->title ||
                     $story->description !== $request->description ||
                     $story->author_name !== $request->author_name ||
-                    $story->story_type !== $request->story_type) {
+                    $story->story_type !== $request->story_type
+                ) {
                     $hasChanges = true;
                 }
-                
+
                 // Kiểm tra thay đổi ở ảnh
                 if ($request->hasFile('cover')) {
                     $hasChanges = true;
                 }
-                
+
                 // Kiểm tra thay đổi ở thể loại
                 $currentCategoryIds = $story->categories->pluck('id')->toArray();
                 sort($currentCategoryIds);
@@ -277,14 +283,14 @@ class AuthorController extends Controller
                 if ($currentCategoryIds != $categoryIds) {
                     $hasChanges = true;
                 }
-                
+
                 // Nếu không có thay đổi thực sự, thông báo và quay lại
                 if (!$hasChanges) {
                     return redirect()->back()
                         ->with('info', 'Không có thay đổi nào được phát hiện so với thông tin hiện tại.')
                         ->withInput();
                 }
-                
+
                 $editRequestData = [
                     'story_id' => $story->id,
                     'user_id' => Auth::id(),
@@ -293,6 +299,7 @@ class AuthorController extends Controller
                     'description' => $request->description,
                     'author_name' => $request->author_name,
                     'story_type' => $request->story_type,
+                    'is_18_plus' => $request->has('is_18_plus'),
                     'categories_data' => json_encode($categoryData),
                     'status' => 'pending',
                     'submitted_at' => now(),
@@ -310,12 +317,11 @@ class AuthorController extends Controller
 
                 // Tạo yêu cầu chỉnh sửa mới
                 $editRequest = StoryEditRequest::create($editRequestData);
-                
+
                 DB::commit();
 
                 return redirect()->route('user.author.stories.edit', $story->id)
                     ->with('success', 'Yêu cầu chỉnh sửa truyện đã được gửi đi và đang chờ phê duyệt.');
-                
             } else {
                 // Nếu story chưa xuất bản (nháp hoặc đang chờ duyệt), cập nhật trực tiếp
                 $data = [
@@ -324,7 +330,7 @@ class AuthorController extends Controller
                     'description' => $request->description,
                     'author_name' => $request->author_name,
                     'story_type' => $request->story_type,
-                    'approved' => false, // Đặt lại thành chưa được duyệt khi cập nhật
+                    'is_18_plus' => $request->has('is_18_plus'),
                     'status' => 'draft',
                 ];
 
@@ -347,7 +353,7 @@ class AuthorController extends Controller
 
                 $story->update($data);
                 $story->categories()->sync($categoryIds);
-                
+
                 DB::commit();
 
                 // Xóa ảnh cũ nếu có upload mới
@@ -408,6 +414,32 @@ class AuthorController extends Controller
             DB::rollBack();
             return redirect()->route('user.author.stories.index')
                 ->with('error', 'Có lỗi xảy ra khi xóa truyện: ' . $e->getMessage());
+        }
+    }
+
+    public function markComplete(Story $story)
+    {
+        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
+        if ($story->user_id !== Auth::id()) {
+            return redirect()->route('user.author.index')
+                ->with('error', 'Bạn không có quyền thực hiện hành động này.');
+        }
+
+        // Truyện phải đang được xuất bản
+        if ($story->status !== 'published') {
+            return redirect()->route('user.author.stories.chapters', $story->id)
+                ->with('error', 'Chỉ những truyện đã được xuất bản mới có thể đánh dấu hoàn thành.');
+        }
+
+        try {
+            $story->update([
+                'completed' => true
+            ]);
+
+            return redirect()->route('user.author.stories.chapters', $story->id)
+                ->with('success', 'Truyện đã được đánh dấu là hoàn thành. Bạn có thể tạo combo trọn bộ ngay bây giờ!');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
 
@@ -489,14 +521,14 @@ class AuthorController extends Controller
         try {
             // Tạo slug dự kiến để kiểm tra trùng lặp
             $proposedSlug = 'chuong-' . $request->number . '-' . Str::slug(Str::limit($request->title, 100));
-            
+
             // Kiểm tra xem slug đã tồn tại chưa
             if ($story->chapters()->where('slug', $proposedSlug)->exists()) {
                 return redirect()->back()
                     ->with('error', 'Tiêu đề chương này tạo ra slug đã tồn tại. Vui lòng sử dụng tiêu đề khác.')
                     ->withInput();
             }
-            
+
             $chapter = $story->chapters()->create([
                 'slug' => $proposedSlug,
                 'title' => $request->title,
@@ -525,20 +557,20 @@ class AuthorController extends Controller
     {
         // Xử lý tiền tố mặc định nếu không được cung cấp
         $prefixPattern = empty($chapterPrefix) ? '(Chương|Chapter|Chap)' : preg_quote($chapterPrefix, '/');
-        
+
         // Hỗ trợ cả hai định dạng:
         // 1. [Chương X] : Tiêu đề (mới)
         // 2. Chương X: Tiêu đề hoặc Chương X - Tiêu đề (cũ)
         $pattern1 = '/^\[' . $prefixPattern . '\s+(\d+)\]\s*:\s*(.+?)$/m'; // Format mới [Chương X] : Tiêu đề
         $pattern2 = '/^' . $prefixPattern . '\s+(\d+)[\s:\-]+(.+?)$/m'; // Format cũ Chương X: Tiêu đề
-        
+
         // Tìm tất cả các tiêu đề chương theo format mới
         preg_match_all($pattern1, $batchContent, $matches1, PREG_OFFSET_CAPTURE);
-        
+
         // Tìm tất cả các tiêu đề chương theo format cũ
         preg_match_all($pattern2, $batchContent, $matches2, PREG_OFFSET_CAPTURE);
-        
-        
+
+
         // Merge kết quả từ hai pattern
         $matches = [
             array_merge($matches1[0], $matches2[0]), // Full matches
@@ -546,7 +578,7 @@ class AuthorController extends Controller
             array_merge($matches1[2], $matches2[2]), // Chapter numbers
             array_merge($matches1[3], $matches2[3]), // Titles
         ];
-        
+
         // Sắp xếp lại các match theo vị trí xuất hiện trong văn bản
         $combined = [];
         foreach ($matches[0] as $key => $match) {
@@ -557,42 +589,42 @@ class AuthorController extends Controller
                 'title' => $matches[3][$key],
             ];
         }
-        
+
         // Sắp xếp theo vị trí
-        usort($combined, function($a, $b) {
+        usort($combined, function ($a, $b) {
             return $a['full'][1] - $b['full'][1];
         });
-        
+
         // Nếu không tìm thấy match nào, return empty array
         if (empty($combined)) {
             return [];
         }
-        
+
         $chapters = [];
         $matchCount = count($combined);
-        
+
         // Xử lý từng chương
         for ($i = 0; $i < $matchCount; $i++) {
             // Lấy vị trí bắt đầu của tiêu đề hiện tại
             $currentTitlePos = $combined[$i]['full'][1];
-            
+
             // Lấy tiêu đề đầy đủ và số chương
             $fullTitle = $combined[$i]['full'][0];
             $chapterNumber = (int) $combined[$i]['number'][0]; // Chuyển đổi sang số nguyên
             $titleContent = trim($combined[$i]['title'][0]);
-            
+
             // Xác định vị trí kết thúc của chương hiện tại
-            $contentEndPos = ($i < $matchCount - 1) ? $combined[$i+1]['full'][1] : strlen($batchContent);
-            
+            $contentEndPos = ($i < $matchCount - 1) ? $combined[$i + 1]['full'][1] : strlen($batchContent);
+
             // Tính toán vị trí bắt đầu của nội dung sau tiêu đề
             $contentStartPos = $currentTitlePos + strlen($fullTitle);
-            
+
             // Lấy nội dung giữa cuối tiêu đề hiện tại và đầu tiêu đề tiếp theo
             $content = substr($batchContent, $contentStartPos, $contentEndPos - $contentStartPos);
-            
+
             // Làm sạch nội dung
             $content = trim($content);
-            
+
             // Thêm chương vào mảng kết quả
             $chapters[] = [
                 'number' => $chapterNumber,
@@ -600,7 +632,7 @@ class AuthorController extends Controller
                 'content' => $content
             ];
         }
-        
+
         return $chapters;
     }
 
@@ -640,10 +672,10 @@ class AuthorController extends Controller
 
         // Lấy danh sách số chương đã tồn tại
         $existingChapterNumbers = $story->chapters()->pluck('number')->toArray();
-        
+
         // Lấy danh sách slug đã tồn tại 
         $existingSlugs = $story->chapters()->pluck('slug')->toArray();
-        
+
         $skippedChapters = [];
         $duplicateSlugs = [];
         $successCount = 0;
@@ -654,7 +686,7 @@ class AuthorController extends Controller
                 $chapterNumber = $chapterData['number'];
                 $title = $chapterData['title'];
                 $content = $chapterData['content'];
-                
+
                 // Tạo slug dự kiến để kiểm tra
                 $proposedSlug = 'chuong-' . $chapterNumber . '-' . Str::slug(Str::limit($title, 100));
 
@@ -663,7 +695,7 @@ class AuthorController extends Controller
                     $skippedChapters[] = "Chương $chapterNumber"; // Thêm vào danh sách chương bị bỏ qua
                     continue; // Bỏ qua chương đã tồn tại
                 }
-                
+
                 // Kiểm tra xem slug đã tồn tại chưa
                 if (in_array($proposedSlug, $existingSlugs)) {
                     $duplicateSlugs[] = "Chương $chapterNumber ($title)"; // Thêm vào danh sách slug bị trùng
@@ -683,7 +715,7 @@ class AuthorController extends Controller
                     'password' => ($request->is_free && $request->has_password) ? $request->password : null,
                     'scheduled_publish_at' => $request->scheduled_publish_at,
                 ]);
-                
+
                 // Thêm slug mới vào danh sách slug đã tồn tại để tránh trùng lặp trong cùng batch
                 $existingSlugs[] = $proposedSlug;
                 // Thêm số chương mới vào danh sách đã tồn tại
@@ -695,12 +727,12 @@ class AuthorController extends Controller
             DB::commit();
 
             $message = "Đã tạo thành công {$successCount} chương mới.";
-            
+
             // Thêm thông báo về chương bị bỏ qua nếu có
             if (!empty($skippedChapters)) {
                 $message .= " Các chương đã tồn tại và bị bỏ qua: " . implode(', ', $skippedChapters);
             }
-            
+
             // Thêm thông báo về slug bị trùng nếu có
             if (!empty($duplicateSlugs)) {
                 $message .= " Các chương có tiêu đề trùng lặp: " . implode(', ', $duplicateSlugs);
@@ -762,7 +794,7 @@ class AuthorController extends Controller
             'has_password' => 'required_if:is_free,1|boolean',
             'scheduled_publish_at' => 'nullable|date|after:now',
             'status' => 'required|in:draft,published',
-        ],[
+        ], [
             'title.required' => 'Tên chương không được để trống',
             'content.required' => 'Nội dung chương không được để trống',
             'number.required' => 'Số chương không được để trống',
@@ -780,14 +812,14 @@ class AuthorController extends Controller
         try {
             // Tạo slug dự kiến để kiểm tra trùng lặp
             $proposedSlug = 'chuong-' . $request->number . '-' . Str::slug(Str::limit($request->title, 100));
-            
+
             // Kiểm tra xem slug đã tồn tại chưa nhưng không tính chương hiện tại
             if ($story->chapters()->where('slug', $proposedSlug)->where('id', '!=', $chapter->id)->exists()) {
                 return redirect()->back()
                     ->with('error', 'Tiêu đề chương này tạo ra slug đã tồn tại. Vui lòng sử dụng tiêu đề khác.')
                     ->withInput();
             }
-            
+
             $chapter->update([
                 'slug' => $proposedSlug,
                 'title' => $request->title,
