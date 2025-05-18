@@ -97,6 +97,7 @@ class AuthorController extends Controller
             'cover' => 'required|image|mimes:jpeg,png,jpg,gif',
             'author_name' => 'required|max:255',
             'story_type' => 'required|in:collected,original,translated',
+            'translator_name' => 'nullable|max:255',
             'is_18_plus' => 'nullable|boolean',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
@@ -112,6 +113,7 @@ class AuthorController extends Controller
             'story_type.required' => 'Loại truyện không được để trống.',
             'story_type.in' => 'Loại truyện không hợp lệ.',
             'is_18_plus.boolean' => 'Trạng thái 18+ không hợp lệ.',
+            'translator_name.max' => 'Tên người dịch không được quá 255 ký tự.',
         ]);
 
         DB::beginTransaction();
@@ -130,6 +132,7 @@ class AuthorController extends Controller
                 'cover_medium' => $coverPaths['medium'],
                 'cover_thumbnail' => $coverPaths['thumbnail'],
                 'author_name' => $request->author_name,
+                'translator_name' => $request->translator_name,
                 'story_type' => $request->story_type,
                 'is_18_plus' => $request->has('is_18_plus'),
             ]);
@@ -191,7 +194,6 @@ class AuthorController extends Controller
     // Xử lý cập nhật truyện
     public function update(Request $request, Story $story)
     {
-        dd($request->all());
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id !== Auth::id()) {
             return redirect()->route('user.author.index')
@@ -206,6 +208,7 @@ class AuthorController extends Controller
             'author_name' => 'required|max:255',
             'story_type' => 'required|in:collected,original,translated',
             'is_18_plus' => 'nullable|boolean',
+            'translator_name' => 'nullable|max:255',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -219,6 +222,7 @@ class AuthorController extends Controller
             'story_type.required' => 'Loại truyện không được để trống.',
             'story_type.in' => 'Loại truyện không hợp lệ.',
             'is_18_plus.boolean' => 'Trạng thái 18+ không hợp lệ.',
+            'translator_name.max' => 'Tên người dịch không được quá 255 ký tự.',
         ]);
 
         // Xử lý categories
@@ -267,6 +271,7 @@ class AuthorController extends Controller
                     $story->title !== $request->title ||
                     $story->description !== $request->description ||
                     $story->author_name !== $request->author_name ||
+                    $story->translator_name !== $request->translator_name ||
                     $story->story_type !== $request->story_type
                 ) {
                     $hasChanges = true;
@@ -301,6 +306,7 @@ class AuthorController extends Controller
                     'author_name' => $request->author_name,
                     'story_type' => $request->story_type,
                     'is_18_plus' => $request->has('is_18_plus'),
+                    'translator_name' => $request->translator_name,
                     'categories_data' => json_encode($categoryData),
                     'status' => 'pending',
                     'submitted_at' => now(),
@@ -331,6 +337,7 @@ class AuthorController extends Controller
                     'description' => $request->description,
                     'author_name' => $request->author_name,
                     'story_type' => $request->story_type,
+                    'translator_name' => $request->translator_name,
                     'is_18_plus' => $request->has('is_18_plus'),
                     'status' => 'draft',
                 ];

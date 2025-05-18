@@ -9,9 +9,7 @@
     <section id="chapter" class="mt-80 mb-5">
         <div class="container-md">
             <div class="row">
-                <!-- Main Content -->
                 <div class="col-12">
-                    <!-- Chapter Header -->
                     <div class="chapter-header text-center mb-4 animate__animated animate__fadeIn">
                         <h1 class="chapter-title h3 fw-bold">
                             Chương {{ $chapter->number }}: {{ $chapter->title }}

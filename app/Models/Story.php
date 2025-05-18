@@ -24,6 +24,7 @@ class Story extends Model
         'is_18_plus',
         'combo_price',
         'has_combo',
+        'translator_name',
     ];
 
 

@@ -2,7 +2,17 @@
 
 @section('title')
     @if (isset($isSearch) && $isSearch)
-        Kết quả tìm kiếm: {{ $query }}
+        @if(isset($searchType))
+            @if($searchType === 'author')
+                Tìm truyện của tác giả: {{ $query }}
+            @elseif($searchType === 'translator')
+                Tìm truyện dịch bởi: {{ $query }}
+            @else
+                Kết quả tìm kiếm: {{ $query }}
+            @endif
+        @else
+            Kết quả tìm kiếm: {{ $query }}
+        @endif
     @else
         {{ $currentCategory->name }}
     @endif
@@ -10,7 +20,17 @@
 
 @section('description')
     @if (isset($isSearch) && $isSearch)
-        Kết quả tìm kiếm cho "{{ $query }}" tại {{ config('app.name') }}
+        @if(isset($searchType))
+            @if($searchType === 'author')
+                Danh sách truyện của tác giả "{{ $query }}" tại {{ config('app.name') }}
+            @elseif($searchType === 'translator')
+                Danh sách truyện được dịch bởi "{{ $query }}" tại {{ config('app.name') }}
+            @else
+                Kết quả tìm kiếm cho "{{ $query }}" tại {{ config('app.name') }}
+            @endif
+        @else
+            Kết quả tìm kiếm cho "{{ $query }}" tại {{ config('app.name') }}
+        @endif
     @else
         Truyện thể loại {{ $currentCategory->name }} tại {{ config('app.name') }}
     @endif
@@ -24,8 +44,21 @@
                 <div class="bg-white p-3 rounded-4 shadow-sm mb-4">
                     <h2 class="h4 mb-3 fw-bold">
                         @if (isset($isSearch) && $isSearch)
-                            <i class="fa-solid fa-magnifying-glass fa-lg text-warning"></i>
-                            Kết quả tìm kiếm: "{{ $query }}"
+                            @if(isset($searchType))
+                                @if($searchType === 'author')
+                                    <i class="fa-solid fa-user-pen fa-lg text-primary"></i>
+                                    Tác giả: "{{ $query }}"
+                                @elseif($searchType === 'translator')
+                                    <i class="fa-solid fa-language fa-lg text-success"></i>
+                                    Chuyển ngữ: "{{ $query }}"
+                                @else
+                                    <i class="fa-solid fa-magnifying-glass fa-lg text-warning"></i>
+                                    Kết quả tìm kiếm: "{{ $query }}"
+                                @endif
+                            @else
+                                <i class="fa-solid fa-magnifying-glass fa-lg text-warning"></i>
+                                Kết quả tìm kiếm: "{{ $query }}"
+                            @endif
                         @else
                             <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
                             Truyện thể loại: {{ $currentCategory->name }}

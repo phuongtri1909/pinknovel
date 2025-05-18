@@ -1,132 +1,296 @@
 <section id="info-book-home">
-    <div class=" mt-3">
-        <div class="info-card-home h-100">
-            <div class="p-2 row">
-                <div class="col-12 col-md-3 col-xl-2 col-xxl-2 d-flex flex-column mb-3 mb-md-0 ">
-                    <div class="rounded-4 shadow">
-                        <img src="{{ Storage::url($story->cover) }}" alt="{{ $story->title }}" class="img-fluid img-book">
-                    </div>
-                    <div class="story-categories mb-3">
-                        <p class="mb-2 text-start">Thể loại:</p>
-                        <div class="d-flex flex-wrap gap-2">
-                            @foreach ($storyCategories as $category)
-                                <a href="{{ route('categories.story.show', $category['slug']) }}"
-                                    class="category-tag fs-9">
-                                    {{ $category['name'] }}
-
-                                </a>
-                            @endforeach
-                        </div>
-                    </div>
-                    <div class="stat-item text-dark mt-2 d-flex">
-                        <p class="text-start mb-0 me-2">Trạng thái:</p>
-                        @if ($status->status == 'done')
-                            <span class="text-success fw-bold">Hoàn Thành</span>
-                        @else
-                            <span class="text-primary fw-bold">Đang viết</span>
-                        @endif
-                    </div>
-                </div>
-                <div class="col-12 col-md-9 col-xl-10 col-xxl-8">
-                    <div class="mb-3 text-start">
-                        <h2 class="fw-semibold border-bottom">{{ $story->title }}</h2>
-                    </div>
-
-                    <div class="d-flex justify-content-start gap-3">
-                        <div class="stat-item text-dark">
-                            <i class="fas fa-book-open me-1 cl-8ed7ff"></i>
-                            <span class="counter" data-target="{{ $stats['total_chapters'] }}">0</span>
-                            <span>Chương</span>
-                        </div>
-                        <div class="stat-item text-dark">
-                            <i class="fas fa-eye eye text-primary"></i>
-                            <span class="counter" data-target="{{ $stats['total_views'] }}">0</span>
-                            <span>Lượt Xem</span>
-                        </div>
-                        <div class="stat-item text-dark">
-                            <i class="fas fa-star star cl-ffe371"></i>
-                            <span class="counter" data-target="{{ $stats['ratings']['count'] }}">0</span>
-                            <span>đánh giá</span>
+    <div class="mt-3">
+        <div class="info-card-home h-100 py-5">
+            <div class="container">
+                <div class="row">
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-3 d-flex flex-column mb-3 mb-md-0 ">
+                        <div class="shadow rounded-4">
+                            <img src="{{ Storage::url($story->cover) }}" alt="{{ $story->title }}"
+                                class="img-fluid img-book">
                         </div>
 
                     </div>
-                    <div>
-                        <div class="description-container">
-                            <div class="description-content text-muted mt-4 mb-0 text-justify"
-                                id="description-content-{{ $story->id }}">
-                                {!! $story->description !!}
+                    <div class="col-12 col-md-6 col-lg-8 col-xl-9">
+                        <div class="rounded-4 bg-white p-4 h-100">
+                            <div class="mb-3 text-start">
+                                <h2 class="fw-semibold color-3">{{ $story->title }}</h2>
                             </div>
-                            <div class="description-toggle-btn mt-2 text-center d-none">
-                                <button class="btn btn-sm btn-link show-more-btn">Xem thêm <i
-                                        class="fas fa-chevron-down"></i></button>
-                                <button class="btn btn-sm btn-link show-less-btn d-none">Thu gọn <i
-                                        class="fas fa-chevron-up"></i></button>
-                            </div>
-                        </div>
-                    </div>
 
-                </div>
+                            <div class="d-flex">
+                                <div class="rating">
+                                    @php
+                                        $userRating = 0;
+                                        if (auth()->check()) {
+                                            $existingRating = \App\Models\Rating::where('user_id', auth()->id())
+                                                ->where('story_id', $story->id)
+                                                ->first();
+                                            $userRating = $existingRating ? $existingRating->rating : 0;
+                                        }
+                                        $fullStars = floor($userRating);
+                                    @endphp
 
-                <div class="col-12 col-md-12 mt-3 col-xl-12 col-xxl-2 mt-lg-0 ">
-                    <div class="info-card bg-white p-3 shadow">
-                        <h6 class="info-title text-dark">ĐÁNH GIÁ</h6>
-                        <div class="rating">
-                            @php
-                                // Get user's rating for this story if they're logged in
-                                $userRating = 0;
-                                if (auth()->check()) {
-                                    $existingRating = \App\Models\Rating::where('user_id', auth()->id())
-                                        ->where('story_id', $story->id)
-                                        ->first();
-                                    $userRating = $existingRating ? $existingRating->rating : 0;
-                                }
-                                $fullStars = floor($userRating);
-                            @endphp
+                                    <div class="stars-container">
+                                        <div class="stars" id="rating-stars" data-story-id="{{ $story->id }}">
+                                            @for ($i = 1; $i <= 5; $i++)
+                                                <i class="fas fa-star rating-star {{ $i <= $fullStars ? 'full' : 'empty' }}"
+                                                    data-rating="{{ $i }}"></i>
+                                            @endfor
+                                        </div>
+                                        <div id="rating-message">
 
-                            <div class="stars-container">
-                                <div class="stars" id="rating-stars" data-story-id="{{ $story->id }}">
-                                    @for ($i = 1; $i <= 5; $i++)
-                                        <i class="fas fa-star rating-star {{ $i <= $fullStars ? 'full' : 'empty' }}"
-                                            data-rating="{{ $i }}"></i>
-                                    @endfor
-                                </div>
-                                <div id="rating-message">
+                                        </div>
 
-                                </div>
-
-                                @if (!auth()->check())
-                                    <div class="rating-login-message mt-2 text-muted small">
-                                        <a href="{{ route('login') }}">Đăng nhập</a> để đánh giá truyện!
+                                        @if (!auth()->check())
+                                            <div class="rating-login-message mt-2 text-muted small">
+                                                <a href="{{ route('login') }}">Đăng nhập</a> để đánh giá truyện!
+                                            </div>
+                                        @endif
                                     </div>
-                                @endif
-                            </div>
 
-                            <hr class="my-2">
 
-                            <div class="rating-stats">
-                                <div class="mt-1">
-                                    <span class="rating-number">Tổng: </span>
-                                    <span
-                                        id="average-rating">{{ number_format($stats['ratings']['average'], 1) }}</span>/5
-                                    (<span id="ratings-count">{{ $stats['ratings']['count'] }}</span> đánh giá)
                                 </div>
-                                @if (auth()->check() && $userRating > 0)
-                                    <div class="mt-1 small text-muted">
-                                        Đánh giá của bạn: <span id="user-rating">{{ $userRating }}</span>/5
-                                    </div>
-                                @endif
                             </div>
+
+                            <div class="row mt-3">
+                                <div class="col-12 col-lg-8">
+
+                                    <div class="info-row d-flex">
+                                        <div class="info-label">
+                                            <span class="color-3 fw-semibold">Đánh Giá</span>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="rating-stats">
+                                                <div>
+                                                    <span
+                                                        id="average-rating">{{ number_format($stats['ratings']['average'], 1) }}</span>/5
+                                                    (<span id="ratings-count">{{ $stats['ratings']['count'] }}</span>
+                                                    đánh giá)
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="info-row d-flex mt-2">
+                                        <div class="info-label">
+                                            <span class="color-3 fw-semibold">Tác Giả</span>
+                                        </div>
+                                        <div class="info-content">
+                                            <a href="{{ route('search.author', ['query' => $story->author_name]) }}"
+                                                class="text-decoration-none text-dark">
+                                                {{ $story->author_name }}
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="info-row d-flex">
+                                        <div class="info-label">
+                                            <span class="color-3 fw-semibold">Chuyển Ngữ</span>
+                                        </div>
+                                        <div class="info-content">
+                                            <a href="{{ route('search.translator', ['query' => $story->translator_name]) }}"
+                                                class="text-decoration-none text-dark">
+                                                {{ $story->translator_name }}
+                                            </a>
+                                        </div>
+                                    </div>
+
+                                    <div class="info-row d-flex">
+                                        <div class="info-label">
+                                            <span class="color-3 fw-semibold">Tổng Chương</span>
+                                        </div>
+                                        <div class="info-content">
+                                            <span class="text-dark">
+                                                {{ $stats['total_chapters'] }} Chương
+                                            </span>
+                                        </div>
+                                    </div>
+
+
+
+                                    <!-- Thể loại -->
+                                    <div class="info-row d-flex mt-2">
+                                        <div class="info-label">
+                                            <span class="color-3 fw-semibold">Thể Loại</span>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="d-flex flex-wrap gap-2">
+                                                @foreach ($storyCategories as $category)
+                                                    <a href="{{ route('categories.story.show', $category['slug']) }}"
+                                                        class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2 text-decoration-none">
+                                                        {{ $category['name'] }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- <div class="d-flex justify-content-start gap-3">
+                                        <div class="stat-item text-dark">
+                                            <i class="fas fa-book-open me-1 cl-8ed7ff"></i>
+                                            <span class="counter" data-target="{{ $stats['total_chapters'] }}">0</span>
+                                            <span>Chương</span>
+                                        </div>
+                                        <div class="stat-item text-dark">
+                                            <i class="fas fa-eye eye text-primary"></i>
+                                            <span class="counter" data-target="{{ $stats['total_views'] }}">0</span>
+                                            <span>Lượt Xem</span>
+                                        </div>
+                                        <div class="stat-item text-dark">
+                                            <i class="fas fa-star star cl-ffe371"></i>
+                                            <span class="counter"
+                                                data-target="{{ $stats['ratings']['count'] }}">0</span>
+                                            <span>đánh giá</span>
+                                        </div>
+
+                                    </div> --}}
+                                </div>
+                                <div class="col-12 col-lg-4">
+                                    <div class="stat-item text-dark mt-2 d-flex">
+                                        <p class="text-start mb-0 me-2">Trạng thái:</p>
+                                        @if ($status->status == 'done')
+                                            <span class="text-success fw-bold">Hoàn Thành</span>
+                                        @else
+                                            <span class="text-primary fw-bold">Đang tiến hành</span>
+                                        @endif
+                                    </div>
+
+                                    <div class="row mt-3">
+                                        <div class="col-6">
+                                            <a href="#comments"
+                                                class="action-button d-flex flex-column align-items-center text-decoration-none">
+                                                <div class="action-icon">
+                                                    <i class="fas fa-comments fs-4 color-3"></i>
+                                                </div>
+                                                <div class="action-label small mt-1 text-center">
+                                                    Bình luận
+                                                </div>
+                                            </a>
+                                        </div>
+
+
+                                        <!-- Số người theo dõi -->
+                                        <div class="col-6">
+                                            <div class="action-button d-flex flex-column align-items-center">
+                                                <div class="action-icon position-relative">
+                                                    <i class="fas fa-heart fs-4 color-3"></i>
+                                                    <span
+                                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger small">
+                                                        {{ $stats['followers'] ?? 0 }}
+                                                    </span>
+                                                </div>
+                                                <div class="action-label small mt-1 text-center">
+                                                    Theo dõi
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
+
                     </div>
                 </div>
-
             </div>
         </div>
     </div>
     </div>
 </section>
+
+<section id="description">
+    <div class="container mt-5">
+        <div class="section-title d-flex align-items-baseline ">
+            <i class="fa-solid fa-comment-medical fa-xl color-2 me-2"></i>
+            <h5 class="mb-0">GIỚI THIỆU</h5>
+        </div>
+        <hr>
+        <div class="description-container">
+            <div class="description-content text-muted mt-4 mb-0 text-justify"
+                id="description-content-{{ $story->id }}">
+                {!! $story->description !!}
+            </div>
+            <div class="description-toggle-btn mt-2 text-center d-none">
+                <button class="btn btn-sm btn-link show-more-btn">Xem thêm <i class="fas fa-chevron-down"></i></button>
+                <button class="btn btn-sm btn-link show-less-btn d-none">Thu gọn <i
+                        class="fas fa-chevron-up"></i></button>
+            </div>
+        </div>
+    </div>
+</section>
 @push('styles')
     <style>
+        .action-bar {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .action-button {
+            padding: 0.5rem;
+            color: #333;
+            transition: all 0.2s ease;
+        }
+
+        .action-button:hover,
+        .action-button:focus {
+            color: var(--primary-color);
+            background-color: rgba(67, 80, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .action-button:active {
+            transform: scale(0.95);
+        }
+
+        .action-icon {
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-3 {
+            color: var(--primary-color);
+        }
+
+        /* Responsive styles */
+        @media (max-width: 576px) {
+            .action-icon {
+                height: 30px;
+            }
+
+            .action-icon i {
+                font-size: 1.2rem !important;
+            }
+
+            .action-label {
+                font-size: 0.7rem !important;
+            }
+        }
+
+        .info-table {
+            width: 100%;
+        }
+
+        .info-row {
+            align-items: flex-start;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-label {
+            min-width: 120px;
+            width: auto;
+            padding-right: 1.5rem;
+            text-align: start;
+            flex-shrink: 0;
+            white-space: nowrap;
+        }
+
+        .info-content {
+            flex: 1;
+            text-align: start;
+        }
+
         .story-categories {
             margin: 1rem 0;
         }
@@ -160,8 +324,7 @@
 
         /*  */
         .info-card-home {
-            background: #dcdcdc;
-            border-radius: 1rem;
+            background: var(--primary-color-6);
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
             text-align: center;
             transition: transform 0.3s ease;
@@ -178,29 +341,10 @@
 
         .img-book {
             transition: transform 0.3s ease;
-            width: 100%;
-            height: 100%;
+            width: 300px;
+            height: 440px;
             object-fit: cover;
 
-        }
-
-        .img-book:hover {
-            transform: scale(1.2);
-        }
-
-        /* Responsive styles */
-        @media (max-width: 768px) {
-            .rounded-4 {
-                max-width: 200px;
-                /* Smaller width for tablets */
-            }
-        }
-
-        @media (max-width: 576px) {
-            .rounded-4 {
-                max-width: 150px;
-                /* Even smaller for mobile */
-            }
         }
 
         .shadow {
@@ -221,10 +365,6 @@
         .rating-star {
             margin: 0 2px;
             transition: all 0.2s ease;
-        }
-
-        .rating-star.empty {
-            color: #e0e0e0;
         }
 
         .rating-star.full {
@@ -290,21 +430,23 @@
             left: 0;
             width: 100%;
             height: 50px;
-            background: linear-gradient(transparent, #dcdcdc);
+            background: linear-gradient(transparent, var(--primary-color-6));
             pointer-events: none;
         }
 
         .description-toggle-btn .btn-link {
-            color: #4350ff;
+            color: var(--primary-color-3);
             text-decoration: none;
             padding: 5px 15px;
             border-radius: 15px;
-            background-color: rgba(67, 80, 255, 0.1);
+            background-color: rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
         }
 
         .description-toggle-btn .btn-link:hover {
-            background-color: rgba(67, 80, 255, 0.2);
+            background-color: var(--primary-color-2);
+            color: white
         }
     </style>
 @endpush

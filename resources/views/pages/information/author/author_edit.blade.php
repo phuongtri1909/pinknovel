@@ -272,6 +272,20 @@
                                     @enderror
                                 </div>
 
+
+                                <div class="mb-3">
+                                    <label for="translator_name" class="form-label">Chuyển ngữ <span
+                                            class="text-muted">(nếu có)</span></label>
+                                    <input type="text"
+                                        class="form-control @error('translator_name') is-invalid @enderror"
+                                        id="translator_name" name="translator_name"
+                                        value="{{ old('translator_name', $story->translator_name) }}">
+                                    <div class="form-text text-muted">Điền nếu đây là truyện dịch hoặc sưu tầm</div>
+                                    @error('translator_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
                                 <div class="mb-3 mt-4">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="is_18_plus"
@@ -698,10 +712,19 @@
                     title: @json($story->title),
                     description: CKEDITOR.instances.description.getData() !== @json($story->description),
                     author_name: @json($story->author_name),
+                    translator_name: @json($story->translator_name),
                     story_type: @json($story->story_type),
                     categories: @json($categoryNames),
                     cover: $('#cover').val() ? true : false
                 };
+
+                  //kiểm tra translator_name
+                if ($('#translator_name').val() !== originalData.translator_name) {
+                    const oldValue = originalData.translator_name || '(không có)';
+                    const newValue = $('#translator_name').val() || '(không có)';
+                    changes.push('<li>Tên người dịch: <span class="text-danger">' + oldValue +
+                        '</span> → <span class="text-success">' + newValue + '</span></li>');
+                }
 
                 // Kiểm tra title
                 if ($('#title').val() !== originalData.title) {
@@ -735,7 +758,7 @@
                     };
                     changes.push('<li>Loại truyện: <span class="text-danger">' + storyTypes[originalData
                         .story_type] + '</span> → <span class="text-success">' + storyTypes[$('#story_type')
-                            .val()] + '</span></li>');
+                        .val()] + '</span></li>');
                 }
 
                 // Kiểm tra ảnh bìa
@@ -747,7 +770,9 @@
                     if ($('#is_18_plus').is(':checked')) {
                         changes.push('<li>Đánh dấu truyện là <span class="text-danger">nội dung 18+</span></li>');
                     } else {
-                        changes.push('<li>Bỏ đánh dấu truyện là <span class="text-success">nội dung thông thường</span></li>');
+                        changes.push(
+                            '<li>Bỏ đánh dấu truyện là <span class="text-success">nội dung thông thường</span></li>'
+                        );
                     }
                 }
 

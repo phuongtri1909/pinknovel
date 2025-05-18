@@ -48,11 +48,15 @@ Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories'])-
 Route::group(['middleware' => 'check.ip.ban'], function () {
     Route::middleware(['check.ban:ban_login'])->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('home');
+
         Route::get('/search', [HomeController::class, 'searchHeader'])->name('searchHeader');
+        Route::get('/tac-gia', [HomeController::class, 'searchAuthor'])->name('search.author');
+        Route::get('/chuyen-ngu', [HomeController::class, 'searchTranslator'])->name('search.translator');
 
         Route::get('/categories-story/{slug}', [HomeController::class, 'showStoryCategories'])->name('categories.story.show');
 
         Route::get('story/{slug}', [HomeController::class, 'showStory'])->middleware('affiliate.redirect:story')->name('show.page.story');
+        Route::get('/story/{storyId}/chapters', [HomeController::class, 'getStoryChapters'])->name('chapters.list');
 
         Route::get('/banner/{banner}', [BannerController::class, 'click'])
             ->middleware('affiliate.redirect:banner')

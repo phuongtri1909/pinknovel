@@ -40,7 +40,46 @@ class HomeController extends Controller
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
-            'isSearch' => true
+            'isSearch' => true,
+            'searchType' => 'general' // Thêm thông tin loại tìm kiếm
+        ]);
+    }
+
+    public function searchAuthor(Request $request)
+    {
+        $query = $request->input('query');
+
+        // Search in stories by author name
+        $stories = Story::query()
+            ->published()
+            ->where('author_name', 'LIKE', "%{$query}%")
+            ->with(['categories', 'chapters'])
+            ->paginate(20);
+
+        return view('pages.search.results', [
+            'stories' => $stories,
+            'query' => $query,
+            'isSearch' => true,
+            'searchType' => 'author' // Thêm thông tin loại tìm kiếm
+        ]);
+    }
+
+    public function searchTranslator(Request $request)
+    {
+        $query = $request->input('query');
+
+        // Search in stories by translator name
+        $stories = Story::query()
+            ->published()
+            ->where('translator_name', 'LIKE', "%{$query}%")
+            ->with(['categories', 'chapters'])
+            ->paginate(20);
+
+        return view('pages.search.results', [
+            'stories' => $stories,
+            'query' => $query,
+            'isSearch' => true,
+            'searchType' => 'translator' // Thêm thông tin loại tìm kiếm
         ]);
     }
 
@@ -48,12 +87,12 @@ class HomeController extends Controller
     {
 
         $category = Category::where('slug', $slug)->firstOrFail();
-        
+
         $stories = $category->stories()
             ->published()
             ->with(['categories', 'chapters'])
             ->paginate(20);
-            
+
         return view('pages.search.results', [
             'stories' => $stories,
             'currentCategory' => $category,
@@ -300,6 +339,53 @@ class HomeController extends Controller
             'regularComments',
             'storyCategories'
         ));
+    }
+
+    public function getStoryChapters(Request $request, $storyId)
+    {
+        $story = Story::findOrFail($storyId);
+
+        // Query base
+        $chaptersQuery = Chapter::where('story_id', $storyId)
+            ->published();
+
+        // Sắp xếp theo thứ tự yêu cầu
+        $sortOrder = $request->get('sort_order', 'asc');
+        if ($sortOrder === 'asc') {
+            $chaptersQuery->orderBy('number', 'asc');
+        } else {
+            $chaptersQuery->orderBy('number', 'desc');
+        }
+
+        // Tìm kiếm nếu có
+        if ($request->has('search') && $request->search !== '') {
+            $search = $request->search;
+            $searchNumber = preg_replace('/[^0-9]/', '', $search);
+
+            $chaptersQuery->where(function ($q) use ($search, $searchNumber) {
+                $q->where('title', 'like', "%{$search}%");
+
+                if (!empty($searchNumber)) {
+                    $q->orWhere('number', $searchNumber);
+                }
+            });
+        }
+
+        $chapters = $chaptersQuery->paginate(50);
+
+        // Nếu là request AJAX, trả về HTML
+        if ($request->ajax()) {
+            return response()->json([
+                'html' => view('components.chapter-items', [
+                    'chapters' => $chapters,
+                    'story' => $story,
+                    'sortOrder' => $sortOrder
+                ])->render(),
+                'pagination' => view('components.pagination', ['paginator' => $chapters])->render()
+            ]);
+        }
+
+        return response()->json(['message' => 'Invalid request'], 400);
     }
 
     public function chapterByStory($storySlug, $chapterSlug)
