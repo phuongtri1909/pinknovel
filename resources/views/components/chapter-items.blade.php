@@ -9,7 +9,7 @@
             ->toArray();
     } else {
         $sessionId = session()->getId();
-        $readChapterIds = \App\Models.UserReading::where('session_id', $sessionId)
+        $readChapterIds = \App\Models\UserReading::where('session_id', $sessionId)
             ->where('story_id', $story->id)
             ->pluck('chapter_id')
             ->toArray();
