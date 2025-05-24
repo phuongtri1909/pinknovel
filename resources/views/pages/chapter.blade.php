@@ -6,7 +6,7 @@
 
 @section('content')
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    
+
     <section id="chapter" class="mt-80 mb-5">
         <div class="container-md">
             <div>
@@ -16,7 +16,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
                 @endif
-                
+
                 @if (session('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         {{ session('error') }}
@@ -69,18 +69,19 @@
                     class="chapter-nav d-flex justify-content-center align-items-center my-4 animate__animated animate__fadeIn animate__delay-1s">
                     @if ($prevChapter)
                         <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $prevChapter->slug]) }}"
-                            class="btn bg-1 btn-lg rounded-5 btn-prev me-2 text-white d-sm-flex align-items-center">
-                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block">Chương trước</span>
+                            class="btn bg-1 rounded-5 btn-prev me-2 text-white d-sm-flex align-items-center">
+                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block fs-7">Chương
+                                trước</span>
                         </a>
                     @else
                         <button disabled
                             class="btn btn-outline-secondary rounded-5 btn-lg btn-prev me-2 d-sm-flex align-items-center">
-                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block">Chương trước</span>
+                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block fs-7">Chương trước</span>
                         </button>
                     @endif
 
                     <div class="dropdown chapter-list-dropdown">
-                        <button class="btn btn-lg dropdown-toggle rounded-0 bg-1 text-white" type="button"
+                        <button class="btn dropdown-toggle rounded-0 bg-1 text-white" type="button"
                             id="chapterListDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-bars me-2"></i>Chương {{ $chapter->number }}
                         </button>
@@ -103,19 +104,19 @@
                     @if ($nextChapter)
                         <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $nextChapter->slug]) }}"
                             class="btn btn-lg bg-1 text-white btn-next rounded-5 ms-2 d-sm-flex align-items-center">
-                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                            <span class="d-none d-sm-block fs-7">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
                         </a>
                     @else
                         <button disabled
                             class="btn btn-outline-secondary btn-lg btn-next rounded-5 ms-2 d-sm-flex align-items-center">
-                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                            <span class="d-none d-sm-block fs-7">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
                         </button>
                     @endif
                 </div>
 
                 <!-- Chapter Content -->
                 <div id="chapter-content" class="rounded-4 chapter-content mb-4">
-                    @if(isset($hasAccess) && $hasAccess)
+                    @if (isset($hasAccess) && $hasAccess)
                         {!! nl2br(e($chapter->content)) !!}
                     @else
                         <div class="chapter-preview">
@@ -126,41 +127,48 @@
                                     <h4 class="fw-bold">Nội dung này yêu cầu mua để đọc</h4>
                                     <p class="text-muted">Bạn cần mua chương này hoặc toàn bộ truyện để tiếp tục đọc</p>
                                 </div>
-                                
+
                                 <div class="purchase-options d-flex flex-column flex-md-row justify-content-center gap-3">
-                                    @if($chapter->price > 0)
+                                    @if ($chapter->price > 0)
                                         <div class="chapter-purchase-option p-3 border rounded">
                                             <h5 class="fw-bold">Mua chương này</h5>
-                                            <p class="price mb-2"><i class="fas fa-coins text-warning"></i> {{ number_format($chapter->price) }} xu</p>
+                                            <p class="price mb-2"><i class="fas fa-coins text-warning"></i>
+                                                {{ number_format($chapter->price) }} xu</p>
                                             @guest
                                                 <a href="{{ route('login') }}" class="btn btn-primary">Đăng nhập để mua</a>
                                             @else
-                                                <form action="{{ route('purchase.chapter') }}" method="POST" class="purchase-form" id="purchase-chapter-form">
+                                                <form action="{{ route('purchase.chapter') }}" method="POST"
+                                                    class="purchase-form" id="purchase-chapter-form">
                                                     @csrf
                                                     <input type="hidden" name="chapter_id" value="{{ $chapter->id }}">
-                                                    <button type="button" class="btn btn-primary purchase-chapter-btn" onclick="showPurchaseModal('chapter', {{ $chapter->id }}, 'Chương {{ $chapter->number }}: {{ $chapter->title }}', {{ $chapter->price }})">
+                                                    <button type="button" class="btn btn-primary purchase-chapter-btn"
+                                                        onclick="showPurchaseModal('chapter', {{ $chapter->id }}, 'Chương {{ $chapter->number }}: {{ $chapter->title }}', {{ $chapter->price }})">
                                                         <i class="fas fa-shopping-cart me-1"></i> Mua ngay
                                                     </button>
                                                 </form>
                                             @endguest
                                         </div>
                                     @endif
-                                    
-                                    @if($story->combo_price > 0)
+
+                                    @if ($story->combo_price > 0)
                                         <div class="story-purchase-option p-3 border rounded bg-light">
                                             <h5 class="fw-bold">Mua trọn bộ truyện</h5>
-                                            <p class="price mb-2"><i class="fas fa-coins text-warning"></i> {{ number_format($story->combo_price) }} xu</p>
+                                            <p class="price mb-2"><i class="fas fa-coins text-warning"></i>
+                                                {{ number_format($story->combo_price) }} xu</p>
                                             <p class="text-success small">
-                                              
-                                                <i class="fas fa-check-circle"></i> Truy cập tất cả {{ $story->chapters->count() ?? 0 }} chương
+
+                                                <i class="fas fa-check-circle"></i> Truy cập tất cả
+                                                {{ $story->chapters->count() ?? 0 }} chương
                                             </p>
                                             @guest
                                                 <a href="{{ route('login') }}" class="btn btn-success">Đăng nhập để mua</a>
                                             @else
-                                                <form action="{{ route('purchase.story.combo') }}" method="POST" class="purchase-form" id="purchase-story-form">
+                                                <form action="{{ route('purchase.story.combo') }}" method="POST"
+                                                    class="purchase-form" id="purchase-story-form">
                                                     @csrf
                                                     <input type="hidden" name="story_id" value="{{ $story->id }}">
-                                                    <button type="button" class="btn btn-success purchase-story-btn" onclick="showPurchaseModal('story', {{ $story->id }}, '{{ $story->title }}', {{ $story->combo_price }})">
+                                                    <button type="button" class="btn btn-success purchase-story-btn"
+                                                        onclick="showPurchaseModal('story', {{ $story->id }}, '{{ $story->title }}', {{ $story->combo_price }})">
                                                         <i class="fas fa-shopping-cart me-1"></i> Mua trọn bộ
                                                     </button>
                                                 </form>
@@ -175,21 +183,23 @@
 
                 <!-- Chapter Navigation Bottom -->
                 <div
-                    class="chapter-nav d-flex justify-content-center align-items-center my-4 animate__animated animate__fadeIn">
+                    class="chapter-nav d-flex justify-content-center align-items-center my-4 animate__animated animate__fadeIn animate__delay-1s">
                     @if ($prevChapter)
                         <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $prevChapter->slug]) }}"
-                            class="btn bg-1 btn-lg rounded-5 btn-prev me-2 text-white d-sm-flex align-items-center">
-                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block">Chương trước</span>
+                            class="btn bg-1 rounded-5 btn-prev me-2 text-white d-sm-flex align-items-center">
+                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block fs-7">Chương
+                                trước</span>
                         </a>
                     @else
                         <button disabled
                             class="btn btn-outline-secondary rounded-5 btn-lg btn-prev me-2 d-sm-flex align-items-center">
-                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block">Chương trước</span>
+                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block fs-7">Chương
+                                trước</span>
                         </button>
                     @endif
 
                     <div class="dropdown chapter-list-dropdown">
-                        <button class="btn btn-lg dropdown-toggle rounded-0 bg-1 text-white" type="button"
+                        <button class="btn dropdown-toggle rounded-0 bg-1 text-white" type="button"
                             id="chapterListDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa-solid fa-bars me-2"></i>Chương {{ $chapter->number }}
                         </button>
@@ -212,12 +222,14 @@
                     @if ($nextChapter)
                         <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $nextChapter->slug]) }}"
                             class="btn btn-lg bg-1 text-white btn-next rounded-5 ms-2 d-sm-flex align-items-center">
-                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                            <span class="d-none d-sm-block fs-7">Chương tiếp</span> <i
+                                class="fas fa-arrow-right ms-2"></i>
                         </a>
                     @else
                         <button disabled
                             class="btn btn-outline-secondary btn-lg btn-next rounded-5 ms-2 d-sm-flex align-items-center">
-                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                            <span class="d-none d-sm-block fs-7">Chương tiếp</span> <i
+                                class="fas fa-arrow-right ms-2"></i>
                         </button>
                     @endif
                 </div>
@@ -278,11 +290,13 @@
     </div>
 
     {{-- @include('components.list_story_de_xuat', ['newStories' => $newStories]) --}}
+
+    @auth
+        @include('components.modals.chapter-purchase-modal')
+    @endauth
 @endsection
 
-@auth
-    @include('components.modals.chapter-purchase-modal')
-@endauth
+
 
 @push('styles')
     <style>
@@ -617,37 +631,37 @@
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
             transition: all 0.3s ease;
         }
-        
+
         .purchase-options {
             max-width: 800px;
             margin: 0 auto;
         }
-        
-        .chapter-purchase-option, 
+
+        .chapter-purchase-option,
         .story-purchase-option {
             flex: 1;
             transition: all 0.3s ease;
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
-        .chapter-purchase-option:hover, 
+
+        .chapter-purchase-option:hover,
         .story-purchase-option:hover {
             transform: translateY(-5px);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         }
-        
+
         .story-purchase-option {
             background-color: #f0f8ff !important;
             border-color: #d1e7ff !important;
         }
-        
+
         .price {
             font-size: 1.2rem;
             font-weight: bold;
             color: #ff9800;
         }
-        
+
         .preview-content {
             position: relative;
             padding: 1rem;
@@ -657,7 +671,7 @@
             border-left: 4px solid var(--primary-color-3);
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
-        
+
         .preview-content::after {
             content: "";
             position: absolute;
@@ -665,7 +679,7 @@
             left: 0;
             right: 0;
             height: 60px;
-            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
         }
     </style>
 @endpush
@@ -673,7 +687,7 @@
 @push('scripts')
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <!-- Script xử lý cài đặt đọc truyện -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -865,34 +879,3 @@
         });
     </script>
 @endpush
-
-<!-- Modal Xác nhận mua -->
-<div class="modal fade" id="confirmPurchaseModal" tabindex="-1" aria-labelledby="confirmPurchaseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmPurchaseModalLabel">Xác nhận mua</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center mb-4">
-                    <i class="fas fa-coins fa-3x text-warning mb-3"></i>
-                    <h5 class="purchase-item-title">Bạn có chắc chắn muốn mua?</h5>
-                    <p class="purchase-item-price mb-0">Giá: <span class="fw-bold text-danger"></span> xu</p>
-                    <p class="text-muted small">Số dư của bạn: <span id="userBalance">{{ auth()->check() ? auth()->user()->coins : 0 }}</span> xu</p>
-                </div>
-                <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle me-2"></i> Lưu ý: Hành động này không thể hoàn tác sau khi thực hiện!
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <form id="confirmPurchaseForm" method="POST">
-                    @csrf
-                    <input type="hidden" id="purchaseItemId" name="chapter_id">
-                    <button type="submit" class="btn btn-primary">Xác nhận mua</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
