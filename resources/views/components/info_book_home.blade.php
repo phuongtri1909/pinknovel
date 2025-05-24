@@ -69,6 +69,20 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="info-row d-flex">
+                                        <div class="info-label">
+                                            <span class="color-3 fw-semibold">Lượt Xem</span>
+                                        </div>
+                                        <div class="info-content">
+                                            <div class="rating-stats">
+                                                <div>
+                                                    <span>{{ number_format($stats['total_views']) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
                                     <div class="info-row d-flex mt-2">
                                         <div class="info-label">
                                             <span class="color-3 fw-semibold">Tác Giả</span>
@@ -204,7 +218,7 @@
             <i class="fa-solid fa-comment-medical fa-xl color-2 me-2"></i>
             <h5 class="mb-0">GIỚI THIỆU</h5>
         </div>
-        <hr>
+        
         <div class="description-container">
             <div class="description-content text-muted mt-4 mb-0 text-justify"
                 id="description-content-{{ $story->id }}">

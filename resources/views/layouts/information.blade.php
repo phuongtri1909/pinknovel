@@ -49,7 +49,7 @@
                             </div>
                             <div class="text-white text-shadow-custom px-4 mt-3 fs-24 fw-bold">
                                 <i class="fa-solid fa-sack-dollar"></i>
-                                <span>100 <span class="fs-15">Xu</span> </span>
+                                <span>{{ number_format(Auth::user()->coins) }} <span class="fs-15"> Xu</span> </span>
                             </div>
                         </div>
                     </div>
@@ -84,6 +84,14 @@
                                 class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.reading.history') ? 'active' : '' }}">
                                 <i class="fa-solid fa-book-open user-nav-icon"></i>
                                 <span class="user-nav-text">Lịch sử đọc truyện</span>
+                            </a>
+                        </div>
+
+                        <div class="user-nav-item">
+                            <a href="{{ route('user.purchases') }}"
+                                class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.purchases*') ? 'active' : '' }}">
+                                <i class="fa-solid fa-shopping-cart user-nav-icon"></i>
+                                <span class="user-nav-text">Truyện đã mua</span>
                             </a>
                         </div>
 

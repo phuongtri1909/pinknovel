@@ -39,6 +39,30 @@
                                 </div>
                             </div>
 
+                            <div class="col-12">
+                                <div class="form-group">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <label class="mb-0 me-3" for="is_free">Nội dung miễn phí</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="is_free" class="form-check-input" id="is_free"
+                                                role="switch" checked>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12" id="price-container" style="display: none;">
+                                <div class="form-group">
+                                    <label for="price">Giá (xu)</label>
+                                    <input type="number" name="price" id="price" class="form-control"
+                                        value="{{ old('price', 0) }}" min="0">
+                                    <small class="text-muted">Số xu cần để đọc chương này</small>
+                                    @error('price')
+                                        <div class="text-danger">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
@@ -148,6 +172,25 @@
             if (oldTitle === 'Chương ' + oldNumber) {
                 autoGenerateCheckbox.checked = true;
                 updateTitle();
+            }
+
+            // Handle is_free toggle for price field
+            const isFreeCheckbox = document.getElementById('is_free');
+            const priceContainer = document.getElementById('price-container');
+            
+            isFreeCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    priceContainer.style.display = 'none';
+                    document.getElementById('price').value = '0';
+                } else {
+                    priceContainer.style.display = 'block';
+                }
+            });
+
+            // Initialize based on old input if form was submitted with errors
+            if ("{{ old('is_free') }}" === '0') {
+                isFreeCheckbox.checked = false;
+                priceContainer.style.display = 'block';
             }
         });
     </script>

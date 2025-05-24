@@ -472,15 +472,7 @@
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
     <script>
         $(document).ready(function() {
-            CKEDITOR.replace('content', {
-                on: {
-                    change: function(evt) {
-                        this.updateElement();
-                    }
-                },
-                height: 400,
-                removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
-            });
+           
 
             // Khởi tạo các hiển thị tùy thuộc vào trạng thái ban đầu
             togglePricingOptions();

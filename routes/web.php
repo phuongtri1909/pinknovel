@@ -21,12 +21,15 @@ use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\SocialsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LogoSiteController;
+use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\StoryComboController;
+use App\Http\Controllers\Admin\ConfigController;
 use App\Http\Controllers\RecentlyReadController;
 use App\Http\Controllers\CommentReactionController;
 use App\Http\Controllers\StoryEditRequestController;
 use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
+use App\Http\Controllers\RequestPaymentController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,7 +82,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::post('update-password', [UserController::class, 'updatePassword'])->name('update.password');
             Route::get('/reading-history', [UserController::class, 'readingHistory'])->name('reading.history');
             Route::post('/reading-history/clear', [UserController::class, 'clearReadingHistory'])->name('reading.history.clear');
-            Route::post('/track-reading', [ReadingController::class, 'trackReading'])->name('track.reading');
+            Route::get('purchases', [UserController::class, 'userPurchases'])->name('purchases');
 
             Route::get('/bookmarks', [UserController::class, 'bookmarks'])->name('bookmarks');
             Route::post('/bookmark/toggle', [UserController::class, 'toggleBookmark'])->name('bookmark.toggle');
@@ -91,14 +94,16 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::post('/deposit/validate', [DepositController::class, 'validatePayment'])->name('deposit.validate');
             Route::post('/deposit', [DepositController::class, 'store'])->name('deposit.store');
 
+            // Request Payment Routes
+            Route::post('/request-payment', [RequestPaymentController::class, 'store'])->name('request.payment.store');
+            Route::post('/request-payment/confirm', [RequestPaymentController::class, 'confirm'])->name('request.payment.confirm');
+
             // Routes cho tác giả - sử dụng middleware 'role' mới
             Route::group(['middleware' => 'role:author,admin', 'prefix' => 'author', 'as' => 'author.'], function () {
                 // Routes cho tác giả
                 Route::get('/', [AuthorController::class, 'index'])->name('index');
 
-                Route::group(['prefix' => 'stories', 'as' => 'stories.'], function () {
-                    
-                });
+                Route::group(['prefix' => 'stories', 'as' => 'stories.'], function () {});
 
                 Route::get('/stories', [AuthorController::class, 'stories'])->name('stories');
                 Route::get('/stories/create', [AuthorController::class, 'create'])->name('stories.create');
@@ -137,7 +142,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
         Route::group(['middleware' => 'auth'], function () {
 
             Route::middleware(['check.ban:ban_comment'])->group(function () {
-                Route::post('comment/store', [CommentController::class, 'storeClient'])->name('comment.store.client');
+                Route::post('/comment/store', [CommentController::class, 'storeClient'])->name('comment.store.client');
             });
 
             Route::middleware(['check.ban:ban_rate'])->group(function () {
@@ -146,6 +151,10 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     abort(404);
                 });
             });
+
+            // Routes for purchasing
+            Route::post('/purchase/chapter', [PurchaseController::class, 'purchaseChapter'])->name('purchase.chapter');
+            Route::post('/purchase/story-combo', [PurchaseController::class, 'purchaseStoryCombo'])->name('purchase.story.combo');
 
             Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
@@ -177,7 +186,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
                     Route::get('stories/{story}/comments', [CommentController::class, 'index'])->name('stories.comments.index');
                     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
-
+                    Route::get('comments', [CommentController::class, 'allComments'])->name('comments.all');
                     Route::delete('delete-comments/{comment}', [CommentController::class, 'deleteComment'])->name('delete.comments');
 
                     Route::resource('banners', BannerController::class);
@@ -196,6 +205,9 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::post('/deposits/{deposit}/approve', [DepositController::class, 'approve'])->name('deposits.approve');
                     Route::post('/deposits/{deposit}/reject', [DepositController::class, 'reject'])->name('deposits.reject');
 
+                    // Quản lý yêu cầu thanh toán
+                    Route::get('/request-payments', [RequestPaymentController::class, 'adminIndex'])->name('request.payments.index');
+                    Route::post('/request-payments/delete-expired', [RequestPaymentController::class, 'deleteExpired'])->name('request.payments.delete-expired');
 
                     // Story Edit Requests
                     Route::get('/edit-requests', [StoryEditRequestController::class, 'index'])->name('edit-requests.index');
@@ -212,6 +224,9 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::group(['as' => 'admin.'], function () {
                         // Quản lý ngân hàng
                         Route::resource('banks', AdminBankController::class);
+
+                        // Quản lý cấu hình hệ thống
+                        Route::resource('configs', ConfigController::class);
                     });
                 });
             });

@@ -36,6 +36,54 @@ class User extends Authenticatable
         'recently_read',
         'coins'
     ];
+
+    public function deposits()
+    {
+        return $this->hasMany(Deposit::class);
+    }
+
+    public function chapterPurchases()
+    {
+        return $this->hasMany(ChapterPurchase::class);
+    }
+
+    public function storyPurchases()
+    {
+        return $this->hasMany(StoryPurchase::class);
+    }
+    
+    /**
+     * Check if user has purchased a specific chapter
+     */
+    public function hasPurchasedChapter($chapterId)
+    {
+        $chapter = Chapter::find($chapterId);
+        
+        if (!$chapter) {
+            return false;
+        }
+        
+        if ($chapter->is_free) {
+            return true;
+        }
+        
+        // Check individual chapter purchase
+        if ($this->chapterPurchases()->where('chapter_id', $chapterId)->exists()) {
+            return true;
+        }
+        
+        // Check if purchased as part of a story combo
+        return $this->storyPurchases()->where('story_id', $chapter->story_id)->exists();
+    }
+    
+    /**
+     * Check if user has purchased a specific story combo
+     */
+    public function hasPurchasedStory($storyId)
+    {
+        return $this->storyPurchases()->where('story_id', $storyId)->exists();
+    }
+
     public function ratings()
     {
         return $this->hasMany(Rating::class);
@@ -85,11 +133,6 @@ class User extends Authenticatable
         return $this->hasMany(Bookmark::class);
     }
 
-    // Thêm vào model User.php
-    public function deposits()
-    {
-        return $this->hasMany(Deposit::class);
-    }
 
     public function stories()
     {

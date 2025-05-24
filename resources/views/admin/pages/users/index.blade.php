@@ -77,6 +77,10 @@
                                         class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                         IP
                                     </th>
+                                    <th 
+                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        Số xu
+                                    </th>
                                     <th
                                         class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                         Ngày tạo
@@ -96,7 +100,7 @@
                                             @if ($user->avatar == null)
                                                 <img src="{{ asset('assets/images/avatar_default.jpg') }}" class="avatar avatar-sm me-3" alt="user1">
                                             @else
-                                                <img src="{{ asset($user->avatar ) }}" class="avatar avatar-sm me-3" alt="user1">
+                                                <img src="{{ Storage::url($user->avatar) }}" class="avatar avatar-sm me-3" alt="user1">
                                             @endif
                                         </div>
                                     </td>
@@ -124,6 +128,9 @@
                                     </td>
                                     <td class="text-center">
                                         <p class="text-xs font-weight-bold mb-0">{{ $user->ip_address }}</p>
+                                    </td>
+                                    <td class="text-center">
+                                        <p class="text-xs font-weight-bold mb-0">{{ $user->coins }}</p>
                                     </td>
                                     <td class="text-center">
                                         <p class="text-xs font-weight-bold mb-0">{{ $user->created_at }}</p>

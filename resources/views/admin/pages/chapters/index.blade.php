@@ -68,6 +68,10 @@
                                     </th>
 
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        Số xu
+                                    </th>
+
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                                         Views
                                     </th>
 
@@ -104,6 +108,13 @@
                                             <p class="text-xs text-truncate" style="max-width: 200px;">
                                                 {{ Str::limit($chapter->content, 50) }}
                                             </p>
+                                        </td>
+                                        <td>
+                                            @if($chapter->is_free)
+                                                <span class="badge bg-gradient-success">Miễn phí</span>
+                                            @else
+                                                <span class="badge bg-gradient-danger">{{ $chapter->price ?? 0 }} xu</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $chapter->views ?? 0 }}</p>

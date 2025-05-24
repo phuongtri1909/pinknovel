@@ -93,7 +93,7 @@
 
             <div class="" id="chapters">
                 @if (!Auth()->check() || (Auth()->check() && Auth()->user()->ban_read == false))
-                    @include('components.all_chapter', ['chapters' => $chapters])
+                    @include('components.all_chapter', ['chapters' => $chapters, 'isAdmin' => Auth::check() && in_array(Auth::user()->role, ['admin', 'mod']), 'isAuthor' => Auth::check() && Auth::user()->role == 'author' && Auth::user()->id == $story->user_id])
                 @else
                     <div class="text-center py-5">
                         <i class="fas fa-sad-tear fa-4x text-muted mb-3 animate__animated animate__shakeX"></i>
@@ -116,10 +116,22 @@
                 @endif
             </div>
 
+
+            {{-- @include('components.list_story_full', ['completedStories' => $completedStories]) --}}
+
+            {{-- @include('components.list_story_de_xuat', ['newStories' => $newStories]) --}}
+
+            @include('components.stories_same_author_translator', ['story' => $story])
         </div>
     </section>
+
+    @auth
+        @include('components.modals.chapter-purchase-modal')
+    @endauth
 
 @endsection
 
 @push('scripts')
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 @endpush

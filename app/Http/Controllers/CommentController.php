@@ -121,12 +121,14 @@ class CommentController extends Controller
 
         // Get updated comments
         $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+            ->where('story_id', $comment->story_id)
             ->whereNull('reply_id')
             ->where('is_pinned', true)
-            ->latest()
+            ->latest('pinned_at')
             ->get();
 
         $regularComments = Comment::with(['user', 'replies.user', 'reactions'])
+            ->where('story_id', $comment->story_id)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
             ->latest()
@@ -144,44 +146,118 @@ class CommentController extends Controller
 
     public function deleteComment($comment)
     {
-        $authUser = auth()->user();
-        $comment = Comment::with('user')->find($comment);
+        try {
+            $authUser = auth()->user();
+            $comment = Comment::with('user')->find($comment);
 
-        if (!$comment) {
+            if (!$comment) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Bình luận đã được xóa'
+                ]);
+            }
+
+            // Check if this is a pinned comment
+            $isPinned = $comment->is_pinned;
+            $storyId = $comment->story_id;
+
+            // Admin can delete all comments
+            if ($authUser->role === 'admin') {
+                $comment->delete();
+                
+                // If it was a pinned comment, return updated comments list
+                if ($isPinned) {
+                    $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+                        ->where('story_id', $storyId)
+                        ->whereNull('reply_id')
+                        ->where('is_pinned', true)
+                        ->latest('pinned_at')
+                        ->get();
+                    
+                    $regularComments = Comment::with(['user', 'replies.user', 'reactions'])
+                        ->where('story_id', $storyId)
+                        ->whereNull('reply_id')
+                        ->where('is_pinned', false)
+                        ->latest()
+                        ->paginate(10);
+                    
+                    $html = view('components.comments-list', compact('pinnedComments', 'regularComments'))->render();
+                    
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Xóa bình luận thành công',
+                        'isPinned' => true,
+                        'html' => $html
+                    ]);
+                }
+                
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Xóa bình luận thành công'
+                ]);
+            }
+
+            // Mod can delete except admin comments
+            if ($authUser->role === 'mod') {
+                if ($comment->user && $comment->user->role === 'admin') {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Không thể xóa bình luận của Admin'
+                    ], 403);
+                }
+                $comment->delete();
+                
+                // If it was a pinned comment, return updated comments list
+                if ($isPinned) {
+                    $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+                        ->where('story_id', $storyId)
+                        ->whereNull('reply_id')
+                        ->where('is_pinned', true)
+                        ->latest('pinned_at')
+                        ->get();
+                    
+                    $regularComments = Comment::with(['user', 'replies.user', 'reactions'])
+                        ->where('story_id', $storyId)
+                        ->whereNull('reply_id')
+                        ->where('is_pinned', false)
+                        ->latest()
+                        ->paginate(10);
+                    
+                    $html = view('components.comments-list', compact('pinnedComments', 'regularComments'))->render();
+                    
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Xóa bình luận thành công',
+                        'isPinned' => true,
+                        'html' => $html
+                    ]);
+                }
+                
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Xóa bình luận thành công'
+                ]);
+            }
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Không tìm thấy bình luận này' . $comment
-            ], 404);
-        }
-
-        // Admin can delete all comments
-        if ($authUser->role === 'admin') {
-            $comment->delete();
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Xóa bình luận thành công'
-            ]);
-        }
-
-        // Mod can delete except admin comments
-        if ($authUser->role === 'mod') {
-            if ($comment->user && $comment->user->role === 'admin') {
+                'message' => 'Không có quyền thực hiện'
+            ], 403);
+        } catch (\Exception $e) {
+            // Even if there's an error, if the comment is already gone, return success
+            $stillExists = Comment::find($comment);
+            if (!$stillExists) {
                 return response()->json([
-                    'status' => 'error',
-                    'message' => 'Không thể xóa bình luận của Admin'
-                ], 403);
+                    'status' => 'success',
+                    'message' => 'Bình luận đã được xóa'
+                ]);
             }
-            $comment->delete();
+            
             return response()->json([
-                'status' => 'success',
-                'message' => 'Xóa bình luận thành công'
-            ]);
+                'status' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500);
         }
-
-        return response()->json([
-            'status' => 'error',
-            'message' => 'Không có quyền thực hiện'
-        ], 403);
     }
 
     public function storeClient(Request $request)
@@ -193,15 +269,16 @@ class CommentController extends Controller
             ], 401);
         }
 
-        $request->validate([
+        // Validate the request
+        $validated = $request->validate([
             'comment' => 'required|max:700',
             'story_id' => 'required|exists:stories,id',
             'reply_id' => 'nullable|exists:comments,id'
         ]);
 
-        $story = Story::findOrFail($request->story_id);
-
         $user = auth()->user();
+        
+        // Check if user is banned from commenting
         if ($user->ban_comment) {
             return response()->json([
                 'status' => 'error',
@@ -209,10 +286,16 @@ class CommentController extends Controller
             ], 403);
         }
 
+        // Find the story
+        $story = Story::findOrFail($validated['story_id']);
+
         $parentComment = null;
-        if ($request->reply_id) {
-            $parentComment = Comment::where('story_id', $request->story_id)
-                ->find($request->reply_id);
+        $level = 0;
+        
+        // Check reply logic
+        if (!empty($validated['reply_id'])) {
+            $parentComment = Comment::where('story_id', $validated['story_id'])
+                ->find($validated['reply_id']);
 
             if (!$parentComment) {
                 return response()->json([
@@ -227,55 +310,202 @@ class CommentController extends Controller
                     'message' => 'Không thể trả lời bình luận này'
                 ], 403);
             }
+            
+            $level = $parentComment->level + 1;
+        }
+        
+        // Check for potential duplicate comments within last 30 seconds
+        $recentComments = Comment::where('user_id', $user->id)
+            ->where('story_id', $validated['story_id'])
+            ->where('comment', $validated['comment'])
+            ->where('created_at', '>=', now()->subSeconds(30))
+            ->exists();
+        
+        if ($recentComments) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Bình luận của bạn đã được gửi, vui lòng không gửi lại.'
+            ], 400);
         }
 
-        $comment = Comment::create([
-            'user_id' => auth()->id(),
-            'story_id' => $request->story_id,
-            'comment' => $request->comment,
-            'reply_id' => $request->reply_id,
-            'level' => $request->reply_id ? ($parentComment->level + 1) : 0,
-        ]);
+        try {
+            // Create the comment inside a transaction
+            $comment = Comment::create([
+                'user_id' => $user->id,
+                'story_id' => $validated['story_id'],
+                'comment' => $validated['comment'],
+                'reply_id' => $validated['reply_id'] ?? null,
+                'level' => $level,
+            ]);
 
-        $comment->load('user');
+            // Load relations for the view
+            $comment->load(['user', 'reactions']);
 
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Đã thêm bình luận',
-            'html' => view('components.comments-item', compact('comment'))->render()
-        ]);
+            // Get pinned comments for proper rendering
+            $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+                ->where('story_id', $validated['story_id'])
+                ->whereNull('reply_id')
+                ->where('is_pinned', true)
+                ->latest('pinned_at')
+                ->get();
+
+            if (empty($validated['reply_id'])) {
+                // Only return the single comment HTML if it's a reply
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Đã thêm bình luận',
+                    'html' => view('components.comments-item', compact('comment'))->render(),
+                    'isPinned' => false,
+                    'pinnedComments' => $pinnedComments->count() > 0 ? view('components.comments-list', ['pinnedComments' => $pinnedComments])->render() : null
+                ]);
+            } else {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Đã thêm bình luận',
+                    'html' => view('components.comments-item', compact('comment'))->render()
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Lỗi khi lưu bình luận: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-   
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request, Story $story)
+
+    // Add a new method to view all comments
+    public function allComments(Request $request)
     {
+        $authUser = auth()->user();
         $search = $request->search;
         $userId = $request->user;
-        $authUser = auth()->user();
+        $storyId = $request->story;
+        $date = $request->date;
 
-        $query = $story->comments()->with(['user', 'replies']);
+        // Begin with all comments query
+        $query = Comment::with(['user', 'story']);
 
-        // If mod, only show user and vip comments
+        // Apply role-based restrictions
         if ($authUser->role === 'mod') {
             $query->whereHas('user', function ($q) {
                 $q->whereIn('role', ['user']);
             });
         }
 
+        // Create a base query that we'll modify based on filters
+        $baseQuery = clone $query;
+
+        // Find all parent IDs of comments that match our search (for showing full threads)
+        $matchingChildIds = collect([]);
+        $parentIdsToInclude = collect([]);
+
+        // If we're searching content, user, or date, we need to find matches in child comments too
+        if ($search || $userId || $date) {
+            $childQuery = clone $baseQuery;
+
+            // Apply content search to child query
+            if ($search) {
+                $childQuery->where('comment', 'like', '%' . $search . '%');
+            }
+
+            // Apply user filter to child query
+            if ($userId) {
+                $childQuery->where('user_id', $userId);
+            }
+
+            // Apply date filter to child query
+            if ($date) {
+                $childQuery->whereDate('created_at', $date);
+            }
+
+            // Get the IDs of all comments matching our filters
+            $matchingChildIds = $childQuery->pluck('id');
+
+            // Find all parent IDs for these matching comments
+            if ($matchingChildIds->isNotEmpty()) {
+                $parentIds = Comment::whereIn('id', $matchingChildIds)
+                    ->whereNotNull('reply_id')
+                    ->pluck('reply_id');
+
+                // Get all grandparent IDs recursively
+                $allParentIds = collect([]);
+                $currentParentIds = $parentIds;
+
+                while ($currentParentIds->isNotEmpty()) {
+                    $allParentIds = $allParentIds->merge($currentParentIds);
+                    $currentParentIds = Comment::whereIn('id', $currentParentIds)
+                        ->whereNotNull('reply_id')
+                        ->pluck('reply_id');
+                }
+
+                $parentIdsToInclude = $allParentIds->unique();
+            }
+        }
+
+        // Apply story filter (this applies to all comments regardless of level)
+        if ($storyId) {
+            $query->where('story_id', $storyId);
+        }
+
+        // Now build our main query
+        // Get top-level comments that either:
+        // 1. Match our filters directly, or
+        // 2. Have child comments that match our filters
+        $finalQuery = Comment::with(['user', 'story'])
+            ->with(['replies.user', 'replies.replies.user', 'replies.replies.replies.user'])
+            ->whereNull('reply_id');
+
+        // Apply direct filters
         if ($search) {
-            $query->where('comment', 'like', '%' . $search . '%');
+            $finalQuery->where(function ($q) use ($search, $parentIdsToInclude, $matchingChildIds) {
+                $q->where('comment', 'like', '%' . $search . '%')
+                    ->orWhereIn('id', $parentIdsToInclude)
+                    ->orWhereIn('id', $matchingChildIds->filter(function ($id) {
+                        return Comment::find($id) && Comment::find($id)->reply_id === null;
+                    }));
+            });
         }
 
         if ($userId) {
-            $query->where('user_id', $userId);
+            $finalQuery->where(function ($q) use ($userId, $parentIdsToInclude, $matchingChildIds) {
+                $q->where('user_id', $userId)
+                    ->orWhereIn('id', $parentIdsToInclude)
+                    ->orWhereIn('id', $matchingChildIds->filter(function ($id) {
+                        return Comment::find($id) && Comment::find($id)->reply_id === null;
+                    }));
+            });
         }
 
-        $comments = $query->orderBy('id', 'desc')->paginate(15);
+        if ($date) {
+            $finalQuery->where(function ($q) use ($date, $parentIdsToInclude, $matchingChildIds) {
+                $q->whereDate('created_at', $date)
+                    ->orWhereIn('id', $parentIdsToInclude)
+                    ->orWhereIn('id', $matchingChildIds->filter(function ($id) {
+                        return Comment::find($id) && Comment::find($id)->reply_id === null;
+                    }));
+            });
+        }
 
+        // Apply story filter
+        if ($storyId) {
+            $finalQuery->where('story_id', $storyId);
+        }
+
+        // Apply role-based restrictions
+        if ($authUser->role === 'mod') {
+            $finalQuery->whereHas('user', function ($q) {
+                $q->whereIn('role', ['user']);
+            });
+        }
+
+        $comments = $finalQuery->orderBy('id', 'desc')->paginate(15);
+
+        // Get all stories for the filter dropdown
+        $stories = Story::orderBy('title')->get();
+
+        // Get all users who have commented
         $usersQuery = \App\Models\User::whereHas('comments')
             ->where('active', 'active');
 
@@ -287,7 +517,7 @@ class CommentController extends Controller
 
         $totalComments = Comment::count();
 
-        return view('admin.pages.comments.index', compact('comments', 'users', 'totalComments', 'story'));
+        return view('admin.pages.comments.all', compact('comments', 'users', 'stories', 'totalComments'));
     }
 
     /**
@@ -298,7 +528,7 @@ class CommentController extends Controller
         $authUser = auth()->user();
         $comment = Comment::find($comment);
         if (!$comment) {
-            return redirect()->route('comments.index')->with('error', 'Không tìm thấy bình luận này');
+            return redirect()->route('comments.all')->with('error', 'Không tìm thấy bình luận này');
         }
 
         if (
@@ -306,9 +536,9 @@ class CommentController extends Controller
             ($authUser->role === 'mod' && (!$comment->user || $comment->user->role !== 'admin'))
         ) {
             $comment->delete();
-            return redirect()->route('comments.index')->with('success', 'Xóa bình luận thành công');
+            return redirect()->route('comments.all')->with('success', 'Xóa bình luận thành công');
         }
 
-        return redirect()->route('comments.index')->with('error', 'Không thể xóa bình luận của Admin');
+        return redirect()->route('comments.all')->with('error', 'Không thể xóa bình luận của Admin');
     }
 }

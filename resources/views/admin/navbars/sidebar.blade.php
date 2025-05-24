@@ -114,7 +114,7 @@
                 </a>
             </li>
 
-            <li class="nav-item">
+            {{-- <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('donate.*') ? 'active' : '' }}"
                     href="{{ route('donate.edit') }}">
                     <div
@@ -122,6 +122,17 @@
                         <i class="fa-solid fa-hand-holding-heart text-dark icon-sidebar"></i>
                     </div>
                     <span class="nav-link-text ms-1">Cấu hình Donate</span>
+                </a>
+            </li> --}}
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('deposits.*') ? 'active' : '' }}"
+                    href="{{ route('deposits.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-money-bill-transfer text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Quản lý giao dịch</span>
                 </a>
             </li>
 
@@ -133,6 +144,17 @@
                         <i class="fa-solid fa-university text-dark icon-sidebar"></i>
                     </div>
                     <span class="nav-link-text ms-1">Quản lý Ngân hàng</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('comments.all') ? 'active' : '' }}"
+                    href="{{ route('comments.all') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-comments text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Quản lý Bình luận</span>
                 </a>
             </li>
 
@@ -149,6 +171,17 @@
 
             <li class="nav-item mt-2">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Cài đặt</h6>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('admin.configs.*') ? 'active' : '' }}"
+                    href="{{ route('admin.configs.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-gears text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Cấu hình hệ thống</span>
+                </a>
             </li>
 
             <li class="nav-item mt-3">

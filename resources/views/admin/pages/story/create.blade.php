@@ -79,6 +79,33 @@
                                         <option value="published" selected>Xuất bản</option>
                                     </select>
                                 </div>
+
+                                <div class="form-group mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <label class="mb-0 me-3" for="has_combo">Bán combo (tất cả chương)</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="has_combo" class="form-check-input" id="has_combo"
+                                                role="switch">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="combo-pricing-container" class="mt-3" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="combo_price">Giá combo (xu)</label>
+                                        <input type="number" name="combo_price" id="combo_price" 
+                                               class="form-control @error('combo_price') is-invalid @enderror"
+                                               value="{{ old('combo_price', 0) }}" min="0">
+                                        <small class="text-muted">Đặt giá combo cho tất cả các chương</small>
+                                        @error('combo_price')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="alert alert-info mt-3">
+                                        <p class="mb-0"><i class="fas fa-info-circle me-1"></i> Bạn có thể thiết lập giá combo sau khi thêm các chương cho truyện.</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-12 text-center mt-4">
@@ -157,6 +184,26 @@
 
                 return true;
             });
+            
+            // Handle combo pricing toggle
+            const hasComboCheckbox = document.getElementById('has_combo');
+            const comboPricingContainer = document.getElementById('combo-pricing-container');
+            const comboPriceInput = document.getElementById('combo_price');
+            
+            hasComboCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    comboPricingContainer.style.display = 'block';
+                } else {
+                    comboPricingContainer.style.display = 'none';
+                    comboPriceInput.value = '0';
+                }
+            });
+            
+            // Initialize based on old input if form was submitted with errors
+            if ("{{ old('has_combo') }}" === '1') {
+                hasComboCheckbox.checked = true;
+                comboPricingContainer.style.display = 'block';
+            }
         });
     </script>
 

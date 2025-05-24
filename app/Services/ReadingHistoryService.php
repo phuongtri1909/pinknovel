@@ -12,8 +12,6 @@ use Illuminate\Support\Str;
 
 class ReadingHistoryService
 {
-
-    
     /**
      * Lưu tiến độ đọc của người dùng
      */
@@ -73,7 +71,7 @@ class ReadingHistoryService
      * Lấy hoặc tạo key đại diện cho thiết bị người dùng
      * Key này được lưu trong cookie và ổn định ngay cả khi đăng nhập/đăng xuất
      */
-    private function getOrCreateDeviceKey()
+    public function getOrCreateDeviceKey()
     {
         $cookieName = 'reader_device_key';
         

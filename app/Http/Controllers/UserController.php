@@ -23,13 +23,6 @@ use Illuminate\Support\Facades\Storage;
 class UserController extends Controller
 {
 
-    protected $readingHistoryService;
-    
-    public function __construct(ReadingHistoryService $readingHistoryService)
-    {
-        $this->readingHistoryService = $readingHistoryService;
-    }
-
     public function show($id)
     {
         $authUser = auth()->user();
@@ -390,39 +383,6 @@ class UserController extends Controller
 
         return view('pages.information.profile', compact('user'));
     }
-
-    public function readingHistory()
-    {
-        // Lấy danh sách lịch sử đọc từ service
-        $readingHistory = $this->readingHistoryService->getRecentReadings(20);
-        return view('pages.information.reading_history', compact('readingHistory'));
-    }
-    
-    // Clear reading history
-    public function clearReadingHistory(Request $request)
-    {
-        // Xóa bản ghi lịch sử đọc
-        $deviceKey = $this->readingHistoryService->getOrCreateDeviceKey();
-        
-        if (Auth::check()) {
-            // Xóa lịch sử của user đã đăng nhập
-            $deleted = UserReading::where('user_id', Auth::id())->delete();
-        } else {
-            // Xóa lịch sử dựa trên session
-            $deleted = UserReading::where('session_id', $deviceKey)
-                ->whereNull('user_id')
-                ->delete();
-        }
-        
-        if ($request->ajax()) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Đã xóa lịch sử đọc truyện'
-            ]);
-        }
-        
-        return redirect()->back()->with('success', 'Đã xóa lịch sử đọc truyện');
-    }
     
     public function bookmarks()
     {
@@ -657,5 +617,44 @@ class UserController extends Controller
                 'message' => 'Dữ liệu không hợp lệ'
             ], 422);
         }
+    }
+
+    public function readingHistory()
+    {
+        // Get user reading history from database
+        $readingHistory = UserReading::with(['story', 'chapter'])
+            ->where('user_id', Auth::id())
+            ->orderByDesc('updated_at')
+            ->get();
+
+        return view('pages.information.reading_history', compact('readingHistory'));
+    }
+
+    public function userPurchases()
+    {
+        // Get user's purchased chapters
+        $purchasedChapters = Auth::user()->chapterPurchases()
+            ->with(['chapter.story'])
+            ->orderByDesc('created_at')
+            ->get();
+            
+        // Get user's purchased story combos
+        $purchasedStories = Auth::user()->storyPurchases()
+            ->with(['story'])
+            ->orderByDesc('created_at')
+            ->get();
+            
+        return view('pages.information.purchases', compact('purchasedChapters', 'purchasedStories'));
+    }
+
+    public function clearReadingHistory()
+    {
+        // Delete all reading history for the current user
+        UserReading::where('user_id', Auth::id())->delete();
+        
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Lịch sử đọc truyện đã được xóa'
+        ]);
     }
 }

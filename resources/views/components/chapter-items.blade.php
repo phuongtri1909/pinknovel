@@ -29,42 +29,77 @@
                     $isRead = in_array($chapter->id, $readChapterIds);
                     $isVip = !$chapter->is_free;
                     $isNew = $chapter->created_at->isToday();
+
+                    // Add purchase check
+                    $isPurchased = false;
+                    $hasAccess = $chapter->is_free;
+
+                    if (auth()->check()) {
+                        $isAdminOrMod = in_array(auth()->user()->role, ['admin', 'mod']);
+                        $isAuthorOfStory = auth()->user()->role == 'author' && auth()->user()->id == $story->user_id;
+                        $hasChapterPurchase = $chapter
+                            ->purchases()
+                            ->where('user_id', auth()->id())
+                            ->exists();
+                        $hasStoryPurchase = $story
+                            ->purchases()
+                            ->where('user_id', auth()->id())
+                            ->exists();
+                        $isPurchased = $hasChapterPurchase || $hasStoryPurchase;
+                        $hasAccess = $chapter->is_free || $isPurchased || $isAdminOrMod || $isAuthorOfStory;
+                    }
                 @endphp
 
                 <li class="mt-2">
-                    <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
-                        class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}"
-                        @if ($isVip) data-price="{{ $chapter->price }}" @endif>
-                        @if ($isVip)
-                            <span class="coin-box">
-                                <span>{{ $chapter->price }}</span>
-                                <span class="fs-7">Coin</span>
-                            </span>
-                        @else
-                            <span class="free-box">
-                                <span><i class="fas fa-unlock-alt"></i></span>
-                                <span class="fs-7">Free</span>
-                            </span>
-                        @endif
+                    @if (!$hasAccess && !auth()->check())
+                        <a href="{{ route('login') }}"
+                            class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                        @elseif (!$hasAccess)
+                            <a href="javascript:void(0)"
+                                onclick="showPurchaseModal('chapter', '{{ $chapter->id }}', 'Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}', {{ $chapter->price }})"
+                                class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                            @else
+                                <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
+                                    class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                    @endif
+                    @if ($isVip)
+                        <span class="coin-box">
+                            <span>{{ $chapter->price }}</span>
+                            <span class="fs-7">Coin</span>
+                        </span>
+                    @else
+                        <span class="free-box">
+                            <span><i class="fas fa-unlock-alt"></i></span>
+                            <span class="fs-7">Free</span>
+                        </span>
+                    @endif
 
-                        <span class="chapter-info ms-2">
-                            <span class="chapter-title">
-                                Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
-                                @if ($isVip)
-                                    <span class="vip-badge" data-bs-toggle="tooltip" title="{{ $chapter->price }} Coin">
+                    <span class="chapter-info ms-2">
+                        <span class="chapter-title">
+                            Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
+                            @if ($isVip)
+                                @if ($hasAccess)
+                                    <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
+                                        data-bs-title="{{ auth()->check() && in_array(auth()->user()->role, ['admin', 'mod']) ? 'Admin' : (auth()->check() && auth()->user()->role == 'author' && auth()->user()->id == $story->user_id ? 'Tác giả' : 'Đã mua') }}">
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </span>
+                                @else
+                                    <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
+                                        data-bs-title="{{ $chapter->price }} Coin">
                                         <i class="fas fa-crown"></i>
                                     </span>
                                 @endif
-                                @if ($isNew)
-                                    <span class="new-badge">
-                                        <i class="fas fa-certificate"></i> New
-                                    </span>
-                                @endif
-                            </span>
-                            <span class="chapter-date">
-                                <i class="far fa-calendar-alt me-1"></i>{{ $chapter->created_at->format('d/m/Y') }}
-                            </span>
+                            @endif
+                            @if ($isNew)
+                                <span class="new-badge">
+                                    <i class="fas fa-certificate"></i> New
+                                </span>
+                            @endif
                         </span>
+                        <span class="chapter-date">
+                            <i class="far fa-calendar-alt me-1"></i>{{ $chapter->created_at->format('d/m/Y') }}
+                        </span>
+                    </span>
                     </a>
                     <hr class="my-2 opacity-25">
                 </li>
@@ -80,43 +115,77 @@
                     $isRead = in_array($chapter->id, $readChapterIds);
                     $isVip = !$chapter->is_free;
                     $isNew = $chapter->created_at->isToday();
+
+                    // Add purchase check
+                    $isPurchased = false;
+                    $hasAccess = $chapter->is_free;
+
+                    if (auth()->check()) {
+                        $isAdminOrMod = in_array(auth()->user()->role, ['admin', 'mod']);
+                        $isAuthorOfStory = auth()->user()->role == 'author' && auth()->user()->id == $story->user_id;
+                        $hasChapterPurchase = $chapter
+                            ->purchases()
+                            ->where('user_id', auth()->id())
+                            ->exists();
+                        $hasStoryPurchase = $story
+                            ->purchases()
+                            ->where('user_id', auth()->id())
+                            ->exists();
+                        $isPurchased = $hasChapterPurchase || $hasStoryPurchase;
+                        $hasAccess = $chapter->is_free || $isPurchased || $isAdminOrMod || $isAuthorOfStory;
+                    }
                 @endphp
 
                 <li class="mt-2">
-                    <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
-                        class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}"
-                        @if ($isVip) data-price="{{ $chapter->price }}" @endif>
-                        @if ($isVip)
-                            <span class="coin-box">
-                                <span>{{ $chapter->price }}</span>
-                                <span class="fs-7">Coin</span>
-                            </span>
-                        @else
-                            <span class="free-box">
-                                <span><i class="fas fa-unlock-alt"></i></span>
-                                <span class="fs-7">Free</span>
-                            </span>
-                        @endif
+                    @if (!$hasAccess && !auth()->check())
+                        <a href="{{ route('login') }}"
+                            class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                        @elseif (!$hasAccess)
+                            <a href="javascript:void(0)"
+                                onclick="showPurchaseModal('chapter', '{{ $chapter->id }}', 'Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}', {{ $chapter->price }})"
+                                class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                            @else
+                                <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
+                                    class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                    @endif
+                    @if ($isVip)
+                        <span class="coin-box">
+                            <span>{{ $chapter->price }}</span>
+                            <span class="fs-7">Coin</span>
+                        </span>
+                    @else
+                        <span class="free-box">
+                            <span><i class="fas fa-unlock-alt"></i></span>
+                            <span class="fs-7">Free</span>
+                        </span>
+                    @endif
 
-                        <span class="chapter-info ms-2">
-                            <span class="chapter-title">
-                                Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
-                                @if ($isVip)
+                    <span class="chapter-info ms-2">
+                        <span class="chapter-title">
+                            Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
+                            @if ($isVip)
+                                @if ($hasAccess)
+                                    <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
+                                        data-bs-title="{{ auth()->check() && in_array(auth()->user()->role, ['admin', 'mod']) ? 'Admin' : (auth()->check() && auth()->user()->role == 'author' && auth()->user()->id == $story->user_id ? 'Tác giả' : 'Đã mua') }}">
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </span>
+                                @else
                                     <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
                                         data-bs-title="{{ $chapter->price }} Coin">
                                         <i class="fas fa-crown"></i>
                                     </span>
                                 @endif
-                                @if ($isNew)
-                                    <span class="new-badge">
-                                        <i class="fas fa-certificate"></i> New
-                                    </span>
-                                @endif
-                            </span>
-                            <span class="chapter-date">
-                                <i class="far fa-calendar-alt me-1"></i>{{ $chapter->created_at->format('d/m/Y') }}
-                            </span>
+                            @endif
+                            @if ($isNew)
+                                <span class="new-badge">
+                                    <i class="fas fa-certificate"></i> New
+                                </span>
+                            @endif
                         </span>
+                        <span class="chapter-date">
+                            <i class="far fa-calendar-alt me-1"></i>{{ $chapter->created_at->format('d/m/Y') }}
+                        </span>
+                    </span>
                     </a>
                     <hr class="my-2 opacity-25">
                 </li>
@@ -130,43 +199,78 @@
                     $isRead = in_array($chapter->id, $readChapterIds);
                     $isVip = !$chapter->is_free;
                     $isNew = $chapter->created_at->isToday();
+
+                    // Add purchase check
+                    $isPurchased = false;
+                    $hasAccess = $chapter->is_free;
+
+                    if (auth()->check()) {
+                        $isAdminOrMod = in_array(auth()->user()->role, ['admin', 'mod']);
+                        $isAuthorOfStory = auth()->user()->role == 'author' && auth()->user()->id == $story->user_id;
+                        $hasChapterPurchase = $chapter
+                            ->purchases()
+                            ->where('user_id', auth()->id())
+                            ->exists();
+                        $hasStoryPurchase = $story
+                            ->purchases()
+                            ->where('user_id', auth()->id())
+                            ->exists();
+                        $isPurchased = $hasChapterPurchase || $hasStoryPurchase;
+                        $hasAccess = $chapter->is_free || $isPurchased || $isAdminOrMod || $isAuthorOfStory;
+                    }
                 @endphp
 
                 <li class="mt-2">
-                    <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
-                        class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}"
-                        @if ($isVip) data-price="{{ $chapter->price }}" @endif>
-                        @if ($isVip)
-                            <span class="coin-box">
-                                <span>{{ $chapter->price }}</span>
-                                <span class="fs-7">Coin</span>
-                            </span>
-                        @else
-                            <span class="free-box">
-                                <span><i class="fas fa-unlock-alt"></i></span>
-                                <span class="fs-7">Free</span>
-                            </span>
-                        @endif
+                    @if (!$hasAccess && !auth()->check())
+                        <a href="{{ route('login') }}"
+                            class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                        @elseif (!$hasAccess)
+                            <a href="javascript:void(0)"
+                                onclick="showPurchaseModal('chapter', '{{ $chapter->id }}', 'Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}', {{ $chapter->price }})"
+                                class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                            @else
+                                <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
+                                    class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
+                    @endif
 
-                        <span class="chapter-info ms-2">
-                            <span class="chapter-title">
-                                Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
-                                @if ($isVip)
+                    @if ($isVip)
+                        <span class="coin-box">
+                            <span>{{ $chapter->price }}</span>
+                            <span class="fs-7">Coin</span>
+                        </span>
+                    @else
+                        <span class="free-box">
+                            <span><i class="fas fa-unlock-alt"></i></span>
+                            <span class="fs-7">Free</span>
+                        </span>
+                    @endif
+
+                    <span class="chapter-info ms-2">
+                        <span class="chapter-title">
+                            Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
+                            @if ($isVip)
+                                @if ($hasAccess)
+                                    <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
+                                        data-bs-title="{{ auth()->check() && in_array(auth()->user()->role, ['admin', 'mod']) ? 'Admin' : (auth()->check() && auth()->user()->role == 'author' && auth()->user()->id == $story->user_id ? 'Tác giả' : 'Đã mua') }}">
+                                        <i class="fas fa-unlock-alt"></i>
+                                    </span>
+                                @else
                                     <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
                                         data-bs-title="{{ $chapter->price }} Coin">
                                         <i class="fas fa-crown"></i>
                                     </span>
                                 @endif
-                                @if ($isNew)
-                                    <span class="new-badge">
-                                        <i class="fas fa-certificate"></i> New
-                                    </span>
-                                @endif
-                            </span>
-                            <span class="chapter-date">
-                                <i class="far fa-calendar-alt me-1"></i>{{ $chapter->created_at->format('d/m/Y') }}
-                            </span>
+                            @endif
+                            @if ($isNew)
+                                <span class="new-badge">
+                                    <i class="fas fa-certificate"></i> New
+                                </span>
+                            @endif
                         </span>
+                        <span class="chapter-date">
+                            <i class="far fa-calendar-alt me-1"></i>{{ $chapter->created_at->format('d/m/Y') }}
+                        </span>
+                    </span>
                     </a>
                     <hr class="my-2 opacity-25">
                 </li>
@@ -216,17 +320,17 @@
             color: #fff;
             opacity: 0.9;
         }
-        
+
         .chapter-read .chapter-date {
             color: rgba(255, 255, 255, 0.7);
         }
-        
+
         .chapter-read .free-box {
             background: rgba(255, 255, 255, 0.15);
             color: #fff;
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         .chapter-read .coin-box {
             background: rgba(255, 255, 255, 0.15);
             color: #fff;
@@ -257,7 +361,7 @@
             margin-left: 6px;
             font-size: 0.85em;
         }
-        
+
         .chapter-read .vip-badge {
             color: #fff;
         }
@@ -303,12 +407,12 @@
         }
 
         /* Các style khác giữ nguyên */
-        
+
         li {
             position: relative;
         }
-        
-        li .chapter-read + hr {
+
+        li .chapter-read+hr {
             opacity: 0 !important;
         }
 

@@ -82,6 +82,7 @@ class ChapterController extends Controller
             ],
             'status' => 'required|in:draft,published',
             'link_aff' => 'nullable|url',
+            'price' => 'required_if:is_free,0|nullable|integer|min:0',
         ], [
             'title.required' => 'Tên chương không được để trống',
             'content.required' => 'Nội dung chương không được để trống',
@@ -90,9 +91,18 @@ class ChapterController extends Controller
             'status.required' => 'Trạng thái chương không được để trống',
             'status.in' => 'Trạng thái chương không hợp lệ',
             'link_aff.url' => 'Link liên kết không hợp lệ',
+            'price.required_if' => 'Vui lòng nhập giá cho chương này',
+            'price.integer' => 'Giá phải là số nguyên',
+            'price.min' => 'Giá không được âm',
         ]);
 
         try {
+            // Set is_free based on checkbox
+            $isFree = $request->has('is_free');
+            
+            // If chapter is free, price is 0
+            $price = $isFree ? 0 : $request->price;
+
             $chapter = $story->chapters()->create([
                 'slug' => 'chuong-' . $request->number . '-' . Str::slug($request->title),
                 'title' => $request->title,
@@ -102,6 +112,8 @@ class ChapterController extends Controller
                 'user_id' => auth()->id(),
                 'updated_content_at' => now(),
                 'link_aff' => $request->link_aff,
+                'is_free' => $isFree,
+                'price' => $price,
             ]);
 
             return redirect()->route('stories.chapters.index', $story)
@@ -138,6 +150,7 @@ class ChapterController extends Controller
             ],
             'status' => 'required|in:draft,published',
             'link_aff' => 'nullable|url',
+            'price' => 'required_if:is_free,0|nullable|integer|min:0',
         ],[
             'title.required' => 'Tên chương không được để trống',
             'content.required' => 'Nội dung chương không được để trống',
@@ -146,9 +159,18 @@ class ChapterController extends Controller
             'status.required' => 'Trạng thái chương không được để trống',
             'status.in' => 'Trạng thái chương không hợp lệ',
             'link_aff.url' => 'Link liên kết không hợp lệ',
+            'price.required_if' => 'Vui lòng nhập giá cho chương này',
+            'price.integer' => 'Giá phải là số nguyên',
+            'price.min' => 'Giá không được âm',
         ]);
 
         try {
+            // Set is_free based on checkbox
+            $isFree = $request->has('is_free');
+            
+            // If chapter is free, price is 0
+            $price = $isFree ? 0 : $request->price;
+
             $chapter->update([
                 'slug' => 'chuong-' . $request->number . '-' . Str::slug($request->title),
                 'title' => $request->title,
@@ -157,6 +179,8 @@ class ChapterController extends Controller
                 'status' => $request->status,
                 'updated_content_at' => now(),
                 'link_aff' => $request->link_aff,
+                'is_free' => $isFree,
+                'price' => $price,
             ]);
 
             return redirect()->route('stories.chapters.index', $story)

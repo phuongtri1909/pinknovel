@@ -66,6 +66,7 @@
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tiêu đề</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Thể loại</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Số chương</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Giá truyện</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Link aff</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Trạng thái</th>
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thao tác</th>
@@ -85,7 +86,13 @@
                                     @endforeach
                                 </td>
                                 <td>{{ $story->chapters_count }}</td>
-
+                                <td>
+                                    @if($story->has_combo)
+                                        <span class="badge bg-gradient-danger">{{ $story->combo_price }} xu</span>
+                                    @else
+                                       -
+                                    @endif
+                                </td>
                                 <td>
                                     <a href="{{ $story->link_aff }}" target="_blank"> {{ Str::limit($story->link_aff, 20) }}</a>
                                 </td>

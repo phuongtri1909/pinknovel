@@ -1,4 +1,3 @@
-<!-- filepath: /d:/full_truyen/resources/views/pages/chapter.blade.php -->
 @extends('layouts.app')
 
 @section('title', " Truyện {$story->title} | Chương {$chapter->number}: {$chapter->title} | " . config('app.name'))
@@ -6,865 +5,894 @@
 @section('keyword', "chương {$chapter->number}, {$chapter->title}")
 
 @section('content')
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    
     <section id="chapter" class="mt-80 mb-5">
         <div class="container-md">
-            <div class="row">
-                <div class="col-12">
-                    <div class="chapter-header text-center mb-4 animate__animated animate__fadeIn">
-                        <h1 class="chapter-title h3 fw-bold">
-                            Chương {{ $chapter->number }}: {{ $chapter->title }}
-                        </h1>
-                        <div class="chapter-meta d-flex justify-content-center align-items-center flex-wrap gap-3 mt-2">
-                            <span class="badge bg-light text-dark p-2">
-                                <i class="fa-regular fa-file-word me-1"></i> {{ $chapter->word_count }} Chữ
-                            </span>
-                            <span class="badge bg-light text-dark p-2">
-                                <i class="fa-regular fa-clock me-1"></i> {{ $chapter->created_at->format('d/m/Y') }}
-                            </span>
-                        </div>
+            <div>
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                     </div>
+                @endif
+                
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
 
-                    <!-- Reading Controls Panel -->
-                    <div class="reading-controls-wrapper mb-4 animate__animated animate__fadeIn animate__delay-1s">
-                        <div class="card shadow-sm">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <div class="search-wrapper position-relative w-100">
-                                        <div class="input-group">
-                                            <span class="input-group-text bg-transparent border-end-0">
-                                                <i class="fas fa-search"></i>
-                                            </span>
-                                            <input type="text" class="form-control border-start-0" id="search-chapter"
-                                                placeholder="Tìm kiếm chương, tên chương, nội dung...">
-                                        </div>
-                                        <div id="search-results" class="position-absolute w-100 mt-1 d-none">
-                                            <div class="card shadow">
-                                                <div
-                                                    class="card-header d-flex justify-content-between align-items-center py-2">
-                                                    <span><i class="fas fa-list-ul me-2"></i>Kết quả tìm kiếm</span>
-                                                    <button type="button" class="btn-close" id="close-search"></button>
-                                                </div>
-                                                <div class="card-body p-0" style="max-height: 300px; overflow-y: auto;">
-                                                    <div class="list-group list-group-flush" id="results-list"></div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                <div class="d-flex justify-content-center">
+                    <nav aria-label="breadcrumb " class="pt-3">
+                        <ol class="breadcrumb">
+                            <li class="breadcrumb-item"><a class="text-decoration-none color-3"
+                                    href="{{ route('home') }}">Trang chủ</a></li>
+                            <li class="breadcrumb-item story-title-breadcrumb text-truncate"><a
+                                    class="text-decoration-none color-3 "
+                                    href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a></li>
+                            <li class="breadcrumb-item active color-3" aria-current="page">Chương {{ $chapter->number }}:
+                                {{ $chapter->title }}</li>
+                        </ol>
+                    </nav>
+                </div>
 
-                                <div class="reading-controls d-flex justify-content-between align-items-center flex-wrap">
-                                    <div class="navigation-controls d-flex gap-2">
-                                        @if ($prevChapter)
-                                            <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $prevChapter->slug]) }}"
-                                                class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-arrow-left"></i> Chương trước
-                                            </a>
-                                        @else
-                                            <button disabled class="btn btn-outline-secondary btn-sm">
-                                                <i class="fas fa-chevron-left"></i> Chương trước
-                                            </button>
-                                        @endif
+                <div class="chapter-header text-center mb-4 animate__animated animate__fadeIn">
+                    <h1 class="chapter-title h3 fw-bold">
+                        Chương {{ $chapter->number }}: {{ $chapter->title }}
+                    </h1>
+                    <div class="chapter-meta d-flex justify-content-center align-items-center flex-wrap gap-2 mt-2">
 
-                                        @if ($nextChapter)
-                                            <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $nextChapter->slug]) }}"
-                                                class="btn btn-outline-primary btn-sm">
-                                                Chương tiếp <i class="fas fa-arrow-right"></i>
-                                            </a>
-                                        @else
-                                            <button disabled class="btn btn-outline-secondary btn-sm">
-                                                Chương tiếp <i class="fas fa-chevron-right"></i>
-                                            </button>
-                                        @endif
-                                    </div>
+                        <span class="badge text-dark p-2">
+                            <i class="fa-regular fa-clock me-1 color-3"></i>
+                            Đăng lúc
+                            @if ($chapter->schedule_publish_at)
+                                {{ $chapter->schedule_publish_at->format('H:i d/m/Y') }}
+                            @else
+                                {{ $chapter->created_at->format('H:i d/m/Y') }}
+                            @endif
+                        </span>
+                        <span class="badge text-dark p-2">
+                            <i class="fa-regular fa-eye color-pp-1"></i> {{ $chapter->views }}
+                        </span>
+                        <span class="badge text-dark p-2">
+                            <a href="#comments" class="text-decoration-none text-dark"><i
+                                    class="fa-regular fa-comments color-success-custom"></i>
+                                {{ $chapter->comments_count }}</a>
 
-                                    <div class="appearance-controls d-flex align-items-center gap-3">
-                                        <div class="font-size-control btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-secondary" id="font-decrease">
-                                                <i class="fas fa-font"></i><i class="fas fa-minus fs-8"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-secondary" id="font-increase">
-                                                <i class="fas fa-font"></i><i class="fas fa-plus fs-8"></i>
-                                            </button>
-                                        </div>
+                        </span>
+                    </div>
+                </div>
 
-                                        <div class="theme-control btn-group" role="group">
-                                            <button class="btn btn-sm btn-outline-secondary theme-btn" data-theme="light"
-                                                title="Chế độ sáng">
-                                                <i class="fas fa-sun"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-secondary theme-btn" data-theme="sepia"
-                                                title="Chế độ giấy cũ">
-                                                <i class="fas fa-scroll"></i>
-                                            </button>
-                                            <button class="btn btn-sm btn-outline-secondary theme-btn" data-theme="dark"
-                                                title="Chế độ tối">
-                                                <i class="fas fa-moon"></i>
-                                            </button>
-                                        </div>
+                <div
+                    class="chapter-nav d-flex justify-content-center align-items-center my-4 animate__animated animate__fadeIn animate__delay-1s">
+                    @if ($prevChapter)
+                        <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $prevChapter->slug]) }}"
+                            class="btn bg-1 btn-lg rounded-5 btn-prev me-2 text-white d-sm-flex align-items-center">
+                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block">Chương trước</span>
+                        </a>
+                    @else
+                        <button disabled
+                            class="btn btn-outline-secondary rounded-5 btn-lg btn-prev me-2 d-sm-flex align-items-center">
+                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block">Chương trước</span>
+                        </button>
+                    @endif
 
-                                        <button class="btn btn-sm btn-outline-secondary" id="fullscreen-toggle"
-                                            title="Toàn màn hình">
-                                            <i class="fas fa-expand"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                    <div class="dropdown chapter-list-dropdown">
+                        <button class="btn btn-lg dropdown-toggle rounded-0 bg-1 text-white" type="button"
+                            id="chapterListDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-bars me-2"></i>Chương {{ $chapter->number }}
+                        </button>
+                        <div class="dropdown-menu chapter-dropdown-menu" aria-labelledby="chapterListDropdown">
+                            <div class="chapter-dropdown-header">
+                                <h6>Danh sách chương</h6>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <div class="chapter-dropdown-body">
+                                @foreach ($story->chapters->sortByDesc('number') as $chap)
+                                    <a class="dropdown-item {{ $chap->id === $chapter->id ? 'active' : '' }}"
+                                        href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chap->slug]) }}">
+                                        Chương {{ $chap->number }}: {{ $chap->title }}
+                                    </a>
+                                @endforeach
                             </div>
                         </div>
                     </div>
 
-                    <!-- Reading Progress Bar -->
-                    <div class="progress reading-progress mb-3 animate__animated animate__fadeIn animate__delay-1s"
-                        style="height: 4px;">
-                        <div class="progress-bar bg-primary" role="progressbar" style="width: 0%" id="reading-progress-bar">
+                    @if ($nextChapter)
+                        <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $nextChapter->slug]) }}"
+                            class="btn btn-lg bg-1 text-white btn-next rounded-5 ms-2 d-sm-flex align-items-center">
+                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    @else
+                        <button disabled
+                            class="btn btn-outline-secondary btn-lg btn-next rounded-5 ms-2 d-sm-flex align-items-center">
+                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    @endif
+                </div>
+
+                <!-- Chapter Content -->
+                <div id="chapter-content" class="rounded-4 chapter-content mb-4">
+                    @if(isset($hasAccess) && $hasAccess)
+                        {!! nl2br(e($chapter->content)) !!}
+                    @else
+                        <div class="chapter-preview">
+                            <!-- Hiển thị thông báo mua chương -->
+                            <div class="purchase-notice bg-light p-4 rounded-3 text-center my-4">
+                                <div class="mb-3">
+                                    <i class="fas fa-lock fa-3x text-warning mb-3"></i>
+                                    <h4 class="fw-bold">Nội dung này yêu cầu mua để đọc</h4>
+                                    <p class="text-muted">Bạn cần mua chương này hoặc toàn bộ truyện để tiếp tục đọc</p>
+                                </div>
+                                
+                                <div class="purchase-options d-flex flex-column flex-md-row justify-content-center gap-3">
+                                    @if($chapter->price > 0)
+                                        <div class="chapter-purchase-option p-3 border rounded">
+                                            <h5 class="fw-bold">Mua chương này</h5>
+                                            <p class="price mb-2"><i class="fas fa-coins text-warning"></i> {{ number_format($chapter->price) }} xu</p>
+                                            @guest
+                                                <a href="{{ route('login') }}" class="btn btn-primary">Đăng nhập để mua</a>
+                                            @else
+                                                <form action="{{ route('purchase.chapter') }}" method="POST" class="purchase-form" id="purchase-chapter-form">
+                                                    @csrf
+                                                    <input type="hidden" name="chapter_id" value="{{ $chapter->id }}">
+                                                    <button type="button" class="btn btn-primary purchase-chapter-btn" onclick="showPurchaseModal('chapter', {{ $chapter->id }}, 'Chương {{ $chapter->number }}: {{ $chapter->title }}', {{ $chapter->price }})">
+                                                        <i class="fas fa-shopping-cart me-1"></i> Mua ngay
+                                                    </button>
+                                                </form>
+                                            @endguest
+                                        </div>
+                                    @endif
+                                    
+                                    @if($story->combo_price > 0)
+                                        <div class="story-purchase-option p-3 border rounded bg-light">
+                                            <h5 class="fw-bold">Mua trọn bộ truyện</h5>
+                                            <p class="price mb-2"><i class="fas fa-coins text-warning"></i> {{ number_format($story->combo_price) }} xu</p>
+                                            <p class="text-success small">
+                                              
+                                                <i class="fas fa-check-circle"></i> Truy cập tất cả {{ $story->chapters->count() ?? 0 }} chương
+                                            </p>
+                                            @guest
+                                                <a href="{{ route('login') }}" class="btn btn-success">Đăng nhập để mua</a>
+                                            @else
+                                                <form action="{{ route('purchase.story.combo') }}" method="POST" class="purchase-form" id="purchase-story-form">
+                                                    @csrf
+                                                    <input type="hidden" name="story_id" value="{{ $story->id }}">
+                                                    <button type="button" class="btn btn-success purchase-story-btn" onclick="showPurchaseModal('story', {{ $story->id }}, '{{ $story->title }}', {{ $story->combo_price }})">
+                                                        <i class="fas fa-shopping-cart me-1"></i> Mua trọn bộ
+                                                    </button>
+                                                </form>
+                                            @endguest
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+
+                <!-- Chapter Navigation Bottom -->
+                <div
+                    class="chapter-nav d-flex justify-content-center align-items-center my-4 animate__animated animate__fadeIn">
+                    @if ($prevChapter)
+                        <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $prevChapter->slug]) }}"
+                            class="btn bg-1 btn-lg rounded-5 btn-prev me-2 text-white d-sm-flex align-items-center">
+                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block">Chương trước</span>
+                        </a>
+                    @else
+                        <button disabled
+                            class="btn btn-outline-secondary rounded-5 btn-lg btn-prev me-2 d-sm-flex align-items-center">
+                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block">Chương trước</span>
+                        </button>
+                    @endif
+
+                    <div class="dropdown chapter-list-dropdown">
+                        <button class="btn btn-lg dropdown-toggle rounded-0 bg-1 text-white" type="button"
+                            id="chapterListDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa-solid fa-bars me-2"></i>Chương {{ $chapter->number }}
+                        </button>
+                        <div class="dropdown-menu chapter-dropdown-menu" aria-labelledby="chapterListDropdown">
+                            <div class="chapter-dropdown-header">
+                                <h6>Danh sách chương</h6>
+                            </div>
+                            <div class="dropdown-divider"></div>
+                            <div class="chapter-dropdown-body">
+                                @foreach ($story->chapters->sortByDesc('number') as $chap)
+                                    <a class="dropdown-item {{ $chap->id === $chapter->id ? 'active' : '' }}"
+                                        href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chap->slug]) }}">
+                                        Chương {{ $chap->number }}: {{ $chap->title }}
+                                    </a>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Chapter Content -->
-                    <div id="chapter-content"
-                        class="chapter-content mb-4 animate__animated animate__fadeIn animate__delay-1s">
-                        {!! $chapter->content !!}
-                    </div>
-
-                    <!-- Chapter Navigation Bottom -->
-                    <div
-                        class="chapter-nav d-flex justify-content-between align-items-center my-4 animate__animated animate__fadeIn">
-                        @if ($prevChapter)
-                            <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $prevChapter->slug]) }}"
-                                class="btn btn-primary btn-sm">
-                                <i class="fas fa-arrow-left me-1"></i> Chương trước
-                            </a>
-                        @else
-                            <button disabled class="btn btn-outline-secondary btn-sm">
-                                <i class="fas fa-chevron-left me-1"></i> Chương trước
-                            </button>
-                        @endif
-
-                        <a href="{{ route('show.page.story', $story->slug) }}"
-                            class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-book me-1"></i> Mục lục
+                    @if ($nextChapter)
+                        <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $nextChapter->slug]) }}"
+                            class="btn btn-lg bg-1 text-white btn-next rounded-5 ms-2 d-sm-flex align-items-center">
+                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
                         </a>
-
-                        @if ($nextChapter)
-                            <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $nextChapter->slug]) }}"
-                                class="btn btn-primary btn-sm">
-                                Chương tiếp <i class="fas fa-arrow-right ms-1"></i>
-                            </a>
-                        @else
-                            <button disabled class="btn btn-outline-secondary btn-sm">
-                                Chương tiếp <i class="fas fa-chevron-right ms-1"></i>
-                            </button>
-                        @endif
-                    </div>
-
+                    @else
+                        <button disabled
+                            class="btn btn-outline-secondary btn-lg btn-next rounded-5 ms-2 d-sm-flex align-items-center">
+                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
     </section>
+
+    <!-- Reading Settings Floating Button -->
+    <div class="reading-settings-container">
+        <div class="reading-settings-menu">
+            <button class="reading-setting-btn fullscreen-btn" title="Toàn màn hình">
+                <i class="fas fa-expand"></i>
+            </button>
+            <button class="reading-setting-btn theme-btn" title="Chế độ tối/sáng">
+                <i class="fas fa-moon"></i>
+            </button>
+            <button class="reading-setting-btn book-mode-btn" title="Chế độ sách">
+                <i class="fas fa-book-open"></i>
+            </button>
+            <button class="reading-setting-btn font-increase-btn" title="Tăng cỡ chữ">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="reading-setting-btn font-decrease-btn" title="Giảm cỡ chữ">
+                <i class="fas fa-minus"></i>
+            </button>
+            <button class="reading-setting-btn font-family-btn" title="Đổi font chữ">
+                <i class="fas fa-font"></i>
+            </button>
+        </div>
+        <button class="reading-settings-toggle">
+            <i class="fas fa-cog"></i>
+        </button>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-lg-8">
+                @if (!Auth()->check() || (Auth()->check() && Auth()->user()->ban_comment == false))
+                    @include('components.comment', [
+                        'pinnedComments' => $pinnedComments,
+                        'regularComments' => $regularComments,
+                    ])
+                @else
+                    <div class="text-center py-5">
+                        <i class="fas fa-sad-tear fa-4x text-muted mb-3 animate__animated animate__shakeX"></i>
+                        <h5 class="text-danger">Bạn đã bị cấm bình luận!</h5>
+                    </div>
+                @endif
+
+            </div>
+            <div class="col-12 col-lg-4 mt-3 mt-sm-0">
+                <div class="mt-4">
+                    {{-- hot stories --}}
+                    @include('components.hot_stories')
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- @include('components.list_story_de_xuat', ['newStories' => $newStories]) --}}
 @endsection
 
+@auth
+    @include('components.modals.chapter-purchase-modal')
+@endauth
+
+@push('styles')
+    <style>
+        .btn-prev {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+
+        .btn-next {
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+        }
+
+        .story-title-breadcrumb {
+            max-width: 100%;
+        }
+
+        @media (max-width: 576px) {
+            .story-title-breadcrumb {
+                max-width: 100px;
+            }
+        }
+
+        .reading-settings-container {
+            position: fixed;
+            left: 20px;
+            bottom: 24px;
+            z-index: 1000;
+        }
+
+        .reading-settings-toggle {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: var(--primary-color-3);
+            color: white;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .reading-settings-toggle:hover {
+            transform: scale(1.1);
+        }
+
+        .reading-settings-toggle i {
+            font-size: 20px;
+        }
+
+        .reading-settings-menu {
+            position: absolute;
+            bottom: 60px;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            transform: translateY(10px);
+        }
+
+        .reading-settings-menu.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .reading-setting-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background-color: white;
+            color: var(--primary-color-3);
+            border: 2px solid var(--primary-color-3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .reading-setting-btn:hover {
+            transform: scale(1.1);
+            background-color: var(--primary-color-3);
+            color: white;
+        }
+
+        .reading-setting-btn.active {
+            background-color: var(--primary-color-3);
+            color: white;
+        }
+
+        /* Dark mode styles */
+        body.dark-mode {
+            background-color: #222;
+            color: #eee;
+        }
+
+        body.dark-mode #chapter-content {
+            color: #fff;
+        }
+
+        body.dark-mode #chapter-content * {
+            color: #fff !important;
+        }
+
+        body.dark-mode .breadcrumb-item,
+        body.dark-mode .breadcrumb-item a,
+        body.dark-mode .chapter-title,
+        body.dark-mode .badge,
+        body.dark-mode .dropdown-menu,
+        body.dark-mode .dropdown-item {
+            color: #fff !important;
+        }
+
+        body.dark-mode .badge {
+            background-color: #333;
+        }
+
+        body.dark-mode .dropdown-menu {
+            background-color: #333;
+        }
+
+        body.dark-mode .dropdown-item:hover {
+            background-color: #444;
+        }
+
+        /* Book mode styles */
+        body.book-mode #chapter-content {
+            background-color: #f8f5e8;
+            padding: 30px;
+            color: #333;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Font families */
+        body.font-segoe {
+            font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+        }
+
+        body.font-roboto {
+            font-family: 'Roboto', sans-serif !important;
+        }
+
+        body.font-open-sans {
+            font-family: 'Open Sans', sans-serif !important;
+        }
+
+        body.font-lora {
+            font-family: 'Lora', serif !important;
+        }
+
+        body.font-merriweather {
+            font-family: 'Merriweather', serif !important;
+        }
+
+        /* Font family dropdown */
+        .font-family-dropdown {
+            position: absolute;
+            left: 60px;
+            bottom: 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            display: none;
+        }
+
+        .font-family-dropdown.active {
+            display: block;
+        }
+
+        .font-family-dropdown button {
+            display: block;
+            width: 100%;
+            text-align: left;
+            padding: 8px 12px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .font-family-dropdown button:hover {
+            background-color: #f0f0f0;
+        }
+
+        /* Chapter dropdown styles */
+        .chapter-dropdown-menu {
+            max-height: 350px;
+            overflow-y: auto;
+            width: 300px;
+            z-index: 9999 !important;
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            padding: 0;
+            animation: dropdown-fade 0.3s ease;
+            position: absolute !important;
+            top: calc(100% + 5px) !important;
+            left: -75px !important;
+            right: auto !important;
+            bottom: auto !important;
+            transform: none !important;
+            margin: 0 !important;
+        }
+
+        @keyframes dropdown-fade {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chapter-dropdown-menu.show {
+            display: block;
+        }
+
+        .chapter-dropdown-header {
+            position: sticky;
+            top: 0;
+            background: var(--primary-color-3);
+            color: white;
+            padding: 12px 15px;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            z-index: 1;
+        }
+
+        .chapter-dropdown-header h6 {
+            margin: 0;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .chapter-dropdown-body {
+            padding: 8px 0;
+        }
+
+        .dropdown-item {
+            padding: 10px 15px;
+            border-left: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(var(--primary-color-3-rgb), 0.1);
+            border-left: 3px solid var(--primary-color-3);
+        }
+
+        .dropdown-item.active {
+            background-color: rgba(var(--primary-color-3-rgb), 0.2);
+            border-left: 3px solid var(--primary-color-3);
+            font-weight: 600;
+            color: var(--primary-color-3);
+        }
+
+        .dropdown-divider {
+            margin: 0;
+            opacity: 0;
+        }
+
+        /* Custom scrollbar for dropdown */
+        .chapter-dropdown-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chapter-dropdown-body::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        .chapter-dropdown-body::-webkit-scrollbar-thumb {
+            background: var(--primary-color-3);
+            border-radius: 10px;
+        }
+
+        .chapter-dropdown-body::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color-4);
+        }
+
+        /* Dark mode dropdown styles */
+        body.dark-mode .chapter-dropdown-menu {
+            background-color: #333;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark-mode .chapter-dropdown-header {
+            background: var(--primary-color-1);
+        }
+
+        body.dark-mode .dropdown-item {
+            color: #fff;
+            border-left: 3px solid transparent;
+        }
+
+        body.dark-mode .dropdown-item:hover {
+            background-color: #444;
+            border-left: 3px solid var(--primary-color-1);
+        }
+
+        body.dark-mode .dropdown-item.active {
+            background-color: #3a3a3a;
+            border-left: 3px solid var(--primary-color-1);
+        }
+
+        body.dark-mode .chapter-dropdown-body::-webkit-scrollbar-track {
+            background: #2a2a2a;
+        }
+
+        /* For the bottom navigation dropdown, if it would go off-screen, show it above */
+        .chapter-nav:last-of-type .chapter-dropdown-menu {
+            top: auto !important;
+            bottom: calc(100% + 5px) !important;
+        }
+
+        /* Purchase notice styles */
+        .purchase-notice {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .purchase-options {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .chapter-purchase-option, 
+        .story-purchase-option {
+            flex: 1;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .chapter-purchase-option:hover, 
+        .story-purchase-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .story-purchase-option {
+            background-color: #f0f8ff !important;
+            border-color: #d1e7ff !important;
+        }
+        
+        .price {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #ff9800;
+        }
+        
+        .preview-content {
+            position: relative;
+            padding: 1rem;
+            background-color: #fff;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 4px solid var(--primary-color-3);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .preview-content::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+        }
+    </style>
+@endpush
+
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
-
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Script xử lý cài đặt đọc truyện -->
     <script>
-        // DOM elements - Fix: No redeclaration
-        const contentElement = document.getElementById('chapter-content');
-        const chapterSection = document.getElementById('chapter');
-        const progressBar = document.getElementById('reading-progress-bar');
-        const fullscreenToggle = document.getElementById('fullscreen-toggle');
-        const fontDecreaseBtn = document.getElementById('font-decrease');
-        const fontIncreaseBtn = document.getElementById('font-increase');
+        document.addEventListener('DOMContentLoaded', function() {
+            // Các chức năng khác của trang chapter
+            const toggleBtn = document.querySelector('.reading-settings-toggle');
+            const settingsMenu = document.querySelector('.reading-settings-menu');
+            const fullscreenBtn = document.querySelector('.fullscreen-btn');
+            const themeBtn = document.querySelector('.theme-btn');
+            const bookModeBtn = document.querySelector('.book-mode-btn');
+            const fontIncreaseBtn = document.querySelector('.font-increase-btn');
+            const fontDecreaseBtn = document.querySelector('.font-decrease-btn');
+            const fontFamilyBtn = document.querySelector('.font-family-btn');
+            const chapterContent = document.getElementById('chapter-content');
 
-        let fontSize = localStorage.getItem('fontSize') || 18;
-        let theme = localStorage.getItem('theme') || 'light';
-        let isFullscreen = false;
+            // Create font family dropdown
+            const fontFamilyDropdown = document.createElement('div');
+            fontFamilyDropdown.className = 'font-family-dropdown';
+            fontFamilyDropdown.innerHTML = `
+                <button data-font="font-segoe">Segoe UI (Mặc định)</button>
+                <button data-font="font-roboto">Roboto</button>
+                <button data-font="font-open-sans">Open Sans</button>
+                <button data-font="font-lora">Lora</button>
+                <button data-font="font-merriweather">Merriweather</button>
+            `;
+            document.querySelector('.reading-settings-container').appendChild(fontFamilyDropdown);
 
-        // Font size controls
-        function changeFontSize(delta) {
-            fontSize = Math.max(14, Math.min(24, parseInt(fontSize) + delta));
-            contentElement.style.fontSize = `${fontSize}px`;
-            localStorage.setItem('fontSize', fontSize);
-
-            // Animation for font size change
-            anime({
-                targets: '#chapter-content',
-                scale: [0.98, 1],
-                opacity: [0.8, 1],
-                duration: 300,
-                easing: 'easeOutQuad'
+            // Toggle settings menu
+            toggleBtn.addEventListener('click', function() {
+                settingsMenu.classList.toggle('active');
+                fontFamilyDropdown.classList.remove('active');
             });
-        }
 
-        fontDecreaseBtn.addEventListener('click', () => changeFontSize(-1));
-        fontIncreaseBtn.addEventListener('click', () => changeFontSize(1));
-
-        // Theme controls
-        document.querySelectorAll('.theme-btn').forEach(button => {
-            button.addEventListener('click', () => {
-                const newTheme = button.dataset.theme;
-
-                // Don't reapply same theme
-                if (theme === newTheme) return;
-
-                theme = newTheme;
-                applyTheme(theme);
-                localStorage.setItem('theme', theme);
-
-                // Animation for theme change
-                anime({
-                    targets: '#chapter-content',
-                    opacity: [0.5, 1],
-                    duration: 400,
-                    easing: 'easeInOutQuad'
-                });
-
-                // Update active state on buttons
-                updateActiveThemeButton();
-            });
-        });
-
-        function applyTheme(theme) {
-            // Remove existing theme classes
-            contentElement.classList.remove('theme-light', 'theme-sepia', 'theme-dark');
-            document.body.classList.remove('theme-light', 'theme-sepia', 'theme-dark');
-            chapterSection.classList.remove('theme-light', 'theme-sepia', 'theme-dark');
-
-            // Add new theme class
-            contentElement.classList.add(`theme-${theme}`);
-            document.body.classList.add(`theme-${theme}`);
-            chapterSection.classList.add(`theme-${theme}`);
-        }
-
-        function updateActiveThemeButton() {
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.classList.remove('active', 'btn-primary');
-                btn.classList.add('btn-outline-secondary');
-
-                if (btn.dataset.theme === theme) {
-                    btn.classList.add('active', 'btn-primary');
-                    btn.classList.remove('btn-outline-secondary');
-                }
-            });
-        }
-
-        // Fullscreen toggle
-        fullscreenToggle.addEventListener('click', () => {
-            if (!isFullscreen) {
-                // Enter fullscreen
-                if (document.documentElement.requestFullscreen) {
-                    document.documentElement.requestFullscreen();
-                } else if (document.documentElement.mozRequestFullScreen) {
-                    document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) {
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) {
-                    document.documentElement.msRequestFullscreen();
-                }
-                fullscreenToggle.innerHTML = '<i class="fas fa-compress"></i>';
-            } else {
-                // Exit fullscreen
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) {
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                fullscreenToggle.innerHTML = '<i class="fas fa-expand"></i>';
-            }
-            isFullscreen = !isFullscreen;
-        });
-
-        // New: Add scroll tracking for progress bar
-        window.addEventListener('scroll', function() {
-            // Update reading progress
-            const windowHeight = window.innerHeight;
-            const documentHeight = document.documentElement.scrollHeight;
-            const scrollTop = window.scrollY;
-            const progress = (scrollTop / (documentHeight - windowHeight)) * 100;
-            progressBar.style.width = `${progress}%`;
-        });
-
-        // Initialize settings
-        window.addEventListener('DOMContentLoaded', () => {
-            contentElement.style.fontSize = `${fontSize}px`;
-            applyTheme(theme);
-            updateActiveThemeButton();
-
-            // Add animation to chapter content on load
-            setTimeout(() => {
-                document.querySelectorAll('.animate__animated').forEach(el => {
-                    el.style.visibility = 'visible';
-                });
-            }, 100);
-        });
-
-        // Search functionality
-        let searchTimeout;
-
-        $('#search-chapter').on('input', function() {
-            clearTimeout(searchTimeout);
-            const searchTerm = $(this).val().trim();
-
-            if (searchTerm.length < 2) {
-                $('#search-results').addClass('d-none');
-                return;
-            }
-
-            searchTimeout = setTimeout(() => {
-                // Show loading indicator
-                $('#results-list').html('<div class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"></div><span class="ms-2">Đang tìm kiếm...</span></div>');
-                $('#search-results').removeClass('d-none');
-                
-                $.ajax({
-                    url: '{{ route('chapters.search') }}',
-                    data: {
-                        search: searchTerm,
-                        story_id: '{{ $story->id }}'
-                    },
-                    success: function(response) {
-                        $('#results-list').html(response.html);
-                        
-                        // Add animation to results
-                        anime({
-                            targets: '#results-list .list-group-item',
-                            opacity: [0, 1],
-                            translateY: [10, 0],
-                            delay: anime.stagger(50)
-                        });
-                    },
-                    error: function() {
-                        $('#results-list').html('<div class="text-center p-3">Có lỗi xảy ra khi tìm kiếm</div>');
-                    }
-                });
-            }, 300);
-        });
-
-        $('#close-search').click(function() {
-            $('#search-results').addClass('d-none');
-            $('#search-chapter').val('');
-        });
-
-        $(document).on('click', function(e) {
-            if (!$(e.target).closest('.search-wrapper').length) {
-                $('#search-results').addClass('d-none');
-            }
-        });
-
-        // Enhance sticky behavior for mobile
-        if (window.innerWidth <= 768) {
-            let lastScrollTop = 0;
-            const controlsWrapper = document.querySelector('.reading-controls-wrapper');
-            
-            window.addEventListener('scroll', function() {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                
-                // Kiểm tra hướng cuộn
-                if (scrollTop > lastScrollTop && scrollTop > 100) {
-                    // Cuộn xuống & đã cuộn quá 100px - ẩn thanh điều khiển
-                    controlsWrapper.style.transform = 'translateY(-100%)';
-                    controlsWrapper.style.opacity = '0';
-                    controlsWrapper.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            // Fullscreen functionality
+            fullscreenBtn.addEventListener('click', function() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                    });
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                    fullscreenBtn.classList.add('active');
                 } else {
-                    // Cuộn lên hoặc ở gần đỉnh trang - hiển thị thanh điều khiển
-                    controlsWrapper.style.transform = 'translateY(0)';
-                    controlsWrapper.style.opacity = '1';
-                }
-                
-                lastScrollTop = scrollTop;
-            });
-            
-            // Hiển thị lại thanh điều khiển khi tap vào màn hình
-            document.addEventListener('click', function() {
-                controlsWrapper.style.transform = 'translateY(0)';
-                controlsWrapper.style.opacity = '1';
-            });
-        }
-
-        // Tracking reading progress
-        let lastSavedProgress = 0;
-        const MIN_PROGRESS_CHANGE = 5; // Chỉ lưu khi tiến độ thay đổi ít nhất 5%
-
-        function trackReadingProgress() {
-            const content = document.getElementById('chapter-content');
-            if (!content) return;
-            
-            const contentHeight = content.scrollHeight;
-            const viewportHeight = window.innerHeight;
-            const scrollPosition = window.scrollY;
-            
-            // Tính toán phần trăm đã đọc
-            const scrolled = scrollPosition + viewportHeight;
-            const maxScrollable = contentHeight + content.offsetTop;
-            let progressPercent = Math.min(100, Math.round((scrolled / maxScrollable) * 100));
-            
-            // Nếu đã cuộn quá 90%, coi như đã đọc hết
-            if (progressPercent > 90) {
-                progressPercent = 100;
-            }
-            
-            // Cập nhật thanh tiến độ đọc
-            const progressBar = document.getElementById('reading-progress-bar');
-            if (progressBar) {
-                progressBar.style.width = `${progressPercent}%`;
-            }
-            
-            // Chỉ lưu khi có thay đổi đáng kể
-            if (Math.abs(progressPercent - lastSavedProgress) >= MIN_PROGRESS_CHANGE) {
-                if (window.progressUpdateTimeout) {
-                    clearTimeout(window.progressUpdateTimeout);
-                }
-                
-                window.progressUpdateTimeout = setTimeout(() => {
-                    saveReadingProgress(progressPercent);
-                    lastSavedProgress = progressPercent;
-                }, 2000); // Đợi 2 giây sau khi dừng cuộn
-            }
-        }
-
-        function saveReadingProgress(progressPercent) {
-            // Sử dụng fetch API để gửi tiến độ đến server
-            fetch('{{ route("reading.save-progress") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({
-                    story_id: {{ $story->id }},
-                    chapter_id: {{ $chapter->id }},
-                    progress_percent: progressPercent
-                })
-            }).catch(error => console.error('Error saving reading progress:', error));
-        }
-
-        // Lắng nghe sự kiện cuộn trang và thay đổi kích thước cửa sổ
-        window.addEventListener('scroll', trackReadingProgress);
-        window.addEventListener('resize', trackReadingProgress);
-
-        // Tracking initial progress when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(trackReadingProgress, 1000); // Đợi 1 giây sau khi trang đã tải
-        });
-
-        // Lưu tiến độ khi rời khỏi trang
-        window.addEventListener('beforeunload', () => {
-            // Lưu tiến độ hiện tại ngay lập tức không cần đợi
-            const content = document.getElementById('chapter-content');
-            if (content) {
-                const contentHeight = content.scrollHeight;
-                const viewportHeight = window.innerHeight;
-                const scrollPosition = window.scrollY;
-                const scrolled = scrollPosition + viewportHeight;
-                const maxScrollable = contentHeight + content.offsetTop;
-                let progressPercent = Math.min(100, Math.round((scrolled / maxScrollable) * 100));
-                
-                if (progressPercent > 90) progressPercent = 100;
-                
-                // Sử dụng Beacon API để gửi dữ liệu mà không chặn trang
-                const data = new FormData();
-                data.append('story_id', {{ $story->id }});
-                data.append('chapter_id', {{ $chapter->id }});
-                data.append('progress_percent', progressPercent);
-                data.append('_token', '{{ csrf_token() }}');
-                
-                navigator.sendBeacon('{{ route("reading.save-progress") }}', data);
-            }
-        });
-
-        // Thêm vào phần script của trang đọc chương
-        $(document).ready(function() {
-            // Biến để lưu vị trí cuộn
-            let lastScrollPosition = 0;
-            let isScrollingTimer;
-            let contentHeight = $('.chapter-content').height();
-            let windowHeight = $(window).height();
-            
-            // Theo dõi vị trí cuộn trong khi đọc
-            $(window).scroll(function() {
-                clearTimeout(isScrollingTimer);
-                
-                // Tính toán phần trăm đã đọc
-                lastScrollPosition = window.scrollY;
-                let totalScrollHeight = $(document).height() - windowHeight;
-                let progressPercent = Math.min(Math.round((lastScrollPosition / totalScrollHeight) * 100), 100);
-                
-                // Chờ người dùng dừng cuộn rồi mới cập nhật
-                isScrollingTimer = setTimeout(function() {
-                    saveReadingProgress(progressPercent);
-                }, 1000);
-            });
-            
-            // Lưu tiến độ đọc khi người dùng rời khỏi trang
-            $(window).on('beforeunload', function() {
-                let totalScrollHeight = $(document).height() - windowHeight;
-                let progressPercent = Math.min(Math.round((lastScrollPosition / totalScrollHeight) * 100), 100);
-                saveReadingProgress(progressPercent);
-            });
-            
-            // Hàm lưu tiến độ đọc
-            function saveReadingProgress(progressPercent) {
-                $.ajax({
-                    url: "{{ route('reading.save-progress') }}",
-                    type: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        story_id: {{ $story->id }},
-                        chapter_id: {{ $chapter->id }},
-                        progress_percent: progressPercent
-                    },
-                    success: function(response) {
-                        console.log("Đã lưu tiến độ đọc: " + progressPercent + "%");
-                    },
-                    error: function(xhr) {
-                        console.error("Lỗi khi lưu tiến độ đọc");
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                        fullscreenBtn.classList.remove('active');
                     }
+                }
+            });
+
+            // Theme toggle (dark/light)
+            themeBtn.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                themeBtn.classList.toggle('active');
+
+                if (document.body.classList.contains('dark-mode')) {
+                    themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                } else {
+                    themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
+                }
+            });
+
+            // Book mode toggle
+            bookModeBtn.addEventListener('click', function() {
+                document.body.classList.toggle('book-mode');
+                bookModeBtn.classList.toggle('active');
+            });
+
+            // Font size adjustment
+            let currentFontSize = parseInt(window.getComputedStyle(chapterContent).fontSize);
+
+            fontIncreaseBtn.addEventListener('click', function() {
+                if (currentFontSize < 24) {
+                    currentFontSize += 1;
+                    chapterContent.style.fontSize = currentFontSize + 'px';
+                    localStorage.setItem('chapter-font-size', currentFontSize);
+                }
+            });
+
+            fontDecreaseBtn.addEventListener('click', function() {
+                if (currentFontSize > 12) {
+                    currentFontSize -= 1;
+                    chapterContent.style.fontSize = currentFontSize + 'px';
+                    localStorage.setItem('chapter-font-size', currentFontSize);
+                }
+            });
+
+            // Font family toggle
+            fontFamilyBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                fontFamilyDropdown.classList.toggle('active');
+            });
+
+            // Font family selection
+            fontFamilyDropdown.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', function() {
+                    const fontClass = this.getAttribute('data-font');
+
+                    // Remove all font classes from body
+                    document.body.classList.remove('font-segoe', 'font-roboto', 'font-open-sans',
+                        'font-lora', 'font-merriweather');
+
+                    // Add selected font class to body
+                    document.body.classList.add(fontClass);
+
+                    // Save preference
+                    localStorage.setItem('chapter-font-family', fontClass);
+
+                    // Close dropdown
+                    fontFamilyDropdown.classList.remove('active');
                 });
+            });
+
+            // Close menus when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!e.target.closest('.reading-settings-container')) {
+                    fontFamilyDropdown.classList.remove('active');
+                }
+            });
+
+            // Load saved preferences
+            function loadSavedPreferences() {
+                // Load font size
+                const savedFontSize = localStorage.getItem('chapter-font-size');
+                if (savedFontSize) {
+                    currentFontSize = parseInt(savedFontSize);
+                    chapterContent.style.fontSize = currentFontSize + 'px';
+                }
+
+                // Load font family
+                const savedFontFamily = localStorage.getItem('chapter-font-family');
+                if (savedFontFamily) {
+                    document.body.classList.add(savedFontFamily);
+                }
+
+                // Load theme
+                if (localStorage.getItem('dark-mode') === 'true') {
+                    document.body.classList.add('dark-mode');
+                    themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                    themeBtn.classList.add('active');
+                }
+
+                // Load book mode
+                if (localStorage.getItem('book-mode') === 'true') {
+                    document.body.classList.add('book-mode');
+                    bookModeBtn.classList.add('active');
+                }
             }
-            
-            // Khôi phục vị trí cuộn nếu quay lại chương đã đọc dở
-            function restoreScrollPosition() {
-                @if(isset($userReading) && $userReading)
-                    let savedPosition = {{ $userReading->progress_percent }};
-                    if (savedPosition > 0) {
-                        let totalScrollHeight = $(document).height() - windowHeight;
-                        let scrollToPosition = (savedPosition / 100) * totalScrollHeight;
-                        window.scrollTo(0, scrollToPosition);
-                    }
-                @endif
-            }
-            
-            // Khôi phục vị trí khi tải trang
-            restoreScrollPosition();
+
+            // Save theme preference when changed
+            themeBtn.addEventListener('click', function() {
+                localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
+            });
+
+            // Save book mode preference when changed
+            bookModeBtn.addEventListener('click', function() {
+                localStorage.setItem('book-mode', document.body.classList.contains('book-mode'));
+            });
+
+            // Load preferences on page load
+            loadSavedPreferences();
+
+            // Fix dropdown positioning
+            const dropdownButtons = document.querySelectorAll('.chapter-list-dropdown .btn');
+            dropdownButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Đợi Bootstrap mở dropdown
+                    setTimeout(() => {
+                        const dropdown = this.nextElementSibling;
+                        if (dropdown && dropdown.classList.contains('show')) {
+                            // Kiểm tra xem dropdown có bị tràn ra khỏi viewport không
+                            const rect = dropdown.getBoundingClientRect();
+                            const windowHeight = window.innerHeight;
+
+                            // Nếu dropdown sẽ tràn ra khỏi màn hình
+                            if (rect.bottom > windowHeight) {
+                                dropdown.style.top = 'auto';
+                                dropdown.style.bottom = 'calc(100% + 5px)';
+                            } else {
+                                dropdown.style.top = 'calc(100% + 5px)';
+                                dropdown.style.bottom = 'auto';
+                            }
+
+                            // Đảm bảo dropdown không bị che khuất bởi nội dung
+                            dropdown.style.zIndex = '9999';
+                        }
+                    }, 0);
+                });
+            });
         });
     </script>
 @endpush
 
-@push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <style>
-        .animate__animated {
-            visibility: hidden;
-            --animate-duration: 0.8s;
-        }
-
-        #chapter {
-            min-height: 100vh;
-            transition: background-color 0.5s ease, color 0.5s ease;
-            position: relative;
-        }
-
-        .chapter-content {
-            padding: 30px;
-            font-size: 18px;
-            line-height: 1.8;
-            text-align: justify;
-            border-radius: 12px;
-            scroll-behavior: smooth;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Typography improvements */
-        /* Progress bar */
-        .reading-progress {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            width: 100%;
-            background-color: #eeeeee;
-            border-radius: 2px;
-        }
-
-        /* Enhanced search results styling */
-        #search-results {
-            z-index: 1050;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        #search-results .card {
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        #search-results .list-group-item {
-            padding: 12px 16px;
-            border-left: 0;
-            border-right: 0;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        #search-results .list-group-item:hover {
-            background-color: rgba(13, 110, 253, 0.08);
-            transform: translateX(4px);
-        }
-
-        .theme-dark #search-results .card {
-            background-color: #2d2d2d;
-            border-color: #444;
-        }
-
-        .theme-dark #search-results .list-group-item {
-            border-color: #444;
-            background-color: #2d2d2d;
-            color: #eee;
-        }
-
-        .theme-dark #search-results .list-group-item:hover {
-            background-color: #3a3a3a;
-        }
-
-        .theme-sepia #search-results .card {
-            background-color: #f4ecd8;
-            border-color: #d8cba7;
-        }
-
-        .theme-sepia #search-results .list-group-item {
-            border-color: #d8cba7;
-            background-color: #f4ecd8;
-            color: #5b4636;
-        }
-
-        .theme-sepia #search-results .list-group-item:hover {
-            background-color: #e8dcc0;
-        }
-
-        /* Loading spinner animation */
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-
-        #results-list .spinner-border {
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-
-        /* Customize scrollbar */
-        .chapter-content::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .chapter-content::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .chapter-content::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        .chapter-content::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* Themes with improved colors */
-        .theme-light {
-            background-color: #ffffff;
-            color: #333333;
-        }
-
-        .theme-light .chapter-content {
-            background-color: #ffffff;
-            color: #333333;
-            border: 1px solid #eaeaea;
-        }
-
-        .theme-sepia {
-            background-color: #f8f0e0;
-            color: #5b4636;
-        }
-
-        .theme-sepia .chapter-content {
-            background-color: #f4ecd8;
-            color: #5b4636;
-            border: 1px solid #e8dcbd;
-        }
-
-        .theme-dark {
-            background-color: #222222;
-            color: #dddddd;
-        }
-
-        .theme-dark .chapter-content {
-            background-color: #2d2d2d;
-            color: #cccccc;
-            border: 1px solid #3a3a3a;
-        }
-
-        .theme-dark .card {
-            background-color: #2d2d2d;
-            border-color: #3a3a3a;
-        }
-
-        .theme-dark .card-header {
-            background-color: #333333;
-            border-color: #3a3a3a;
-            color: #cccccc;
-        }
-
-        .theme-dark .btn-outline-secondary {
-            color: #aaaaaa;
-            border-color: #555555;
-        }
-
-        .theme-dark .form-control,
-        .theme-dark .input-group-text {
-            background-color: #333333;
-            border-color: #444444;
-            color: #cccccc;
-        }
-
-        .theme-dark .badge.bg-light {
-            background-color: #333333 !important;
-            color: #cccccc !important;
-        }
-
-        /* Search results */
-        #search-results {
-            z-index: 1000;
-        }
-
-        #search-results .card {
-            border: 1px solid rgba(0, 0, 0, .125);
-            box-shadow: 0 3px 15px rgba(0, 0, 0, .15);
-        }
-
-        #search-results .list-group-item {
-            padding: 0.75rem 1rem;
-            border-left: 0;
-            border-right: 0;
-            transition: all 0.2s ease;
-        }
-
-        #search-results .list-group-item:first-child {
-            border-top: 0;
-        }
-
-        #search-results .list-group-item:hover {
-            background-color: #f8f9fa;
-            transform: translateY(-1px);
-        }
-
-        .theme-dark #search-results .list-group-item:hover {
-            background-color: #333333;
-        }
-
-        /* Button styles */
-        .btn {
-            transition: all 0.2s ease;
-        }
-
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .theme-btn.active {
-            position: relative;
-        }
-
-        .reading-controls .btn-group {
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .chapter-content {
-                padding: 20px 15px;
-            }
-
-            .reading-controls-wrapper {
-                position: sticky;
-                top: 0;
-                z-index: 100;
-            }
-
-            #search-results {
-                position: fixed !important;
-                top: 60px;
-                left: 0;
-                right: 0;
-                margin: 0 15px;
-            }
-
-            .navigation-controls {
-                width: 100%;
-                justify-content: space-between;
-                margin-bottom: 10px;
-            }
-
-            .appearance-controls {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
-
-        /* Animations for theme button */
-        .theme-btn i {
-            transition: transform 0.3s ease;
-        }
-
-        .theme-btn:hover i {
-            transform: rotate(15deg);
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .chapter-content {
-                padding: 20px 15px;
-            }
-
-            .reading-controls-wrapper {
-                position: sticky !important;
-                top: 60px !important;
-                z-index: 1020 !important;
-                width: 100%;
-                margin-top: 10px;
-                margin-bottom: 15px !important;
-            }
-
-            /* Thêm margin-top cho chapter content để tránh bị che khuất */
-            .chapter-content {
-                margin-top: 20px;
-            }
-
-            /* Đảm bảo reading progress luôn ở trên cùng */
-            .reading-progress {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                margin: 0 !important;
-                z-index: 1050 !important;
-                border-radius: 0;
-            }
-
-            #search-results {
-                position: fixed !important;
-                top: 80px !important;
-                left: 0;
-                right: 0;
-                margin: 0 15px;
-                z-index: 1030 !important;
-            }
-
-            .navigation-controls {
-                width: 100%;
-                justify-content: space-between;
-                margin-bottom: 10px;
-            }
-
-            .appearance-controls {
-                width: 100%;
-                justify-content: space-between;
-            }
-        }
-    </style>
-@endpush
+<!-- Modal Xác nhận mua -->
+<div class="modal fade" id="confirmPurchaseModal" tabindex="-1" aria-labelledby="confirmPurchaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmPurchaseModalLabel">Xác nhận mua</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-coins fa-3x text-warning mb-3"></i>
+                    <h5 class="purchase-item-title">Bạn có chắc chắn muốn mua?</h5>
+                    <p class="purchase-item-price mb-0">Giá: <span class="fw-bold text-danger"></span> xu</p>
+                    <p class="text-muted small">Số dư của bạn: <span id="userBalance">{{ auth()->check() ? auth()->user()->coins : 0 }}</span> xu</p>
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i> Lưu ý: Hành động này không thể hoàn tác sau khi thực hiện!
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <form id="confirmPurchaseForm" method="POST">
+                    @csrf
+                    <input type="hidden" id="purchaseItemId" name="chapter_id">
+                    <button type="submit" class="btn btn-primary">Xác nhận mua</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

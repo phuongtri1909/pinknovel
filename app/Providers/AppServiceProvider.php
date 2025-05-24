@@ -38,7 +38,8 @@ class AppServiceProvider extends ServiceProvider
            'layouts.partials.header',
            'pages.home',
            'pages.search.results',
-           'layouts.partials.footer'
+           'layouts.partials.footer',
+           'pages.chapter'
         ], function ($view) {
             // Get all categories for standard navigation
             $allCategories = Category::withCount('stories')->orderBy('name')->get();

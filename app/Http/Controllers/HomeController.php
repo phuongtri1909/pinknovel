@@ -11,9 +11,12 @@ use App\Models\Chapter;
 use App\Models\Comment;
 use App\Models\Socials;
 use App\Models\Category;
+use App\Models\UserReading;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Services\ReadingHistoryService;
+use App\Models\ChapterPurchase;
+use App\Models\StoryPurchase;
 
 class HomeController extends Controller
 {
@@ -399,8 +402,8 @@ class HomeController extends Controller
 
         // Apply permissions
         if (auth()->check()) {
-            if (in_array(auth()->user()->role, ['admin', 'mod'])) {
-                // Admin and mod can see all chapters
+            if (in_array(auth()->user()->role, ['admin', 'mod', 'author'])) {
+                // Admin, mod, and author can see all chapters
                 $chapter = $query->firstOrFail();
             } else {
                 // Regular users can only see published chapters
@@ -424,6 +427,8 @@ class HomeController extends Controller
         $wordCount = str_word_count(strip_tags($chapter->content), 0, 'àáãạảăắằẳẵặâấầẩẫậèéẹẻẽêềếểễệđìíĩỉịòóõọỏôốồổỗộơớờởỡợùúũụủưứừửữựỳýỵỷỹ');
         $chapter->word_count = $wordCount;
 
+        $chapter->comments_count = Comment::where('story_id', $story->id)->count();
+
         // Find next and previous chapters
         $nextChapterQuery = Chapter::where('story_id', $story->id)
             ->where('number', '>', $chapter->number)
@@ -434,7 +439,7 @@ class HomeController extends Controller
             ->orderBy('number', 'desc');
 
         // Apply published filter for non-admin/mod users    
-        if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'mod'])) {
+        if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'mod', 'author'])) {
             $nextChapterQuery->where('status', 'published');
             $prevChapterQuery->where('status', 'published');
         }
@@ -448,7 +453,7 @@ class HomeController extends Controller
             ->orderBy('number', 'desc')
             ->take(5);
 
-        if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'mod'])) {
+        if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'mod', 'author'])) {
             $recentChaptersQuery->where('status', 'published');
         }
 
@@ -461,13 +466,101 @@ class HomeController extends Controller
         // Lấy danh sách truyện đọc gần đây
         $recentReads = $readingService->getRecentReadings(5);
 
+        // Retrieve reading progress if exists
+        $userReading = null;
+        if (auth()->check()) {
+            $userReading = UserReading::where('user_id', auth()->id())
+                ->where('story_id', $story->id)
+                ->where('chapter_id', $chapter->id)
+                ->first();
+        } else {
+            $deviceKey = $readingService->getOrCreateDeviceKey();
+            $userReading = UserReading::where('session_id', $deviceKey)
+                ->whereNull('user_id')
+                ->where('story_id', $story->id)
+                ->where('chapter_id', $chapter->id)
+                ->first();
+        }
+        
+        // Pass reading progress to view
+        $readingProgress = $userReading ? $userReading->progress_percent : 0;
+
+        // Kiểm tra quyền truy cập nội dung
+        $hasAccess = false;
+        $hasPurchasedChapter = false;
+        $hasPurchasedStory = false;
+
+        // Admin, mod, author và chủ sở hữu truyện luôn có quyền truy cập
+        if (auth()->check()) {
+            $user = auth()->user();
+            
+            if (in_array($user->role, ['admin', 'mod']) || 
+                ($user->role == 'author' && $story->user_id == $user->id)) {
+                $hasAccess = true;
+            } else {
+                // Kiểm tra nếu đã mua chương này
+                $hasPurchasedChapter = ChapterPurchase::where('user_id', $user->id)
+                    ->where('chapter_id', $chapter->id)
+                    ->exists();
+                
+                // Kiểm tra nếu đã mua truyện này
+                $hasPurchasedStory = StoryPurchase::where('user_id', $user->id)
+                    ->where('story_id', $story->id)
+                    ->exists();
+                
+                $hasAccess = $hasPurchasedChapter || $hasPurchasedStory;
+            }
+        }
+
+        // Nếu chương miễn phí
+        if (!$chapter->price || $chapter->price == 0) {
+            $hasAccess = true;
+        }
+        
+        // Ẩn nội dung nếu không có quyền truy cập
+        if (!$hasAccess) {
+            // Không xóa content hoàn toàn để có thể hiển thị phần preview nếu cần
+            $originalContent = $chapter->content;
+            
+            // Lấy một phần đầu của nội dung làm preview (ví dụ: 10% đầu tiên)
+            $previewLength = min(300, intval(strlen($originalContent) * 0.1));
+            $chapter->preview_content = substr($originalContent, 0, $previewLength) . '...';
+        }
+
+        // Xử lý nội dung dựa trên quyền truy cập
+        if (!$hasAccess) {
+            // Xóa hoàn toàn nội dung để đảm bảo bảo mật
+            $chapter->content = '';
+        }
+
+        // Get comments
+        $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+            ->where('story_id', $story->id)
+            ->whereNull('reply_id')
+            ->where('is_pinned', true)
+            ->latest('pinned_at')
+            ->get();
+
+        $regularComments = Comment::with(['user', 'replies.user', 'reactions'])
+            ->where('story_id', $story->id)
+            ->whereNull('reply_id')
+            ->where('is_pinned', false)
+            ->latest()
+            ->paginate(10);
+
         return view('pages.chapter', compact(
             'chapter',
             'story',
             'nextChapter',
             'prevChapter',
             'recentChapters',
-            'recentReads'
+            'recentReads',
+            'readingProgress',
+            'pinnedComments',
+            'regularComments',
+            'hasAccess',
+            'hasPurchasedChapter',
+            'hasPurchasedStory'
         ));
     }
 

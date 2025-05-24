@@ -100,6 +100,44 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="form-group mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <label class="mb-0 me-3" for="has_combo">Bán combo (tất cả chương)</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="has_combo" class="form-check-input" id="has_combo"
+                                                role="switch" {{ $story->has_combo ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="combo-pricing-container" class="mt-3" style="{{ $story->has_combo ? '' : 'display: none;' }}">
+                                    <div class="form-group">
+                                        <label for="combo_price">Giá combo (xu)</label>
+                                        <input type="number" name="combo_price" id="combo_price" 
+                                               class="form-control @error('combo_price') is-invalid @enderror"
+                                               value="{{ old('combo_price', $story->combo_price) }}" min="0">
+                                        @error('combo_price')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    @php
+                                        $totalChapters = $story->chapters()->where('status', 'published')->count();
+                                        $paidChapters = $story->chapters()->where('status', 'published')->where('is_free', 0)->count();
+                                        $totalRegularPrice = $story->chapters()->where('status', 'published')->where('is_free', 0)->sum('price');
+                                        $savings = $totalRegularPrice > 0 ? $totalRegularPrice - ($story->combo_price ?? 0) : 0;
+                                        $savingsPercent = $totalRegularPrice > 0 ? round(($savings / $totalRegularPrice) * 100) : 0;
+                                    @endphp
+
+                                    <div class="alert alert-info mt-3" id="combo-summary">
+                                        <h6>Thông tin combo:</h6>
+                                        <p class="mb-1">- Tổng số chương: <span id="total-chapters">{{ $totalChapters }}</span></p>
+                                        <p class="mb-1">- Số chương trả phí: <span id="paid-chapters">{{ $paidChapters }}</span></p>
+                                        <p class="mb-1">- Tổng giá nếu mua lẻ: <span id="total-regular-price">{{ $totalRegularPrice }}</span> xu</p>
+                                        <p class="mb-1">- Tiết kiệm: <span id="savings">{{ $savings }}</span> xu (<span id="savings-percent">{{ $savingsPercent }}</span>%)</p>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-12 text-center mt-4">
@@ -182,6 +220,35 @@
 
                 return true;
             });
+
+            // Handle combo pricing toggle
+            const hasComboCheckbox = document.getElementById('has_combo');
+            const comboPricingContainer = document.getElementById('combo-pricing-container');
+            const comboPriceInput = document.getElementById('combo_price');
+            
+            hasComboCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    comboPricingContainer.style.display = 'block';
+                    updateComboSummary();
+                } else {
+                    comboPricingContainer.style.display = 'none';
+                    comboPriceInput.value = '0';
+                }
+            });
+            
+            // Update combo summary calculations when price changes
+            comboPriceInput.addEventListener('input', updateComboSummary);
+            
+            function updateComboSummary() {
+                const totalRegularPrice = parseInt(document.getElementById('total-regular-price').textContent) || 0;
+                const comboPrice = parseInt(comboPriceInput.value) || 0;
+                
+                const savings = totalRegularPrice - comboPrice;
+                const savingsPercent = totalRegularPrice > 0 ? Math.round((savings / totalRegularPrice) * 100) : 0;
+                
+                document.getElementById('savings').textContent = savings > 0 ? savings : 0;
+                document.getElementById('savings-percent').textContent = savingsPercent > 0 ? savingsPercent : 0;
+            }
         });
     </script>
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>

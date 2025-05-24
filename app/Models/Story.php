@@ -170,5 +170,18 @@ class Story extends Model
         return round($discount);
     }
 
+    public function purchases()
+    {
+        return $this->hasMany(StoryPurchase::class);
+    }
+
+    /**
+     * Check if a user has purchased this story combo
+     */
+    public function isPurchasedBy($userId)
+    {
+        return $this->purchases()->where('user_id', $userId)->exists();
+    }
+
     protected $with = ['categories'];
 }
