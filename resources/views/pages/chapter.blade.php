@@ -70,13 +70,13 @@
                     @if ($prevChapter)
                         <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $prevChapter->slug]) }}"
                             class="btn bg-1 rounded-5 btn-prev me-2 text-white d-sm-flex align-items-center">
-                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block fs-7">Chương
+                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block">Chương
                                 trước</span>
                         </a>
                     @else
                         <button disabled
-                            class="btn btn-outline-secondary rounded-5 btn-lg btn-prev me-2 d-sm-flex align-items-center">
-                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block fs-7">Chương trước</span>
+                            class="btn btn-outline-secondary rounded-5 btn-prev me-2 d-sm-flex align-items-center">
+                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block">Chương trước</span>
                         </button>
                     @endif
 
@@ -103,13 +103,13 @@
 
                     @if ($nextChapter)
                         <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $nextChapter->slug]) }}"
-                            class="btn btn-lg bg-1 text-white btn-next rounded-5 ms-2 d-sm-flex align-items-center">
-                            <span class="d-none d-sm-block fs-7">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                            class="btn bg-1 text-white btn-next rounded-5 ms-2 d-sm-flex align-items-center">
+                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
                         </a>
                     @else
                         <button disabled
-                            class="btn btn-outline-secondary btn-lg btn-next rounded-5 ms-2 d-sm-flex align-items-center">
-                            <span class="d-none d-sm-block fs-7">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
+                            class="btn btn-outline-secondary btn-next rounded-5 ms-2 d-sm-flex align-items-center">
+                            <span class="d-none d-sm-block ">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
                         </button>
                     @endif
                 </div>
@@ -187,14 +187,13 @@
                     @if ($prevChapter)
                         <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $prevChapter->slug]) }}"
                             class="btn bg-1 rounded-5 btn-prev me-2 text-white d-sm-flex align-items-center">
-                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block fs-7">Chương
+                            <i class="fas fa-arrow-left me-1 h-100"></i> <span class="d-none d-sm-block">Chương
                                 trước</span>
                         </a>
                     @else
                         <button disabled
-                            class="btn btn-outline-secondary rounded-5 btn-lg btn-prev me-2 d-sm-flex align-items-center">
-                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block fs-7">Chương
-                                trước</span>
+                            class="btn btn-outline-secondary rounded-5 btn-prev me-2 d-sm-flex align-items-center">
+                            <i class="fas fa-arrow-left me-1"></i> <span class="d-none d-sm-block">Chương trước</span>
                         </button>
                     @endif
 
@@ -221,15 +220,13 @@
 
                     @if ($nextChapter)
                         <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $nextChapter->slug]) }}"
-                            class="btn btn-lg bg-1 text-white btn-next rounded-5 ms-2 d-sm-flex align-items-center">
-                            <span class="d-none d-sm-block fs-7">Chương tiếp</span> <i
-                                class="fas fa-arrow-right ms-2"></i>
+                            class="btn bg-1 text-white btn-next rounded-5 ms-2 d-sm-flex align-items-center">
+                            <span class="d-none d-sm-block">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
                         </a>
                     @else
                         <button disabled
-                            class="btn btn-outline-secondary btn-lg btn-next rounded-5 ms-2 d-sm-flex align-items-center">
-                            <span class="d-none d-sm-block fs-7">Chương tiếp</span> <i
-                                class="fas fa-arrow-right ms-2"></i>
+                            class="btn btn-outline-secondary btn-next rounded-5 ms-2 d-sm-flex align-items-center">
+                            <span class="d-none d-sm-block ">Chương tiếp</span> <i class="fas fa-arrow-right ms-2"></i>
                         </button>
                     @endif
                 </div>
