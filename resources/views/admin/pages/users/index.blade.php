@@ -19,7 +19,7 @@
                             <h5 class="mb-0">Danh sách người dùng</h5>
                             <p class="text-sm mb-0">
                                 Tổng số: {{ $stats['total'] }} người dùng
-                                ({{ $stats['admin'] }} Admin / {{ $stats['mod'] }} Mod / {{ $stats['user'] }} User)
+                                ({{ $stats['admin'] }} Admin / {{ $stats['author'] }} Tác giả / {{ $stats['user'] }} User)
                             </p>
                         </div>
                         
@@ -29,7 +29,7 @@
                             <select name="role" class="form-select form-select-sm w-100 w-md-auto">
                                 <option value="">Tất cả vai trò</option>
                                 <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="mod" {{ request('role') == 'mod' ? 'selected' : '' }}>Mod</option>
+                                <option value="author" {{ request('role') == 'author' ? 'selected' : '' }}>Tác giả</option>
                                 <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>User</option>
                             </select>
                     
@@ -120,6 +120,8 @@
                                                 <span class="badge bg-gradient-info">{{ $user->role }}</span>
                                             @elseif ($user->role == 'vip')
                                                 <span class="badge bg-gradient-warning">{{ $user->role }}</span>
+                                            @elseif ($user->role == 'author')
+                                                <span class="badge bg-gradient-primary">{{ $user->role }}</span>
                                             @else
                                                 <span class="badge bg-gradient-success">{{ $user->role }}</span>
                                             @endif

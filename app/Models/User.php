@@ -37,51 +37,36 @@ class User extends Authenticatable
         'coins'
     ];
 
-    public function deposits()
-    {
-        return $this->hasMany(Deposit::class);
-    }
-
+    /**
+     * Get all chapter purchases made by this user
+     */
     public function chapterPurchases()
     {
         return $this->hasMany(ChapterPurchase::class);
     }
 
+    /**
+     * Get all story purchases made by this user
+     */
     public function storyPurchases()
     {
         return $this->hasMany(StoryPurchase::class);
     }
-    
+
     /**
-     * Check if user has purchased a specific chapter
+     * Get all deposits made by this user
      */
-    public function hasPurchasedChapter($chapterId)
+    public function deposits()
     {
-        $chapter = Chapter::find($chapterId);
-        
-        if (!$chapter) {
-            return false;
-        }
-        
-        if ($chapter->is_free) {
-            return true;
-        }
-        
-        // Check individual chapter purchase
-        if ($this->chapterPurchases()->where('chapter_id', $chapterId)->exists()) {
-            return true;
-        }
-        
-        // Check if purchased as part of a story combo
-        return $this->storyPurchases()->where('story_id', $chapter->story_id)->exists();
+        return $this->hasMany(Deposit::class);
     }
-    
+
     /**
-     * Check if user has purchased a specific story combo
+     * Get all bookmarks created by this user
      */
-    public function hasPurchasedStory($storyId)
+    public function bookmarks()
     {
-        return $this->storyPurchases()->where('story_id', $storyId)->exists();
+        return $this->hasMany(Bookmark::class);
     }
 
     public function ratings()
@@ -124,15 +109,6 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
-
-    /**
-     * Get the bookmarks for the user.
-     */
-    public function bookmarks()
-    {
-        return $this->hasMany(Bookmark::class);
-    }
-
 
     public function stories()
     {
@@ -195,4 +171,65 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'recently_read' => 'array'
     ];
+
+    /**
+     * Get total amount spent on chapters
+     */
+    public function getTotalChapterSpendingAttribute()
+    {
+        return $this->chapterPurchases()->sum('amount_paid');
+    }
+
+    /**
+     * Get total amount spent on stories
+     */
+    public function getTotalStorySpendingAttribute()
+    {
+        return $this->storyPurchases()->sum('amount_paid');
+    }
+
+    /**
+     * Get total amount deposited
+     */
+    public function getTotalDepositsAttribute()
+    {
+        return $this->deposits()->where('status', 'approved')->sum('coins');
+    }
+
+    /**
+     * Get total revenue for author (from chapters and stories they've authored)
+     */
+    public function getAuthorRevenueAttribute()
+    {
+        // Get stories authored by this user
+        $storyIds = Story::where('user_id', $this->id)->pluck('id');
+        
+        // Calculate revenue from story purchases
+        $storyRevenue = StoryPurchase::whereIn('story_id', $storyIds)->sum('amount_paid');
+        
+        // Calculate revenue from chapter purchases
+        $chapterRevenue = ChapterPurchase::whereHas('chapter', function($query) {
+            $query->whereHas('story', function($query) {
+                $query->where('user_id', $this->id);
+            });
+        })->sum('amount_paid');
+        
+        return $storyRevenue + $chapterRevenue;
+    }
+
+    /**
+     * Get coin transactions for this user
+     */
+    public function coinTransactions()
+    {
+        return $this->hasMany(CoinTransaction::class);
+    }
+
+    /**
+     * Get coin transactions administered by this user
+     */
+    public function administeredCoinTransactions()
+    {
+        return $this->hasMany(CoinTransaction::class, 'admin_id');
+    }
 }

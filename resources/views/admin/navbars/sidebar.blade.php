@@ -186,13 +186,24 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('users.index') ? 'active' : '' }}"
+                <a class="nav-link {{ Route::currentRouteNamed('users.*') ? 'active' : '' }}"
                     href="{{ route('users.index') }}">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-users text-dark icon-sidebar"></i>
                     </div>
                     <span class="nav-link-text ms-1">Danh sách User</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('coins.*') ? 'active' : '' }}"
+                    href="{{ route('coins.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-coins text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Quản lý xu</span>
                 </a>
             </li>
 
@@ -221,6 +232,26 @@
                     <span class="nav-link-text ms-1">Logo</span>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('admin.socials.*') ? 'active' : '' }}"
+                    href="{{ route('admin.socials.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-share-nodes text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Liên hệ</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a href="{{ route('admin.guide.edit') }}" class="nav-link {{ request()->routeIs('admin.guide.*') ? 'active' : '' }}">
+                    <i class="nav-icon fas fa-book"></i>
+                    <p>
+                        Quản lý Hướng dẫn
+                    </p>
+                </a>
+            </li> 
 
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>

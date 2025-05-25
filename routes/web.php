@@ -33,6 +33,9 @@ use App\Http\Controllers\RequestPaymentController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\Admin\StoryReviewController;
 use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
+use App\Http\Controllers\CoinController;
+use App\Http\Controllers\Admin\SocialController;
+use App\Http\Controllers\GuideController;
 
 /*
 |--------------------------------------------------------------------------
@@ -103,7 +106,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::group(['middleware' => 'role:author,admin', 'prefix' => 'author', 'as' => 'author.'], function () {
                 // Routes cho tác giả
                 Route::get('/', [AuthorController::class, 'index'])->name('index');
-                
+
                 // Trang doanh thu
                 Route::get('/revenue', [AuthorController::class, 'revenue'])->name('revenue');
                 Route::get('/revenue/data', [AuthorController::class, 'getRevenueData'])->name('revenue.data');
@@ -190,12 +193,18 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::get('users', [UserController::class, 'index'])->name('users.index');
                     Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');
                     Route::PATCH('users/{user}', [UserController::class, 'update'])->name('users.update');
+                    Route::get('/users/{id}/load-more', [UserController::class, 'loadMoreData'])->name('users.load-more');
+
+                    // Coin management routes
+                    Route::get('coins', [CoinController::class, 'index'])->name('coins.index');
+                    Route::get('coins/{user}/create', [CoinController::class, 'create'])->name('coins.create');
+                    Route::post('coins/{user}', [CoinController::class, 'store'])->name('coins.store');
 
                     Route::resource('categories', CategoryController::class);
                     Route::resource('stories', StoryController::class);
                     Route::resource('stories.chapters', ChapterController::class);
 
-                   
+
                     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
                     Route::get('comments', [CommentController::class, 'allComments'])->name('comments.all');
                     Route::delete('delete-comments/{comment}', [CommentController::class, 'deleteComment'])->name('delete.comments');
@@ -239,18 +248,32 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                         // Quản lý cấu hình hệ thống
                         Route::resource('configs', ConfigController::class);
 
-                         // Story review routes
-                    Route::get('/story-reviews', [StoryReviewController::class, 'index'])->name('story-reviews.index');
-                    Route::get('/story-reviews/{story}', [StoryReviewController::class, 'show'])->name('story-reviews.show');
-                    Route::post('/story-reviews/{story}/approve', [StoryReviewController::class, 'approve'])->name('story-reviews.approve');
-                    Route::post('/story-reviews/{story}/reject', [StoryReviewController::class, 'reject'])->name('story-reviews.reject');
+                        // Story review routes
+                        Route::get('/story-reviews', [StoryReviewController::class, 'index'])->name('story-reviews.index');
+                        Route::get('/story-reviews/{story}', [StoryReviewController::class, 'show'])->name('story-reviews.show');
+                        Route::post('/story-reviews/{story}/approve', [StoryReviewController::class, 'approve'])->name('story-reviews.approve');
+                        Route::post('/story-reviews/{story}/reject', [StoryReviewController::class, 'reject'])->name('story-reviews.reject');
+
+                        // Edit request routes
+                        Route::get('/edit-requests', [AdminStoryEditRequestController::class, 'index'])->name('edit-requests.index');
+                        Route::get('/edit-requests/{editRequest}', [AdminStoryEditRequestController::class, 'show'])->name('edit-requests.show');
+                        Route::post('/edit-requests/{editRequest}/approve', [AdminStoryEditRequestController::class, 'approve'])->name('edit-requests.approve');
+                        Route::post('/edit-requests/{editRequest}/reject', [AdminStoryEditRequestController::class, 'reject'])->name('edit-requests.reject');
                     
-                    // Edit request routes
-                    Route::get('/edit-requests', [AdminStoryEditRequestController::class, 'index'])->name('edit-requests.index');
-                    Route::get('/edit-requests/{editRequest}', [AdminStoryEditRequestController::class, 'show'])->name('edit-requests.show');
-                    Route::post('/edit-requests/{editRequest}/approve', [AdminStoryEditRequestController::class, 'approve'])->name('edit-requests.approve');
-                    Route::post('/edit-requests/{editRequest}/reject', [AdminStoryEditRequestController::class, 'reject'])->name('edit-requests.reject');
+                        // Guide management
+                        Route::get('/guide/edit', [GuideController::class, 'edit'])->name('guide.edit');
+                        Route::post('/guide/update', [GuideController::class, 'update'])->name('guide.update');
+
+                         // Social Media Management
+                        Route::get('socials', [SocialController::class, 'index'])->name('socials.index');
+                        Route::post('socials', [SocialController::class, 'store'])->name('socials.store');
+                        Route::put('socials/{social}', [SocialController::class, 'update'])->name('socials.update');
+                        Route::delete('socials/{social}', [SocialController::class, 'destroy'])->name('socials.destroy');
                     });
+
+                   
+
+                    
                 });
             });
         });
@@ -282,3 +305,6 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
         });
     });
 });
+
+// Guide routes
+Route::get('/huong-dan', [GuideController::class, 'show'])->name('guide.show');

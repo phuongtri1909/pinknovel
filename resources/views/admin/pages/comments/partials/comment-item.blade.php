@@ -11,7 +11,7 @@
             @endif
             
             @if($comment->story)
-                <a href="{{ route('stories.comments.index', $comment->story->id) }}" class="badge bg-primary story-badge">
+                <a href="{{ route('stories.show', $comment->story->id) }}" class="badge bg-primary story-badge">
                     {{ Str::limit($comment->story->title, 30) }}
                 </a>
             @endif

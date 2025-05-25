@@ -5,21 +5,22 @@
             <div class="row">
                 <div class="col-12 col-md-6">
                     <div class="social-icons mb-3 py-3">
-                        <a href="https://facebook.com" target="_blank" class="social-icon" aria-label="Facebook">
-                            <i class="fab fa-facebook-f"></i>
-                        </a>
-                        <a href="https://twitter.com" target="_blank" class="social-icon" aria-label="Twitter">
-                            <i class="fab fa-twitter"></i>
-                        </a>
-                        <a href="https://instagram.com" target="_blank" class="social-icon" aria-label="Instagram">
-                            <i class="fab fa-instagram"></i>
-                        </a>
-                        <a href="https://youtube.com" target="_blank" class="social-icon" aria-label="YouTube">
-                            <i class="fab fa-youtube"></i>
-                        </a>
-                        <a href="https://discord.com" target="_blank" class="social-icon" aria-label="Discord">
-                            <i class="fab fa-discord"></i>
-                        </a>
+                        @forelse($socials as $social)
+                            <a href="{{ $social->url }}" target="_blank" class="social-icon" aria-label="{{ $social->name }}">
+                                @if(strpos($social->icon, 'custom-') === 0)
+                                    <span class="{{ $social->icon }}"></span>
+                                @else
+                                    <i class="{{ $social->icon }}"></i>
+                                @endif
+                            </a>
+                        @empty
+                            <a href="https://facebook.com" target="_blank" class="social-icon" aria-label="Facebook">
+                                <i class="fab fa-facebook-f"></i>
+                            </a>
+                            <a href="mailto:contact@pinknovel.com" target="_blank" class="social-icon" aria-label="Email">
+                                <i class="fas fa-envelope"></i>
+                            </a>
+                        @endforelse
                     </div>
                     <div class="footer-links">
                         <a href="{{ route('home') }}" class="text-decoration-none">Trang Chủ</a>

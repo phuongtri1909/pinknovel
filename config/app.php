@@ -195,6 +195,8 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Providers\ReadingHistoryServiceProvider::class,
+        App\Providers\SocialServiceProvider::class,
+        App\Providers\GuideServiceProvider::class,
 
     ],
 

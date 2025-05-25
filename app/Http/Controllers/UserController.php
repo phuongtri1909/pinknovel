@@ -40,7 +40,63 @@ class UserController extends Controller
             abort(404);
         }
 
-        return view('admin.pages.users.show', compact('user'));
+        // Get financial statistics
+        $stats = [
+            'total_deposits' => $user->total_deposits,
+            'total_spent' => $user->total_chapter_spending + $user->total_story_spending,
+            'balance' => $user->coins,
+            'author_revenue' => $user->role === 'author' ? $user->author_revenue : 0,
+        ];
+
+        // Get deposits with pagination
+        $deposits = $user->deposits()
+            ->with('bank')
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'deposits_page');
+        
+        // Get chapter purchases with pagination
+        $chapterPurchases = $user->chapterPurchases()
+            ->with(['chapter.story'])
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'chapter_page');
+        
+        // Get story purchases with pagination
+        $storyPurchases = $user->storyPurchases()
+            ->with(['story'])
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'story_page');
+        
+        // Get bookmarks with pagination
+        $bookmarks = $user->bookmarks()
+            ->with(['story', 'lastChapter'])
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'bookmarks_page');
+        
+        // Get coin transactions with pagination
+        $coinTransactions = $user->coinTransactions()
+            ->with('admin')
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'coin_page');
+
+        // Count totals for tabs
+        $counts = [
+            'deposits' => $user->deposits()->count(),
+            'chapter_purchases' => $user->chapterPurchases()->count(),
+            'story_purchases' => $user->storyPurchases()->count(),
+            'bookmarks' => $user->bookmarks()->count(),
+            'coin_transactions' => $user->coinTransactions()->count(),
+        ];
+
+        return view('admin.pages.users.show', compact(
+            'user', 
+            'stats', 
+            'deposits', 
+            'chapterPurchases', 
+            'storyPurchases', 
+            'bookmarks',
+            'coinTransactions',
+            'counts'
+        ));
     }
 
     public function update(Request $request, $id)
@@ -190,6 +246,7 @@ class UserController extends Controller
             'admin' => User::where('active', 'active')->where('role', 'admin')->count(),
             'mod' => User::where('active', 'active')->where('role', 'mod')->count(),
             'user' => User::where('active', 'active')->where('role', 'user')->count(),
+            'author' => User::where('active', 'active')->where('role', 'author')->count(),
         ];
 
         if ($authUser->role === 'mod') {
@@ -655,6 +712,57 @@ class UserController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Lịch sử đọc truyện đã được xóa'
+        ]);
+    }
+
+    public function loadMoreData(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $type = $request->type;
+        $page = $request->page;
+        
+        switch ($type) {
+            case 'deposits':
+                $data = $user->deposits()
+                    ->with('bank')
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'deposits_page', $page);
+                break;
+            case 'story-purchases':
+                $data = $user->storyPurchases()
+                    ->with(['story'])
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'story_page', $page);
+                break;
+            case 'chapter-purchases':
+                $data = $user->chapterPurchases()
+                    ->with(['chapter.story'])
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'chapter_page', $page);
+                break;
+            case 'bookmarks':
+                $data = $user->bookmarks()
+                    ->with(['story', 'lastChapter'])
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'bookmarks_page', $page);
+                break;
+            case 'coin-transactions':
+                $data = $user->coinTransactions()
+                    ->with('admin')
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'coin_page', $page);
+                break;
+            default:
+                return response()->json(['error' => 'Invalid type'], 400);
+        }
+        
+        return response()->json([
+            'html' => view("admin.pages.users.partials.{$type}-table", [
+                'data' => $data,
+                'user' => $user
+            ])->render(),
+            'pagination' => $data->links()->toHtml(),
+            'has_more' => $data->hasMorePages()
         ]);
     }
 }

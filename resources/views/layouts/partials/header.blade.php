@@ -126,7 +126,7 @@
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="text-white nav-link fw-bold" href="">
+                                <a class="text-white nav-link fw-bold" href="{{ route('guide.show') }}">
                                     Hướng dẫn
                                 </a>
                             </li>
@@ -285,7 +285,7 @@
 
                         <hr class="divider my-3">
 
-                        <a href="" class="mobile-menu-item fw-semibold">
+                        <a href="{{ route('guide.show') }}" class="mobile-menu-item fw-semibold">
                             <i class="fa-solid fa-circle-info fa-lg me-2 color-3"></i> Hướng dẫn
                         </a>
 

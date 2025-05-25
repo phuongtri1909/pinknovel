@@ -1419,3 +1419,18 @@ body {
     background-color: #f8f9fa;
     border-color: #dadce0;
 }
+
+.custom-zalo {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-image: url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Icon_of_Zalo.svg/50px-Icon_of_Zalo.svg.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    vertical-align: -0.125em;
+}
+
+.social-icon .custom-zalo {
+    font-size: 1.2em;
+} 
