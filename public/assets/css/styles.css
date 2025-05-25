@@ -17,6 +17,10 @@ body {
     font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
+.border-cl-shopee {
+    border: 1px solid var(--primary-color-3) !important;
+}
+
 .color-success-custom {
     color: var(--success-color) !important;
 }
@@ -996,8 +1000,13 @@ body {
 }
 
 .accordion-button:not(.collapsed) {
+    color: var(--primary-color-3) !important;
     background-color: transparent;
     box-shadow: none;
+}
+
+.accordion-button:not(.collapsed)::after {
+    color: var(--primary-color-3) !important;
 }
 
 .accordion-button:focus {
@@ -1038,7 +1047,7 @@ body {
 }
 
 .mobile-menu-item:hover {
-    color: #0d6efd;
+    color: var(--primary-color-3) !important;
 }
 
 /* Mobile Category Grid Styles */

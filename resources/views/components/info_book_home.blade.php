@@ -183,16 +183,25 @@
 
                                         <!-- Số người theo dõi -->
                                         <div class="col-6">
-                                            <div class="action-button d-flex flex-column align-items-center">
+                                            <div class="action-button d-flex flex-column align-items-center bookmark-toggle-btn" 
+                                                 data-story-id="{{ $story->id }}" 
+                                                 title="@auth @if(App\Models\Bookmark::isBookmarked(Auth::id(), $story->id)) Bỏ theo dõi @else Theo dõi @endif @else Đăng nhập để theo dõi @endauth">
                                                 <div class="action-icon position-relative">
-                                                    <i class="fas fa-heart fs-4 color-3"></i>
-                                                    <span
-                                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger small">
-                                                        {{ $stats['followers'] ?? 0 }}
+                                                    <i class="fas fa-heart fs-4 @auth @if(App\Models\Bookmark::isBookmarked(Auth::id(), $story->id)) text-danger active @else color-3 @endif @else color-3 @endauth bookmark-icon"></i>
+                                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger small bookmark-count">
+                                                        {{ $stats['total_bookmarks'] ?? 0 }}
                                                     </span>
                                                 </div>
-                                                <div class="action-label small mt-1 text-center">
-                                                    Theo dõi
+                                                <div class="action-label small mt-1 text-center bookmark-label">
+                                                    @auth
+                                                        @if(App\Models\Bookmark::isBookmarked(Auth::id(), $story->id))
+                                                            Bỏ theo dõi
+                                                        @else
+                                                            Theo dõi
+                                                        @endif
+                                                    @else
+                                                        Theo dõi
+                                                    @endauth
                                                 </div>
                                             </div>
                                         </div>
@@ -462,10 +471,49 @@
             background-color: var(--primary-color-2);
             color: white
         }
+
+        /* Bookmark button styles */
+        .bookmark-toggle-btn {
+            cursor: pointer;
+        }
+        
+        .bookmark-toggle-btn:hover .bookmark-icon.color-3 {
+            color: #ff6b6b !important;
+        }
+        
+        .bookmark-toggle-btn:hover .bookmark-icon.text-danger {
+            filter: brightness(1.2);
+        }
+        
+        .bookmark-icon {
+            transition: all 0.3s ease;
+        }
+        
+        .bookmark-icon.active {
+            animation: heartbeat 0.3s ease-in-out;
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .bookmark-count {
+            transition: all 0.3s ease;
+        }
+        
+        /* Disable text selection on action buttons */
+        .action-button {
+            user-select: none;
+        }
     </style>
 @endpush
 
 @push('scripts')
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         // Description show more/less functionality
         function initDescriptionToggle() {
@@ -504,9 +552,114 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Add to your existing DOMContentLoaded code
             initDescriptionToggle();
+            initBookmarkToggle();
 
             // Your existing code continues below...
         });
+        
+        // Function to initialize bookmark toggle functionality
+        function initBookmarkToggle() {
+            const bookmarkBtn = document.querySelector('.bookmark-toggle-btn');
+            if (!bookmarkBtn) return;
+            
+            bookmarkBtn.addEventListener('click', function() {
+                @auth
+                    const storyId = this.getAttribute('data-story-id');
+                    const bookmarkIcon = this.querySelector('.bookmark-icon');
+                    const bookmarkLabel = this.querySelector('.bookmark-label');
+                    const bookmarkCount = this.querySelector('.bookmark-count');
+                    const isActive = bookmarkIcon.classList.contains('active');
+                    
+                    // CSRF token
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
+                    // Optimistic UI update
+                    let currentCount = parseInt(bookmarkCount.textContent);
+                    
+                    if (isActive) {
+                        // Remove bookmark
+                        bookmarkIcon.classList.remove('active', 'text-danger');
+                        bookmarkIcon.classList.add('color-3');
+                        bookmarkLabel.textContent = 'Theo dõi';
+                        this.setAttribute('title', 'Theo dõi');
+                        bookmarkCount.textContent = Math.max(0, currentCount - 1);
+                    } else {
+                        // Add bookmark
+                        bookmarkIcon.classList.add('active', 'text-danger');
+                        bookmarkIcon.classList.remove('color-3');
+                        bookmarkLabel.textContent = 'Bỏ theo dõi';
+                        this.setAttribute('title', 'Bỏ theo dõi');
+                        bookmarkCount.textContent = currentCount + 1;
+                    }
+                    
+                    // Send request to server
+                    fetch('{{ route("user.bookmark.toggle") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            story_id: storyId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        // Hiển thị thông báo
+                        showToast(data.message, data.status === 'added' ? 'success' : 'info');
+                    })
+                    .catch(error => {
+                        console.error('Error toggling bookmark:', error);
+                        
+                        // Rollback UI changes in case of error
+                        if (isActive) {
+                            bookmarkIcon.classList.add('active', 'text-danger');
+                            bookmarkIcon.classList.remove('color-3');
+                            bookmarkLabel.textContent = 'Bỏ theo dõi';
+                            this.setAttribute('title', 'Bỏ theo dõi');
+                            bookmarkCount.textContent = currentCount;
+                        } else {
+                            bookmarkIcon.classList.remove('active', 'text-danger');
+                            bookmarkIcon.classList.add('color-3');
+                            bookmarkLabel.textContent = 'Theo dõi';
+                            this.setAttribute('title', 'Theo dõi');
+                            bookmarkCount.textContent = Math.max(0, currentCount - 1);
+                        }
+                        
+                        // Hiển thị thông báo lỗi
+                        showToast('Đã xảy ra lỗi khi thực hiện thao tác này.', 'error');
+                    });
+                @else
+                    // Redirect to login page
+                    Swal.fire({
+                        title: 'Cần đăng nhập',
+                        text: 'Bạn cần đăng nhập để theo dõi truyện này',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Đăng nhập',
+                        cancelButtonText: 'Hủy'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ route("login") }}';
+                        }
+                    });
+                @endauth
+            });
+        }
+        
+        // Toast notification function
+        function showToast(message, type = 'success') {
+            Swal.fire({
+                text: message,
+                icon: type,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        }
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {

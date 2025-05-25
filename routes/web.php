@@ -30,6 +30,7 @@ use App\Http\Controllers\StoryEditRequestController;
 use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
 use App\Http\Controllers\RequestPaymentController;
+use App\Http\Controllers\BookmarkController;
 
 /*
 |--------------------------------------------------------------------------
@@ -84,10 +85,11 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::post('/reading-history/clear', [UserController::class, 'clearReadingHistory'])->name('reading.history.clear');
             Route::get('purchases', [UserController::class, 'userPurchases'])->name('purchases');
 
-            Route::get('/bookmarks', [UserController::class, 'bookmarks'])->name('bookmarks');
-            Route::post('/bookmark/toggle', [UserController::class, 'toggleBookmark'])->name('bookmark.toggle');
-            Route::post('/bookmark/remove', [UserController::class, 'removeBookmark'])->name('bookmark.remove');
-            Route::post('/bookmark/notification', [UserController::class, 'toggleBookmarkNotification'])->name('bookmark.notification');
+            Route::get('/bookmarks', [BookmarkController::class, 'getUserBookmarks'])->name('bookmarks');
+            Route::post('/bookmark/toggle', [BookmarkController::class, 'toggle'])->name('bookmark.toggle');
+            Route::get('/bookmark/status', [BookmarkController::class, 'checkStatus'])->name('bookmark.status');
+            Route::post('/bookmark/update-chapter', [BookmarkController::class, 'updateCurrentChapter'])->name('bookmark.update.chapter');
+            Route::post('/bookmark/remove', [BookmarkController::class, 'remove'])->name('bookmark.remove');
 
             // Deposit Routes
             Route::get('/deposit', [DepositController::class, 'index'])->name('deposit');

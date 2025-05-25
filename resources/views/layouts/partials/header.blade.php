@@ -159,24 +159,34 @@
                                         <span class="ms-2">{{ auth()->user()->name }}</span>
                                     </a>
 
-                                    <ul class="dropdown-menu dropdown-menu-end animate slideIn">
+                                    <ul class="dropdown-menu dropdown-menu-end animate slideIn border-cl-shopee">
                                         @if (auth()->user()->role === 'admin' || auth()->user()->role === 'mod')
                                             <li>
-                                                <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
-                                                    <i class="fas fa-tachometer-alt me-2"></i> Quản trị
+                                                <a class="dropdown-item fw-semibold"
+                                                    href="{{ route('admin.dashboard') }}">
+                                                    <i class="fas fa-tachometer-alt me-2 color-3"></i> Quản trị
+                                                </a>
+                                            </li>
+                                        @endif
+
+                                        @if (auth()->user()->role === 'author')
+                                            <li>
+                                                <a class="dropdown-item fw-semibold"
+                                                    href="{{ route('user.author.index') }}">
+                                                    <i class="fa-solid fa-user-pen me-2 color-3"></i> Khu vực tác giả
                                                 </a>
                                             </li>
                                         @endif
 
                                         <li>
-                                            <a class="dropdown-item" href="{{ route('user.profile') }}">
-                                                <i class="fas fa-user me-2"></i> Trang cá nhân
+                                            <a class="dropdown-item fw-semibold" href="{{ route('user.profile') }}">
+                                                <i class="fa-regular fa-circle-user me-2 color-3"></i> Trang cá nhân
                                             </a>
                                         </li>
 
                                         <li>
-                                            <a class="dropdown-item" href="{{ route('logout') }}">
-                                                <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                                            <a class="dropdown-item fw-semibold" href="{{ route('logout') }}">
+                                                <i class="fas fa-sign-out-alt me-2 color-3"></i> Đăng xuất
                                             </a>
                                         </li>
                                     </ul>
@@ -213,18 +223,14 @@
                 <div class="mobile-section">
                     <div class="mobile-nav-links d-flex flex-column">
 
-                        <a href="{{ route('home') }}" class="mobile-menu-item ">
-                            <i class="fa-solid fa-address-card fa-lg me-2"></i> Trang chủ
-                        </a>
 
-                        <hr class="divider my-3">
 
                         <div class="accordion" id="categoryAccordion">
                             <div class="accordion-item border-0">
                                 <h2 class="accordion-header" id="categoryHeading">
-                                    <button class="accordion-button collapsed mobile-menu-item p-0" type="button"
-                                        data-bs-toggle="collapse" data-bs-target="#categoryCollapse">
-                                        <i class="fa-solid fa-layer-group fa-lg me-2"></i> Thể loại
+                                    <button class="accordion-button collapsed mobile-menu-item p-0 fw-semibold"
+                                        type="button" data-bs-toggle="collapse" data-bs-target="#categoryCollapse">
+                                        <i class="fa-solid fa-layer-group fa-lg me-2 color-3"></i> Thể loại
                                     </button>
                                 </h2>
                                 <div id="categoryCollapse" class="accordion-collapse collapse"
@@ -249,8 +255,29 @@
 
                         <hr class="divider my-3">
 
+                        <a href="" class="mobile-menu-item fw-semibold">
+                            <i class="fa-solid fa-fire fa-lg me-2 color-3"></i> Truyện hot
+                        </a>
 
+                        <hr class="divider my-3">
 
+                        <a href="" class="mobile-menu-item fw-semibold">
+                            <i class="fa-solid fa-clock fa-lg me-2 color-3"></i> Truyện mới
+                        </a>
+
+                        <hr class="divider my-3">
+
+                        <a href="" class="mobile-menu-item fw-semibold">
+                            <i class="fa-solid fa-check fa-lg me-2 color-3"></i> Truyện full
+                        </a>
+
+                        <hr class="divider my-3">
+
+                        <a href="" class="mobile-menu-item fw-semibold">
+                            <i class="fa-solid fa-circle-info fa-lg me-2 color-3"></i> Hướng dẫn
+                        </a>
+
+                        <hr class="divider my-3">
 
                         @auth
                             <div class="accordion" id="userAccordion">
@@ -261,33 +288,41 @@
                                             <img src="{{ auth()->user()->avatar ? Storage::url(auth()->user()->avatar) : asset('assets/images/avatar_default.jpg') }}"
                                                 class="rounded-circle me-2" width="40" height="40" alt="avatar"
                                                 style="object-fit: cover;">
-                                            <span>{{ auth()->user()->name }}</span>
+                                            <span class="fw-semibold">{{ auth()->user()->name }}</span>
                                         </button>
                                     </h2>
                                     <div id="userCollapse" class="accordion-collapse collapse"
                                         data-bs-parent="#userAccordion">
                                         <div class="accordion-body p-0 mt-2">
                                             @if (auth()->user()->role === 'admin' || auth()->user()->role === 'mod')
-                                                <a class="mobile-menu-item ps-3 py-2 d-block"
+                                                <a class="mobile-menu-item ps-3 py-2 d-block fw-semibold"
                                                     href="{{ route('admin.dashboard') }}">
-                                                    <i class="fas fa-tachometer-alt me-2"></i> Quản trị
+                                                    <i class="fas fa-tachometer-alt me-2 color-3"></i> Quản trị
                                                 </a>
                                             @endif
 
-                                            <a class="mobile-menu-item ps-3 py-2 d-block" href="{{ route('user.profile') }}">
-                                                <i class="fas fa-user me-2"></i> Trang cá nhân
+                                            @if (auth()->user()->role === 'author')
+                                                <a class="mobile-menu-item ps-3 py-2 d-block fw-semibold"
+                                                    href="{{ route('user.author.index') }}">
+                                                    <i class="fa-solid fa-user-pen me-2 color-3"></i> Khu vực tác giả
+                                                </a>
+                                            @endif
+
+                                            <a class="mobile-menu-item ps-3 py-2 d-block fw-semibold"
+                                                href="{{ route('user.profile') }}">
+                                                <i class="fas fa-user me-2 color-3"></i> Trang cá nhân
                                             </a>
 
-                                            <a class="mobile-menu-item ps-3 py-2 d-block" href="{{ route('logout') }}">
-                                                <i class="fas fa-sign-out-alt me-2"></i> Đăng xuất
+                                            <a class="mobile-menu-item ps-3 py-2 d-block fw-semibold" href="{{ route('logout') }}">
+                                                <i class="fas fa-sign-out-alt me-2 color-3"></i> Đăng xuất
                                             </a>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         @else
-                            <a href="{{ route('login') }}" class="mobile-menu-item">
-                                <i class="fa-regular fa-circle-user fa-lg me-2"></i> Đăng nhập
+                            <a href="{{ route('login') }}" class="mobile-menu-item fw-semibold">
+                                <i class="fa-regular fa-circle-user fa-lg me-2 color-3"></i> Đăng nhập
                             </a>
                         @endauth
 

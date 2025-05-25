@@ -290,6 +290,7 @@ class HomeController extends Controller
         $stats = [
             'total_chapters' => $story->chapters()->published()->count(),
             'total_views' => $story->chapters()->sum('views'),
+            'total_bookmarks' => $story->bookmarks()->count(),
             'ratings' => [
                 'count' => Rating::where('story_id', $story->id)->count(),
                 'average' => Rating::where('story_id', $story->id)->avg('rating') ?? 0

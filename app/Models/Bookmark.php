@@ -18,6 +18,8 @@ class Bookmark extends Model
         'user_id',
         'story_id',
         'notification_enabled',
+        'last_chapter_id',
+        'last_read_at',
     ];
 
     /**
@@ -27,6 +29,7 @@ class Bookmark extends Model
      */
     protected $casts = [
         'notification_enabled' => 'boolean',
+        'last_read_at' => 'datetime',
     ];
 
     /**
@@ -46,13 +49,22 @@ class Bookmark extends Model
     }
 
     /**
+     * Get the last chapter that was read.
+     */
+    public function lastChapter()
+    {
+        return $this->belongsTo(Chapter::class, 'last_chapter_id');
+    }
+
+    /**
      * Toggle bookmark for a story.
      *
      * @param int $userId
      * @param int $storyId
+     * @param int|null $chapterId
      * @return array
      */
-    public static function toggleBookmark($userId, $storyId)
+    public static function toggleBookmark($userId, $storyId, $chapterId = null)
     {
         $bookmark = self::where('user_id', $userId)
             ->where('story_id', $storyId)
@@ -65,11 +77,20 @@ class Bookmark extends Model
                 'message' => 'Đã xóa truyện khỏi danh sách theo dõi'
             ];
         } else {
-            self::create([
+            $data = [
                 'user_id' => $userId,
                 'story_id' => $storyId,
-                'notification_enabled' => true
-            ]);
+                'notification_enabled' => true,
+            ];
+            
+            // Nếu có chapterId, lưu lại chương hiện tại
+            if ($chapterId) {
+                $data['last_chapter_id'] = $chapterId;
+                $data['last_read_at'] = now();
+            }
+            
+            self::create($data);
+            
             return [
                 'status' => 'added',
                 'message' => 'Đã thêm truyện vào danh sách theo dõi'
@@ -110,5 +131,28 @@ class Bookmark extends Model
                 ? 'Đã bật thông báo cho truyện này' 
                 : 'Đã tắt thông báo cho truyện này'
         ];
+    }
+    
+    /**
+     * Update bookmark with current chapter.
+     *
+     * @param int $userId
+     * @param int $storyId
+     * @param int $chapterId
+     * @return bool
+     */
+    public static function saveCurrentChapter($userId, $storyId, $chapterId)
+    {
+        $bookmark = self::where('user_id', $userId)
+            ->where('story_id', $storyId)
+            ->first();
+            
+        if ($bookmark) {
+            $bookmark->last_chapter_id = $chapterId;
+            $bookmark->last_read_at = now();
+            return $bookmark->save();
+        }
+        
+        return false;
     }
 }

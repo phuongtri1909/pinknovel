@@ -240,6 +240,9 @@
             <button class="reading-setting-btn fullscreen-btn" title="Toàn màn hình">
                 <i class="fas fa-expand"></i>
             </button>
+            <button class="reading-setting-btn bookmark-btn" title="Đánh dấu trang">
+                <i class="fas fa-bookmark"></i>
+            </button>
             <button class="reading-setting-btn theme-btn" title="Chế độ tối/sáng">
                 <i class="fas fa-moon"></i>
             </button>
@@ -678,12 +681,156 @@
             height: 60px;
             background: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
         }
+
+        /* Bookmark button styles */
+        .bookmark-btn.active {
+            background-color: var(--primary-color-3);
+            color: white;
+        }
+        
+        .bookmark-btn.active:hover {
+            background-color: var(--primary-color-4);
+            color: white;
+        }
+        
+        /* Animation for bookmark button */
+        @keyframes bookmark-pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        
+        .bookmark-btn.active i {
+            animation: bookmark-pulse 0.3s ease-in-out;
+        }
+
+        /* Bookmark button styles in dark mode */
+        body.dark-mode .bookmark-btn.active {
+            background-color: var(--primary-color-1);
+            color: white;
+        }
+        
+        body.dark-mode .bookmark-btn.active:hover {
+            background-color: var(--primary-color-2);
+        }
     </style>
 @endpush
 
 @push('scripts')
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Script xử lý đánh dấu trang (bookmark) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const bookmarkBtn = document.querySelector('.bookmark-btn');
+            @auth
+                // Kiểm tra trạng thái bookmark khi tải trang
+                checkBookmarkStatus();
+                
+                // Xử lý sự kiện click bookmark
+                bookmarkBtn.addEventListener('click', toggleBookmark);
+            @else
+                // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+                bookmarkBtn.addEventListener('click', function() {
+                    Swal.fire({
+                        title: 'Cần đăng nhập',
+                        text: 'Bạn cần đăng nhập để sử dụng tính năng đánh dấu',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonText: 'Đăng nhập',
+                        cancelButtonText: 'Hủy'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '{{ route("login") }}';
+                        }
+                    });
+                });
+            @endauth
+            
+            function checkBookmarkStatus() {
+                @auth
+                    fetch('{{ route("user.bookmark.status") }}?story_id={{ $story->id }}', {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.is_bookmarked) {
+                            bookmarkBtn.classList.add('active');
+                            bookmarkBtn.title = 'Bỏ đánh dấu';
+
+                        } else {
+                            bookmarkBtn.classList.remove('active');
+                            bookmarkBtn.title = 'Đánh dấu trang';
+                        }
+                    })
+                    .catch(error => console.error('Error checking bookmark status:', error));
+                @endauth
+            }
+            
+            function toggleBookmark() {
+                @auth
+                    // CSRF token
+                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                    
+                    fetch('{{ route("user.bookmark.toggle") }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({
+                            story_id: {{ $story->id }},
+                            chapter_id: {{ $chapter->id }}
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'added') {
+                            bookmarkBtn.classList.add('active');
+                            bookmarkBtn.title = 'Bỏ đánh dấu';
+                            
+                            
+                            // Hiển thị thông báo thành công
+                            Swal.fire({
+                                title: 'Thành công!',
+                                text: data.message,
+                                icon: 'success',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else if (data.status === 'removed') {
+                            bookmarkBtn.classList.remove('active');
+                            bookmarkBtn.title = 'Đánh dấu trang';
+                            
+                            
+                            // Hiển thị thông báo đã xóa
+                            Swal.fire({
+                                title: 'Đã xóa!',
+                                text: data.message,
+                                icon: 'info',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error toggling bookmark:', error);
+                        
+                        // Hiển thị thông báo lỗi
+                        Swal.fire({
+                            title: 'Lỗi!',
+                            text: 'Đã xảy ra lỗi khi thực hiện đánh dấu truyện',
+                            icon: 'error'
+                        });
+                    });
+                @endauth
+            }
+        });
+    </script>
 
     <!-- Script xử lý cài đặt đọc truyện -->
     <script>
