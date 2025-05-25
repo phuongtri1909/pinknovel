@@ -32,6 +32,44 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="author_name">Tên tác giả</label>
+                                            <input type="text" name="author_name" id="author_name"
+                                                class="form-control @error('author_name') is-invalid @enderror"
+                                                value="{{ old('author_name') }}">
+                                            @error('author_name')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="translator_name">Tên dịch giả</label>
+                                            <input type="text" name="translator_name" id="translator_name"
+                                                class="form-control @error('translator_name') is-invalid @enderror"
+                                                value="{{ old('translator_name') }}">
+                                            @error('translator_name')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <label for="story_type">Loại truyện</label>
+                                    <select name="story_type" id="story_type" class="form-control @error('story_type') is-invalid @enderror">
+                                        <option value="">-- Chọn loại truyện --</option>
+                                        <option value="original" {{ old('story_type') == 'original' ? 'selected' : '' }}>Sáng tác</option>
+                                        <option value="translated" {{ old('story_type') == 'translated' ? 'selected' : '' }}>Dịch</option>
+                                        <option value="rewritten" {{ old('story_type') == 'rewritten' ? 'selected' : '' }}>Chuyển ngữ</option>
+                                    </select>
+                                    @error('story_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="col-md-4">
@@ -47,7 +85,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="categories">Thể loại (tối đa 4)</label>
+                                    <label for="categories">Thể loại</label>
                                     <select name="categories[]" id="categories" class="form-control" multiple required>
                                         @foreach ($categories as $category)
                                             <option value="{{ $category->id }}">
@@ -58,10 +96,7 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <small class="form-text text-muted">Chọn tối đa 4 thể loại</small>
-                                    <div class="invalid-feedback category-limit-error" style="display: none;">
-                                        Bạn chỉ được chọn tối đa 4 thể loại
-                                    </div>
+                                    
                                     @error('categories')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -111,6 +146,26 @@
                                         <p class="mb-0"><i class="fas fa-info-circle me-1"></i> Bạn có thể thiết lập giá combo sau khi thêm các chương cho truyện.</p>
                                     </div>
                                 </div>
+
+                                <div class="form-group mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <label class="mb-0 me-3" for="is_18_plus">Nội dung 18+</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="is_18_plus" class="form-check-input" id="is_18_plus"
+                                                role="switch" {{ old('is_18_plus') ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <label class="mb-0 me-3" for="is_monopoly">Truyện độc quyền</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="is_monopoly" class="form-check-input" id="is_monopoly"
+                                                role="switch" {{ old('is_monopoly') ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="col-12 text-center mt-4">
@@ -148,47 +203,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const MAX_CATEGORIES = 4;
-            const categoriesSelect = document.getElementById('categories');
-            const categoryLimitError = document.querySelector('.category-limit-error');
-            const submitButton = document.querySelector('button[type="submit"]');
-
-            categoriesSelect.addEventListener('change', function() {
-                const selectedOptions = Array.from(categoriesSelect.selectedOptions);
-
-                if (selectedOptions.length > MAX_CATEGORIES) {
-                    categoryLimitError.style.display = 'block';
-                    submitButton.disabled = true;
-
-                    // Deselect the last selected option
-                    for (let i = MAX_CATEGORIES; i < selectedOptions.length; i++) {
-                        selectedOptions[i].selected = false;
-                    }
-                } else {
-                    categoryLimitError.style.display = 'none';
-                    submitButton.disabled = false;
-                }
-            });
-
-            // Form validation before submit
-            const form = document.querySelector('form');
-            form.addEventListener('submit', function(event) {
-                const selectedOptions = Array.from(categoriesSelect.selectedOptions);
-
-                if (selectedOptions.length > MAX_CATEGORIES) {
-                    event.preventDefault();
-                    categoryLimitError.style.display = 'block';
-                    return false;
-                }
-
-                if (selectedOptions.length === 0) {
-                    event.preventDefault();
-                    categoriesSelect.classList.add('is-invalid');
-                    return false;
-                }
-
-                return true;
-            });
+            
             
             // Handle combo pricing toggle
             const hasComboCheckbox = document.getElementById('has_combo');

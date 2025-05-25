@@ -26,7 +26,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4 text-center">
-                            <img src="{{ $user->avatar ? asset($user->avatar) : asset('assets/images/avatar_default.jpg') }}"
+                            <img src="{{ $user->avatar ? Storage::url($user->avatar) : asset('assets/images/avatar_default.jpg') }}"
                                 class="rounded-circle img-fluid mb-3"
                                 style="width: 150px; height: 150px; object-fit: cover;">
                             @if ($user->avatar && auth()->user()->role === 'admin')

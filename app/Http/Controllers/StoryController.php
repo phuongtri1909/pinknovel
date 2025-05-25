@@ -126,12 +126,15 @@ class StoryController extends Controller
         $request->validate([
             'title' => 'required|unique:stories|max:255',
             'description' => 'required',
-            'categories' => 'required|array|max:4',
+            'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
             'cover' => 'required|image|mimes:jpeg,png,jpg,gif',
             'status' => 'required|in:draft,published',
             'link_aff' => 'nullable|url',
             'combo_price' => 'required_if:has_combo,on|nullable|integer|min:0',
+            'author_name' => 'nullable|string|max:100',
+            'translator_name' => 'nullable|string|max:100',
+            'story_type' => 'nullable|string|in:original,translated,rewritten',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -139,7 +142,6 @@ class StoryController extends Controller
             'description.required' => 'Mô tả không được để trống.',
             'categories.required' => 'Chuyên mục không được để trống.',
             'categories.array' => 'Chuyên mục phải là một mảng.',
-            'categories.max' => 'Chuyên mục không được chọn quá 4.',
             'categories.*.exists' => 'Chuyên mục không hợp lệ.',
             'cover.required' => 'Ảnh bìa không được để trống.',
             'cover.image' => 'Ảnh bìa phải là ảnh.',
@@ -150,6 +152,9 @@ class StoryController extends Controller
             'combo_price.required_if' => 'Vui lòng nhập giá combo.',
             'combo_price.integer' => 'Giá combo phải là số nguyên.',
             'combo_price.min' => 'Giá combo không được âm.',
+            'author_name.max' => 'Tên tác giả không được quá 100 ký tự.',
+            'translator_name.max' => 'Tên dịch giả không được quá 100 ký tự.',
+            'story_type.in' => 'Loại truyện không hợp lệ.',
         ]);
 
         DB::beginTransaction();
@@ -174,6 +179,11 @@ class StoryController extends Controller
                 'link_aff' => $request->link_aff,
                 'has_combo' => $hasCombo,
                 'combo_price' => $comboPrice,
+                'author_name' => $request->author_name,
+                'translator_name' => $request->translator_name,
+                'story_type' => $request->story_type,
+                'is_18_plus' => $request->has('is_18_plus'),
+                'is_monopoly' => $request->has('is_monopoly'),
             ]);
 
             $story->categories()->attach($request->categories);
@@ -209,19 +219,21 @@ class StoryController extends Controller
         $request->validate([
             'title' => 'required|max:255|unique:stories,title,' . $story->id,
             'description' => 'required',
-            'categories' => 'required|array|max:4',
+            'categories' => 'required|array',
             'categories.*' => 'exists:categories,id',
             'cover' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:draft,published',
             'link_aff' => 'nullable|url',
             'combo_price' => 'required_if:has_combo,on|nullable|integer|min:0',
+            'author_name' => 'nullable|string|max:100',
+            'translator_name' => 'nullable|string|max:100',
+            'story_type' => 'nullable|string|in:original,translated,rewritten',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
             'title.max' => 'Tiêu đề không được quá 255 ký tự.',
             'description.required' => 'Mô tả không được để trống.',
             'categories.required' => 'Chuyên mục không được để trống.',
-            'categories.max' => 'Bạn chỉ được chọn tối đa 4 thể loại.', // Added custom message
             'categories.*.exists' => 'Chuyên mục không hợp lệ.',
             'cover.image' => 'Ảnh bìa phải là ảnh.',
             'cover.mimes' => 'Ảnh bìa phải có định dạng jpeg, png, jpg hoặc gif.',
@@ -232,6 +244,9 @@ class StoryController extends Controller
             'combo_price.required_if' => 'Vui lòng nhập giá combo.',
             'combo_price.integer' => 'Giá combo phải là số nguyên.',
             'combo_price.min' => 'Giá combo không được âm.',
+            'author_name.max' => 'Tên tác giả không được quá 100 ký tự.',
+            'translator_name.max' => 'Tên dịch giả không được quá 100 ký tự.',
+            'story_type.in' => 'Loại truyện không hợp lệ.',
         ]);
 
         DB::beginTransaction();
@@ -251,6 +266,11 @@ class StoryController extends Controller
                 'link_aff' => $request->link_aff,
                 'has_combo' => $hasCombo,
                 'combo_price' => $comboPrice,
+                'author_name' => $request->author_name,
+                'translator_name' => $request->translator_name,
+                'story_type' => $request->story_type,
+                'is_18_plus' => $request->has('is_18_plus'),
+                'is_monopoly' => $request->has('is_monopoly'),
             ];
 
             if ($request->hasFile('cover')) {
@@ -295,20 +315,50 @@ class StoryController extends Controller
 
     public function show(Story $story)
     {
-        $chapters = $story->chapters()
+        // Load story with relationships
+        $story->load(['user', 'categories']);
+        $story->loadCount('chapters');
+        
+        // Get story purchase data
+        $story_purchases = $story->purchases()
+            ->with('user')
             ->latest()
-            ->paginate(15);
-
-        $totalChapters = $story->chapters()->count();
-        $publishedChapters = $story->chapters()->where('status', 'published')->count();
-        $draftChapters = $story->chapters()->where('status', 'draft')->count();
-
-        return view('admin.pages.chapters.index', compact(
+            ->paginate(10, ['*'], 'story_page');
+        $story_purchases_count = $story->purchases()->count();
+        
+        // Get chapter purchase data for this story's chapters
+        $chapter_purchases = \App\Models\ChapterPurchase::whereHas('chapter', function($query) use ($story) {
+            $query->where('story_id', $story->id);
+        })->with(['user', 'chapter'])
+          ->latest()
+          ->paginate(10, ['*'], 'chapter_page');
+        $chapter_purchases_count = \App\Models\ChapterPurchase::whereHas('chapter', function($query) use ($story) {
+            $query->where('story_id', $story->id);
+        })->count();
+        
+        // Get bookmark data
+        $bookmarks = $story->bookmarks()
+            ->with(['user', 'lastChapter'])
+            ->latest()
+            ->paginate(10, ['*'], 'bookmark_page');
+        $bookmarks_count = $story->bookmarks()->count();
+        
+        // Calculate total revenue (story purchases + chapter purchases)
+        $story_revenue = $story->purchases()->sum('amount_paid');
+        $chapter_revenue = \App\Models\ChapterPurchase::whereHas('chapter', function($query) use ($story) {
+            $query->where('story_id', $story->id);
+        })->sum('amount_paid');
+        $total_revenue = $story_revenue + $chapter_revenue;
+        
+        return view('admin.pages.story.show', compact(
             'story',
-            'chapters',
-            'totalChapters',
-            'publishedChapters',
-            'draftChapters'
+            'story_purchases',
+            'story_purchases_count',
+            'chapter_purchases',
+            'chapter_purchases_count',
+            'bookmarks',
+            'bookmarks_count',
+            'total_revenue'
         ));
     }
 

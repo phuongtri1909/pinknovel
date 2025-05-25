@@ -195,7 +195,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::resource('stories', StoryController::class);
                     Route::resource('stories.chapters', ChapterController::class);
 
-                    Route::get('stories/{story}/comments', [CommentController::class, 'index'])->name('stories.comments.index');
+                   
                     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
                     Route::get('comments', [CommentController::class, 'allComments'])->name('comments.all');
                     Route::delete('delete-comments/{comment}', [CommentController::class, 'deleteComment'])->name('delete.comments');

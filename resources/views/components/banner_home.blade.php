@@ -8,7 +8,7 @@
                     @foreach ($banners as $banner)
                         <div class="swiper-slide">
                             <div class="slide-content">
-                                <a href="{{ $banner->link ?? '#' }}" target="_blank" rel="noopener noreferrer">
+                                <a href="{{ $banner->link ?? route('show.page.story', $banner->story->slug) }}" rel="noopener noreferrer">
                                     <img src="{{ asset('storage/' . $banner->image) ?? asset('assets/images/banner_default.jpg') }}"
                                         alt="{{ $banner->alt_text ?? 'Banner Image' }}" loading="lazy">
                                 </a>

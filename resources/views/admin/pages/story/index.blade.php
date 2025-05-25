@@ -24,6 +24,8 @@
                             <option value="">- Trạng thái -</option>
                             <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Hiển thị</option>
                             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Nháp</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
+                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ chối</option>
                         </select>
                 
                         <!-- Category filter -->
@@ -63,12 +65,12 @@
                             <tr>
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
                                 <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ảnh bìa</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tiêu đề</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Thể loại</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Số chương</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Giá truyện</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Link aff</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Trạng thái</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-start">Tiêu đề</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-start">Tác giả</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Số chương</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Giá truyện</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Link aff</th>
+                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
                                 <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thao tác</th>
                             </tr>
                         </thead>
@@ -77,18 +79,11 @@
                             <tr>
                                 <td class="text-center">{{ $story->id }}</td>
                                 <td>
-                                    <img src="{{ Storage::url($story->cover) }}" class="avatar avatar-sm me-3">
+                                    <img src="{{ Storage::url($story->cover) }}" class="img-fluid" style="width: 70px; height: 100px;">
                                 </td>
-                                <td>{{ $story->title }}</td>
+                                <td class="text-start">{{ $story->title }}</td>
                                 <td>
-                                    @foreach($story->categories as $category)
-                                        <span class="badge badge-sm {{ $category->is_main ? 'bg-gradient-warning' : 'bg-gradient-info' }}">
-                                            {{ $category->name }}
-                                            @if($category->is_main)
-                                                <i class="fas fa-star ms-1"></i>
-                                            @endif
-                                        </span>
-                                    @endforeach
+                                    {{ $story->author_name }}
                                 </td>
                                 <td>{{ $story->chapters_count }}</td>
                                 <td>
@@ -110,9 +105,11 @@
                                     <a href="{{ route('stories.chapters.index', $story) }}" class="btn btn-link text-info p-1 mb-0">
                                         <i class="fas fa-book-open text-info me-2"></i>Xem chương
                                     </a>
-                                    <a href="{{ route('stories.comments.index', $story) }}" class="btn btn-link text-warning p-1 mb-0">
-                                        <i class="fas fa-comments text-warning me-2"></i>Xem bình luận
+                                    
+                                    <a href="{{ route('stories.show', $story) }}" class="btn btn-link text-primary p-1 mb-0">
+                                        <i class="fas fa-eye text-primary me-2"></i>Chi tiết
                                     </a>
+                                   
                                     <a href="{{ route('stories.edit', $story) }}" class="btn btn-link text-dark p-1 mb-0">
                                         <i class="fas fa-pencil-alt text-dark me-2"></i>Sửa
                                     </a>

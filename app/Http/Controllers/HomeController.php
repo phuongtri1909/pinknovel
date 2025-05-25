@@ -105,10 +105,6 @@ class HomeController extends Controller
 
     public function index(Request $request)
     {
-
-        // Get banners
-        $banners = Banner::active()->get();
-
         // Get hot stories
         $hotStories = $this->getHotStories($request);
 
@@ -152,7 +148,7 @@ class HomeController extends Controller
             }
         }
 
-        return view('pages.home', compact('hotStories', 'newStories', 'completedStories', 'banners'));
+        return view('pages.home', compact('hotStories', 'newStories', 'completedStories'));
     }
 
     private function getHotStories($request)

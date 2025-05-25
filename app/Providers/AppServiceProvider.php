@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Story;
+use App\Models\Banner;
 use App\Models\Donate;
 use App\Models\Rating;
 use App\Models\Social;
@@ -10,8 +13,6 @@ use App\Models\Status;
 use App\Models\Chapter;
 use App\Models\Socials;
 use App\Models\Category;
-use App\Models\Story;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
@@ -139,9 +140,12 @@ class AppServiceProvider extends ServiceProvider
             ->take(10)
             ->get();
 
+            $banners = Banner::active()->get();
+
             $view->with('dailyHotStories', $dailyHotStories);
             $view->with('weeklyHotStories', $weeklyHotStories);
             $view->with('monthlyHotStories', $monthlyHotStories);
+            $view->with('banners', $banners);
 
             $donate = Donate::first() ?? new Donate();
             $view->with('donate', $donate);

@@ -33,6 +33,44 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="author_name">Tên tác giả</label>
+                                            <input type="text" name="author_name" id="author_name"
+                                                class="form-control @error('author_name') is-invalid @enderror"
+                                                value="{{ old('author_name', $story->author_name) }}">
+                                            @error('author_name')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="translator_name">Tên dịch giả</label>
+                                            <input type="text" name="translator_name" id="translator_name"
+                                                class="form-control @error('translator_name') is-invalid @enderror"
+                                                value="{{ old('translator_name', $story->translator_name) }}">
+                                            @error('translator_name')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <label for="story_type">Loại truyện</label>
+                                    <select name="story_type" id="story_type" class="form-control @error('story_type') is-invalid @enderror">
+                                        <option value="">-- Chọn loại truyện --</option>
+                                        <option value="original" {{ old('story_type', $story->story_type) == 'original' ? 'selected' : '' }}>Sáng tác</option>
+                                        <option value="translated" {{ old('story_type', $story->story_type) == 'translated' ? 'selected' : '' }}>Dịch</option>
+                                        <option value="rewritten" {{ old('story_type', $story->story_type) == 'rewritten' ? 'selected' : '' }}>Chuyển ngữ</option>
+                                    </select>
+                                    @error('story_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="col-md-4">
@@ -139,6 +177,26 @@
                                         <p class="mb-1">- Số chương trả phí: <span id="paid-chapters">{{ $paidChapters }}</span></p>
                                         <p class="mb-1">- Tổng giá nếu mua lẻ: <span id="total-regular-price">{{ $totalRegularPrice }}</span> xu</p>
                                         <p class="mb-1">- Tiết kiệm: <span id="savings">{{ $savings }}</span> xu (<span id="savings-percent">{{ $savingsPercent }}</span>%)</p>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <label class="mb-0 me-3" for="is_18_plus">Nội dung 18+</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="is_18_plus" class="form-check-input" id="is_18_plus"
+                                                role="switch" {{ old('is_18_plus', $story->is_18_plus) ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-group mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <label class="mb-0 me-3" for="is_monopoly">Truyện độc quyền</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="is_monopoly" class="form-check-input" id="is_monopoly"
+                                                role="switch" {{ old('is_monopoly', $story->is_monopoly) ? 'checked' : '' }}>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
