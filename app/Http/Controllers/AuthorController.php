@@ -240,9 +240,8 @@ class AuthorController extends Controller
     public function edit(Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        dd($story->user_id, Auth::id());
 
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa truyện này.');
         }
@@ -255,7 +254,7 @@ class AuthorController extends Controller
     public function update(Request $request, Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa truyện này.');
         }
@@ -458,7 +457,7 @@ class AuthorController extends Controller
     public function destroy(Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền xóa truyện này.');
         }
@@ -493,7 +492,7 @@ class AuthorController extends Controller
     public function markComplete(Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền thực hiện hành động này.');
         }
@@ -520,7 +519,7 @@ class AuthorController extends Controller
     public function showChapters(Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền xem các chương của truyện này.');
         }
@@ -533,7 +532,7 @@ class AuthorController extends Controller
     public function createChapter(Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
         }
@@ -548,7 +547,7 @@ class AuthorController extends Controller
     public function storeChapter(Request $request, Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
         }
@@ -843,7 +842,7 @@ class AuthorController extends Controller
     public function editChapter(Story $story, $chapterId)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa chương của truyện này.');
         }
@@ -856,7 +855,7 @@ class AuthorController extends Controller
     public function updateChapter(Request $request, Story $story, $chapterId)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa chương của truyện này.');
         }
@@ -960,7 +959,7 @@ class AuthorController extends Controller
     public function destroyChapter(Story $story, $chapterId)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền xóa chương của truyện này.');
         }
@@ -981,7 +980,7 @@ class AuthorController extends Controller
     public function submitForReview(Request $request, Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền thực hiện hành động này.');
         }
@@ -1019,7 +1018,7 @@ class AuthorController extends Controller
     public function checkStoryStatus(Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return response()->json([
                 'error' => 'Bạn không có quyền truy cập truyện này.'
             ], 403);

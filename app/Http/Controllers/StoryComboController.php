@@ -16,7 +16,7 @@ class StoryComboController extends Controller
     public function create(Story $story)
     {
         // Kiểm tra quyền sở hữu
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.stories')
                 ->with('error', 'Bạn không có quyền tạo combo cho truyện này.');
         }
@@ -45,7 +45,7 @@ class StoryComboController extends Controller
     public function store(Request $request, Story $story)
     {
         // Kiểm tra quyền sở hữu
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.stories')
                 ->with('error', 'Bạn không có quyền tạo combo cho truyện này.');
         }
@@ -104,7 +104,7 @@ class StoryComboController extends Controller
     public function edit(Story $story)
     {
         // Kiểm tra quyền sở hữu
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.stories')
                 ->with('error', 'Bạn không có quyền chỉnh sửa combo này.');
         }
@@ -129,7 +129,7 @@ class StoryComboController extends Controller
         
 
         // Kiểm tra quyền sở hữu
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.stories')
                 ->with('error', 'Bạn không có quyền chỉnh sửa combo này.');
         }
@@ -182,7 +182,7 @@ class StoryComboController extends Controller
     public function destroy(Story $story)
     {
         // Kiểm tra quyền sở hữu
-        if ($story->user_id !== Auth::id()) {
+        if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.stories')
                 ->with('error', 'Bạn không có quyền xóa combo này.');
         }
