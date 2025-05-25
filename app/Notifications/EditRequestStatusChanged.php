@@ -41,25 +41,30 @@ class EditRequestStatusChanged extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $status = $this->editRequest->status;
-        $story = $this->editRequest->story;
+        $title = $this->editRequest->title;
+        $storyTitle = $this->editRequest->story->title;
         
-        $mail = (new MailMessage)
-            ->subject("Cập nhật yêu cầu chỉnh sửa truyện {$story->title}");
+        $message = (new MailMessage)
+            ->subject("Cập nhật yêu cầu chỉnh sửa truyện: {$storyTitle}");
             
         if ($status === 'approved') {
-            $mail->greeting("Xin chào {$notifiable->name}!")
-                ->line("Yêu cầu chỉnh sửa thông tin truyện \"{$story->title}\" của bạn đã được phê duyệt và áp dụng thành công.")
-                ->line("Những thay đổi của bạn hiện đã có hiệu lực và được hiển thị cho độc giả.");
-        } else {
-            $mail->greeting("Xin chào {$notifiable->name}!")
-                ->line("Yêu cầu chỉnh sửa thông tin truyện \"{$story->title}\" của bạn đã bị từ chối.")
-                ->line("Lý do từ admin: {$this->editRequest->admin_note}")
-                ->line("Bạn có thể thực hiện chỉnh sửa mới và gửi lại yêu cầu.");
+            $message->line('Yêu cầu chỉnh sửa truyện của bạn đã được phê duyệt!')
+                ->line("Tiêu đề truyện: {$storyTitle}")
+                ->action('Xem truyện', route('stories.show', $this->editRequest->story->slug))
+                ->line('Những thay đổi của bạn đã được áp dụng vào truyện.');
+                
+            if ($this->editRequest->admin_note) {
+                $message->line("Ghi chú từ quản trị viên: {$this->editRequest->admin_note}");
+            }
+        } else if ($status === 'rejected') {
+            $message->line('Yêu cầu chỉnh sửa truyện của bạn đã bị từ chối.')
+                ->line("Tiêu đề truyện: {$storyTitle}")
+                ->line("Lý do: {$this->editRequest->admin_note}")
+                ->action('Xem truyện', route('stories.show', $this->editRequest->story->slug))
+                ->line('Bạn có thể tạo một yêu cầu chỉnh sửa mới với những thay đổi phù hợp hơn.');
         }
         
-        return $mail->line("Thời gian xét duyệt: {$this->editRequest->reviewed_at->format('H:i:s d/m/Y')}")
-            ->action('Xem truyện của bạn', url(route('user.author.stories.edit', $story->id)))
-            ->line('Cảm ơn bạn đã sử dụng trang web của chúng tôi!');
+        return $message;
     }
 
     /**
@@ -70,16 +75,22 @@ class EditRequestStatusChanged extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         $status = $this->editRequest->status;
-        $story = $this->editRequest->story;
+        $storyTitle = $this->editRequest->story->title;
+        
+        if ($status === 'approved') {
+            $message = "Yêu cầu chỉnh sửa truyện \"{$storyTitle}\" của bạn đã được phê duyệt!";
+        } else if ($status === 'rejected') {
+            $message = "Yêu cầu chỉnh sửa truyện \"{$storyTitle}\" của bạn đã bị từ chối. Lý do: {$this->editRequest->admin_note}";
+        } else {
+            $message = "Trạng thái của yêu cầu chỉnh sửa truyện \"{$storyTitle}\" đã được cập nhật thành: {$status}";
+        }
         
         return [
-            'title' => "Yêu cầu chỉnh sửa " . ($status === 'approved' ? 'đã được phê duyệt' : 'đã bị từ chối'),
-            'message' => $status === 'approved' 
-                ? "Yêu cầu chỉnh sửa thông tin truyện \"{$story->title}\" của bạn đã được phê duyệt."
-                : "Yêu cầu chỉnh sửa thông tin truyện \"{$story->title}\" của bạn đã bị từ chối.",
-            'story_id' => $story->id,
             'edit_request_id' => $this->editRequest->id,
+            'story_id' => $this->editRequest->story_id,
+            'story_title' => $storyTitle,
             'status' => $status,
+            'message' => $message,
             'admin_note' => $this->editRequest->admin_note,
         ];
     }

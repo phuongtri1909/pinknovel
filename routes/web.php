@@ -31,6 +31,8 @@ use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
 use App\Http\Controllers\RequestPaymentController;
 use App\Http\Controllers\BookmarkController;
+use App\Http\Controllers\Admin\StoryReviewController;
+use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -230,6 +232,18 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
                         // Quản lý cấu hình hệ thống
                         Route::resource('configs', ConfigController::class);
+
+                         // Story review routes
+                    Route::get('/story-reviews', [StoryReviewController::class, 'index'])->name('story-reviews.index');
+                    Route::get('/story-reviews/{story}', [StoryReviewController::class, 'show'])->name('story-reviews.show');
+                    Route::post('/story-reviews/{story}/approve', [StoryReviewController::class, 'approve'])->name('story-reviews.approve');
+                    Route::post('/story-reviews/{story}/reject', [StoryReviewController::class, 'reject'])->name('story-reviews.reject');
+                    
+                    // Edit request routes
+                    Route::get('/edit-requests', [AdminStoryEditRequestController::class, 'index'])->name('edit-requests.index');
+                    Route::get('/edit-requests/{editRequest}', [AdminStoryEditRequestController::class, 'show'])->name('edit-requests.show');
+                    Route::post('/edit-requests/{editRequest}/approve', [AdminStoryEditRequestController::class, 'approve'])->name('edit-requests.approve');
+                    Route::post('/edit-requests/{editRequest}/reject', [AdminStoryEditRequestController::class, 'reject'])->name('edit-requests.reject');
                     });
                 });
             });

@@ -26,6 +26,9 @@ class Story extends Model
         'has_combo',
         'translator_name',
         'is_monopoly',
+        'submitted_at',
+        'review_note',
+        'admin_note',
     ];
 
 

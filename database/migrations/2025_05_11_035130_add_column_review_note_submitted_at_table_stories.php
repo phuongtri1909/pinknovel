@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::table('stories', function (Blueprint $table) {
             $table->text('review_note')->nullable()->after('status');
             $table->timestamp('submitted_at')->nullable()->after('review_note');
+            $table->text('admin_note')->nullable();
+            $table->timestamp('reviewed_at')->nullable();
         });
     }
 
@@ -25,6 +27,8 @@ return new class extends Migration
         Schema::table('stories', function (Blueprint $table) {
             $table->dropColumn('review_note');
             $table->dropColumn('submitted_at');
+            $table->dropColumn('admin_note');
+            $table->dropColumn('reviewed_at');
         });
     }
 };

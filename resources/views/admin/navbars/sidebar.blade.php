@@ -93,6 +93,42 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('admin.story-reviews.*') ? 'active' : '' }}"
+                    href="{{ route('admin.story-reviews.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-check-to-slot text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Duyệt truyện
+                        @php
+                            $pendingStoryCount = \App\Models\Story::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingStoryCount > 0)
+                            <span class="badge bg-danger ms-2">{{ $pendingStoryCount }}</span>
+                        @endif
+                    </span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('admin.edit-requests.*') ? 'active' : '' }}"
+                    href="{{ route('admin.edit-requests.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-pen-to-square text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Duyệt chỉnh sửa
+                        @php
+                            $pendingEditCount = \App\Models\StoryEditRequest::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingEditCount > 0)
+                            <span class="badge bg-danger ms-2">{{ $pendingEditCount }}</span>
+                        @endif
+                    </span>
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('banners.*') ? 'active' : '' }}"
                     href="{{ route('banners.index') }}">
                     <div

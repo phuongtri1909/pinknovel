@@ -80,6 +80,11 @@
             color: #0f5132;
         }
 
+        .status-badge-rejected {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
         .story-info-card {
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -170,6 +175,10 @@
             @elseif($story->status == 'published')
                 <span class="status-badge status-badge-published">
                     <i class="fas fa-check-circle"></i> Đã xuất bản
+                </span>
+            @elseif($story->status == 'rejected')
+                <span class="status-badge status-badge-rejected">
+                    <i class="fas fa-times-circle"></i> Đã bị từ chối
                 </span>
             @endif
         </div>
@@ -371,6 +380,22 @@
                                         <p><small>Thời gian gửi yêu cầu:
                                                 {{ $story->latestPendingEditRequest()->submitted_at->format('H:i:s d/m/Y') }}</small>
                                         </p>
+                                    </div>
+                                @endif
+
+                                @if ($story->status == 'rejected')
+                                    <div class="alert alert-danger mt-4">
+                                        <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ chối:</strong></div>
+                                        <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản trị viên.</p>
+                                        
+                                        @if ($story->admin_note)
+                                            <div class="mt-2">
+                                                <strong>Lý do từ chối:</strong>
+                                                <div class="p-2 bg-light rounded border border-danger mt-1">{{ $story->admin_note }}</div>
+                                            </div>
+                                        @endif
+                                        
+                                        <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để gửi lại yêu cầu.</p>
                                     </div>
                                 @endif
                             </div>
@@ -634,7 +659,7 @@
                                 @if ($story->submitted_at)
                                     <div class="d-flex align-items-center mt-3">
                                         <div class="text-muted me-3">Đã gửi yêu cầu vào:</div>
-                                        <div class="fw-bold">{{ $story->submitted_at->format('H:i:s d/m/Y') }}</div>
+                                        <div class="fw-bold">{{ \Carbon\Carbon::parse($story->submitted_at)->format('H:i:s d/m/Y') }}</div>
                                     </div>
                                 @endif
 
@@ -649,6 +674,47 @@
                                     <i class="fas fa-check-circle me-2"></i>
                                     <strong>Đã được duyệt:</strong> Truyện của bạn đã được phê duyệt và xuất bản thành công.
                                 </div>
+                            @elseif($story->status == 'rejected')
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    <strong>Đã bị từ chối:</strong> Truyện của bạn không được duyệt.
+                                </div>
+                                
+                                @if ($story->admin_note)
+                                    <div class="mt-3">
+                                        <div class="fw-bold text-danger mb-2">Lý do từ chối:</div>
+                                        <div class="p-3 bg-light rounded border border-danger">{{ $story->admin_note }}</div>
+                                    </div>
+                                @endif
+                                
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Hướng dẫn:</strong> Vui lòng chỉnh sửa truyện theo phản hồi của quản trị viên, 
+                                    sau đó bạn có thể gửi lại yêu cầu duyệt.
+                                </div>
+                                
+                                @if ($story->chapters->count() >= 3)
+                                    <form action="{{ route('user.author.stories.submit.for.review', $story->id) }}" method="POST" class="review-form">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label for="review_note" class="form-label">Ghi chú cho quản trị viên</label>
+                                            <textarea class="form-control" id="review_note" name="review_note" rows="4" 
+                                                placeholder="Giải thích những thay đổi bạn đã thực hiện để khắc phục vấn đề...">{{ old('review_note') }}</textarea>
+                                            <div class="form-text">Vui lòng giải thích những thay đổi bạn đã thực hiện để khắc phục vấn đề.</div>
+                                        </div>
+
+                                        <div class="d-grid">
+                                            <button type="submit" class="btn btn-primary">
+                                                <i class="fas fa-paper-plane me-1"></i> Gửi lại yêu cầu duyệt
+                                            </button>
+                                        </div>
+                                    </form>
+                                @else
+                                    <div class="alert alert-warning mt-3">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Chưa đủ điều kiện:</strong> Truyện cần có ít nhất 3 chương trước khi gửi lại yêu cầu duyệt.
+                                    </div>
+                                @endif
                             @endif
                         </div>
                     </div>

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('slug')->unique();
             $table->text('description');
-            $table->enum('status', ['draft','pending', 'published'])->default('draft');
+            $table->enum('status', ['draft','pending', 'published', 'rejected'])->default('draft');
             $table->string('cover');
             $table->string('cover_medium');
             $table->string('cover_thumbnail');

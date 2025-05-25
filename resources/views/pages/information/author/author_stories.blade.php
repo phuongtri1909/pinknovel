@@ -263,6 +263,8 @@
                                     <span class="story-badge bg-secondary text-white">Bản nháp</span>
                                 @elseif($story->status == 'pending')
                                     <span class="story-badge bg-warning text-dark">Chờ duyệt</span>
+                                @elseif($story->status == 'rejected')
+                                    <span class="story-badge bg-danger text-white">Từ chối</span>
                                 @endif
 
                             </td>
