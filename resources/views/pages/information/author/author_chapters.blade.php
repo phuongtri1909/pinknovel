@@ -308,7 +308,7 @@
             @else
                 <div class="alert alert-warning">
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    Truyện này chưa được duyệt. Vui lòng chờ quản trị viên duyệt truyện trước khi thêm chương.
+                    Truyện này chưa được duyệt. Vui lòng thêm ít nhất 3 chương và gửi duyệt.
                 </div>
             @endif
         </div>
