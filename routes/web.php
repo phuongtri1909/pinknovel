@@ -91,9 +91,6 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
             // Deposit Routes
             Route::get('/deposit', [DepositController::class, 'index'])->name('deposit');
-            Route::post('/deposit/validate', [DepositController::class, 'validatePayment'])->name('deposit.validate');
-            Route::post('/deposit', [DepositController::class, 'store'])->name('deposit.store');
-
             // Request Payment Routes
             Route::post('/request-payment', [RequestPaymentController::class, 'store'])->name('request.payment.store');
             Route::post('/request-payment/confirm', [RequestPaymentController::class, 'confirm'])->name('request.payment.confirm');

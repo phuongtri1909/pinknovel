@@ -25,6 +25,7 @@ class Story extends Model
         'combo_price',
         'has_combo',
         'translator_name',
+        'is_monopoly',
     ];
 
 

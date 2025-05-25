@@ -125,6 +125,7 @@ class StoryEditRequestController extends Controller
                 'cover' => $editRequest->cover ?? $story->cover,
                 'cover_medium' => $editRequest->cover_medium ?? $story->cover_medium,
                 'cover_thumbnail' => $editRequest->cover_thumbnail ?? $story->cover_thumbnail,
+                'is_monopoly' => $editRequest->is_monopoly ?? $story->is_monopoly,
             ]);
             
             // Update categories

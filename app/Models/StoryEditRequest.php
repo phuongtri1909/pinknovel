@@ -27,7 +27,8 @@ class StoryEditRequest extends Model
         'admin_note',
         'submitted_at',
         'reviewed_at',
-        'translator_name'
+        'translator_name',
+        'is_monopoly',
     ];
 
     protected $casts = [

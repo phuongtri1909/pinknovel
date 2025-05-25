@@ -99,6 +99,7 @@ class AuthorController extends Controller
             'story_type' => 'required|in:collected,original,translated',
             'translator_name' => 'nullable|max:255',
             'is_18_plus' => 'nullable|boolean',
+            'is_monopoly' => 'nullable|boolean',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -114,6 +115,7 @@ class AuthorController extends Controller
             'story_type.in' => 'Loại truyện không hợp lệ.',
             'is_18_plus.boolean' => 'Trạng thái 18+ không hợp lệ.',
             'translator_name.max' => 'Tên người dịch không được quá 255 ký tự.',
+            'is_monopoly.boolean' => 'Trạng thái độc quyền không hợp lệ.',
         ]);
 
         DB::beginTransaction();
@@ -135,6 +137,7 @@ class AuthorController extends Controller
                 'translator_name' => $request->translator_name,
                 'story_type' => $request->story_type,
                 'is_18_plus' => $request->has('is_18_plus'),
+                'is_monopoly' => $request->has('is_monopoly'),
             ]);
 
             // Xử lý categories
@@ -209,6 +212,7 @@ class AuthorController extends Controller
             'story_type' => 'required|in:collected,original,translated',
             'is_18_plus' => 'nullable|boolean',
             'translator_name' => 'nullable|max:255',
+            'is_monopoly' => 'nullable|boolean',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -223,6 +227,7 @@ class AuthorController extends Controller
             'story_type.in' => 'Loại truyện không hợp lệ.',
             'is_18_plus.boolean' => 'Trạng thái 18+ không hợp lệ.',
             'translator_name.max' => 'Tên người dịch không được quá 255 ký tự.',
+            'is_monopoly.boolean' => 'Trạng thái độc quyền không hợp lệ.',
         ]);
 
         // Xử lý categories
@@ -272,7 +277,8 @@ class AuthorController extends Controller
                     $story->description !== $request->description ||
                     $story->author_name !== $request->author_name ||
                     $story->translator_name !== $request->translator_name ||
-                    $story->story_type !== $request->story_type
+                    $story->story_type !== $request->story_type ||
+                    $story->is_monopoly !== $request->is_monopoly
                 ) {
                     $hasChanges = true;
                 }
@@ -310,6 +316,7 @@ class AuthorController extends Controller
                     'categories_data' => json_encode($categoryData),
                     'status' => 'pending',
                     'submitted_at' => now(),
+                    'is_monopoly' => $request->has('is_monopoly'),
                 ];
 
                 // Xử lý ảnh bìa nếu có upload mới
@@ -339,6 +346,7 @@ class AuthorController extends Controller
                     'story_type' => $request->story_type,
                     'translator_name' => $request->translator_name,
                     'is_18_plus' => $request->has('is_18_plus'),
+                    'is_monopoly' => $request->has('is_monopoly'),
                     'status' => 'draft',
                 ];
 

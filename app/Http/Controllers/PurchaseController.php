@@ -4,13 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Story;
+use App\Models\Config;
 use App\Models\Chapter;
+use Illuminate\Http\Request;
 use App\Models\StoryPurchase;
 use App\Models\ChapterPurchase;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class PurchaseController extends Controller
 {
@@ -141,6 +142,12 @@ class PurchaseController extends Controller
                     ['user_id' => $user->id, 'chapter_id' => $chapter->id],
                     ['amount_paid' => $chapter->price, 'updated_at' => now(), 'created_at' => now()]
                 );
+
+                // cộng tiền cho tác giả
+                $authorPercentage = $story->is_monopoly ? Config::getConfig('monopoly_author_percentage', 90) : Config::getConfig('non_monopoly_author_percentage', 70);
+                $rawEarnings = ($chapter->price * $authorPercentage) / 100;
+                $authorEarnings = round($rawEarnings); 
+                DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
 
                 DB::commit();
                 $success = true;
@@ -300,6 +307,12 @@ class PurchaseController extends Controller
                     'story_id' => $story->id,
                     'amount_paid' => $story->combo_price
                 ]);
+
+                // Cộng tiền cho tác giả
+                $authorPercentage = $story->is_monopoly ? Config::getConfig('monopoly_author_percentage', 90) : Config::getConfig('non_monopoly_author_percentage', 70);
+                $rawEarnings = ($story->combo_price * $authorPercentage) / 100;
+                $authorEarnings = round($rawEarnings); 
+                DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
 
                 DB::commit();
                 $success = true;

@@ -286,6 +286,19 @@
                                     @enderror
                                 </div>
 
+                                <div class="mb-3">
+                                    <label for="is_monopoly" class="form-label">Truyện độc quyền <span
+                                            class="text-muted">(nếu có)</span></label>
+                                    <input type="checkbox" class="form-check-input" id="is_monopoly" name="is_monopoly"
+                                        value="1" {{ old('is_monopoly', $story->is_monopoly) ? 'checked' : '' }}>
+                                    <div class="form-text text-muted">
+                                        Chọn nếu truyện là độc quyền và không được phép sưu tầm hoặc dịch.
+                                    </div>
+                                    @error('is_monopoly')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
                                 <div class="mb-3 mt-4">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" id="is_18_plus"

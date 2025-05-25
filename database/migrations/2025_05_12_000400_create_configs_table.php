@@ -43,6 +43,27 @@ return new class extends Migration
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'key' => 'monopoly_author_percentage',
+                'value' => '90', // 90% tác giả nhận được khi truyện được độc quyền
+                'description' => '0% tác giả nhận được khi truyện được độc quyền',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'key' => 'non_monopoly_author_percentage',
+                'value' => '70', // 70% tác giả nhận được khi truyện không được độc quyền
+                'description' => '70% tác giả nhận được khi truyện không được độc quyền',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'key' => 'coin_paypal_rate',
+                'value' => '10',
+                'description' => 'Tỷ lệ chuyển đổi từ USD sang coin',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ]);
     }
 
