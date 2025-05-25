@@ -107,6 +107,10 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 // Trang doanh thu
                 Route::get('/revenue', [AuthorController::class, 'revenue'])->name('revenue');
                 Route::get('/revenue/data', [AuthorController::class, 'getRevenueData'])->name('revenue.data');
+                // Add new API routes for transaction history and top stories/chapters
+                Route::get('/revenue/transactions', [AuthorController::class, 'getTransactionHistory'])->name('revenue.transactions');
+                Route::get('/revenue/top-stories', [AuthorController::class, 'getTopStories'])->name('revenue.top-stories');
+                Route::get('/revenue/top-chapters', [AuthorController::class, 'getTopChapters'])->name('revenue.top-chapters');
 
                 Route::group(['prefix' => 'stories', 'as' => 'stories.'], function () {});
 
@@ -117,6 +121,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 Route::put('/stories/{story}', [AuthorController::class, 'update'])->name('stories.update');
                 Route::delete('/stories/{story}', [AuthorController::class, 'destroy'])->name('stories.destroy');
                 Route::post('/stories/{story}/submit-for-review', [AuthorController::class, 'submitForReview'])->name('stories.submit.for.review');
+
+
 
                 // Thêm route API để kiểm tra trạng thái truyện
                 Route::get('/stories/{story}/check-status', [AuthorController::class, 'checkStoryStatus'])->name('stories.check.status');

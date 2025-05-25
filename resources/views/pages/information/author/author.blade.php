@@ -286,44 +286,44 @@
             </a>
         </div>
         
-        <!-- Đang quản lý -->
+      
         <div class="col-lg-3 col-md-6 col-sm-6">
-            <a href="#" class="text-decoration-none">
+            <a href="{{ route('user.author.stories.create') }}" class="text-decoration-none">
                 <div class="author-dashboard-card card-pending">
                     <div class="author-card-title">
-                        Đang quản lý
+                        ĐĂNG TRUYỆN
                         <i class="fas fa-chevron-right"></i>
                     </div>
                     <div class="author-card-value">
-                        <i class="fas fa-tasks"></i>
-                        <span>{{ $pendingCount ?? 1 }}</span>
+                        <i class="fas fa-book"></i>
+                        <span>{{ $stories->total() ?? 0 }}</span>
                     </div>
                 </div>
             </a>
         </div>
-        
+
         <!-- Yêu cầu hỗ trợ -->
         <div class="col-lg-3 col-md-6 col-sm-6">
-            <a href="#" class="text-decoration-none">
-                <div class="author-dashboard-card card-support">
-                    <div class="author-card-title">
-                        Yêu cầu hỗ trợ
-                        <i class="fas fa-chevron-right"></i>
+            <div class="author-dashboard-card card-support">
+                <div class="author-card-title">
+                    Thống kê nhanh
+                </div>
+                <div class="d-flex flex-column">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small text-white">Lượt xem:</span>
+                        <span class="small text-white fw-bold">{{ number_format($totalViews ?? 0) }}</span>
                     </div>
-                    <div class="author-card-value">
-                        <i class="fas fa-headset"></i>
-                        <span>0</span>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="small text-white">Chương:</span>
+                        <span class="small text-white fw-bold">{{ number_format($totalChapters ?? 0) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="small text-white">Người theo dõi:</span>
+                        <span class="small text-white fw-bold">{{ number_format($totalFollowers ?? 0) }}</span>
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
-    </div>
-    
-    <div class="action-buttons d-flex justify-content-between my-4">
-        <a href="{{ route('user.author.stories.create') }}" class="author-button primary text-decoration-none">
-            <i class="fas fa-plus"></i>
-            <span>ĐĂNG TRUYỆN</span>
-        </a>
     </div>
 
     <div class="row">
@@ -373,34 +373,6 @@
                 </div>
                 <div id="chart-container" style="height: 300px; display: none;">
                     <canvas id="revenue-chart"></canvas>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="stats-widget mt-4">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Thống kê nhanh</h5>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-md-3 col-6 mb-3 mb-md-0">
-                        <div class="h2 fw-bold text-primary">{{ $totalViews ?? 0 }}</div>
-                        <div class="text-muted">Lượt xem</div>
-                    </div>
-                    <div class="col-md-3 col-6 mb-3 mb-md-0">
-                        <div class="h2 fw-bold text-success">{{ $totalChapters ?? 0 }}</div>
-                        <div class="text-muted">Chương</div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="h2 fw-bold text-info">{{ $totalComments ?? 0 }}</div>
-                        <div class="text-muted">Bình luận</div>
-                    </div>
-                    <div class="col-md-3 col-6">
-                        <div class="h2 fw-bold text-warning">{{ $totalFollowers ?? 0 }}</div>
-                        <div class="text-muted">Người theo dõi</div>
-                    </div>
                 </div>
             </div>
         </div>

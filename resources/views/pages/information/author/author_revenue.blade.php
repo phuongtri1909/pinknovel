@@ -336,6 +336,81 @@
         border-radius: 20px;
         display: inline-block;
     }
+    
+    /* New styles for transaction history */
+    .badge-chapter {
+        background-color: rgba(123, 197, 174, 0.15);
+        color: #7bc5ae;
+        border: 1px solid rgba(123, 197, 174, 0.3);
+        font-weight: 500;
+    }
+    
+    .badge-story {
+        background-color: rgba(233, 179, 132, 0.15);
+        color: #e9b384;
+        border: 1px solid rgba(233, 179, 132, 0.3);
+        font-weight: 500;
+    }
+    
+    .transaction-row {
+        transition: all 0.3s ease;
+    }
+    
+    .transaction-row:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+    
+    .transaction-amount {
+        font-weight: 700;
+        color: #20b2aa;
+        text-align: right;
+    }
+    
+    .transaction-user {
+        display: flex;
+        align-items: center;
+    }
+    
+    .transaction-user-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background-color: #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+        color: #666;
+        font-weight: 600;
+        font-size: 14px;
+    }
+    
+    .transaction-date {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .transaction-date-day {
+        font-weight: 600;
+        color: #333;
+    }
+    
+    .transaction-date-time {
+        font-size: 12px;
+        color: #888;
+    }
+    
+    .load-more-btn {
+        border-radius: 50px;
+        padding: 8px 25px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .load-more-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    }
 </style>
 @endpush
 
@@ -460,13 +535,41 @@
     </div>
     
     <!-- Lịch sử giao dịch -->
-    <div class="transaction-history">
-        <h5 class="mb-4">Lịch sử giao dịch gần đây</h5>
-        <div id="transaction-list">
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Đang tải...</span>
-                </div>
+    <div class="card mt-4 mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Lịch sử giao dịch gần đây</h5>
+            <span class="badge bg-light text-dark rounded-pill">
+                <i class="fas fa-calendar-alt me-1"></i> 
+                <span id="transaction-period">{{ date('m/Y') }}</span>
+            </span>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 18%"><i class="far fa-clock me-1 text-muted"></i> Thời gian</th>
+                            <th style="width: 20%"><i class="far fa-user me-1 text-muted"></i> Người mua</th>
+                            <th><i class="far fa-file-alt me-1 text-muted"></i> Nội dung</th>
+                            <th style="width: 15%" class="text-end"><i class="fas fa-coins me-1 text-muted"></i> Doanh thu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-list">
+                        <tr>
+                            <td colspan="4" class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                                <p class="mt-2 mb-0">Đang tải dữ liệu giao dịch...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="transaction-pagination" class="d-flex justify-content-center mt-3" style="display: none !important;">
+                <button id="load-more-transactions" class="btn btn-outline-primary load-more-btn">
+                    <i class="fas fa-sync-alt me-2"></i> Xem thêm giao dịch
+                </button>
             </div>
         </div>
     </div>
@@ -491,12 +594,12 @@
                                         <th>Doanh thu</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="top-stories-list">
                                     @foreach($topStories as $index => $story)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>
-                                                <a href="{{ route('show.page.story', $story->slug) }}" class="text-decoration-none">
+                                                <a href="{{ route('show.page.story', $story->slug) }}" class="text-decoration-none color-3">
                                                     {{ $story->title }}
                                                 </a>
                                             </td>
@@ -506,6 +609,11 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                        <div id="top-stories-pagination" class="d-flex justify-content-center mt-3" style="display: none !important;">
+                            <button id="load-more-stories" class="btn btn-outline-primary btn-sm load-more-btn">
+                                <i class="fas fa-sync-alt me-2"></i> Xem thêm truyện
+                            </button>
                         </div>
                     @else
                         <div class="text-center text-muted py-3">
@@ -535,12 +643,12 @@
                                         <th>Doanh thu</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="top-chapters-list">
                                     @foreach($topChapters as $index => $chapter)
                                         <tr>
                                             <td>{{ $index + 1 }}</td>
                                             <td>
-                                                <a href="{{ route('chapter', [$chapter->story_slug, $chapter->slug]) }}" class="text-decoration-none">
+                                                <a href="{{ route('chapter', [$chapter->story_slug, $chapter->slug]) }}" class="text-decoration-none color-3">
                                                     {{ $chapter->title }}
                                                 </a>
                                                 <div class="small text-muted">
@@ -553,6 +661,11 @@
                                     @endforeach
                                 </tbody>
                             </table>
+                        </div>
+                        <div id="top-chapters-pagination" class="d-flex justify-content-center mt-3" style="display: none !important;">
+                            <button id="load-more-chapters" class="btn btn-outline-primary btn-sm load-more-btn">
+                                <i class="fas fa-sync-alt me-2"></i> Xem thêm chương
+                            </button>
                         </div>
                     @else
                         <div class="text-center text-muted py-3">
@@ -573,6 +686,12 @@
 
 <script>
     let revenueChart = null;
+    let currentTransactionPage = 1;
+    let currentStoriesPage = 1;
+    let currentChaptersPage = 1;
+    let hasMoreTransactions = false;
+    let hasMoreStories = false;
+    let hasMoreChapters = false;
     
     // Hiệu ứng đếm số
     function animateNumber(element, targetValue) {
@@ -618,64 +737,64 @@
         });
     }
     
-    // Hàm tải dữ liệu và cập nhật biểu đồ
+    // Hàm tải dữ liệu doanh thu
     function loadRevenueData() {
         const year = document.getElementById('year-filter').value;
         const month = document.getElementById('month-filter').value;
         const chartType = document.getElementById('chart-type').value;
         
         // Hiển thị loading
-        document.getElementById('chart-loading').style.display = 'flex';
+        const chartContainer = document.querySelector('.chart-container');
+        chartContainer.innerHTML = `
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Đang tải...</span>
+                </div>
+                <p class="mt-2">Đang tải dữ liệu doanh thu...</p>
+            </div>
+        `;
         
         // Gọi API để lấy dữ liệu
         fetch(`{{ route('user.author.revenue.data') }}?year=${year}&month=${month}`)
             .then(response => response.json())
             .then(data => {
                 // Cập nhật biểu đồ
-                updateChart(data, chartType);
+                createOrUpdateChart(data, chartType);
                 
-                // Cập nhật thông tin doanh thu
+                // Cập nhật thông tin tổng hợp
                 updateRevenueSummary(data);
                 
-                // Ẩn loading
-                document.getElementById('chart-loading').style.display = 'none';
-                
-                // Hiệu ứng xuất hiện dần dần cho biểu đồ
-                const chartContainer = document.getElementById('revenue-chart').parentElement;
-                chartContainer.style.opacity = '0';
-                chartContainer.style.display = 'block';
-                
-                setTimeout(() => {
-                    chartContainer.style.transition = 'opacity 0.5s ease';
-                    chartContainer.style.opacity = '1';
-                }, 100);
+                // Tải lại các dữ liệu khác
+                loadTransactionHistory(true);
+                loadTopStories(true);
+                loadTopChapters(true);
             })
             .catch(error => {
                 console.error('Error fetching revenue data:', error);
-                // Ẩn loading
-                document.getElementById('chart-loading').style.display = 'none';
+                chartContainer.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                        <p>Có lỗi xảy ra khi tải dữ liệu doanh thu</p>
+                    </div>
+                `;
             });
     }
     
-    // Hàm cập nhật biểu đồ
-    function updateChart(data, chartType) {
+    // Hàm tạo hoặc cập nhật biểu đồ
+    function createOrUpdateChart(data, chartType) {
+        const chartContainer = document.querySelector('.chart-container');
+        chartContainer.innerHTML = '<canvas id="revenue-chart"></canvas>';
+        
         const ctx = document.getElementById('revenue-chart').getContext('2d');
         
-        // Nếu biểu đồ đã tồn tại, hủy nó
-        if (revenueChart) {
-            revenueChart.destroy();
-        }
-        
-        // Kiểm tra dữ liệu
-        if (!data || !data.datasets || data.datasets.length === 0 || !data.labels) {
-            // Hiển thị thông báo không có dữ liệu
-            const chartContainer = document.getElementById('revenue-chart').parentElement;
+        // Kiểm tra xem có dữ liệu không
+        if (!data.datasets || !data.labels || data.datasets.length === 0) {
             chartContainer.innerHTML = '<div class="text-center py-5"><i class="fas fa-chart-bar fa-3x text-muted mb-3"></i><p>Không có dữ liệu doanh thu trong khoảng thời gian này</p></div>';
             return;
         }
         
         // Tạo biểu đồ mới
-        revenueChart = new Chart(ctx, {
+        const revenueChart = new Chart(ctx, {
             type: chartType,
             data: {
                 labels: data.labels,
@@ -720,117 +839,357 @@
     
     // Hàm cập nhật thông tin tổng hợp doanh thu
     function updateRevenueSummary(data) {
-        let totalChapterRevenue = 0;
-        let totalStoryRevenue = 0;
-        
-        // Tính tổng doanh thu từ chương
-        if (data.datasets && data.datasets.length > 0) {
-            totalChapterRevenue = data.datasets[0].data.reduce((sum, value) => sum + value, 0);
-            if (data.datasets.length > 1) {
-                totalStoryRevenue = data.datasets[1].data.reduce((sum, value) => sum + value, 0);
+        // Sử dụng dữ liệu tổng hợp từ API thay vì tính toán từ datasets
+        if (data.summary) {
+            const totalChapterRevenue = data.summary.totalChapterRevenue;
+            const totalStoryRevenue = data.summary.totalStoryRevenue;
+            
+            // Cập nhật UI với hiệu ứng đếm số
+            const chapterRevenueElement = document.getElementById('chapter-revenue');
+            const storyRevenueElement = document.getElementById('story-revenue');
+            
+            // Hiệu ứng đếm số với giá trị đúng
+            animateNumber(chapterRevenueElement, totalChapterRevenue);
+            animateNumber(storyRevenueElement, totalStoryRevenue);
+        } else {
+            // Fallback nếu API không trả về dữ liệu summary
+            let totalChapterRevenue = 0;
+            let totalStoryRevenue = 0;
+            
+            // Tính tổng doanh thu từ chương
+            if (data.datasets && data.datasets.length > 0) {
+                totalChapterRevenue = data.datasets[0].data.reduce((sum, value) => sum + value, 0);
+                if (data.datasets.length > 1) {
+                    totalStoryRevenue = data.datasets[1].data.reduce((sum, value) => sum + value, 0);
+                }
             }
+            
+            // Cập nhật UI với hiệu ứng đếm số
+            const chapterRevenueElement = document.getElementById('chapter-revenue');
+            const storyRevenueElement = document.getElementById('story-revenue');
+            
+            // Hiệu ứng đếm số với giá trị đúng
+            animateNumber(chapterRevenueElement, totalChapterRevenue);
+            animateNumber(storyRevenueElement, totalStoryRevenue);
         }
-        
-        // Cập nhật UI với hiệu ứng đếm số
-        const chapterRevenueElement = document.getElementById('chapter-revenue');
-        const storyRevenueElement = document.getElementById('story-revenue');
-        
-        // Hiệu ứng đếm số với giá trị đúng
-        animateNumber(chapterRevenueElement, totalChapterRevenue);
-        animateNumber(storyRevenueElement, totalStoryRevenue);
     }
     
     // Hàm tải lịch sử giao dịch
-    function loadTransactionHistory() {
-        document.getElementById('transaction-list').innerHTML = `
-            <div class="text-center py-4">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Đang tải...</span>
-                </div>
-            </div>
-        `;
-        
-        // Hiển thị lịch sử giao dịch giả định
-        setTimeout(() => {
-            const transactionList = document.getElementById('transaction-list');
-            transactionList.style.opacity = '0';
-            
-            transactionList.innerHTML = `
-                <div class="transaction-item">
-                    <div class="row">
-                        <div class="col-md-2">
-                            <div class="transaction-date">25/05/2023 08:45</div>
+    function loadTransactionHistory(reset = false) {
+        if (reset) {
+            currentTransactionPage = 1;
+            document.getElementById('transaction-list').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
                         </div>
-                        <div class="col-md-6">
-                            <div class="transaction-title">Mua chương 10: Cuộc chiến bắt đầu</div>
-                            <div class="transaction-type type-chapter">Chương lẻ</div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <div class="transaction-amount">+50 xu</div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <a href="#" class="btn btn-sm btn-outline-primary">Chi tiết</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="transaction-item">
-                    <div class="row">
-                        <div class="col-md-2">
-                            <div class="transaction-date">24/05/2023 16:20</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="transaction-title">Mua trọn bộ: Vũ trụ song song</div>
-                            <div class="transaction-type type-story">Trọn bộ</div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <div class="transaction-amount">+500 xu</div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <a href="#" class="btn btn-sm btn-outline-primary">Chi tiết</a>
-                        </div>
-                    </div>
-                </div>
-                <div class="transaction-item">
-                    <div class="row">
-                        <div class="col-md-2">
-                            <div class="transaction-date">22/05/2023 10:15</div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="transaction-title">Mua chương 5: Bí mật được hé lộ</div>
-                            <div class="transaction-type type-chapter">Chương lẻ</div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <div class="transaction-amount">+30 xu</div>
-                        </div>
-                        <div class="col-md-2 text-end">
-                            <a href="#" class="btn btn-sm btn-outline-primary">Chi tiết</a>
-                        </div>
-                    </div>
-                </div>
+                        <p class="mt-2 mb-0">Đang tải dữ liệu giao dịch...</p>
+                    </td>
+                </tr>
             `;
-            
-            // Hiệu ứng xuất hiện dần dần
-            setTimeout(() => {
-                transactionList.style.transition = 'opacity 0.5s ease';
-                transactionList.style.opacity = '1';
+            document.getElementById('transaction-pagination').style.display = 'none';
+        }
+        
+        const year = document.getElementById('year-filter').value;
+        const month = document.getElementById('month-filter').value;
+        
+        // Cập nhật hiển thị kỳ giao dịch
+        document.getElementById('transaction-period').textContent = month ? `${month}/${year}` : `Năm ${year}`;
+        
+        fetch(`{{ route('user.author.revenue.transactions') }}?year=${year}&month=${month}&page=${currentTransactionPage}`)
+            .then(response => response.json())
+            .then(data => {
+                hasMoreTransactions = data.current_page < data.last_page;
                 
-                // Thêm hiệu ứng xuất hiện lần lượt cho từng item
-                const items = transactionList.querySelectorAll('.transaction-item');
-                items.forEach((item, index) => {
-                    item.style.opacity = '0';
-                    item.style.transform = 'translateY(20px)';
-                    item.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                document.getElementById('transaction-pagination').style.display = hasMoreTransactions ? 'flex' : 'none';
+                
+                if (currentTransactionPage === 1) {
+                    document.getElementById('transaction-list').innerHTML = '';
+                }
+                
+                if (data.data.length === 0 && currentTransactionPage === 1) {
+                    document.getElementById('transaction-list').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-5">
+                                <i class="fas fa-receipt fa-3x mb-3 text-muted"></i>
+                                <p class="mb-0">Không có giao dịch nào trong khoảng thời gian này</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                const transactionList = document.getElementById('transaction-list');
+                
+                data.data.forEach((transaction, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'transaction-row';
+                    
+                    // Format date
+                    const date = new Date(transaction.created_at);
+                    const day = date.toLocaleDateString('vi-VN', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                    });
+                    const time = date.toLocaleTimeString('vi-VN', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                    
+                    // Get user initials for avatar
+                    const userInitials = transaction.user_name
+                        .split(' ')
+                        .map(name => name[0])
+                        .join('')
+                        .substring(0, 2)
+                        .toUpperCase();
+                    
+                    // Determine content based on transaction type
+                    let contentHtml;
+                    let badgeClass = transaction.type === 'chapter' ? 'badge-chapter' : 'badge-story';
+                    let badgeText = transaction.type === 'chapter' ? 'Chương' : 'Trọn bộ';
+                    let badgeIcon = transaction.type === 'chapter' ? 'fa-book-open' : 'fa-book';
+                    
+                    if (transaction.type === 'chapter') {
+                        contentHtml = `
+                            <span class="badge ${badgeClass} mb-2 text-dark">
+                                <i class="fas ${badgeIcon} me-1"></i> ${badgeText}
+                            </span>
+                            <div>
+                                <a href="{{ url('/story') }}/${transaction.story_slug}/${transaction.chapter_slug}" class="text-decoration-none fw-semibold color-3">
+                                    Chương ${transaction.chapter_number}: ${transaction.chapter_title}
+                                </a>
+                                <div class="small text-muted mt-1">
+                                    <i class="far fa-bookmark me-1"></i> ${transaction.story_title}
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        contentHtml = `
+                            <span class="badge ${badgeClass} mb-2 text-dark">
+                                <i class="fas ${badgeIcon} me-1"></i> ${badgeText}
+                            </span>
+                            <div>
+                                <a href="{{ url('/story') }}/${transaction.story_slug}" class="text-decoration-none fw-semibold color-3">
+                                    ${transaction.story_title}
+                                </a>
+                            </div>
+                        `;
+                    }
+                    
+                    row.innerHTML = `
+                        <td>
+                            <div class="transaction-date">
+                                <span class="transaction-date-day">${day}</span>
+                                <span class="transaction-date-time">${time}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="transaction-user">
+                                <div class="transaction-user-avatar">${userInitials}</div>
+                                <span>${transaction.user_name}</span>
+                            </div>
+                        </td>
+                        <td>${contentHtml}</td>
+                        <td class="transaction-amount text-shadow-custom">${transaction.amount_paid.toLocaleString()} xu</td>
+                    `;
+                    
+                    row.style.opacity = '0';
+                    row.style.transform = 'translateY(10px)';
+                    row.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    
+                    transactionList.appendChild(row);
                     
                     setTimeout(() => {
-                        item.style.opacity = '1';
-                        item.style.transform = 'translateY(0)';
-                    }, 100 * (index + 1));
+                        row.style.opacity = '1';
+                        row.style.transform = 'translateY(0)';
+                    }, 50 * index);
                 });
-            }, 100);
-        }, 1000);
+            })
+            .catch(error => {
+                console.error('Error fetching transaction history:', error);
+                document.getElementById('transaction-list').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-5">
+                            <i class="fas fa-exclamation-circle fa-3x mb-3 text-danger"></i>
+                            <p class="mb-0">Có lỗi xảy ra khi tải lịch sử giao dịch</p>
+                            <button class="btn btn-sm btn-outline-danger mt-3" onclick="loadTransactionHistory(true)">
+                                <i class="fas fa-redo me-1"></i> Thử lại
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
     }
     
-    // Hiệu ứng chuyển động nổi cho các card
+    // Hàm tải danh sách truyện bán chạy nhất
+    function loadTopStories(reset = false) {
+        if (reset) {
+            currentStoriesPage = 1;
+            document.getElementById('top-stories-list').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            document.getElementById('top-stories-pagination').style.display = 'none';
+        }
+        
+        const year = document.getElementById('year-filter').value;
+        const month = document.getElementById('month-filter').value;
+        
+
+        fetch(`{{ route('user.author.revenue.top-stories') }}?year=${year}&month=${month}&page=${currentStoriesPage}`)
+            .then(response => response.json())
+            .then(data => {
+                hasMoreStories = data.current_page < data.last_page;
+                
+                document.getElementById('top-stories-pagination').style.display = hasMoreStories ? 'flex' : 'none';
+                
+                if (currentStoriesPage === 1) {
+                    document.getElementById('top-stories-list').innerHTML = '';
+                }
+                
+                if (data.data.length === 0 && currentStoriesPage === 1) {
+                    document.getElementById('top-stories-list').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">
+                                <i class="fas fa-book fa-2x mb-3"></i>
+                                <p>Không có dữ liệu bán truyện trong khoảng thời gian này</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                const storiesList = document.getElementById('top-stories-list');
+                const startIndex = (currentStoriesPage - 1) * data.per_page;
+                
+                data.data.forEach((story, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${startIndex + index + 1}</td>
+                        <td>
+                            <a href="{{ url('/story') }}/${story.slug}" class="text-decoration-none color-3">
+                                ${story.title}
+                            </a>
+                        </td>
+                        <td>${story.purchase_count}</td>
+                        <td>${story.total_revenue.toLocaleString()} xu</td>
+                    `;
+                    
+                    row.style.opacity = '0';
+                    row.style.transition = 'opacity 0.3s ease';
+                    
+                    storiesList.appendChild(row);
+                    
+                    setTimeout(() => {
+                        row.style.opacity = '1';
+                    }, 50 * index);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching top stories:', error);
+                document.getElementById('top-stories-list').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-danger">
+                            <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
+                            <p>Có lỗi xảy ra khi tải dữ liệu truyện bán chạy</p>
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+    
+    // Hàm tải danh sách chương bán chạy nhất
+    function loadTopChapters(reset = false) {
+        if (reset) {
+            currentChaptersPage = 1;
+            document.getElementById('top-chapters-list').innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Đang tải...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            document.getElementById('top-chapters-pagination').style.display = 'none';
+        }
+        
+        const year = document.getElementById('year-filter').value;
+        const month = document.getElementById('month-filter').value;
+        
+        fetch(`{{ route('user.author.revenue.top-chapters') }}?year=${year}&month=${month}&page=${currentChaptersPage}`)
+            .then(response => response.json())
+            .then(data => {
+                hasMoreChapters = data.current_page < data.last_page;
+                
+                document.getElementById('top-chapters-pagination').style.display = hasMoreChapters ? 'flex' : 'none';
+                
+                if (currentChaptersPage === 1) {
+                    document.getElementById('top-chapters-list').innerHTML = '';
+                }
+                
+                if (data.data.length === 0 && currentChaptersPage === 1) {
+                    document.getElementById('top-chapters-list').innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">
+                                <i class="fas fa-book-open fa-2x mb-3"></i>
+                                <p>Không có dữ liệu bán chương trong khoảng thời gian này</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                const chaptersList = document.getElementById('top-chapters-list');
+                const startIndex = (currentChaptersPage - 1) * data.per_page;
+                
+                data.data.forEach((chapter, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${startIndex + index + 1}</td>
+                        <td>
+                            <a href="{{ url('/story') }}/${chapter.story_slug}/${chapter.slug}" class="text-decoration-none color-3">
+                                ${chapter.title}
+                            </a>
+                            <div class="small text-muted">
+                                ${chapter.story_title}
+                            </div>
+                        </td>
+                        <td>${chapter.purchase_count}</td>
+                        <td>${chapter.total_revenue.toLocaleString()} xu</td>
+                    `;
+                    
+                    row.style.opacity = '0';
+                    row.style.transition = 'opacity 0.3s ease';
+                    
+                    chaptersList.appendChild(row);
+                    
+                    setTimeout(() => {
+                        row.style.opacity = '1';
+                    }, 50 * index);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching top chapters:', error);
+                document.getElementById('top-chapters-list').innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-danger">
+                            <i class="fas fa-exclamation-circle fa-2x mb-3"></i>
+                            <p>Có lỗi xảy ra khi tải dữ liệu chương bán chạy</p>
+                        </td>
+                    </tr>
+                `;
+            });
+    }
+    
     function floatingAnimation() {
         const cards = document.querySelectorAll('.revenue-card');
         
@@ -845,7 +1204,6 @@
                 card.style.opacity = '1';
                 card.style.transform = 'translateY(0)';
                 
-                // Hiệu ứng nổi liên tục
                 setTimeout(() => {
                     card.style.animation = `floating-${index + 1} 3s ease-in-out infinite`;
                     const keyframes = `
@@ -863,31 +1221,42 @@
         });
     }
     
-    // Xử lý sự kiện khi trang được tải
     document.addEventListener('DOMContentLoaded', function() {
-        // Khởi chạy hiệu ứng nổi cho các card
+        // Khởi tạo hiệu ứng nổi cho các thẻ
         floatingAnimation();
         
-        // Khởi tạo hiệu ứng hover cho card
+        // Khởi tạo hiệu ứng hover cho các thẻ
         initCardHoverEffects();
         
-        // Tải dữ liệu ban đầu
+        // Tải dữ liệu doanh thu ban đầu
         loadRevenueData();
-        loadTransactionHistory();
         
-        // Hiệu ứng cho tổng doanh thu
+        // Khởi tạo hiệu ứng đếm số cho tổng doanh thu
         const totalRevenueElement = document.getElementById('total-revenue');
-        // Lấy giá trị số từ chuỗi, loại bỏ định dạng và từ "xu"
         const totalRevenueText = totalRevenueElement.textContent.replace(/[^\d]/g, '');
         const totalRevenueValue = parseInt(totalRevenueText) || 0;
         
-        // Hiệu ứng đếm số cho tổng doanh thu
         animateNumber(totalRevenueElement, totalRevenueValue);
         
-        // Xử lý sự kiện thay đổi bộ lọc
+        // Thêm sự kiện cho các bộ lọc và nút tải thêm
         document.getElementById('year-filter').addEventListener('change', loadRevenueData);
         document.getElementById('month-filter').addEventListener('change', loadRevenueData);
         document.getElementById('chart-type').addEventListener('change', loadRevenueData);
+        
+        document.getElementById('load-more-transactions').addEventListener('click', function() {
+            currentTransactionPage++;
+            loadTransactionHistory();
+        });
+        
+        document.getElementById('load-more-stories').addEventListener('click', function() {
+            currentStoriesPage++;
+            loadTopStories();
+        });
+
+        document.getElementById('load-more-chapters').addEventListener('click', function() {
+            currentChaptersPage++;
+            loadTopChapters();
+        });
     });
 </script>
 @endpush 

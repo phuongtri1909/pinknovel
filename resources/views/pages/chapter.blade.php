@@ -91,7 +91,7 @@
                             </div>
                             <div class="dropdown-divider"></div>
                             <div class="chapter-dropdown-body">
-                                @foreach ($story->chapters->sortByDesc('number') as $chap)
+                                @foreach ($story->chapters->sortBy('number') as $chap)
                                     <a class="dropdown-item {{ $chap->id === $chapter->id ? 'active' : '' }}"
                                         href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chap->slug]) }}">
                                         Chương {{ $chap->number }}: {{ $chap->title }}

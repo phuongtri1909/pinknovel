@@ -139,16 +139,7 @@
                 </a>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('logo-site.*') ? 'active' : '' }}"
-                    href="{{ route('logo-site.edit') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-regular fa-images text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Logo</span>
-                </a>
-            </li>
+            
 
             {{-- <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('donate.*') ? 'active' : '' }}"
@@ -217,6 +208,17 @@
                         <i class="fa-solid fa-gears text-dark icon-sidebar"></i>
                     </div>
                     <span class="nav-link-text ms-1">Cấu hình hệ thống</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('logo-site.*') ? 'active' : '' }}"
+                    href="{{ route('logo-site.edit') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-regular fa-images text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Logo</span>
                 </a>
             </li>
 

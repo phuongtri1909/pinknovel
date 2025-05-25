@@ -8,7 +8,7 @@
 
 @section('info_content')
     <div class="row">
-        <div class="col-md-4 col-sm-5 mb-4 mb-sm-0">
+        <div class="col-12 col-md-4">
             <div class="text-center">
                 <div class="profile-avatar-edit" id="avatar">
                     @if (!empty($user->avatar))
@@ -33,11 +33,11 @@
             </div>
         </div>
         
-        <div class="col-md-8 col-sm-7">
+        <div class="col-12 col-md-8 mt-3 mt-md-0">
             <div class="profile-info-card">
                 <div class="profile-info-item">
                     <div class="profile-info-label">
-                        <i class="fas fa-fingerprint"></i> ID người dùng
+                        <i class="fas fa-fingerprint"></i> ID
                     </div>
                     <div class="profile-info-value">
                         {{ $user->id }}
@@ -46,19 +46,19 @@
                 
                 <div class="profile-info-item">
                     <div class="profile-info-label">
-                        <i class="fas fa-user"></i> Họ và tên
+                        <i class="fas fa-user"></i> <span class="d-none d-sm-inline">Họ và tên</span>
                     </div>
                     <div class="profile-info-value d-flex align-items-center">
                         <span class="me-2">{{ $user->name ?: 'Chưa cập nhật' }}</span>
                         <button class="btn btn-sm profile-edit-btn" data-bs-toggle="modal" data-bs-target="#editModal" data-type="name">
-                            <i class="fas fa-edit me-1"></i> Sửa
+                            <i class="fas fa-edit"></i>
                         </button>
                     </div>
                 </div>
                 
                 <div class="profile-info-item">
                     <div class="profile-info-label">
-                        <i class="fas fa-envelope"></i> Email
+                        <i class="fas fa-envelope"></i> <span class="d-none d-sm-inline">Email</span>
                     </div>
                     <div class="profile-info-value">
                         {{ $user->email }}
@@ -67,12 +67,12 @@
                 
                 <div class="profile-info-item">
                     <div class="profile-info-label">
-                        <i class="fas fa-lock"></i> Mật khẩu
+                        <i class="fas fa-lock"></i> <span class="d-none d-sm-inline">Mật khẩu</span>
                     </div>
                     <div class="profile-info-value d-flex align-items-center">
                         <span class="me-2">••••••••</span>
                         <button class="btn btn-sm profile-edit-btn" data-bs-toggle="modal" data-bs-target="#otpPWModal">
-                            <i class="fas fa-key me-1"></i> Đổi mật khẩu
+                            <i class="fas fa-key"></i>
                         </button>
                     </div>
                 </div>

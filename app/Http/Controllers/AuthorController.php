@@ -1226,6 +1226,10 @@ class AuthorController extends Controller
         $chapterData = [];
         $storyData = [];
         $totalData = [];
+        
+        // Tính tổng doanh thu
+        $totalChapterRevenue = 0;
+        $totalStoryRevenue = 0;
 
         for ($month = 1; $month <= 12; $month++) {
             $labels[] = 'Tháng ' . $month;
@@ -1237,6 +1241,9 @@ class AuthorController extends Controller
             $chapterData[] = $chapterAmount;
             $storyData[] = $storyAmount;
             $totalData[] = $totalAmount;
+            
+            $totalChapterRevenue += $chapterAmount;
+            $totalStoryRevenue += $storyAmount;
         }
 
         return response()->json([
@@ -1263,6 +1270,11 @@ class AuthorController extends Controller
                     'borderColor' => 'rgba(255, 99, 132, 1)',
                     'borderWidth' => 1
                 ]
+            ],
+            'summary' => [
+                'totalChapterRevenue' => $totalChapterRevenue,
+                'totalStoryRevenue' => $totalStoryRevenue,
+                'totalRevenue' => $totalChapterRevenue + $totalStoryRevenue
             ]
         ]);
     }
@@ -1304,6 +1316,10 @@ class AuthorController extends Controller
         $chapterData = [];
         $storyData = [];
         $totalData = [];
+        
+        // Tính tổng doanh thu
+        $totalChapterRevenue = 0;
+        $totalStoryRevenue = 0;
 
         for ($day = 1; $day <= $daysInMonth; $day++) {
             $labels[] = $day;
@@ -1315,6 +1331,9 @@ class AuthorController extends Controller
             $chapterData[] = $chapterAmount;
             $storyData[] = $storyAmount;
             $totalData[] = $totalAmount;
+            
+            $totalChapterRevenue += $chapterAmount;
+            $totalStoryRevenue += $storyAmount;
         }
 
         return response()->json([
@@ -1341,7 +1360,161 @@ class AuthorController extends Controller
                     'borderColor' => 'rgba(255, 99, 132, 1)',
                     'borderWidth' => 1
                 ]
+            ],
+            'summary' => [
+                'totalChapterRevenue' => $totalChapterRevenue,
+                'totalStoryRevenue' => $totalStoryRevenue,
+                'totalRevenue' => $totalChapterRevenue + $totalStoryRevenue
             ]
         ]);
+    }
+
+    /**
+     * API để lấy lịch sử giao dịch theo năm và tháng
+     */
+    public function getTransactionHistory(Request $request)
+    {
+        $request->validate([
+            'year' => 'nullable|integer|min:2000|max:2100',
+            'month' => 'nullable|integer|min:1|max:12',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:5|max:50',
+        ]);
+
+        $year = $request->input('year', date('Y'));
+        $month = $request->input('month');
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 10);
+        
+        // Query cho chapter purchases
+        $chapterPurchasesQuery = DB::table('chapter_purchases')
+            ->select(
+                'chapter_purchases.id',
+                'chapter_purchases.created_at',
+                'chapter_purchases.amount_paid',
+                'chapters.title as chapter_title',
+                'chapters.slug as chapter_slug',
+                'chapters.number as chapter_number',
+                'stories.title as story_title',
+                'stories.slug as story_slug',
+                'users.name as user_name',
+                DB::raw("'chapter' as type")
+            )
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->join('users', 'chapter_purchases.user_id', '=', 'users.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereYear('chapter_purchases.created_at', $year);
+            
+        // Nếu có tháng, thêm điều kiện lọc theo tháng
+        if ($month) {
+            $chapterPurchasesQuery->whereMonth('chapter_purchases.created_at', $month);
+        }
+        
+        // Query cho story purchases
+        $storyPurchasesQuery = DB::table('story_purchases')
+            ->select(
+                'story_purchases.id',
+                'story_purchases.created_at',
+                'story_purchases.amount_paid',
+                DB::raw("'' as chapter_title"),
+                DB::raw("'' as chapter_slug"),
+                DB::raw("0 as chapter_number"),
+                'stories.title as story_title',
+                'stories.slug as story_slug',
+                'users.name as user_name',
+                DB::raw("'story' as type")
+            )
+            ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
+            ->join('users', 'story_purchases.user_id', '=', 'users.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereYear('story_purchases.created_at', $year);
+            
+        // Nếu có tháng, thêm điều kiện lọc theo tháng
+        if ($month) {
+            $storyPurchasesQuery->whereMonth('story_purchases.created_at', $month);
+        }
+        
+        // Kết hợp hai query và phân trang
+        $transactions = $chapterPurchasesQuery->union($storyPurchasesQuery)
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        return response()->json($transactions);
+    }
+    
+    /**
+     * API để lấy danh sách truyện bán chạy nhất với phân trang
+     */
+    public function getTopStories(Request $request)
+    {
+        $request->validate([
+            'year' => 'nullable|integer|min:2000|max:2100',
+            'month' => 'nullable|integer|min:1|max:12',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:5|max:50',
+        ]);
+
+        $year = $request->input('year', date('Y'));
+        $month = $request->input('month');
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 10);
+        
+        // Query lấy truyện bán chạy nhất
+        $query = DB::table('stories')
+            ->select('stories.id', 'stories.title', 'stories.slug', DB::raw('COUNT(story_purchases.id) as purchase_count'), DB::raw('SUM(story_purchases.amount_paid) as total_revenue'))
+            ->leftJoin('story_purchases', 'stories.id', '=', 'story_purchases.story_id')
+            ->where('stories.user_id', Auth::id())
+            ->whereYear('story_purchases.created_at', $year);
+            
+        // Nếu có tháng, thêm điều kiện lọc theo tháng
+        if ($month) {
+            $query->whereMonth('story_purchases.created_at', $month);
+        }
+        
+        $topStories = $query->groupBy('stories.id', 'stories.title', 'stories.slug')
+            ->orderBy('purchase_count', 'desc')
+            ->orderBy('total_revenue', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        return response()->json($topStories);
+    }
+    
+    /**
+     * API để lấy danh sách chương bán chạy nhất với phân trang
+     */
+    public function getTopChapters(Request $request)
+    {
+        $request->validate([
+            'year' => 'nullable|integer|min:2000|max:2100',
+            'month' => 'nullable|integer|min:1|max:12',
+            'page' => 'nullable|integer|min:1',
+            'per_page' => 'nullable|integer|min:5|max:50',
+        ]);
+
+        $year = $request->input('year', date('Y'));
+        $month = $request->input('month');
+        $page = $request->input('page', 1);
+        $perPage = $request->input('per_page', 10);
+        
+        // Query lấy chương bán chạy nhất
+        $query = DB::table('chapters')
+            ->select('chapters.id', 'chapters.title', 'chapters.slug', 'chapters.number', 'stories.title as story_title', 'stories.slug as story_slug', DB::raw('COUNT(chapter_purchases.id) as purchase_count'), DB::raw('SUM(chapter_purchases.amount_paid) as total_revenue'))
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->leftJoin('chapter_purchases', 'chapters.id', '=', 'chapter_purchases.chapter_id')
+            ->where('stories.user_id', Auth::id())
+            ->whereYear('chapter_purchases.created_at', $year);
+            
+        // Nếu có tháng, thêm điều kiện lọc theo tháng
+        if ($month) {
+            $query->whereMonth('chapter_purchases.created_at', $month);
+        }
+        
+        $topChapters = $query->groupBy('chapters.id', 'chapters.title', 'chapters.slug', 'chapters.number', 'stories.title', 'stories.slug')
+            ->orderBy('purchase_count', 'desc')
+            ->orderBy('total_revenue', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+        
+        return response()->json($topChapters);
     }
 }

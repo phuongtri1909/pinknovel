@@ -134,7 +134,7 @@
                     </div>
 
                     <div class="d-flex align-items-center">
-                        <div class="search-container d-flex align-items-center me-2">
+                        <div class="search-container d-flex align-items-center me-2 d-none d-md-block">
                             <div class="position-relative">
                                 <form action="{{ route('searchHeader') }}" method="GET">
                                     <input type="text" name="query" class="form-control search-input"
@@ -223,7 +223,19 @@
                 <div class="mobile-section">
                     <div class="mobile-nav-links d-flex flex-column">
 
+                        <div class="search-container d-flex align-items-center d-md-none">
+                            <div class="position-relative">
+                                <form action="{{ route('searchHeader') }}" method="GET">
+                                    <input type="text" name="query" class="form-control search-input"
+                                        placeholder="Tìm kiếm truyện..." value="{{ request('query') }}">
+                                    <button type="submit" class="btn search-btn">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
 
+                        <hr class="divider my-3">
 
                         <div class="accordion" id="categoryAccordion">
                             <div class="accordion-item border-0">
