@@ -101,6 +101,10 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::group(['middleware' => 'role:author,admin', 'prefix' => 'author', 'as' => 'author.'], function () {
                 // Routes cho tác giả
                 Route::get('/', [AuthorController::class, 'index'])->name('index');
+                
+                // Trang doanh thu
+                Route::get('/revenue', [AuthorController::class, 'revenue'])->name('revenue');
+                Route::get('/revenue/data', [AuthorController::class, 'getRevenueData'])->name('revenue.data');
 
                 Route::group(['prefix' => 'stories', 'as' => 'stories.'], function () {});
 

@@ -9,22 +9,41 @@
 @push('styles')
 <style>
     .author-dashboard-card {
-        border-radius: 16px;
-        padding: 20px;
-        height: 120px;
+        border-radius: 20px;
+        padding: 25px;
+        height: 135px;
         position: relative;
         overflow: hidden;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: all 0.4s ease;
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08);
         display: flex;
         flex-direction: column;
         justify-content: space-between;
         cursor: pointer;
+        border: none;
     }
     
     .author-dashboard-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(0,0,0,0.12);
+    }
+    
+    .author-dashboard-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        opacity: 0.1;
+        background: rgba(255, 255, 255, 0.8);
+        transition: all 0.5s ease;
+    }
+    
+    .author-dashboard-card:hover::before {
+        transform: scale(6);
+        opacity: 0.15;
     }
     
     .card-revenue {
@@ -40,29 +59,40 @@
     }
     
     .card-support {
-        background: linear-gradient(135deg, #78c1f3, #9be8ff);
+        background: linear-gradient(135deg, #64b5f6, #1e88e5);
     }
     
     .author-card-title {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 14px;
-        font-weight: 500;
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        position: relative;
+        z-index: 1;
     }
     
     .author-card-value {
         color: white;
-        font-size: 28px;
-        font-weight: 600;
+        font-size: 25px;
+        font-weight: 700;
         display: flex;
         align-items: center;
+        position: relative;
+        z-index: 1;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+        margin: 8px 0;
     }
     
     .author-card-value i {
-        margin-right: 10px;
-        font-size: 24px;
+        margin-right: 15px;
+        font-size: 26px;
+        background-color: rgba(255, 255, 255, 0.15);
+        padding: 10px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     }
     
     .author-button {
@@ -189,6 +219,23 @@
     .bg-update {
         background: linear-gradient(135deg, #7bc5ae, #9ed2be);
     }
+
+    .revenue-change {
+        color: rgba(255, 255, 255, 0.9);
+        margin-top: 5px;
+        font-weight: 500;
+        font-size: 13px;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .revenue-change .text-success {
+        color: #b3ffb3 !important;
+    }
+    
+    .revenue-change .text-danger {
+        color: #ffb3b3 !important;
+    }
 </style>
 @endpush
 
@@ -196,16 +243,29 @@
     <div class="row g-4 mb-4">
         <!-- Doanh thu tháng -->
         <div class="col-lg-3 col-md-6 col-sm-6">
-            <a href="#" class="text-decoration-none">
+            <a href="{{ route('user.author.revenue') }}" class="text-decoration-none">
                 <div class="author-dashboard-card card-revenue">
                     <div class="author-card-title">
-                        Doanh thu tháng
+                        Doanh thu tháng {{ date('m/Y') }}
                         <i class="fas fa-chevron-right"></i>
                     </div>
                     <div class="author-card-value">
                         <i class="fas fa-chart-line"></i>
-                        <span>+0</span>
+                        <span>{{ number_format($totalRevenue ?? 0) }} xu</span>
                     </div>
+                    @if(isset($revenueChangePercent) && $revenueChangePercent != 0)
+                        <div class="revenue-change small">
+                            @if($revenueIncreased)
+                                <span class="text-success">
+                                    <i class="fas fa-arrow-up"></i> +{{ $revenueChangePercent }}% so với tháng trước
+                                </span>
+                            @else
+                                <span class="text-danger">
+                                    <i class="fas fa-arrow-down"></i> {{ $revenueChangePercent }}% so với tháng trước
+                                </span>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             </a>
         </div>
@@ -264,52 +324,56 @@
             <i class="fas fa-plus"></i>
             <span>ĐĂNG TRUYỆN</span>
         </a>
-        
-        <a href="#" class="author-button secondary text-decoration-none">
-            <i class="fas fa-calendar-alt"></i>
-            <span>SỰ KIỆN</span>
-        </a>
     </div>
 
     <div class="row">
-        <div class="col-lg-8">
+        <div class="col-12">
             <div class="revenue-chart">
                 <div class="revenue-chart-title">
                     <i class="fas fa-chart-bar"></i>
                     <h5 class="mb-0">Biểu đồ hiệu suất doanh thu tháng</h5>
                 </div>
-                <div class="loading-animation">
+                <div class="mb-4 mt-3">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="chart-year" class="form-label">Năm</label>
+                            <select id="chart-year" class="form-select">
+                                @php
+                                    $currentYear = date('Y');
+                                    $years = range($currentYear, $currentYear - 3);
+                                @endphp
+                                @foreach($years as $year)
+                                    <option value="{{ $year }}" {{ $year == $currentYear ? 'selected' : '' }}>{{ $year }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="chart-month" class="form-label">Tháng</label>
+                            <select id="chart-month" class="form-select">
+                                <option value="">Tất cả các tháng</option>
+                                @for($i = 1; $i <= 12; $i++)
+                                    <option value="{{ $i }}" {{ $i == date('m') ? 'selected' : '' }}>Tháng {{ $i }}</option>
+                                @endfor
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button id="load-chart-btn" class="btn btn-primary">
+                                <i class="fas fa-sync-alt"></i> Cập nhật
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="loading-animation" id="chart-loading">
                     <div class="text-center">
                         <div class="mb-3">
                             <i class="fas fa-chart-line fa-3x"></i>
                         </div>
-                        <p>Chưa có dữ liệu</p>
+                        <p>Đang tải dữ liệu...</p>
                     </div>
                 </div>
-            </div>
-        </div>
-        <div class="col-lg-4">
-            <div class="recent-activities">
-                <h5 class="mb-3">Hoạt động gần đây</h5>
-                
-                @if(isset($recentActivities) && count($recentActivities) > 0)
-                    @foreach($recentActivities as $activity)
-                        <div class="activity-item">
-                            <div class="activity-icon {{ $activity->type == 'view' ? 'bg-view' : ($activity->type == 'comment' ? 'bg-comment' : 'bg-update') }}">
-                                <i class="fas {{ $activity->type == 'view' ? 'fa-eye' : ($activity->type == 'comment' ? 'fa-comment' : 'fa-sync') }}"></i>
-                            </div>
-                            <div>
-                                <div>{{ $activity->message }}</div>
-                                <small class="text-muted">{{ $activity->created_at->diffForHumans() }}</small>
-                            </div>
-                        </div>
-                    @endforeach
-                @else
-                    <div class="text-center py-4 text-muted">
-                        <i class="fas fa-history fa-2x mb-2"></i>
-                        <p>Chưa có hoạt động nào</p>
-                    </div>
-                @endif
+                <div id="chart-container" style="height: 300px; display: none;">
+                    <canvas id="revenue-chart"></canvas>
+                </div>
             </div>
         </div>
     </div>
@@ -344,6 +408,7 @@
 @endsection
 
 @push('info_scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     // Thêm hiệu ứng pulse cho các card
     document.addEventListener('DOMContentLoaded', function() {
@@ -366,6 +431,106 @@
                 this.style.animation = 'pulseGlow 2s infinite';
             });
         });
+        
+        // Khởi tạo biểu đồ doanh thu
+        initRevenueChart();
     });
+    
+    let revenueChart = null;
+    
+    // Hàm khởi tạo biểu đồ doanh thu
+    function initRevenueChart() {
+        const loadButton = document.getElementById('load-chart-btn');
+        
+        if (loadButton) {
+            loadButton.addEventListener('click', loadChartData);
+            
+            // Tải dữ liệu biểu đồ ban đầu
+            loadChartData();
+        }
+    }
+    
+    // Hàm tải dữ liệu biểu đồ
+    function loadChartData() {
+        const year = document.getElementById('chart-year').value;
+        const month = document.getElementById('chart-month').value;
+        const chartLoading = document.getElementById('chart-loading');
+        const chartContainer = document.getElementById('chart-container');
+        
+        // Hiển thị loading, ẩn biểu đồ
+        chartLoading.style.display = 'flex';
+        chartContainer.style.display = 'none';
+        
+        // Tạo URL cho API dựa trên tham số
+        let url = `{{ route('user.author.revenue.data') }}?year=${year}`;
+        if (month) {
+            url += `&month=${month}`;
+        }
+        
+        // Gọi API lấy dữ liệu
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                // Cập nhật biểu đồ
+                updateChart(data);
+                
+                // Ẩn loading, hiển thị biểu đồ
+                chartLoading.style.display = 'none';
+                chartContainer.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error loading chart data:', error);
+                chartLoading.style.display = 'none';
+                
+                // Hiển thị thông báo lỗi
+                chartContainer.style.display = 'block';
+                chartContainer.innerHTML = '<div class="text-center text-danger">Có lỗi xảy ra khi tải dữ liệu</div>';
+            });
+    }
+    
+    // Hàm cập nhật biểu đồ
+    function updateChart(data) {
+        const ctx = document.getElementById('revenue-chart').getContext('2d');
+        
+        // Nếu biểu đồ đã tồn tại, hủy nó
+        if (revenueChart) {
+            revenueChart.destroy();
+        }
+        
+        // Tạo biểu đồ mới
+        revenueChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: data.datasets
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' xu';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.raw.toLocaleString() + ' xu';
+                            }
+                        }
+                    },
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    }
 </script>
 @endpush

@@ -237,7 +237,7 @@
                                     <span><i
                                             class="fas fa-calendar-alt me-1"></i>{{ $story->created_at->format('d/m/Y') }}</span>
                                 </div>
-                                <div class="small mt-1">
+                                {{-- <div class="small mt-1">
                                     @foreach ($story->categories->take(3) as $category)
                                         <span class="badge bg-light text-dark me-1">{{ $category->name }}</span>
                                     @endforeach
@@ -245,7 +245,7 @@
                                         <span
                                             class="badge bg-light text-dark">+{{ $story->categories->count() - 3 }}</span>
                                     @endif
-                                </div>
+                                </div> --}}
                             </td>
                             <td>
                                 @if ($story->story_type == 'original')

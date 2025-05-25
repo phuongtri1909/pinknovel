@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Story;
+use App\Models\Chapter;
 use App\Models\Bookmark;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Models\StoryEditRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
-use App\Models\StoryEditRequest;
 
 class AuthorController extends Controller
 {
@@ -24,10 +25,60 @@ class AuthorController extends Controller
         $pendingCount = auth()->user()->stories()->where('status', 'pending')->count();
 
         // Thêm các biến thống kê cho dashboard
-        $totalViews = auth()->user()->stories()->withCount('chapters')->get()->sum('views');
+        $totalViews = Chapter::whereIn('story_id', auth()->user()->stories()->pluck('id'))->sum('views');
         $totalChapters = auth()->user()->stories()->withCount('chapters')->get()->sum('chapters_count');
         $totalComments = auth()->user()->stories()->withCount('comments')->get()->sum('comments_count');
-        $totalFollowers = Bookmark::where('story_id', 'in', auth()->user()->stories()->pluck('id'))->count();
+        $totalFollowers = Bookmark::whereIn('story_id', auth()->user()->stories()->pluck('id'))->count();
+
+        // Lấy doanh thu của tháng hiện tại
+        $totalRevenue = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereMonth('chapter_purchases.created_at', date('m'))
+            ->whereYear('chapter_purchases.created_at', date('Y'))
+            ->sum('chapter_purchases.amount_paid');
+
+        // Cộng thêm doanh thu từ việc bán trọn bộ trong tháng hiện tại
+        $totalRevenue += DB::table('story_purchases')
+            ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereMonth('story_purchases.created_at', date('m'))
+            ->whereYear('story_purchases.created_at', date('Y'))
+            ->sum('story_purchases.amount_paid');
+
+        // Lấy doanh thu của tháng trước để so sánh
+        $lastMonthDate = \Carbon\Carbon::now()->subMonth();
+        $lastMonthRevenue = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereMonth('chapter_purchases.created_at', $lastMonthDate->month)
+            ->whereYear('chapter_purchases.created_at', $lastMonthDate->year)
+            ->sum('chapter_purchases.amount_paid');
+
+        // Cộng thêm doanh thu từ việc bán trọn bộ trong tháng trước
+        $lastMonthRevenue += DB::table('story_purchases')
+            ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereMonth('story_purchases.created_at', $lastMonthDate->month)
+            ->whereYear('story_purchases.created_at', $lastMonthDate->year)
+            ->sum('story_purchases.amount_paid');
+
+        // Tính tỷ lệ thay đổi
+        $revenueChange = 0;
+        $revenueChangePercent = 0;
+        $revenueIncreased = false;
+
+        if ($lastMonthRevenue > 0) {
+            $revenueChange = $totalRevenue - $lastMonthRevenue;
+            $revenueChangePercent = round(($revenueChange / $lastMonthRevenue) * 100);
+            $revenueIncreased = $revenueChange > 0;
+        } elseif ($totalRevenue > 0) {
+            // Nếu tháng trước không có doanh thu nhưng tháng này có
+            $revenueChangePercent = 100;
+            $revenueIncreased = true;
+        }
 
         // Có thể thêm hoạt động gần đây nếu bạn có bảng dữ liệu tương ứng
         // $recentActivities = Activity::where('user_id', auth()->id())->latest()->take(5)->get();
@@ -38,7 +89,11 @@ class AuthorController extends Controller
             'totalViews',
             'totalChapters',
             'totalComments',
-            'totalFollowers'
+            'totalFollowers',
+            'totalRevenue',
+            'revenueChange',
+            'revenueChangePercent',
+            'revenueIncreased'
         ));
     }
 
@@ -185,6 +240,8 @@ class AuthorController extends Controller
     public function edit(Story $story)
     {
         // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
+        dd($story->user_id, Auth::id());
+
         if ($story->user_id !== Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa truyện này.');
@@ -696,42 +753,42 @@ class AuthorController extends Controller
         $duplicateSlugs = [];
         $successCount = 0;
         $duplicateFound = false;
-        
+
         // Kiểm tra trước để phát hiện các chương trùng lặp
         foreach ($chapters as $chapterData) {
             $chapterNumber = $chapterData['number'];
             $title = $chapterData['title'];
-            
+
             // Tạo slug dự kiến để kiểm tra
             $proposedSlug = 'chuong-' . $chapterNumber . '-' . Str::slug(Str::limit($title, 100));
-            
+
             // Kiểm tra xem chương đã tồn tại chưa
             if (in_array($chapterNumber, $existingChapterNumbers)) {
                 $skippedChapters[] = "Chương $chapterNumber"; // Thêm vào danh sách chương bị bỏ qua
                 $duplicateFound = true;
             }
-            
+
             // Kiểm tra xem slug đã tồn tại chưa
             if (in_array($proposedSlug, $existingSlugs)) {
                 $duplicateSlugs[] = "Chương $chapterNumber ($title)"; // Thêm vào danh sách slug bị trùng
                 $duplicateFound = true;
             }
         }
-        
+
         // Nếu phát hiện có chương trùng lặp, thông báo và quay lại form
         if ($duplicateFound) {
             $errorMessage = "Phát hiện chương bị trùng lặp:";
-            
+
             if (!empty($skippedChapters)) {
                 $errorMessage .= " Trùng số chương: " . implode(', ', $skippedChapters) . ".";
             }
-            
+
             if (!empty($duplicateSlugs)) {
                 $errorMessage .= " Trùng slug (do tiêu đề tương tự): " . implode(', ', $duplicateSlugs) . ".";
             }
-            
+
             $errorMessage .= " Vui lòng chỉnh sửa nội dung và thử lại.";
-            
+
             return redirect()->back()
                 ->with('error', $errorMessage)
                 ->withInput();
@@ -1027,5 +1084,265 @@ class AuthorController extends Controller
             'medium' => "covers/{$yearMonth}/medium/{$fileName}.webp",
             'thumbnail' => "covers/{$yearMonth}/thumbnail/{$fileName}.webp"
         ];
+    }
+
+    // Hiển thị trang doanh thu
+    public function revenue()
+    {
+        // Lấy năm hiện tại và năm trước đó để hiển thị trong dropdown
+        $currentYear = date('Y');
+        $years = range($currentYear, $currentYear - 5);
+        
+        // Lấy thống kê tổng quát
+        $totalRevenue = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->sum('chapter_purchases.amount_paid');
+        
+        $totalStoryRevenue = DB::table('story_purchases')
+            ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->sum('story_purchases.amount_paid');
+        
+        // Tính tổng số tiền
+        $grandTotal = $totalRevenue + $totalStoryRevenue;
+        
+        // Lấy doanh thu của tháng trước để so sánh
+        $lastMonthDate = \Carbon\Carbon::now()->subMonth();
+        $lastMonthRevenue = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereMonth('chapter_purchases.created_at', $lastMonthDate->month)
+            ->whereYear('chapter_purchases.created_at', $lastMonthDate->year)
+            ->sum('chapter_purchases.amount_paid');
+        
+        // Cộng thêm doanh thu từ việc bán trọn bộ trong tháng trước
+        $lastMonthRevenue += DB::table('story_purchases')
+            ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereMonth('story_purchases.created_at', $lastMonthDate->month)
+            ->whereYear('story_purchases.created_at', $lastMonthDate->year)
+            ->sum('story_purchases.amount_paid');
+        
+        // Tính tỷ lệ thay đổi
+        $revenueChange = 0;
+        $revenueChangePercent = 0;
+        $revenueIncreased = false;
+        
+        if ($lastMonthRevenue > 0) {
+            $revenueChange = $totalRevenue - $lastMonthRevenue;
+            $revenueChangePercent = round(($revenueChange / $lastMonthRevenue) * 100);
+            $revenueIncreased = $revenueChange > 0;
+        } elseif ($totalRevenue > 0) {
+            // Nếu tháng trước không có doanh thu nhưng tháng này có
+            $revenueChangePercent = 100;
+            $revenueIncreased = true;
+        }
+        
+        // Lấy truyện bán chạy nhất (có nhiều lượt mua nhất)
+        $topStories = DB::table('stories')
+            ->select('stories.id', 'stories.title', 'stories.slug', DB::raw('COUNT(story_purchases.id) as purchase_count'), DB::raw('SUM(story_purchases.amount_paid) as total_revenue'))
+            ->leftJoin('story_purchases', 'stories.id', '=', 'story_purchases.story_id')
+            ->where('stories.user_id', Auth::id())
+            ->groupBy('stories.id', 'stories.title', 'stories.slug')
+            ->orderBy('purchase_count', 'desc')
+            ->orderBy('total_revenue', 'desc')
+            ->limit(5)
+            ->get();
+            
+        // Lấy chương bán chạy nhất
+        $topChapters = DB::table('chapters')
+            ->select('chapters.id', 'chapters.title', 'chapters.slug', 'stories.title as story_title', 'stories.slug as story_slug', DB::raw('COUNT(chapter_purchases.id) as purchase_count'), DB::raw('SUM(chapter_purchases.amount_paid) as total_revenue'))
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->leftJoin('chapter_purchases', 'chapters.id', '=', 'chapter_purchases.chapter_id')
+            ->where('stories.user_id', Auth::id())
+            ->groupBy('chapters.id', 'chapters.title', 'chapters.slug', 'stories.title', 'stories.slug')
+            ->orderBy('purchase_count', 'desc')
+            ->orderBy('total_revenue', 'desc')
+            ->limit(5)
+            ->get();
+        
+        return view('pages.information.author.author_revenue', compact(
+            'years', 
+            'grandTotal', 
+            'topStories',
+            'topChapters',
+            'lastMonthRevenue',
+            'revenueChangePercent',
+            'revenueIncreased'
+        ));
+    }
+
+    // API endpoint để lấy dữ liệu doanh thu
+    public function getRevenueData(Request $request)
+    {
+        $request->validate([
+            'year' => 'nullable|integer|min:2000|max:2100',
+            'month' => 'nullable|integer|min:1|max:12',
+        ]);
+
+        $year = $request->input('year', date('Y'));
+        $month = $request->input('month', date('m'));
+
+        // Nếu chỉ có year mà không có month, lấy dữ liệu theo từng tháng của năm đó
+        if ($request->has('year') && !$request->has('month')) {
+            return $this->getYearlyRevenueData($year);
+        }
+
+        // Nếu có cả year và month, lấy dữ liệu theo từng ngày của tháng đó
+        return $this->getMonthlyRevenueData($year, $month);
+    }
+
+    // Hàm lấy dữ liệu doanh thu theo năm, chia theo tháng
+    private function getYearlyRevenueData($year)
+    {
+        // Lấy doanh thu từ việc mua chương
+        $chapterRevenue = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereYear('chapter_purchases.created_at', $year)
+            ->selectRaw('MONTH(chapter_purchases.created_at) as month, SUM(chapter_purchases.amount_paid) as total')
+            ->groupBy('month')
+            ->get()
+            ->pluck('total', 'month')
+            ->toArray();
+
+        // Lấy doanh thu từ việc mua trọn bộ
+        $storyRevenue = DB::table('story_purchases')
+            ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereYear('story_purchases.created_at', $year)
+            ->selectRaw('MONTH(story_purchases.created_at) as month, SUM(story_purchases.amount_paid) as total')
+            ->groupBy('month')
+            ->get()
+            ->pluck('total', 'month')
+            ->toArray();
+
+        // Khởi tạo mảng dữ liệu cho 12 tháng
+        $data = [];
+        $labels = [];
+        $chapterData = [];
+        $storyData = [];
+        $totalData = [];
+
+        for ($month = 1; $month <= 12; $month++) {
+            $labels[] = 'Tháng ' . $month;
+
+            $chapterAmount = $chapterRevenue[$month] ?? 0;
+            $storyAmount = $storyRevenue[$month] ?? 0;
+            $totalAmount = $chapterAmount + $storyAmount;
+
+            $chapterData[] = $chapterAmount;
+            $storyData[] = $storyAmount;
+            $totalData[] = $totalAmount;
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => 'Doanh thu từ chương',
+                    'data' => $chapterData,
+                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                    'borderColor' => 'rgba(75, 192, 192, 1)',
+                    'borderWidth' => 1
+                ],
+                [
+                    'label' => 'Doanh thu từ trọn bộ',
+                    'data' => $storyData,
+                    'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
+                    'borderColor' => 'rgba(54, 162, 235, 1)',
+                    'borderWidth' => 1
+                ],
+                [
+                    'label' => 'Tổng doanh thu',
+                    'data' => $totalData,
+                    'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                    'borderColor' => 'rgba(255, 99, 132, 1)',
+                    'borderWidth' => 1
+                ]
+            ]
+        ]);
+    }
+
+    // Hàm lấy dữ liệu doanh thu theo tháng, chia theo ngày
+    private function getMonthlyRevenueData($year, $month)
+    {
+        // Lấy số ngày trong tháng
+        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+
+        // Lấy doanh thu từ việc mua chương
+        $chapterRevenue = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->join('stories', 'chapters.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereYear('chapter_purchases.created_at', $year)
+            ->whereMonth('chapter_purchases.created_at', $month)
+            ->selectRaw('DAY(chapter_purchases.created_at) as day, SUM(chapter_purchases.amount_paid) as total')
+            ->groupBy('day')
+            ->get()
+            ->pluck('total', 'day')
+            ->toArray();
+
+        // Lấy doanh thu từ việc mua trọn bộ
+        $storyRevenue = DB::table('story_purchases')
+            ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
+            ->where('stories.user_id', Auth::id())
+            ->whereYear('story_purchases.created_at', $year)
+            ->whereMonth('story_purchases.created_at', $month)
+            ->selectRaw('DAY(story_purchases.created_at) as day, SUM(story_purchases.amount_paid) as total')
+            ->groupBy('day')
+            ->get()
+            ->pluck('total', 'day')
+            ->toArray();
+
+        // Khởi tạo mảng dữ liệu cho các ngày trong tháng
+        $data = [];
+        $labels = [];
+        $chapterData = [];
+        $storyData = [];
+        $totalData = [];
+
+        for ($day = 1; $day <= $daysInMonth; $day++) {
+            $labels[] = $day;
+
+            $chapterAmount = $chapterRevenue[$day] ?? 0;
+            $storyAmount = $storyRevenue[$day] ?? 0;
+            $totalAmount = $chapterAmount + $storyAmount;
+
+            $chapterData[] = $chapterAmount;
+            $storyData[] = $storyAmount;
+            $totalData[] = $totalAmount;
+        }
+
+        return response()->json([
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => 'Doanh thu từ chương',
+                    'data' => $chapterData,
+                    'backgroundColor' => 'rgba(75, 192, 192, 0.2)',
+                    'borderColor' => 'rgba(75, 192, 192, 1)',
+                    'borderWidth' => 1
+                ],
+                [
+                    'label' => 'Doanh thu từ trọn bộ',
+                    'data' => $storyData,
+                    'backgroundColor' => 'rgba(54, 162, 235, 0.2)',
+                    'borderColor' => 'rgba(54, 162, 235, 1)',
+                    'borderWidth' => 1
+                ],
+                [
+                    'label' => 'Tổng doanh thu',
+                    'data' => $totalData,
+                    'backgroundColor' => 'rgba(255, 99, 132, 0.2)',
+                    'borderColor' => 'rgba(255, 99, 132, 1)',
+                    'borderWidth' => 1
+                ]
+            ]
+        ]);
     }
 }
