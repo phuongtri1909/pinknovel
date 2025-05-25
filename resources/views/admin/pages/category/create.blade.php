@@ -33,8 +33,16 @@
                                 @enderror
                             </div>
                         </div>
+                        
+                        <div class="col-md-12 mt-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="is_main" id="is_main" {{ old('is_main') ? 'checked' : '' }}>
+                                <label class="form-check-label" for="is_main">Đánh dấu là thể loại chính</label>
+                                <div class="form-text">Thể loại chính sẽ được hiển thị nổi bật trong hệ thống</div>
+                            </div>
+                        </div>
 
-                        <div class="col-md-12 text-center">
+                        <div class="col-md-12 text-center mt-4">
                             <button type="submit" class="btn bg-gradient-primary">Lưu</button>
                             <a href="{{ route('categories.index') }}" class="btn btn-secondary">Trở về</a>
                         </div>

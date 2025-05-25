@@ -59,6 +59,9 @@
                                             <option value="{{ $category->id }}"
                                                 {{ in_array($category->id, $story->categories->pluck('id')->toArray()) ? 'selected' : '' }}>
                                                 {{ $category->name }}
+                                                @if($category->is_main)
+                                                    ⭐ (Thể loại chính)
+                                                @endif
                                             </option>
                                         @endforeach
                                     </select>

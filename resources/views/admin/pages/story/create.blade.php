@@ -50,7 +50,12 @@
                                     <label for="categories">Thể loại (tối đa 4)</label>
                                     <select name="categories[]" id="categories" class="form-control" multiple required>
                                         @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                            <option value="{{ $category->id }}">
+                                                {{ $category->name }}
+                                                @if($category->is_main)
+                                                    ⭐ (Thể loại chính)
+                                                @endif
+                                            </option>
                                         @endforeach
                                     </select>
                                     <small class="form-text text-muted">Chọn tối đa 4 thể loại</small>

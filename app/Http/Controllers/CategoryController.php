@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class CategoryController extends Controller
 {
@@ -23,7 +24,7 @@ class CategoryController extends Controller
     {
         $request->validate([
             'name' => 'required|unique:categories|max:255',
-            'description' => 'nullable'
+            'description' => 'nullable',
         ], [
             'name.required' => 'Tên thể loại không được để trống.',
             'name.unique' => 'Tên thể loại đã tồn tại.',
@@ -33,7 +34,8 @@ class CategoryController extends Controller
         Category::create([
             'name' => $request->name,
             'slug' => Str::slug($request->name),
-            'description' => $request->description
+            'description' => $request->description,
+            'is_main' => $request->has('is_main')
         ]);
 
         return redirect()->route('categories.index')
@@ -47,23 +49,25 @@ class CategoryController extends Controller
 
     public function update(Request $request, Category $category)
     {
+      
         $request->validate([
             'name' => 'required|max:255|unique:categories,name,' . $category->id,
-            'description' => 'nullable'
+            'description' => 'nullable',
         ], [
             'name.required' => 'Tên thể loại không được để trống.',
             'name.unique' => 'Tên thể loại đã tồn tại.',
-            'name.max' => 'Tên thể loại không được vượt quá 255 ký tự.'
+            'name.max' => 'Tên thể loại không được vượt quá 255 ký tự.',
         ]);
 
         try {
             $category->update([
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
-                'description' => $request->description
+                'description' => $request->description,
+                'is_main' => $request->has('is_main')
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error updating category:', ['error' => $e->getMessage()]);
+            Log::error('Error updating category:', ['error' => $e->getMessage()]);
             return redirect()->route('categories.edit', $category)
                 ->with('error', 'Có lỗi xảy ra khi cập nhật thể loại.')->withInput();
         }
@@ -88,7 +92,7 @@ class CategoryController extends Controller
         try {
             $category->delete();
         } catch (\Exception $e) {
-            \Log::error('Error deleting category:', ['error' => $e->getMessage()]);
+            Log::error('Error deleting category:', ['error' => $e->getMessage()]);
             return redirect()->route('categories.index')
                 ->with('error', 'Có lỗi xảy ra khi xóa thể loại.');
         }

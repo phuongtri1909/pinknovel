@@ -82,7 +82,12 @@
                                 <td>{{ $story->title }}</td>
                                 <td>
                                     @foreach($story->categories as $category)
-                                        <span class="badge badge-sm bg-gradient-info">{{ $category->name }}</span>
+                                        <span class="badge badge-sm {{ $category->is_main ? 'bg-gradient-warning' : 'bg-gradient-info' }}">
+                                            {{ $category->name }}
+                                            @if($category->is_main)
+                                                <i class="fas fa-star ms-1"></i>
+                                            @endif
+                                        </span>
                                     @endforeach
                                 </td>
                                 <td>{{ $story->chapters_count }}</td>

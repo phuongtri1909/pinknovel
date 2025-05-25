@@ -25,6 +25,7 @@
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tên thể loại</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Slug</th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mô tả</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thể loại chính</th>
                                     <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
                                 </tr>
                             </thead>
@@ -42,6 +43,13 @@
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $category->description }}</p>
+                                        </td>
+                                        <td class="text-center">
+                                            @if($category->is_main)
+                                                <span class="badge badge-sm bg-gradient-success">Có</span>
+                                            @else
+                                                <span class="badge badge-sm bg-gradient-secondary">Không</span>
+                                            @endif
                                         </td>
                                         <td class="text-center d-flex flex-column">
                                             <a href="{{ route('categories.show', $category->id) }}" class="mx-3 text-info" title="Xem truyện">
