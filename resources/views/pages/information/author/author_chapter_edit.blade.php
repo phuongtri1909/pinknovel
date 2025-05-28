@@ -173,7 +173,8 @@
                     <label class="form-label">Xuất bản chương <span class="text-danger">*</span></label>
                     <div class="form-check">
                         <input class="form-check-input" type="radio" name="status" id="status_draft" value="draft"
-                            {{ old('status', $chapter->status) == 'draft' ? 'checked' : '' }}>
+                            {{ old('status', $chapter->status) == 'draft' ? 'checked' : '' }}
+                            onchange="toggleScheduleOptions()">
                         <label class="form-check-label" for="status_draft">
                             <i class="fas fa-edit text-secondary me-1"></i> Lưu nháp
                         </label>
@@ -182,12 +183,33 @@
                     </div>
                     <div class="form-check mt-2">
                         <input class="form-check-input" type="radio" name="status" id="status_published"
-                            value="published" {{ old('status', $chapter->status) == 'published' ? 'checked' : '' }}>
+                            value="published" {{ old('status', $chapter->status) == 'published' ? 'checked' : '' }}
+                            onchange="toggleScheduleOptions()">
                         <label class="form-check-label" for="status_published">
                             <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
                         </label>
                         <div class="form-text text-muted">Chương sẽ được công khai ngay sau khi lưu.</div>
                     </div>
+                </div>
+
+                <!-- Thêm tùy chọn lịch xuất bản -->
+                <div class="mb-3" id="scheduleOptionsContainer" style="{{ old('status', $chapter->status) == 'published' ? 'display: none;' : '' }}">
+                    <label class="form-label d-flex align-items-center">
+                        <input type="checkbox" class="form-check-input me-2" id="enableSchedule"
+                            onchange="toggleScheduleField()" 
+                            {{ old('scheduled_publish_at', $chapter->scheduled_publish_at) ? 'checked' : '' }}>
+                        Hẹn giờ xuất bản
+                    </label>
+                    <div id="scheduleField" style="{{ old('scheduled_publish_at', $chapter->scheduled_publish_at) ? '' : 'display: none;' }}">
+                        <input type="datetime-local"
+                            class="form-control @error('scheduled_publish_at') is-invalid @enderror"
+                            id="scheduled_publish_at" name="scheduled_publish_at"
+                            value="{{ old('scheduled_publish_at', $chapter->scheduled_publish_at ? $chapter->scheduled_publish_at->format('Y-m-d\TH:i') : '') }}">
+                        <div class="form-text text-muted">Chương sẽ tự động xuất bản vào thời gian đã chọn.</div>
+                    </div>
+                    @error('scheduled_publish_at')
+                        <div class="text-danger small mt-1">{{ $message }}</div>
+                    @enderror
                 </div>
             </div>
         </div>
@@ -205,11 +227,16 @@
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
     <script>
         $(document).ready(function() {
-            
+            CKEDITOR.replace('content', {
+                height: 400,
+                removePlugins: 'image,flash,iframe,easyimage',
+                removeButtons: 'PasteFromWord'
+            });
 
             // Khởi tạo hiển thị tùy thuộc vào trạng thái ban đầu
             togglePricingOptions();
             togglePasswordField();
+            toggleScheduleOptions();
         });
 
         function togglePricingOptions() {
@@ -232,6 +259,19 @@
             }
         }
 
+        function toggleScheduleOptions() {
+            var isDraft = $('#status_draft').is(':checked');
+            if (isDraft) {
+                $('#scheduleOptionsContainer').show();
+            } else {
+                $('#scheduleOptionsContainer').hide();
+                // Uncheck and reset schedule fields when publishing immediately
+                $('#enableSchedule').prop('checked', false);
+                $('#scheduleField').hide();
+                $('#scheduled_publish_at').val('');
+            }
+        }
+
         function togglePasswordVisibility() {
             var passwordField = document.getElementById('password');
             var icon = document.querySelector('.toggle-password i');
@@ -251,9 +291,6 @@
             var enableSchedule = $('#enableSchedule').is(':checked');
             if (enableSchedule) {
                 $('#scheduleField').show();
-                if ($('#status_draft').is(':checked')) {
-                    $('#status_published').prop('checked', true);
-                }
             } else {
                 $('#scheduleField').hide();
             }

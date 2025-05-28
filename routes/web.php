@@ -143,6 +143,10 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 Route::put('/stories/{story}/chapters/{chapter}', [AuthorController::class, 'updateChapter'])->name('stories.chapters.update');
                 Route::delete('/stories/{story}/chapters/{chapter}', [AuthorController::class, 'destroyChapter'])->name('stories.chapters.destroy');
 
+                // cho việc thêm nhiều chương
+                Route::get('/stories/{story}/chapters/batch/create', [AuthorController::class, 'createBatchChapters'])->name('stories.chapters.batch.create');
+                Route::post('/stories/{story}/chapters/batch', [AuthorController::class, 'storeBatchChapters'])->name('stories.chapters.batch.store');
+
                 Route::put('/stories/{story}/mark-complete', [AuthorController::class, 'markComplete'])->name('stories.mark-complete');
 
                 Route::group(['prefix' => '/stories/combo', 'as' => 'stories.combo.'], function () {

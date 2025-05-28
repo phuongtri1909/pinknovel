@@ -543,6 +543,21 @@ class AuthorController extends Controller
         return view('pages.information.author.author_chapter_create', compact('story', 'nextChapterNumber'));
     }
 
+    // Hiển thị form tạo nhiều chương cùng lúc
+    public function createBatchChapters(Story $story)
+    {
+        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
+        if ($story->user_id != Auth::id()) {
+            return redirect()->route('user.author.index')
+                ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
+        }
+
+        $latestChapterNumber = $story->chapters()->max('number') ?? 0;
+        $nextChapterNumber = $latestChapterNumber + 1;
+
+        return view('pages.information.author.author_batch_chapter_create', compact('story', 'nextChapterNumber'));
+    }
+
     // Xử lý lưu chương mới
     public function storeChapter(Request $request, Story $story)
     {
@@ -552,7 +567,7 @@ class AuthorController extends Controller
                 ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
         }
 
-        // Kiểm tra nếu là nhiều chương
+        // Kiểm tra nếu là nhiều chương (route cũ - để hỗ trợ ngược)
         if ($request->upload_type === 'multiple') {
             return $this->storeBatchChapters($request, $story);
         }
@@ -601,6 +616,12 @@ class AuthorController extends Controller
                     ->withInput();
             }
 
+            // Chỉ sử dụng scheduled_publish_at khi status là draft
+            $scheduledPublishAt = null;
+            if ($request->status == 'draft' && $request->has('scheduled_publish_at')) {
+                $scheduledPublishAt = $request->scheduled_publish_at;
+            }
+
             $chapter = $story->chapters()->create([
                 'slug' => $proposedSlug,
                 'title' => $request->title,
@@ -612,7 +633,7 @@ class AuthorController extends Controller
                 'is_free' => $request->is_free,
                 'price' => !$request->is_free ? $request->price : null,
                 'password' => ($request->is_free && $request->has_password) ? bcrypt($request->password) : null,
-                'scheduled_publish_at' => $request->scheduled_publish_at,
+                'scheduled_publish_at' => $scheduledPublishAt,
             ]);
 
             return redirect()->route('user.author.stories.chapters', $story->id)
@@ -625,101 +646,45 @@ class AuthorController extends Controller
     }
 
     // Hàm phân tích nội dung batch để tách thành các chương
-    private function parseChaptersFromBatchContent($batchContent, $chapterPrefix = '')
+    private function parseChaptersFromBatchContent($batchContent)
     {
-        // Xử lý tiền tố mặc định nếu không được cung cấp
-        $prefixPattern = empty($chapterPrefix) ? '(Chương|Chapter|Chap)' : preg_quote($chapterPrefix, '/');
+        $pattern = '/\[Chương\s+(\d+)\]\s*:\s*(.+?)\s*\n(.*?)(?=\n\[Chương\s+\d+\]\s*:|\z)/s';
 
-        // Hỗ trợ cả hai định dạng:
-        // 1. [Chương X] : Tiêu đề (mới)
-        // 2. Chương X: Tiêu đề hoặc Chương X - Tiêu đề (cũ)
-        $pattern1 = '/^\[' . $prefixPattern . '\s+(\d+)\]\s*:\s*(.+?)$/m'; // Format mới [Chương X] : Tiêu đề
-        $pattern2 = '/^' . $prefixPattern . '\s+(\d+)[\s:\-]+(.+?)$/m'; // Format cũ Chương X: Tiêu đề
-
-        // Tìm tất cả các tiêu đề chương theo format mới
-        preg_match_all($pattern1, $batchContent, $matches1, PREG_OFFSET_CAPTURE);
-
-        // Tìm tất cả các tiêu đề chương theo format cũ
-        preg_match_all($pattern2, $batchContent, $matches2, PREG_OFFSET_CAPTURE);
-
-
-        // Merge kết quả từ hai pattern
-        $matches = [
-            array_merge($matches1[0], $matches2[0]), // Full matches
-            array_merge($matches1[1], $matches2[1]), // Prefix captures
-            array_merge($matches1[2], $matches2[2]), // Chapter numbers
-            array_merge($matches1[3], $matches2[3]), // Titles
-        ];
-
-        // Sắp xếp lại các match theo vị trí xuất hiện trong văn bản
-        $combined = [];
-        foreach ($matches[0] as $key => $match) {
-            $combined[] = [
-                'full' => $match,
-                'prefix' => $matches[1][$key],
-                'number' => $matches[2][$key],
-                'title' => $matches[3][$key],
-            ];
-        }
-
-        // Sắp xếp theo vị trí
-        usort($combined, function ($a, $b) {
-            return $a['full'][1] - $b['full'][1];
-        });
-
-        // Nếu không tìm thấy match nào, return empty array
-        if (empty($combined)) {
-            return [];
-        }
+        preg_match_all($pattern, $batchContent, $matches, PREG_SET_ORDER);
 
         $chapters = [];
-        $matchCount = count($combined);
 
-        // Xử lý từng chương
-        for ($i = 0; $i < $matchCount; $i++) {
-            // Lấy vị trí bắt đầu của tiêu đề hiện tại
-            $currentTitlePos = $combined[$i]['full'][1];
-
-            // Lấy tiêu đề đầy đủ và số chương
-            $fullTitle = $combined[$i]['full'][0];
-            $chapterNumber = (int) $combined[$i]['number'][0]; // Chuyển đổi sang số nguyên
-            $titleContent = trim($combined[$i]['title'][0]);
-
-            // Xác định vị trí kết thúc của chương hiện tại
-            $contentEndPos = ($i < $matchCount - 1) ? $combined[$i + 1]['full'][1] : strlen($batchContent);
-
-            // Tính toán vị trí bắt đầu của nội dung sau tiêu đề
-            $contentStartPos = $currentTitlePos + strlen($fullTitle);
-
-            // Lấy nội dung giữa cuối tiêu đề hiện tại và đầu tiêu đề tiếp theo
-            $content = substr($batchContent, $contentStartPos, $contentEndPos - $contentStartPos);
-
-            // Làm sạch nội dung
-            $content = trim($content);
-
-            // Thêm chương vào mảng kết quả
+        foreach ($matches as $match) {
             $chapters[] = [
-                'number' => $chapterNumber,
-                'title' => $titleContent,
-                'content' => $content
+                'number'  => (int) $match[1],
+                'title'   => trim($match[2]),
+                'content' => trim($match[3]),
             ];
         }
 
         return $chapters;
     }
 
+
     // Xử lý lưu nhiều chương cùng lúc
     public function storeBatchChapters(Request $request, Story $story)
     {
+        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
+        if ($story->user_id != Auth::id()) {
+            return redirect()->route('user.author.index')
+                ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
+        }
+
         $request->validate([
             'batch_content' => 'required',
-            'chapter_prefix' => 'nullable|string|max:50',
             'is_free' => 'required|boolean',
             'price' => 'required_if:is_free,0|nullable|integer|min:1',
             'password' => 'nullable|required_if:has_password,1|string|max:50',
             'has_password' => 'required_if:is_free,1|boolean',
             'scheduled_publish_at' => 'nullable|date|after:now',
             'status' => 'required|in:draft,published',
+            'chapter_schedules' => 'nullable|array',
+            'chapter_schedules.*' => 'nullable|date|after:now',
         ], [
             'batch_content.required' => 'Nội dung các chương không được để trống',
             'is_free.required' => 'Vui lòng chọn hình thức chương',
@@ -730,111 +695,99 @@ class AuthorController extends Controller
             'scheduled_publish_at.date' => 'Thời gian hẹn giờ không hợp lệ',
             'scheduled_publish_at.after' => 'Thời gian hẹn giờ phải sau thời điểm hiện tại',
             'status.required' => 'Vui lòng chọn trạng thái chương',
+            'chapter_schedules.*.date' => 'Thời gian hẹn giờ không hợp lệ',
+            'chapter_schedules.*.after' => 'Thời gian hẹn giờ phải sau thời điểm hiện tại',
         ]);
 
-        // Xử lý nội dung batch để tách thành các chương
-        $batchContent = $request->batch_content;
-        $chapters = $this->parseChaptersFromBatchContent($batchContent, $request->chapter_prefix);
+        $chapters = $this->parseChaptersFromBatchContent($request->batch_content);
 
         if (empty($chapters)) {
-            return redirect()->back()
-                ->with('error', 'Không thể tách nội dung thành các chương. Vui lòng kiểm tra lại định dạng.')
-                ->withInput();
+            return back()->with('error', 'Không thể tách nội dung thành các chương. Vui lòng kiểm tra lại định dạng.')->withInput();
         }
 
-        // Lấy danh sách số chương đã tồn tại
-        $existingChapterNumbers = $story->chapters()->pluck('number')->toArray();
-
-        // Lấy danh sách slug đã tồn tại 
+        $existingNumbers = $story->chapters()->pluck('number')->toArray();
         $existingSlugs = $story->chapters()->pluck('slug')->toArray();
 
-        $skippedChapters = [];
-        $duplicateSlugs = [];
-        $successCount = 0;
-        $duplicateFound = false;
+        $errors = [
+            'number' => [],
+            'slug' => [],
+        ];
 
-        // Kiểm tra trước để phát hiện các chương trùng lặp
-        foreach ($chapters as $chapterData) {
-            $chapterNumber = $chapterData['number'];
-            $title = $chapterData['title'];
+        foreach ($chapters as $chapter) {
+            $slug = 'chuong-' . $chapter['number'] . '-' . Str::slug(Str::limit($chapter['title'], 100));
 
-            // Tạo slug dự kiến để kiểm tra
-            $proposedSlug = 'chuong-' . $chapterNumber . '-' . Str::slug(Str::limit($title, 100));
-
-            // Kiểm tra xem chương đã tồn tại chưa
-            if (in_array($chapterNumber, $existingChapterNumbers)) {
-                $skippedChapters[] = "Chương $chapterNumber"; // Thêm vào danh sách chương bị bỏ qua
-                $duplicateFound = true;
+            if (in_array($chapter['number'], $existingNumbers)) {
+                $errors['number'][] = "Chương {$chapter['number']}";
             }
 
-            // Kiểm tra xem slug đã tồn tại chưa
-            if (in_array($proposedSlug, $existingSlugs)) {
-                $duplicateSlugs[] = "Chương $chapterNumber ($title)"; // Thêm vào danh sách slug bị trùng
-                $duplicateFound = true;
+            if (in_array($slug, $existingSlugs)) {
+                $errors['slug'][] = "Chương {$chapter['number']} ({$chapter['title']})";
             }
         }
 
-        // Nếu phát hiện có chương trùng lặp, thông báo và quay lại form
-        if ($duplicateFound) {
-            $errorMessage = "Phát hiện chương bị trùng lặp:";
-
-            if (!empty($skippedChapters)) {
-                $errorMessage .= " Trùng số chương: " . implode(', ', $skippedChapters) . ".";
-            }
-
-            if (!empty($duplicateSlugs)) {
-                $errorMessage .= " Trùng slug (do tiêu đề tương tự): " . implode(', ', $duplicateSlugs) . ".";
-            }
-
-            $errorMessage .= " Vui lòng chỉnh sửa nội dung và thử lại.";
-
-            return redirect()->back()
-                ->with('error', $errorMessage)
-                ->withInput();
+        if (!empty($errors['number']) || !empty($errors['slug'])) {
+            $msg = "Phát hiện chương bị trùng lặp:";
+            if ($errors['number']) $msg .= " Trùng số chương: " . implode(', ', $errors['number']) . ".";
+            if ($errors['slug'])   $msg .= " Trùng slug: " . implode(', ', $errors['slug']) . ".";
+            return back()->with('error', $msg . ' Vui lòng chỉnh sửa và thử lại.')->withInput();
         }
 
-        // Nếu không có trùng lặp, tiến hành lưu các chương
+        // Lấy dữ liệu lịch đăng cho từng chương
+        $chapterSchedules = $request->input('chapter_schedules', []);
+
         DB::beginTransaction();
         try {
-            foreach ($chapters as $chapterData) {
-                $chapterNumber = $chapterData['number'];
-                $title = $chapterData['title'];
-                $content = $chapterData['content'];
+            $userId = Auth::id();
+            $isFree = $request->is_free;
+            $hasPassword = $request->has_password;
+            $password = $hasPassword && $isFree ? bcrypt($request->password) : null;
+            
+            $successCount = 0;
 
-                // Tạo slug
-                $proposedSlug = 'chuong-' . $chapterNumber . '-' . Str::slug(Str::limit($title, 100));
+            // Chỉ sử dụng scheduled_publish_at cho chung khi status là draft
+            $globalSchedule = ($request->status == 'draft') ? $request->scheduled_publish_at : null;
 
-                $chapter = $story->chapters()->create([
-                    'slug' => $proposedSlug,
-                    'title' => $title,
-                    'content' => $content,
-                    'number' => $chapterNumber,
-                    'status' => $request->status,
-                    'user_id' => Auth::id(),
+            foreach ($chapters as $chapter) {
+                $slug = 'chuong-' . $chapter['number'] . '-' . Str::slug(Str::limit($chapter['title'], 100));
+                
+                // Kiểm tra từng chương có lịch riêng không
+                $scheduleDate = null;
+                $chapterStatus = $request->status;
+                
+                // Nếu có lịch riêng, chương sẽ tự động chuyển sang draft dù status chung là published
+                if (isset($chapterSchedules[$chapter['number']]) && !empty($chapterSchedules[$chapter['number']])) {
+                    $scheduleDate = $chapterSchedules[$chapter['number']];
+                    $chapterStatus = 'draft'; // Bắt buộc phải là draft nếu có lịch
+                } elseif ($request->status == 'draft') {
+                    // Nếu không có lịch riêng và status chung là draft, dùng lịch chung
+                    $scheduleDate = $globalSchedule;
+                }
+
+                $story->chapters()->create([
+                    'slug' => $slug,
+                    'title' => $chapter['title'],
+                    'content' => $chapter['content'],
+                    'number' => $chapter['number'],
+                    'status' => $chapterStatus,
+                    'user_id' => $userId,
                     'updated_content_at' => now(),
-                    'is_free' => $request->is_free,
-                    'price' => !$request->is_free ? $request->price : null,
-                    'password' => ($request->is_free && $request->has_password) ? bcrypt($request->password) : null,
-                    'scheduled_publish_at' => $request->scheduled_publish_at,
+                    'is_free' => $isFree,
+                    'price' => $isFree ? null : $request->price,
+                    'password' => $password,
+                    'scheduled_publish_at' => $scheduleDate,
                 ]);
 
-                // Thêm slug mới vào danh sách slug đã tồn tại để tránh trùng lặp trong cùng batch
-                $existingSlugs[] = $proposedSlug;
-                // Thêm số chương mới vào danh sách đã tồn tại
-                $existingChapterNumbers[] = $chapterNumber;
-
+                $existingNumbers[] = $chapter['number'];
+                $existingSlugs[] = $slug;
                 $successCount++;
             }
 
             DB::commit();
-
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('success', "Đã tạo thành công {$successCount} chương mới.");
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
-            return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())
-                ->withInput();
+            return back()->with('error', 'Lỗi khi lưu chương: ' . $e->getMessage())->withInput();
         }
     }
 
@@ -933,6 +886,13 @@ class AuthorController extends Controller
                     $password = $chapter->password;
                 }
             }
+
+            // Chỉ sử dụng scheduled_publish_at khi status là draft
+            $scheduledPublishAt = null;
+            if ($request->status == 'draft' && $request->has('scheduled_publish_at')) {
+                $scheduledPublishAt = $request->scheduled_publish_at;
+            }
+            
             $chapter->update([
                 'slug' => $proposedSlug,
                 'title' => $request->title,
@@ -943,7 +903,7 @@ class AuthorController extends Controller
                 'is_free' => $request->is_free,
                 'price' => !$request->is_free ? $request->price : null,
                 'password' => $password,
-                'scheduled_publish_at' => $request->scheduled_publish_at,
+                'scheduled_publish_at' => $scheduledPublishAt,
             ]);
 
             return redirect()->route('user.author.stories.chapters', $story->id)
@@ -1091,22 +1051,22 @@ class AuthorController extends Controller
         // Lấy năm hiện tại và năm trước đó để hiển thị trong dropdown
         $currentYear = date('Y');
         $years = range($currentYear, $currentYear - 5);
-        
+
         // Lấy thống kê tổng quát
         $totalRevenue = DB::table('chapter_purchases')
             ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
             ->join('stories', 'chapters.story_id', '=', 'stories.id')
             ->where('stories.user_id', Auth::id())
             ->sum('chapter_purchases.amount_paid');
-        
+
         $totalStoryRevenue = DB::table('story_purchases')
             ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
             ->where('stories.user_id', Auth::id())
             ->sum('story_purchases.amount_paid');
-        
+
         // Tính tổng số tiền
         $grandTotal = $totalRevenue + $totalStoryRevenue;
-        
+
         // Lấy doanh thu của tháng trước để so sánh
         $lastMonthDate = \Carbon\Carbon::now()->subMonth();
         $lastMonthRevenue = DB::table('chapter_purchases')
@@ -1116,7 +1076,7 @@ class AuthorController extends Controller
             ->whereMonth('chapter_purchases.created_at', $lastMonthDate->month)
             ->whereYear('chapter_purchases.created_at', $lastMonthDate->year)
             ->sum('chapter_purchases.amount_paid');
-        
+
         // Cộng thêm doanh thu từ việc bán trọn bộ trong tháng trước
         $lastMonthRevenue += DB::table('story_purchases')
             ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
@@ -1124,12 +1084,12 @@ class AuthorController extends Controller
             ->whereMonth('story_purchases.created_at', $lastMonthDate->month)
             ->whereYear('story_purchases.created_at', $lastMonthDate->year)
             ->sum('story_purchases.amount_paid');
-        
+
         // Tính tỷ lệ thay đổi
         $revenueChange = 0;
         $revenueChangePercent = 0;
         $revenueIncreased = false;
-        
+
         if ($lastMonthRevenue > 0) {
             $revenueChange = $totalRevenue - $lastMonthRevenue;
             $revenueChangePercent = round(($revenueChange / $lastMonthRevenue) * 100);
@@ -1139,7 +1099,7 @@ class AuthorController extends Controller
             $revenueChangePercent = 100;
             $revenueIncreased = true;
         }
-        
+
         // Lấy truyện bán chạy nhất (có nhiều lượt mua nhất)
         $topStories = DB::table('stories')
             ->select('stories.id', 'stories.title', 'stories.slug', DB::raw('COUNT(story_purchases.id) as purchase_count'), DB::raw('SUM(story_purchases.amount_paid) as total_revenue'))
@@ -1150,7 +1110,7 @@ class AuthorController extends Controller
             ->orderBy('total_revenue', 'desc')
             ->limit(5)
             ->get();
-            
+
         // Lấy chương bán chạy nhất
         $topChapters = DB::table('chapters')
             ->select('chapters.id', 'chapters.title', 'chapters.slug', 'stories.title as story_title', 'stories.slug as story_slug', DB::raw('COUNT(chapter_purchases.id) as purchase_count'), DB::raw('SUM(chapter_purchases.amount_paid) as total_revenue'))
@@ -1162,10 +1122,10 @@ class AuthorController extends Controller
             ->orderBy('total_revenue', 'desc')
             ->limit(5)
             ->get();
-        
+
         return view('pages.information.author.author_revenue', compact(
-            'years', 
-            'grandTotal', 
+            'years',
+            'grandTotal',
             'topStories',
             'topChapters',
             'lastMonthRevenue',
@@ -1226,7 +1186,7 @@ class AuthorController extends Controller
         $chapterData = [];
         $storyData = [];
         $totalData = [];
-        
+
         // Tính tổng doanh thu
         $totalChapterRevenue = 0;
         $totalStoryRevenue = 0;
@@ -1241,7 +1201,7 @@ class AuthorController extends Controller
             $chapterData[] = $chapterAmount;
             $storyData[] = $storyAmount;
             $totalData[] = $totalAmount;
-            
+
             $totalChapterRevenue += $chapterAmount;
             $totalStoryRevenue += $storyAmount;
         }
@@ -1316,7 +1276,7 @@ class AuthorController extends Controller
         $chapterData = [];
         $storyData = [];
         $totalData = [];
-        
+
         // Tính tổng doanh thu
         $totalChapterRevenue = 0;
         $totalStoryRevenue = 0;
@@ -1331,7 +1291,7 @@ class AuthorController extends Controller
             $chapterData[] = $chapterAmount;
             $storyData[] = $storyAmount;
             $totalData[] = $totalAmount;
-            
+
             $totalChapterRevenue += $chapterAmount;
             $totalStoryRevenue += $storyAmount;
         }
@@ -1385,7 +1345,7 @@ class AuthorController extends Controller
         $month = $request->input('month');
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
-        
+
         // Query cho chapter purchases
         $chapterPurchasesQuery = DB::table('chapter_purchases')
             ->select(
@@ -1405,12 +1365,12 @@ class AuthorController extends Controller
             ->join('users', 'chapter_purchases.user_id', '=', 'users.id')
             ->where('stories.user_id', Auth::id())
             ->whereYear('chapter_purchases.created_at', $year);
-            
+
         // Nếu có tháng, thêm điều kiện lọc theo tháng
         if ($month) {
             $chapterPurchasesQuery->whereMonth('chapter_purchases.created_at', $month);
         }
-        
+
         // Query cho story purchases
         $storyPurchasesQuery = DB::table('story_purchases')
             ->select(
@@ -1429,20 +1389,20 @@ class AuthorController extends Controller
             ->join('users', 'story_purchases.user_id', '=', 'users.id')
             ->where('stories.user_id', Auth::id())
             ->whereYear('story_purchases.created_at', $year);
-            
+
         // Nếu có tháng, thêm điều kiện lọc theo tháng
         if ($month) {
             $storyPurchasesQuery->whereMonth('story_purchases.created_at', $month);
         }
-        
+
         // Kết hợp hai query và phân trang
         $transactions = $chapterPurchasesQuery->union($storyPurchasesQuery)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
-        
+
         return response()->json($transactions);
     }
-    
+
     /**
      * API để lấy danh sách truyện bán chạy nhất với phân trang
      */
@@ -1459,27 +1419,27 @@ class AuthorController extends Controller
         $month = $request->input('month');
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
-        
+
         // Query lấy truyện bán chạy nhất
         $query = DB::table('stories')
             ->select('stories.id', 'stories.title', 'stories.slug', DB::raw('COUNT(story_purchases.id) as purchase_count'), DB::raw('SUM(story_purchases.amount_paid) as total_revenue'))
             ->leftJoin('story_purchases', 'stories.id', '=', 'story_purchases.story_id')
             ->where('stories.user_id', Auth::id())
             ->whereYear('story_purchases.created_at', $year);
-            
+
         // Nếu có tháng, thêm điều kiện lọc theo tháng
         if ($month) {
             $query->whereMonth('story_purchases.created_at', $month);
         }
-        
+
         $topStories = $query->groupBy('stories.id', 'stories.title', 'stories.slug')
             ->orderBy('purchase_count', 'desc')
             ->orderBy('total_revenue', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
-        
+
         return response()->json($topStories);
     }
-    
+
     /**
      * API để lấy danh sách chương bán chạy nhất với phân trang
      */
@@ -1496,7 +1456,7 @@ class AuthorController extends Controller
         $month = $request->input('month');
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
-        
+
         // Query lấy chương bán chạy nhất
         $query = DB::table('chapters')
             ->select('chapters.id', 'chapters.title', 'chapters.slug', 'chapters.number', 'stories.title as story_title', 'stories.slug as story_slug', DB::raw('COUNT(chapter_purchases.id) as purchase_count'), DB::raw('SUM(chapter_purchases.amount_paid) as total_revenue'))
@@ -1504,17 +1464,17 @@ class AuthorController extends Controller
             ->leftJoin('chapter_purchases', 'chapters.id', '=', 'chapter_purchases.chapter_id')
             ->where('stories.user_id', Auth::id())
             ->whereYear('chapter_purchases.created_at', $year);
-            
+
         // Nếu có tháng, thêm điều kiện lọc theo tháng
         if ($month) {
             $query->whereMonth('chapter_purchases.created_at', $month);
         }
-        
+
         $topChapters = $query->groupBy('chapters.id', 'chapters.title', 'chapters.slug', 'chapters.number', 'stories.title', 'stories.slug')
             ->orderBy('purchase_count', 'desc')
             ->orderBy('total_revenue', 'desc')
             ->paginate($perPage, ['*'], 'page', $page);
-        
+
         return response()->json($topChapters);
     }
 }
