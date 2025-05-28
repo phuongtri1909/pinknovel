@@ -240,14 +240,7 @@
                                                 <i class="fas fa-coins me-2"></i> <span id="coinsPreview">50</span>
                                             </div>
                                         </div>
-                                        @if ($bankTransferDiscount > 0)
-                                            <div class="col-auto">
-                                                <span class="badge bg-warning text-dark">
-                                                    <i class="fas fa-gift me-1"></i> +{{ $bankTransferDiscount }}% Khuyến
-                                                    mãi
-                                                </span>
-                                            </div>
-                                        @endif
+                                       
                                     </div>
                                     <div class="small text-white opacity-75 mt-2">
                                         <i class="fas fa-info-circle me-1"></i> Tỷ giá:
@@ -594,7 +587,6 @@
             };
 
             window.coinExchangeRate = {{ $coinExchangeRate }};
-            window.bankTransferDiscount = {{ $bankTransferDiscount }};
 
             // Xử lý khi người dùng rời trang trong quá trình thanh toán
             window.addEventListener('beforeunload', function(e) {
@@ -623,10 +615,9 @@
                 const amount = parseInt($('#amount').val()) || 0;
                 // Base coins calculation
                 const baseCoins = Math.floor(amount / window.coinExchangeRate);
-                // Bonus coins based on discount
-                const bonusCoins = Math.floor(baseCoins * (window.bankTransferDiscount / 100));
+               
                 // Total coins
-                const totalCoins = baseCoins + bonusCoins;
+                const totalCoins = baseCoins;
 
                 $('#coinsPreview').text(totalCoins.toLocaleString('vi-VN'));
             }

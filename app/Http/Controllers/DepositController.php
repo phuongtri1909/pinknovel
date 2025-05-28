@@ -22,16 +22,11 @@ class DepositController extends Controller
         $banks = Bank::where('status', true)->get();
         $deposits = Deposit::where('user_id', $user->id)->latest()->paginate(10);
         
-        // Get discount rates and exchange rate from config
-        $bankTransferDiscount = Config::getConfig('bank_transfer_discount', 0);
-        $cardPaymentDiscount = Config::getConfig('card_payment_discount', 10);
         $coinExchangeRate = Config::getConfig('coin_exchange_rate', 1000);
 
         return view('pages.information.deposit.deposit', compact(
             'banks', 
             'deposits',
-            'bankTransferDiscount',
-            'cardPaymentDiscount',
             'coinExchangeRate'
         ));
     }

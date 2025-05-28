@@ -232,4 +232,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(CoinTransaction::class, 'admin_id');
     }
+
+    /**
+     * Get withdrawal requests made by this user
+     */
+    public function withdrawalRequests()
+    {
+        return $this->hasMany(WithdrawalRequest::class);
+    }
+
+    /**
+     * Get withdrawal requests processed by this user (as admin)
+     */
+    public function processedWithdrawalRequests()
+    {
+        return $this->hasMany(WithdrawalRequest::class, 'processed_by');
+    }
 }

@@ -124,6 +124,16 @@
                             </a>
                         </div>
 
+                        @if(Auth::user()->role == 'author' || Auth::user()->role == 'admin')
+                        <div class="user-nav-item">
+                            <a href="{{ route('user.withdrawals.index') }}"
+                                class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.withdrawals*') ? 'active' : '' }}">
+                                <i class="fa-solid fa-money-bill-transfer user-nav-icon"></i>
+                                <span class="user-nav-text">Rút xu</span>
+                            </a>
+                        </div>
+                        @endif
+
                         <div class="user-nav-item user-nav-logout">
                             <a href="{{ route('logout') }}" class="user-nav-link text-danger text-decoration-none">
                                 <i class="fa-solid fa-arrow-right-from-bracket user-nav-icon"></i>

@@ -153,6 +153,23 @@
             </li> --}}
 
             <li class="nav-item">
+                <a href="{{ route('admin.withdrawals.index') }}" class="nav-link {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-money-bill-transfer text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Quản lý rút xu
+                        @php
+                            $pendingWithdrawalsCount = \App\Models\WithdrawalRequest::where('status', 'pending')->count();
+                        @endphp
+                        @if($pendingWithdrawalsCount > 0)
+                            <span class="badge bg-danger ms-2">{{ $pendingWithdrawalsCount }}</span>
+                        @endif
+                    </span>
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('deposits.*') ? 'active' : '' }}"
                     href="{{ route('deposits.index') }}">
                     <div
@@ -253,6 +270,8 @@
                     <span class="nav-link-text ms-1">Quản lý Hướng dẫn</span>
                 </a>
             </li> 
+
+            
 
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>

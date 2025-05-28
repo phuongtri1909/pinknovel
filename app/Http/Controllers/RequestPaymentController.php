@@ -34,16 +34,12 @@ class RequestPaymentController extends Controller
             // Calculate coins and apply discount
             $amount = $request->amount;
             $exchangeRate = Config::getConfig('coin_exchange_rate', 1000);
-            $discount = Config::getConfig('bank_transfer_discount', 0);
             
             // Base coins calculation
             $baseCoins = floor($amount / $exchangeRate);
             
-            // Calculate bonus coins based on discount
-            $bonusCoins = floor($baseCoins * ($discount / 100));
-            
             // Total coins
-            $totalCoins = $baseCoins + $bonusCoins;
+            $totalCoins = $baseCoins;
             
             // Create transaction code
             $transactionCode = 'TX' . strtoupper(Str::random(8)) . Carbon::now()->format('dmy');
@@ -58,9 +54,7 @@ class RequestPaymentController extends Controller
                 'transaction_code' => $transactionCode,
                 'amount' => $amount,
                 'base_coins' => $baseCoins,
-                'bonus_coins' => $bonusCoins,
                 'total_coins' => $totalCoins,
-                'discount' => $discount,
                 'expired_at' => $expiredAt
             ]);
             

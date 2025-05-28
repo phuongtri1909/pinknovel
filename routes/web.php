@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditReque
 use App\Http\Controllers\CoinController;
 use App\Http\Controllers\Admin\SocialController;
 use App\Http\Controllers\GuideController;
+use App\Http\Controllers\WithdrawalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -95,6 +96,11 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::get('/bookmark/status', [BookmarkController::class, 'checkStatus'])->name('bookmark.status');
             Route::post('/bookmark/update-chapter', [BookmarkController::class, 'updateCurrentChapter'])->name('bookmark.update.chapter');
             Route::post('/bookmark/remove', [BookmarkController::class, 'remove'])->name('bookmark.remove');
+
+            // Withdrawal routes
+            Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
+            Route::get('/withdrawals/create', [WithdrawalController::class, 'create'])->name('withdrawals.create');
+            Route::post('/withdrawals', [WithdrawalController::class, 'store'])->name('withdrawals.store');
 
             // Deposit Routes
             Route::get('/deposit', [DepositController::class, 'index'])->name('deposit');
@@ -263,6 +269,12 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                         // Guide management
                         Route::get('/guide/edit', [GuideController::class, 'edit'])->name('guide.edit');
                         Route::post('/guide/update', [GuideController::class, 'update'])->name('guide.update');
+
+                        // Withdrawal management
+                        Route::get('/withdrawals', [WithdrawalController::class, 'adminIndex'])->name('withdrawals.index');
+                        Route::get('/withdrawals/{withdrawal}', [WithdrawalController::class, 'adminShow'])->name('withdrawals.show');
+                        Route::post('/withdrawals/{withdrawal}/approve', [WithdrawalController::class, 'approve'])->name('withdrawals.approve');
+                        Route::post('/withdrawals/{withdrawal}/reject', [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
 
                          // Social Media Management
                         Route::get('socials', [SocialController::class, 'index'])->name('socials.index');
