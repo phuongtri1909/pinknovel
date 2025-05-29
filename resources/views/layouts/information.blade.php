@@ -16,10 +16,6 @@
     <link rel="stylesheet" href="{{ asset('assets/css/information.css') }}">
 @endpush
 
-@push('styles')
-    <link rel="stylesheet" href="{{ asset('assets/css/information.css') }}">
-@endpush
-
 @section('content')
     @include('components.toast')
 
@@ -65,24 +61,21 @@
 
                         <div class="user-nav-item">
                             @if (Auth::user()->role == 'author' || Auth::user()->role == 'admin')
-                                <a href="{{ route('user.author.index') }}"
-                                    class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.author.index', 'user.author.revenue') ? 'active' : '' }}">
-                                    <i class="fa-solid fa-pen-nib user-nav-icon"></i>
-                                    <span class="user-nav-text">Khu vực tác giả</span>
-                                </a>
-
-                                <a href="{{ route('user.author.stories') }}"
-                                    class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.author.stories') ? 'active' : '' }}">
-                                    <i class="fa-solid fa-list user-nav-icon"></i>
-                                    <span class="user-nav-text">Danh sách truyện</span>
-                                </a>
-
                                 <a href="{{ route('user.author.stories.create') }}"
                                     class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.author.stories.create') ? 'active' : '' }}">
                                     <i class="fa-solid fa-plus user-nav-icon"></i>
                                     <span class="user-nav-text">Đăng truyện</span>
                                 </a>
-
+                                <a href="{{ route('user.author.stories') }}"
+                                    class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.author.stories') ? 'active' : '' }}">
+                                    <i class="fa-solid fa-list user-nav-icon"></i>
+                                    <span class="user-nav-text">Danh sách truyện</span>
+                                </a>
+                                <a href="{{ route('user.author.revenue') }}"
+                                    class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.author.index', 'user.author.revenue') ? 'active' : '' }}">
+                                    <i class="fa-solid fa-pen-nib user-nav-icon"></i>
+                                    <span class="user-nav-text">Khu vực tác giả</span>
+                                </a>
                             @else
                                 <a href="{{ route('user.author.application') }}"
                                     class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.author.application') ? 'active' : '' }}">
@@ -124,14 +117,14 @@
                             </a>
                         </div>
 
-                        @if(Auth::user()->role == 'author' || Auth::user()->role == 'admin')
-                        <div class="user-nav-item">
-                            <a href="{{ route('user.withdrawals.index') }}"
-                                class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.withdrawals*') ? 'active' : '' }}">
-                                <i class="fa-solid fa-money-bill-transfer user-nav-icon"></i>
-                                <span class="user-nav-text">Rút xu</span>
-                            </a>
-                        </div>
+                        @if (Auth::user()->role == 'author' || Auth::user()->role == 'admin')
+                            <div class="user-nav-item">
+                                <a href="{{ route('user.withdrawals.index') }}"
+                                    class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.withdrawals*') ? 'active' : '' }}">
+                                    <i class="fa-solid fa-money-bill-transfer user-nav-icon"></i>
+                                    <span class="user-nav-text">Rút xu</span>
+                                </a>
+                            </div>
                         @endif
 
                         <div class="user-nav-item user-nav-logout">
@@ -171,38 +164,38 @@
             function isMobile() {
                 return window.innerWidth < 992;
             }
-            
+
             // Hàm cuộn đến phần nội dung chính
             function scrollToContent() {
                 if (isMobile()) {
                     // Lưu trạng thái đã cuộn vào session storage
                     const hasScrolled = sessionStorage.getItem('hasScrolledToContent');
-                    
+
                     // Nếu chưa cuộn trong phiên này
                     if (!hasScrolled) {
                         // Lấy vị trí của phần nội dung
                         const contentOffset = $('.user-content').offset().top;
-                        
+
                         // Cuộn xuống vị trí này, trừ đi một chút để có khoảng cách
                         $('html, body').animate({
                             scrollTop: contentOffset - 20
                         }, 500);
-                        
+
                         // Đánh dấu đã cuộn
                         sessionStorage.setItem('hasScrolledToContent', 'true');
                     }
                 }
             }
-            
+
             // Gọi hàm khi trang đã tải xong
             setTimeout(scrollToContent, 300);
-            
+
             // Thêm sự kiện cho các liên kết trong menu
             $('.user-nav-link').on('click', function() {
                 // Xóa trạng thái đã cuộn khi người dùng nhấp vào menu mới
                 sessionStorage.removeItem('hasScrolledToContent');
             });
-        
+
         });
     </script>
     @stack('info_scripts')

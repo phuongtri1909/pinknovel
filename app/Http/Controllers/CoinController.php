@@ -89,7 +89,7 @@ class CoinController extends Controller
             
             DB::commit();
             
-            return redirect()->route('users.show', $user->id)
+            return redirect()->route('coins.index')
                 ->with('success', 'Giao dịch xu thành công');
                 
         } catch (\Exception $e) {

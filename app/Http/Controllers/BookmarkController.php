@@ -31,13 +31,13 @@ class BookmarkController extends Controller
         $userId = Auth::id();
         $storyId = $request->story_id;
         $chapterId = $request->chapter_id;
-        
+
         // Thực hiện toggle bookmark với chương hiện tại
         $result = Bookmark::toggleBookmark($userId, $storyId, $chapterId);
-        
+
         return response()->json($result);
     }
-    
+
     /**
      * Check if a story is bookmarked
      */
@@ -47,33 +47,40 @@ class BookmarkController extends Controller
         $request->validate([
             'story_id' => 'required|exists:stories,id',
         ]);
-        
+
         $userId = Auth::id();
         $storyId = $request->story_id;
-        
+
         // Kiểm tra trạng thái bookmark
         $isBookmarked = Bookmark::isBookmarked($userId, $storyId);
-        
+
         return response()->json([
             'is_bookmarked' => $isBookmarked
         ]);
     }
-    
+
     /**
      * Get user's bookmarks
      */
     public function getUserBookmarks()
     {
         $userId = Auth::id();
-        $bookmarks = Bookmark::with(['story', 'lastChapter'])
-                            ->where('user_id', $userId)
-                            ->orderBy('last_read_at', 'desc')
-                            ->orderBy('created_at', 'desc')
-                            ->get();
-        
+        $bookmarks = Bookmark::with([
+            'story' => function ($query) {
+                $query->withCount(['chapters' => function ($q) {
+                    $q->where('status', 'published');
+                }]);
+            },
+            'lastChapter'
+        ])
+            ->where('user_id', $userId)
+            ->orderBy('last_read_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
         return view('pages.information.bookmarks', compact('bookmarks'));
     }
-    
+
     /**
      * Update current chapter for a bookmarked story
      */
@@ -83,16 +90,16 @@ class BookmarkController extends Controller
             'story_id' => 'required|exists:stories,id',
             'chapter_id' => 'required|exists:chapters,id',
         ]);
-        
+
         $userId = Auth::id();
         $storyId = $request->story_id;
         $chapterId = $request->chapter_id;
-        
+
         // Kiểm tra xem đã bookmark chưa và cập nhật
         $bookmark = Bookmark::where('user_id', $userId)
-                           ->where('story_id', $storyId)
-                           ->first();
-                           
+            ->where('story_id', $storyId)
+            ->first();
+
         if ($bookmark) {
             $updated = Bookmark::saveCurrentChapter($userId, $storyId, $chapterId);
             return response()->json([
@@ -100,7 +107,7 @@ class BookmarkController extends Controller
                 'message' => $updated ? 'Đã cập nhật vị trí đọc' : 'Không thể cập nhật vị trí đọc'
             ]);
         }
-        
+
         return response()->json([
             'success' => false,
             'message' => 'Bạn chưa đánh dấu truyện này'
@@ -118,11 +125,11 @@ class BookmarkController extends Controller
 
         $userId = Auth::id();
         $storyId = $request->story_id;
-        
-        $bookmark = Bookmark::where('user_id', $userId) 
-                           ->where('story_id', $storyId)
-                           ->first();
-        
+
+        $bookmark = Bookmark::where('user_id', $userId)
+            ->where('story_id', $storyId)
+            ->first();
+
         if ($bookmark) {
             $bookmark->delete();
             return response()->json([
@@ -130,7 +137,7 @@ class BookmarkController extends Controller
                 'message' => 'Đã xóa bookmark'
             ]);
         }
-        
+
         return response()->json([
             'success' => false,
             'message' => 'Không tìm thấy bookmark'

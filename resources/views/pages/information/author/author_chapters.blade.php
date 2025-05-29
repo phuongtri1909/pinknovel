@@ -10,7 +10,7 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <a href="{{ route('user.author.stories') }}" class="btn btn-sm btn-outline-secondary">
-                <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách truyện
+                <i class="fas fa-arrow-left me-1"></i> Quay lại
             </a>
         </div>
 
@@ -36,7 +36,7 @@
             @endif
 
             <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-outline-success">
-                <i class="fas fa-plus me-1"></i> Thêm chương mới
+                <i class="fas fa-plus me-1"></i> Chương
             </a>
         </div>
     </div>

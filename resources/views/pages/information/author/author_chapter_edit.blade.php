@@ -36,11 +36,28 @@
 @endpush
 
 @section('info_content')
-    <div class="mb-4">
+    <div class="mb-4 d-flex align-items-center justify-content-between">
         <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách chương
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
         </a>
+
+        <div class="d-flex gap-2">
+            @if ($prevChapter)
+                <a href="{{ route('user.author.stories.chapters.edit', [$story->id, $prevChapter->id]) }}"
+                    class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-angle-left me-1"></i> Chương trước
+                </a>
+            @endif
+
+            @if ($nextChapter)
+                <a href="{{ route('user.author.stories.chapters.edit', [$story->id, $nextChapter->id]) }}"
+                    class="btn btn-sm btn-outline-primary">
+                    Chương sau <i class="fas fa-angle-right ms-1"></i>
+                </a>
+            @endif
+        </div>
     </div>
+
 
     <form action="{{ route('user.author.stories.chapters.update', ['story' => $story->id, 'chapter' => $chapter->id]) }}"
         method="POST">
@@ -193,14 +210,16 @@
                 </div>
 
                 <!-- Thêm tùy chọn lịch xuất bản -->
-                <div class="mb-3" id="scheduleOptionsContainer" style="{{ old('status', $chapter->status) == 'published' ? 'display: none;' : '' }}">
+                <div class="mb-3" id="scheduleOptionsContainer"
+                    style="{{ old('status', $chapter->status) == 'published' ? 'display: none;' : '' }}">
                     <label class="form-label d-flex align-items-center">
                         <input type="checkbox" class="form-check-input me-2" id="enableSchedule"
-                            onchange="toggleScheduleField()" 
+                            onchange="toggleScheduleField()"
                             {{ old('scheduled_publish_at', $chapter->scheduled_publish_at) ? 'checked' : '' }}>
                         Hẹn giờ xuất bản
                     </label>
-                    <div id="scheduleField" style="{{ old('scheduled_publish_at', $chapter->scheduled_publish_at) ? '' : 'display: none;' }}">
+                    <div id="scheduleField"
+                        style="{{ old('scheduled_publish_at', $chapter->scheduled_publish_at) ? '' : 'display: none;' }}">
                         <input type="datetime-local"
                             class="form-control @error('scheduled_publish_at') is-invalid @enderror"
                             id="scheduled_publish_at" name="scheduled_publish_at"

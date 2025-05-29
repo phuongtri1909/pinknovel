@@ -53,25 +53,25 @@ class UserController extends Controller
             ->with('bank')
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'deposits_page');
-        
+
         // Get chapter purchases with pagination
         $chapterPurchases = $user->chapterPurchases()
             ->with(['chapter.story'])
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'chapter_page');
-        
+
         // Get story purchases with pagination
         $storyPurchases = $user->storyPurchases()
             ->with(['story'])
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'story_page');
-        
+
         // Get bookmarks with pagination
         $bookmarks = $user->bookmarks()
             ->with(['story', 'lastChapter'])
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'bookmarks_page');
-        
+
         // Get coin transactions with pagination
         $coinTransactions = $user->coinTransactions()
             ->with('admin')
@@ -88,11 +88,11 @@ class UserController extends Controller
         ];
 
         return view('admin.pages.users.show', compact(
-            'user', 
-            'stats', 
-            'deposits', 
-            'chapterPurchases', 
-            'storyPurchases', 
+            'user',
+            'stats',
+            'deposits',
+            'chapterPurchases',
+            'storyPurchases',
             'bookmarks',
             'coinTransactions',
             'counts'
@@ -440,17 +440,17 @@ class UserController extends Controller
 
         return view('pages.information.profile', compact('user'));
     }
-    
+
     public function bookmarks()
     {
         $user = Auth::user();
         $bookmarks = Bookmark::where('user_id', $user->id)
-            ->with(['story' => function($query) {
+            ->with(['story' => function ($query) {
                 $query->with('latestChapter');
             }])
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         return view('pages.information.bookmarks', compact('bookmarks'));
     }
 
@@ -460,9 +460,9 @@ class UserController extends Controller
         $request->validate([
             'story_id' => 'required|exists:stories,id',
         ]);
-        
+
         $result = Bookmark::toggleBookmark(Auth::id(), $request->story_id);
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'status' => 'success',
@@ -470,19 +470,19 @@ class UserController extends Controller
                 'message' => $result['message']
             ]);
         }
-        
+
         return redirect()->back()->with('success', $result['message']);
     }
-    
+
     // Remove bookmark
     public function removeBookmark(Request $request)
     {
         $request->validate([
             'bookmark_id' => 'required|exists:bookmarks,id',
         ]);
-        
+
         $bookmark = Bookmark::findOrFail($request->bookmark_id);
-        
+
         // Check if the bookmark belongs to the current user
         if ($bookmark->user_id != Auth::id()) {
             if ($request->ajax()) {
@@ -493,28 +493,28 @@ class UserController extends Controller
             }
             return redirect()->back()->with('error', 'Bạn không có quyền thực hiện hành động này');
         }
-        
+
         $bookmark->delete();
-        
+
         if ($request->ajax()) {
             return response()->json([
                 'status' => 'success',
                 'message' => 'Đã xóa truyện khỏi danh sách theo dõi'
             ]);
         }
-        
+
         return redirect()->back()->with('success', 'Đã xóa truyện khỏi danh sách theo dõi');
     }
-    
+
     // Toggle bookmark notification
     public function toggleBookmarkNotification(Request $request)
     {
         $request->validate([
             'bookmark_id' => 'required|exists:bookmarks,id',
         ]);
-        
+
         $bookmark = Bookmark::findOrFail($request->bookmark_id);
-        
+
         // Check if the bookmark belongs to the current user
         if ($bookmark->user_id != Auth::id()) {
             return response()->json([
@@ -522,9 +522,9 @@ class UserController extends Controller
                 'message' => 'Bạn không có quyền thực hiện hành động này'
             ], 403);
         }
-        
+
         $result = Bookmark::toggleNotification($request->bookmark_id);
-        
+
         return response()->json($result);
     }
 
@@ -679,7 +679,14 @@ class UserController extends Controller
     public function readingHistory()
     {
         // Get user reading history from database
-        $readingHistory = UserReading::with(['story', 'chapter'])
+        $readingHistory = UserReading::with([
+            'story' => function ($query) {
+                $query->withCount(['chapters' => function ($q) {
+                    $q->where('status', 'published');
+                }]);
+            },
+            'chapter'
+        ])
             ->where('user_id', Auth::id())
             ->orderByDesc('updated_at')
             ->get();
@@ -694,13 +701,13 @@ class UserController extends Controller
             ->with(['chapter.story'])
             ->orderByDesc('created_at')
             ->get();
-            
+
         // Get user's purchased story combos
         $purchasedStories = Auth::user()->storyPurchases()
             ->with(['story'])
             ->orderByDesc('created_at')
             ->get();
-            
+
         return view('pages.information.purchases', compact('purchasedChapters', 'purchasedStories'));
     }
 
@@ -708,7 +715,7 @@ class UserController extends Controller
     {
         // Delete all reading history for the current user
         UserReading::where('user_id', Auth::id())->delete();
-        
+
         return response()->json([
             'status' => 'success',
             'message' => 'Lịch sử đọc truyện đã được xóa'
@@ -720,7 +727,7 @@ class UserController extends Controller
         $user = User::findOrFail($id);
         $type = $request->type;
         $page = $request->page;
-        
+
         switch ($type) {
             case 'deposits':
                 $data = $user->deposits()
@@ -755,7 +762,7 @@ class UserController extends Controller
             default:
                 return response()->json(['error' => 'Invalid type'], 400);
         }
-        
+
         return response()->json([
             'html' => view("admin.pages.users.partials.{$type}-table", [
                 'data' => $data,

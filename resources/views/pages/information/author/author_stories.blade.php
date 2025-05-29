@@ -149,7 +149,7 @@
             <p class="text-muted small mb-0">Quản lý tất cả truyện của bạn</p>
         </div>
         <a href="{{ route('user.author.stories.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-1"></i> Đăng truyện mới
+            <i class="fas fa-plus me-1"></i> Truyện
         </a>
     </div>
 

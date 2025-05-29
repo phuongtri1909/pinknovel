@@ -320,7 +320,6 @@
 .story-thumb-container {
   overflow: hidden;
   border-radius: 0.5rem;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
 }
 
 .story-thumb {
@@ -340,7 +339,6 @@
   transition: all 0.3s ease;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .story-title a {
