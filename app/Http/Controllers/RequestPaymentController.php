@@ -11,35 +11,56 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 
 class RequestPaymentController extends Controller
 {
+
+    public $coinBankPercent;
+    public $coinPayPalPercent;
+    public $coinCardPercent;
+
+    public $coinExchangeRate;
+    public $coinPayPalRate;
+
+    public function __construct()
+    {
+        $this->coinBankPercent = Config::getConfig('coin_bank_percent', 15);
+        $this->coinPayPalPercent = Config::getConfig('coin_paypal_percent', 0);
+        $this->coinCardPercent = Config::getConfig('coin_card_percent', 30);
+
+        $this->coinExchangeRate = Config::getConfig('coin_exchange_rate', 100);
+        $this->coinPayPalRate = Config::getConfig('coin_paypal_rate', 20000);
+    }
+
     // Tạo yêu cầu thanh toán mới
     public function store(Request $request)
     {
         $request->validate([
             'bank_id' => 'required|exists:banks,id',
-            'amount' => 'required|numeric|min:10000',
+            'amount' => 'required|numeric|min:50000',
         ], [
             'bank_id.required' => 'Vui lòng chọn ngân hàng',
             'bank_id.exists' => 'Ngân hàng không tồn tại',
             'amount.required' => 'Vui lòng nhập số tiền',
             'amount.numeric' => 'Số tiền phải là số',
-            'amount.min' => 'Số tiền tối thiểu là 10.000 VNĐ',
+            'amount.min' => 'Số tiền tối thiểu là 50.000 VNĐ',
         ]);
 
         try {
             // Calculate coins and apply discount
             $amount = $request->amount;
-            $exchangeRate = Config::getConfig('coin_exchange_rate', 1000);
             
-            // Base coins calculation
-            $baseCoins = floor($amount / $exchangeRate);
+            // Apply bank fee
+            $feeAmount = ($amount * $this->coinBankPercent) / 100;
+
+            // Số tiền sau khi trừ phí
+            $amountAfterFee = $amount - $feeAmount;
             
-            // Total coins
-            $totalCoins = $baseCoins;
+            // Số xu sau khi trừ phí
+            $coins = floor($amountAfterFee / $this->coinExchangeRate);
             
             // Create transaction code
             $transactionCode = 'TX' . strtoupper(Str::random(8)) . Carbon::now()->format('dmy');
@@ -53,8 +74,8 @@ class RequestPaymentController extends Controller
                 'bank_id' => $request->bank_id,
                 'transaction_code' => $transactionCode,
                 'amount' => $amount,
-                'base_coins' => $baseCoins,
-                'total_coins' => $totalCoins,
+                'coins' => $coins,
+                'fee' => $feeAmount,
                 'expired_at' => $expiredAt
             ]);
             
@@ -74,18 +95,17 @@ class RequestPaymentController extends Controller
                 ],
                 'payment' => [
                     'amount' => $amount,
-                    'base_coins' => $baseCoins,
-                    'bonus_coins' => $bonusCoins,
-                    'total_coins' => $totalCoins,
-                    'discount' => $discount,
+                    'coins' => $coins,
+                    'fee' => $feeAmount,
                     'transaction_code' => $transactionCode,
                     'expired_at' => $expiredAt->format('Y-m-d H:i:s')
                 ]
             ]);
         } catch (\Exception $e) {
+            
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi: ' . $e->getMessage()
+                'message' => 'Đã xảy ra lỗi khi tạo yêu cầu thanh toán: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -105,32 +125,42 @@ class RequestPaymentController extends Controller
             'transaction_image.max' => 'Kích thước hình ảnh không được vượt quá 4MB',
         ]);
 
+        $requestPayment = RequestPayment::findOrFail($request->request_payment_id);
+
+        if ($requestPayment->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền xác nhận yêu cầu thanh toán này.'
+            ], 403);
+        }
+
+        if ($requestPayment->is_completed && $requestPayment->deposit_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Yêu cầu thanh toán đã được xử lý.'
+            ], 400);
+        }
+
+        if ($requestPayment->isExpired()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Yêu cầu thanh toán đã hết hạn. Vui lòng tạo yêu cầu mới.'
+            ], 400);
+        }
+
         DB::beginTransaction();
         try {
-            // Lấy thông tin yêu cầu thanh toán
-            $requestPayment = RequestPayment::where('id', $request->request_payment_id)
-                ->where('user_id', Auth::id())
-                ->where('is_completed', false)
-                ->firstOrFail();
-
-            // Kiểm tra hết hạn
-            if ($requestPayment->isExpired()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Yêu cầu thanh toán đã hết hạn. Vui lòng tạo yêu cầu mới.'
-                ], 400);
-            }
-
             // Xử lý ảnh chứng minh chuyển khoản
             $imagePath = $this->processAndSaveDepositImage($request->file('transaction_image'));
 
-            // Tạo yêu cầu nạp xu mới
+            // Tạo giao dịch nạp xu mới
             $deposit = Deposit::create([
                 'user_id' => Auth::id(),
                 'bank_id' => $requestPayment->bank_id,
                 'transaction_code' => $requestPayment->transaction_code,
                 'amount' => $requestPayment->amount,
-                'coins' => $requestPayment->total_coins,
+                'coins' => $requestPayment->coins,
+                'fee' => $requestPayment->fee,
                 'image' => $imagePath,
                 'status' => 'pending',
             ]);

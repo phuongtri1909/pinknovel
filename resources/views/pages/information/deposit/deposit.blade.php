@@ -178,6 +178,27 @@
                 background-color: rgba(25, 135, 84, 0.1);
             }
         }
+        
+        /* Kiểu dáng cho modal lý do */
+        .reason-content {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+        }
+        
+        #reasonText {
+            white-space: pre-line;
+            color: #444;
+            font-size: 15px;
+        }
+        
+        .show-reason-btn {
+            cursor: pointer;
+        }
+        
+        .show-reason-btn:hover {
+            text-decoration: underline;
+        }
     </style>
 @endpush
 
@@ -190,6 +211,12 @@
                         <h5 class="mb-0">Nạp xu qua chuyển khoản ngân hàng</h5>
                     </div>
                     <div class="deposit-card-body">
+                        <!-- Debug info (remove in production) -->
+                        <div class="alert alert-info d-none">
+                            <p>Tỷ giá hiện tại: 1 xu = {{ number_format($coinExchangeRate) }} VNĐ</p>
+                            <p>Phí giao dịch: {{ $coinBankPercent }}%</p>
+                        </div>
+
                         <form id="depositForm">
                             @csrf
 
@@ -225,11 +252,13 @@
                             <div class="deposit-amount-container">
                                 <label for="amount" class="form-label fw-bold mb-3">Nhập số tiền muốn nạp (VNĐ)</label>
                                 <div class="input-group">
-                                    <input type="number" class="form-control deposit-amount-input" id="amount"
-                                        name="amount" value="{{ old('amount', 50000) }}" min="10000" step="10000">
+                                    <input type="text" class="form-control deposit-amount-input" id="amount"
+                                        name="amount" value="{{ number_format(old('amount', 50000), 0, ',', '.') }}"
+                                        data-raw="{{ old('amount', 50000) }}">
+
                                     <span class="input-group-text">VNĐ</span>
                                 </div>
-                                <div class="form-text">Số tiền tối thiểu: 10.000 VNĐ</div>
+                                <div class="form-text">Số tiền tối thiểu: 50.000 VNĐ</div>
                                 <div class="invalid-feedback amount-error">Vui lòng nhập số tiền hợp lệ</div>
 
                                 <div class="deposit-coin-preview mt-4">
@@ -240,12 +269,16 @@
                                                 <i class="fas fa-coins me-2"></i> <span id="coinsPreview">50</span>
                                             </div>
                                         </div>
-                                       
+
                                     </div>
-                                    <div class="small text-white opacity-75 mt-2">
+                                    {{-- <div class="small text-white opacity-75 mt-2">
                                         <i class="fas fa-info-circle me-1"></i> Tỷ giá:
                                         {{ number_format($coinExchangeRate) }} VNĐ = 1 xu
-                                    </div>
+                                    </div> --}}
+                                    {{-- <div class="small text-white opacity-75 mt-1">
+                                        <i class="fas fa-percentage me-1"></i> Phí giao dịch:
+                                        {{ $coinBankPercent }}%
+                                    </div> --}}
                                 </div>
 
                                 <button type="button" id="proceedToPaymentBtn" class="btn payment-btn w-100">
@@ -255,7 +288,7 @@
                         </form>
                     </div>
                 </div>
-                
+
                 <div class="deposit-card">
                     <div class="deposit-card-header">
                         <h5 class="mb-0">Nạp xu bằng thẻ cào (Sắp ra mắt)</h5>
@@ -268,16 +301,18 @@
                                 </div>
                                 <div>
                                     <h6 class="mb-1">Nạp bằng thẻ cào điện thoại</h6>
-                                    <p class="mb-0 small text-muted">Hỗ trợ các loại thẻ: Viettel, Mobifone, Vinaphone...</p>
+                                    <p class="mb-0 small text-muted">Hỗ trợ các loại thẻ: Viettel, Mobifone, Vinaphone...
+                                    </p>
                                 </div>
                                 <div class="ms-auto">
                                     <span class="badge bg-secondary">Sắp ra mắt</span>
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="alert alert-info mt-3">
-                            <i class="fas fa-info-circle me-2"></i> Tính năng nạp xu bằng thẻ cào sẽ sớm được ra mắt. Vui lòng sử dụng chuyển khoản ngân hàng để nạp xu trong thời gian này.
+                            <i class="fas fa-info-circle me-2"></i> Tính năng nạp xu bằng thẻ cào sẽ sớm được ra mắt. Vui
+                            lòng sử dụng chuyển khoản ngân hàng để nạp xu trong thời gian này.
                         </div>
                     </div>
                 </div>
@@ -332,7 +367,8 @@
                                             <td class="align-middle">{{ number_format($deposit->coins) }}</td>
                                             <td class="align-middle">
                                                 <div>{{ $deposit->created_at->format('d/m/Y H:i') }}</div>
-                                                <small class="text-muted">{{ $deposit->created_at->diffForHumans() }}</small>
+                                                <small
+                                                    class="text-muted">{{ $deposit->created_at->diffForHumans() }}</small>
                                             </td>
                                             <td class="align-middle">
                                                 @if ($deposit->status == 'pending')
@@ -348,21 +384,29 @@
                                                         <i class="fas fa-times me-1"></i> Từ chối
                                                     </span>
                                                 @endif
-                                                
-                                                @if ($deposit->status == 'rejected' && $deposit->note)
+
+                                                @if (($deposit->status == 'rejected' || $deposit->status == 'cancelled') && $deposit->note)
                                                     <div class="mt-1">
-                                                        <a href="#" class="small text-danger" data-bs-toggle="tooltip" title="{{ $deposit->note }}">
-                                                            <i class="fas fa-info-circle"></i> Lý do
+                                                        <a href="#" class="small text-danger show-reason-btn"
+                                                            data-reason="{{ $deposit->note }}">
+                                                            <i class="fas fa-info-circle"></i> Xem lý do
                                                         </a>
                                                     </div>
                                                 @endif
                                             </td>
                                             <td class="align-middle">
                                                 @if ($deposit->image)
-                                                    <a href="{{ Storage::url($deposit->image) }}" class="btn btn-sm btn-outline-primary" 
-                                                       data-fancybox="transaction-images" data-caption="Biên lai #{{ $deposit->transaction_code }}">
+                                                    <a href="{{ Storage::url($deposit->image) }}"
+                                                        class="btn btn-sm btn-outline-primary"
+                                                        data-fancybox="transaction-images"
+                                                        data-caption="Biên lai #{{ $deposit->transaction_code }}">
                                                         <i class="fas fa-image me-1"></i> Xem
                                                     </a>
+                                                @elseif ($deposit->note)
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary show-reason-btn"
+                                                        data-reason="{{ $deposit->note }}">
+                                                        <i class="fas fa-comment-alt me-1"></i> Xem ghi chú
+                                                    </button>
                                                 @else
                                                     <span class="text-muted small">
                                                         <i class="fas fa-ban me-1"></i> Không có
@@ -493,35 +537,6 @@
         </div>
     </div>
 
-    <!-- Cancel Payment Confirmation Modal -->
-    <div class="modal fade" id="cancelPaymentModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title">
-                        <i class="fas fa-exclamation-triangle me-2"></i> Xác nhận hủy thanh toán
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body text-center py-4">
-                    <div class="mb-4">
-                        <i class="fas fa-hand-paper text-warning" style="font-size: 3rem;"></i>
-                    </div>
-                    <h5>Bạn có chắc chắn muốn hủy giao dịch này?</h5>
-                    <p class="text-muted">Thông tin giao dịch sẽ không được lưu lại nếu bạn hủy.</p>
-                </div>
-                <div class="modal-footer justify-content-center border-0 pt-0">
-                    <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">
-                        <i class="fas fa-arrow-left me-2"></i> Tiếp tục thanh toán
-                    </button>
-                    <button type="button" class="btn btn-danger px-4" id="confirmCancelPayment">
-                        <i class="fas fa-times-circle me-2"></i> Đồng ý hủy
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Upload Evidence Modal -->
     <div class="modal fade" id="uploadEvidenceModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
@@ -568,29 +583,81 @@
             </div>
         </div>
     </div>
+
+    <!-- Reason Modal -->
+    <div class="modal fade" id="reasonModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thông tin chi tiết</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="reason-content p-3">
+                        <p id="reasonText" class="mb-0"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @once
     @push('info_scripts')
         <script>
+            // Global error handler
+            window.addEventListener('error', function(event) {
+                console.error('Global error caught:', event.error);
+                
+                // Only show user-friendly error for script errors, not for network/resource errors
+                if (event.error && !event.filename.includes('jquery')) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Đã xảy ra lỗi',
+                            text: 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng tải lại trang và thử lại.',
+                            confirmButtonText: 'Tải lại trang',
+                            confirmButtonColor: 'var(--primary-color-3)'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                window.location.reload();
+                            }
+                        });
+                    } else {
+                        alert('Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng tải lại trang và thử lại.');
+                    }
+                }
+            });
+            
+            // Unhandled promise rejection handler
+            window.addEventListener('unhandledrejection', function(event) {
+                console.error('Unhandled promise rejection:', event.reason);
+            });
+
             // Global variables to store payment info
             window.paymentInfo = {
                 bank: null,
                 amount: 0,
-                baseCoins: 0,
-                bonusCoins: 0,
-                totalCoins: 0,
-                discount: 0,
+                coins: 0,
+                fee: 0,
                 transactionCode: '',
                 requestPaymentId: null,
                 expiredAt: null
             };
 
+            // Biến đánh dấu đã submit thanh toán thành công
+            window.paymentSubmitted = false;
+
             window.coinExchangeRate = {{ $coinExchangeRate }};
+            window.coinBankPercent = {{ $coinBankPercent }};
 
             // Xử lý khi người dùng rời trang trong quá trình thanh toán
             window.addEventListener('beforeunload', function(e) {
-                if ($('#paymentModal').hasClass('show')) {
+                // Chỉ hiện cảnh báo khi modal thanh toán đang mở và chưa submit evidence thành công
+                if ($('#paymentModal').hasClass('show') && !window.paymentSubmitted) {
                     e.preventDefault();
                     e.returnValue =
                         'Bạn đang trong quá trình thanh toán. Nếu rời khỏi trang, thông tin thanh toán sẽ bị mất.';
@@ -612,24 +679,28 @@
             });
 
             function updateCoinPreview() {
-                const amount = parseInt($('#amount').val()) || 0;
-                // Base coins calculation
-                const baseCoins = Math.floor(amount / window.coinExchangeRate);
-               
-                // Total coins
-                const totalCoins = baseCoins;
+                try {
+                    const amount = parseInt($('#amount').data('raw')) || 0;
+                    
+                    const feeAmount = (amount * window.coinBankPercent) / 100;
+                    const amountAfterFee = amount - feeAmount;
+                    const baseCoins = Math.floor(amountAfterFee / window.coinExchangeRate);
+                    const totalCoins = baseCoins;
 
-                $('#coinsPreview').text(totalCoins.toLocaleString('vi-VN'));
+                    $('#coinsPreview').text(totalCoins.toLocaleString('vi-VN'));
+                } catch (error) {
+                    console.error("Error updating coin preview:", error);
+                    $('#coinsPreview').text('0');
+                }
             }
 
             // Initialize coin preview
             updateCoinPreview();
 
             // Xử lý nút thanh toán
-            $('#proceedToPaymentBtn').on('click', function() {
+            $('#proceedToPaymentBtn').off('click').on('click', function() {
                 let valid = true;
 
-                // Validate bank selection
                 if (!$('#bankId').val()) {
                     $('.bank-error').show();
                     valid = false;
@@ -637,23 +708,20 @@
                     $('.bank-error').hide();
                 }
 
-                // Validate amount
-                const amount = parseInt($('#amount').val()) || 0;
-                if (amount < 10000) {
-                    $('.amount-error').show().text('Số tiền tối thiểu là 10.000 VNĐ');
+                const amount = parseInt($('#amount').data('raw')) || 0;
+                if (amount < 50000) {
+                    $('.amount-error').show().text('Số tiền tối thiểu là 50.000 VNĐ');
                     valid = false;
                 } else {
                     $('.amount-error').hide();
                 }
 
                 if (valid) {
-                    // Prepare payment data
                     const bankId = $('#bankId').val();
 
-                    // Show loading state
-                    $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+                    $(this).prop('disabled', true).html(
+                        '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
 
-                    // Call to create request payment instead of direct validation
                     $.ajax({
                         url: '{{ route('user.request.payment.store') }}',
                         type: 'POST',
@@ -665,25 +733,24 @@
                         dataType: 'json',
                         success: function(response) {
                             if (response.success) {
-                                // Store payment info
                                 window.paymentInfo = {
                                     bank: response.bank,
                                     amount: response.payment.amount,
-                                    baseCoins: response.payment.base_coins,
-                                    bonusCoins: response.payment.bonus_coins,
-                                    totalCoins: response.payment.total_coins,
-                                    discount: response.payment.discount,
+                                    coins: response.payment.coins,
+                                    fee: response.payment.fee,
                                     transactionCode: response.payment.transaction_code,
                                     requestPaymentId: response.request_payment_id,
                                     expiredAt: response.payment.expired_at
                                 };
 
-                                // Populate payment modal
                                 populatePaymentModal();
 
-                                // Show payment modal using bootstrap instance
                                 var paymentModalEl = document.getElementById('paymentModal');
                                 var paymentModal = new bootstrap.Modal(paymentModalEl);
+                                
+                                // Reset biến đánh dấu thanh toán khi mở modal mới
+                                window.paymentSubmitted = false;
+                                
                                 paymentModal.show();
                             } else {
                                 showErrorAlert('Có lỗi xảy ra: ' + (response.message ||
@@ -692,16 +759,30 @@
                         },
                         error: function(xhr) {
                             let errorMessage = 'Đã xảy ra lỗi khi xử lý yêu cầu';
-
-                            if (xhr.responseJSON && xhr.responseJSON.errors) {
-                                const errors = xhr.responseJSON.errors;
-                                errorMessage = Object.values(errors)[0][0];
+                            
+                            console.error("XHR Error:", xhr);
+                            
+                            if (xhr.responseJSON) {
+                                if (xhr.responseJSON.errors) {
+                                    // Laravel validation errors
+                                    const errors = xhr.responseJSON.errors;
+                                    const firstError = Object.values(errors)[0];
+                                    errorMessage = firstError[0] || errorMessage;
+                                } else if (xhr.responseJSON.message) {
+                                    // Direct error message
+                                    errorMessage = xhr.responseJSON.message;
+                                }
+                            } else if (xhr.status === 500) {
+                                errorMessage = 'Lỗi máy chủ nội bộ. Vui lòng thử lại sau.';
+                            } else if (xhr.status === 422) {
+                                errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+                            } else if (xhr.status === 0) {
+                                errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
                             }
 
                             showErrorAlert(errorMessage);
                         },
                         complete: function() {
-                            // Reset button state
                             $('#proceedToPaymentBtn').prop('disabled', false).html(
                                 '<i class="fas fa-wallet"></i> Tiến hành thanh toán');
                         }
@@ -717,13 +798,13 @@
                 // Chỉ hiển thị số tiền, không kèm "VNĐ"
                 $('#paymentAmount').text(window.paymentInfo.amount.toLocaleString('vi-VN'));
                 $('#transactionCode').text(window.paymentInfo.transactionCode);
-                
+
                 // Hiển thị thời gian hết hạn
                 if (window.paymentInfo.expiredAt) {
                     const expiredDate = new Date(window.paymentInfo.expiredAt);
                     $('#paymentExpiry').text(expiredDate.toLocaleString('vi-VN'));
                     $('#expiryContainer').removeClass('d-none');
-                    
+
                     // Bắt đầu đếm ngược
                     startCountdown(expiredDate);
                 } else {
@@ -739,25 +820,25 @@
                     $('#qrCodePlaceholder').removeClass('d-none')
                         .html(
                             '<div class="text-center text-muted"><i class="fas fa-qrcode fa-3x mb-2"></i><p>QR code không khả dụng</p></div>'
-                            );
+                        );
                 }
             }
 
             // Đếm ngược thời gian
             let countdownInterval;
-            
+
             function startCountdown(expiredDate) {
                 // Xóa interval cũ nếu có
                 if (countdownInterval) {
                     clearInterval(countdownInterval);
                 }
-                
+
                 // Cập nhật đếm ngược mỗi giây
                 function updateCountdown() {
                     const now = new Date().getTime();
                     const expiredTime = expiredDate.getTime();
                     const timeRemaining = expiredTime - now;
-                    
+
                     if (timeRemaining <= 0) {
                         // Hết thời gian
                         clearInterval(countdownInterval);
@@ -765,17 +846,17 @@
                         // Có thể thêm xử lý khi hết hạn ở đây (ví dụ: ẩn nút xác nhận)
                         $('#confirmPaymentBtn').prop('disabled', true)
                             .html('<i class="fas fa-exclamation-circle me-2"></i> Đã hết hạn thanh toán');
-                        
+
                         // Hiển thị thông báo
                         showNotification('Yêu cầu thanh toán đã hết hạn. Vui lòng tạo yêu cầu mới.', 'warning');
                         return;
                     }
-                    
+
                     // Tính toán thời gian còn lại
                     const hours = Math.floor((timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
                     const seconds = Math.floor((timeRemaining % (1000 * 60)) / 1000);
-                    
+
                     // Định dạng chuỗi hiển thị
                     let countdownText = '';
                     if (hours > 0) {
@@ -785,10 +866,10 @@
                         countdownText += minutes + ' phút ';
                     }
                     countdownText += seconds + ' giây';
-                    
+
                     // Cập nhật giao diện
                     $('#countdownTimer').text(countdownText);
-                    
+
                     // Đổi màu khi gần hết hạn (dưới 10 phút)
                     if (timeRemaining < 10 * 60 * 1000) {
                         $('#countdownTimer').addClass('text-danger fw-bold');
@@ -796,10 +877,10 @@
                         $('#countdownTimer').removeClass('text-danger fw-bold');
                     }
                 }
-                
+
                 // Cập nhật ngay lập tức
                 updateCountdown();
-                
+
                 // Cập nhật mỗi giây
                 countdownInterval = setInterval(updateCountdown, 1000);
             }
@@ -808,10 +889,10 @@
             $('#confirmPaymentBtn').on('click', function() {
                 // Hide payment modal and show upload evidence modal
                 $('#paymentModal').modal('hide');
-                
+
                 // Populate evidence form with data
                 $('#evidenceRequestPaymentId').val(window.paymentInfo.requestPaymentId);
-                
+
                 setTimeout(function() {
                     $('#uploadEvidenceModal').modal('show');
                 }, 500);
@@ -833,24 +914,27 @@
                     $('#uploadIconContainer').removeClass('d-none');
                 }
             });
+            
 
             // Submit xác nhận đã chuyển khoản với upload ảnh
             $('#evidenceForm').on('submit', function(e) {
                 e.preventDefault();
-                
+
                 if (!$('#transaction_image').val()) {
                     $('#transaction_image').addClass('is-invalid');
                     return;
                 }
-                
+
                 $('#transaction_image').removeClass('is-invalid');
-                
+
                 // Sử dụng FormData để gửi file
                 var formData = new FormData(this);
-                
+
                 // Hiển thị trạng thái loading
-                $('#evidenceSubmitBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-2"></i> Đang xử lý...');
-                
+                $('#evidenceSubmitBtn').prop('disabled', true).html(
+                    '<i class="fas fa-spinner fa-spin me-2"></i> Đang xử lý...');
+
+                    
                 // Gọi API xác nhận thanh toán
                 $.ajax({
                     url: '{{ route('user.request.payment.confirm') }}',
@@ -860,41 +944,66 @@
                     contentType: false,
                     success: function(response) {
                         if (response.success) {
+                            // Đánh dấu đã thanh toán thành công để không hiện cảnh báo khi reload
+                            window.paymentSubmitted = true;
+                            
                             // Đóng modal
                             $('#uploadEvidenceModal').modal('hide');
-                            
-                            // Hiển thị thông báo thành công
+
+                            // Hiển thị thông báo thành công và tự động reload trang sau 1.5 giây
                             setTimeout(function() {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Thành công!',
-                                    text: response.message,
-                                    confirmButtonColor: 'var(--primary-color-3)',
-                                    confirmButtonText: 'Đóng'
-                                }).then((result) => {
-                                    // Reload trang để cập nhật danh sách giao dịch
-                                    window.location.reload();
-                                });
+                                // Hiển thị toast thông báo thành công
+                                window.showToast(response.message, 'success');
+                                
+                                // Tự động reload trang sau 1.5 giây
+                                setTimeout(function() {
+                                    window.location.href = window.location.href;
+                                }, 1500);
                             }, 500);
                         } else {
                             showErrorAlert(response.message || 'Có lỗi xảy ra khi xử lý yêu cầu.');
                         }
                     },
                     error: function(xhr) {
+                        console.error("Evidence submission error:", xhr);
+                        
                         let errorMessage = 'Đã xảy ra lỗi khi xử lý yêu cầu';
-                        
-                        if (xhr.responseJSON && xhr.responseJSON.errors) {
-                            const errors = xhr.responseJSON.errors;
-                            errorMessage = Object.values(errors)[0][0];
-                        } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                            errorMessage = xhr.responseJSON.message;
+
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.errors) {
+                                // Laravel validation errors
+                                const errors = xhr.responseJSON.errors;
+                                const firstError = Object.values(errors)[0];
+                                errorMessage = firstError[0] || errorMessage;
+                                
+                                // Highlight specific form fields with errors
+                                if (errors.transaction_image) {
+                                    $('#transaction_image').addClass('is-invalid');
+                                    $('#transaction_image').next('.invalid-feedback').text(errors.transaction_image[0]);
+                                }
+                                
+                                if (errors.request_payment_id) {
+                                    errorMessage = 'Yêu cầu thanh toán không hợp lệ hoặc đã hết hạn';
+                                }
+                            } else if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                        } else if (xhr.status === 500) {
+                            errorMessage = 'Lỗi máy chủ nội bộ. Vui lòng thử lại sau.';
+                        } else if (xhr.status === 422) {
+                            errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+                        } else if (xhr.status === 403) {
+                            errorMessage = 'Bạn không có quyền thực hiện thao tác này.';
+                        } else if (xhr.status === 0) {
+                            errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
                         }
-                        
+
                         showErrorAlert(errorMessage);
                     },
                     complete: function() {
                         // Khôi phục trạng thái nút
-                        $('#evidenceSubmitBtn').prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i> Gửi yêu cầu nạp xu');
+                        $('#evidenceSubmitBtn').prop('disabled', false).html(
+                            '<i class="fas fa-paper-plane me-2"></i> Gửi yêu cầu nạp xu');
                     }
                 });
             });
@@ -1012,67 +1121,17 @@
 
             // Hiển thị thông báo nhỏ
             function showNotification(message, type = 'info') {
-                // Kiểm tra xem SweetAlert2 đã được định nghĩa chưa
-                if (typeof Swal !== 'undefined') {
-                    const Toast = Swal.mixin({
-                        toast: true,
-                        position: 'bottom-end',
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true,
-                        didOpen: (toast) => {
-                            toast.addEventListener('mouseenter', Swal.stopTimer)
-                            toast.addEventListener('mouseleave', Swal.resumeTimer)
-                        }
-                    });
-
-                    Toast.fire({
-                        icon: type,
-                        title: message
-                    });
-                } else {
-                    // Nếu không có SweetAlert, hiển thị thông báo đơn giản
-                    if (!document.getElementById('copy-notification')) {
-                        const notif = document.createElement('div');
-                        notif.id = 'copy-notification';
-                        notif.style.position = 'fixed';
-                        notif.style.bottom = '20px';
-                        notif.style.right = '20px';
-                        notif.style.padding = '10px 15px';
-                        notif.style.borderRadius = '4px';
-                        notif.style.backgroundColor = type === 'warning' ? '#fff3cd' : '#d1e7dd';
-                        notif.style.color = type === 'warning' ? '#664d03' : '#0f5132';
-                        notif.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
-                        notif.style.zIndex = '9999';
-                        notif.style.opacity = '0';
-                        notif.style.transition = 'opacity 0.3s ease';
-                        notif.textContent = message;
-
-                        document.body.appendChild(notif);
-
-                        // Hiển thị và ẩn thông báo
-                        setTimeout(() => {
-                            notif.style.opacity = '1';
-                            setTimeout(() => {
-                                notif.style.opacity = '0';
-                                setTimeout(() => {
-                                    document.body.removeChild(notif);
-                                }, 300);
-                            }, 2700);
-                        }, 10);
-                    }
-                }
+                window.showToast(message, type);
             }
 
             // Hiển thị thông báo lỗi
             function showErrorAlert(message) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Lỗi',
-                    text: message,
-                    confirmButtonText: 'Đóng',
-                    confirmButtonColor: 'var(--primary-color-3)'
-                });
+                console.error("Error:", message);
+                
+                window.showAlert('Lỗi', message, 'error');
+                
+                // Log the error to the console for debugging
+                console.error("Error occurred:", message);
             }
 
             // Xử lý khi nhấn nút đóng modal thanh toán
@@ -1080,33 +1139,29 @@
                 // Xử lý sự kiện khi nhấn nút X hoặc nút đóng
                 $('#closePaymentModal, #paymentModal .btn-close').on('click', function(e) {
                     e.preventDefault();
-                    // Hiển thị modal xác nhận hủy
-                    $('#cancelPaymentModal').modal('show');
-                });
-
-                // Xử lý khi người dùng xác nhận hủy
-                $('#confirmCancelPayment').on('click', function() {
-                    
-                    $('#cancelPaymentModal').modal('hide');
-                    
-                    // Đánh dấu modal để cho phép đóng
-                    $('#paymentModal').data('force-close', true);
-                    
-                    // Đóng modal thanh toán
-                    setTimeout(function() {
-                        $('#paymentModal').modal('hide');
-                        
-                        // Xóa backdrop và reset body
-                        setTimeout(function() {
-                            $('.modal-backdrop').remove();
-                            $('body').removeClass('modal-open');
-                            $('body').css('padding-right', '');
-                            $('#paymentModal').data('force-close', false);
-                        }, 300);
-                        
-                        // Hiển thị thông báo đã hủy
-                        showNotification('Đã hủy giao dịch thanh toán', 'info');
-                    }, 300);
+                    // Hiển thị xác nhận hủy bằng SweetAlert2
+                    window.showConfirm(
+                        'Xác nhận hủy thanh toán',
+                        'Bạn có chắc chắn muốn hủy giao dịch này? Thông tin giao dịch sẽ không được lưu lại.',
+                        function() {
+                            // Đánh dấu modal để cho phép đóng
+                            $('#paymentModal').data('force-close', true);
+                            
+                            // Đóng modal thanh toán
+                            $('#paymentModal').modal('hide');
+                            
+                            // Xóa backdrop và reset body
+                            setTimeout(function() {
+                                $('.modal-backdrop').remove();
+                                $('body').removeClass('modal-open');
+                                $('body').css('padding-right', '');
+                                $('#paymentModal').data('force-close', false);
+                            }, 300);
+                            
+                            // Hiển thị thông báo đã hủy
+                            showNotification('Đã hủy giao dịch thanh toán', 'info');
+                        }
+                    );
                 });
 
                 // Ngăn chặn sự kiện đóng khi người dùng click ra ngoài modal
@@ -1123,6 +1178,161 @@
 
                 // Kích hoạt tooltip cho lý do từ chối
                 $('[data-bs-toggle="tooltip"]').tooltip();
+                
+                // Xử lý hiển thị modal lý do
+                $(document).on('click', '.show-reason-btn', function(e) {
+                    e.preventDefault();
+                    const reason = $(this).data('reason');
+                    $('#reasonText').text(reason);
+                    const reasonModal = new bootstrap.Modal(document.getElementById('reasonModal'));
+                    reasonModal.show();
+                });
+            });
+
+            $(document).ready(function() {
+                function formatVndCurrency(value) {
+                    const number = value.toString().replace(/\D/g, '');
+                    return number.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                }
+
+                function parseVndCurrency(formatted) {
+                    return parseInt(formatted.toString().replace(/\./g, '')) || 0;
+                }
+
+                $('.deposit-amount-input').on('input', function() {
+                    const input = $(this);
+                    const caret = input[0].selectionStart;
+                    const originalLength = input.val().length;
+
+                    const formatted = formatVndCurrency(input.val());
+                    input.val(formatted);
+
+                    input.data('raw', parseVndCurrency(formatted));
+
+                    const lengthDiff = input.val().length - originalLength;
+                    input[0].setSelectionRange(caret + lengthDiff, caret + lengthDiff);
+
+                    updateCoinPreview();
+                });
+
+                function updateCoinPreview() {
+                    try {
+                        const amount = parseInt($('#amount').data('raw')) || 0;
+                        
+                        const feeAmount = (amount * window.coinBankPercent) / 100;
+                        const amountAfterFee = amount - feeAmount;
+                        const baseCoins = Math.floor(amountAfterFee / window.coinExchangeRate);
+                        const totalCoins = baseCoins;
+
+                        $('#coinsPreview').text(totalCoins.toLocaleString('vi-VN'));
+                    } catch (error) {
+                        console.error("Error updating coin preview:", error);
+                        $('#coinsPreview').text('0');
+                    }
+                }
+
+                $('#proceedToPaymentBtn').off('click').on('click', function() {
+                    let valid = true;
+
+                    if (!$('#bankId').val()) {
+                        $('.bank-error').show();
+                        valid = false;
+                    } else {
+                        $('.bank-error').hide();
+                    }
+
+                    const amount = parseInt($('#amount').data('raw')) || 0;
+                    if (amount < 50000) {
+                        $('.amount-error').show().text('Số tiền tối thiểu là 50.000 VNĐ');
+                        valid = false;
+                    } else {
+                        $('.amount-error').hide();
+                    }
+
+                    if (valid) {
+                        const bankId = $('#bankId').val();
+
+                        $(this).prop('disabled', true).html(
+                            '<i class="fas fa-spinner fa-spin"></i> Đang xử lý...');
+
+                        $.ajax({
+                            url: '{{ route('user.request.payment.store') }}',
+                            type: 'POST',
+                            data: {
+                                bank_id: bankId,
+                                amount: amount,
+                                _token: $('input[name="_token"]').val()
+                            },
+                            dataType: 'json',
+                            success: function(response) {
+                                if (response.success) {
+                                    window.paymentInfo = {
+                                        bank: response.bank,
+                                        amount: response.payment.amount,
+                                        coins: response.payment.coins,
+                                        fee: response.payment.fee,
+                                        transactionCode: response.payment.transaction_code,
+                                        requestPaymentId: response.request_payment_id,
+                                        expiredAt: response.payment.expired_at
+                                    };
+
+                                    populatePaymentModal();
+
+                                    var paymentModalEl = document.getElementById('paymentModal');
+                                    var paymentModal = new bootstrap.Modal(paymentModalEl);
+                                    
+                                    // Reset biến đánh dấu thanh toán khi mở modal mới
+                                    window.paymentSubmitted = false;
+                                    
+                                    paymentModal.show();
+                                } else {
+                                    showErrorAlert('Có lỗi xảy ra: ' + (response.message ||
+                                        'Không thể xử lý thanh toán'));
+                                }
+                            },
+                            error: function(xhr) {
+                                let errorMessage = 'Đã xảy ra lỗi khi xử lý yêu cầu';
+                                
+                                console.error("XHR Error:", xhr);
+                                
+                                if (xhr.responseJSON) {
+                                    if (xhr.responseJSON.errors) {
+                                        // Laravel validation errors
+                                        const errors = xhr.responseJSON.errors;
+                                        const firstError = Object.values(errors)[0];
+                                        errorMessage = firstError[0] || errorMessage;
+                                    } else if (xhr.responseJSON.message) {
+                                        // Direct error message
+                                        errorMessage = xhr.responseJSON.message;
+                                    }
+                                } else if (xhr.status === 500) {
+                                    errorMessage = 'Lỗi máy chủ nội bộ. Vui lòng thử lại sau.';
+                                } else if (xhr.status === 422) {
+                                    errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
+                                } else if (xhr.status === 0) {
+                                    errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
+                                }
+
+                                showErrorAlert(errorMessage);
+                            },
+                            complete: function() {
+                                $('#proceedToPaymentBtn').prop('disabled', false).html(
+                                    '<i class="fas fa-wallet"></i> Tiến hành thanh toán');
+                            }
+                        });
+                    }
+                });
+
+                $('.deposit-amount-input').each(function() {
+                    const input = $(this);
+                    const raw = input.data('raw');
+                    if (raw) {
+                        input.val(formatVndCurrency(raw));
+                    }
+                });
+
+                // Gọi tính toán xu ngay khi trang tải xong để hiển thị số xu tính từ 50.000
+                updateCoinPreview();
             });
         </script>
     @endpush

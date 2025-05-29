@@ -2,8 +2,7 @@
 
 <body data-auth="{{ auth()->check() ? 'true' : 'false' }}">
     <div class="mt-88">
-        @include('components.toast')
-        @include('components.toast-main')
+        @include('components.sweetalert')
         
         @yield('content')
         @include('components.top_button')

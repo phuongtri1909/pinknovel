@@ -14,10 +14,8 @@ class RequestPayment extends Model
         'bank_id',
         'transaction_code',
         'amount',
-        'base_coins',
-        'bonus_coins',
-        'total_coins',
-        'discount',
+        'coins',
+        'fee',
         'is_completed',
         'deposit_id',
         'expired_at'

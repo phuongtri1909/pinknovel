@@ -1,36 +1,57 @@
-<!-- Bootstrap Toast -->
-<div aria-live="polite" aria-atomic="true" class="position-relative">
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        @if(session('success'))
-            <div class="toast align-items-center text-bg-success border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        {{ session('success') }}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
+{{-- SweetAlert2 for session flash messages --}}
 
-        @if(session('error'))
-            <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        {{ session('error') }}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-    </div>
-</div>
+{{-- Make sure SweetAlert2 is loaded --}}
+@push('scripts')
+    @if(!isset($loadedSweetAlert))
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @endif
+@endpush
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        var toastElList = [].slice.call(document.querySelectorAll('.toast'))
-        var toastList = toastElList.map(function (toastEl) {
-            return new bootstrap.Toast(toastEl)
-        })
-        toastList.forEach(toast => toast.show())
+        // Configure SweetAlert2 Toast
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'bottom-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer)
+                toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
+        });
+        
+        // Show success message if present
+        @if(session('success'))
+            Toast.fire({
+                icon: 'success',
+                title: '{{ session('success') }}'
+            });
+        @endif
+        
+        // Show error message if present
+        @if(session('error'))
+            Toast.fire({
+                icon: 'error',
+                title: '{{ session('error') }}'
+            });
+        @endif
+        
+        // Show warning message if present
+        @if(session('warning'))
+            Toast.fire({
+                icon: 'warning',
+                title: '{{ session('warning') }}'
+            });
+        @endif
+        
+        // Show info message if present
+        @if(session('info'))
+            Toast.fire({
+                icon: 'info',
+                title: '{{ session('info') }}'
+            });
+        @endif
     });
 </script>

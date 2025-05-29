@@ -24,6 +24,7 @@
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
+    @include('components.sweetalert')
 
     @auth
         @include('admin.navbars.sidebar')

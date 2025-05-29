@@ -15,6 +15,7 @@ class Deposit extends Model
         'transaction_code',
         'amount',
         'coins',
+        'fee',
         'image',
         'status',
         'note',
