@@ -24,8 +24,8 @@
                     </div>
                     <div class="footer-links">
                         <a href="{{ route('home') }}" class="text-decoration-none">Trang Chủ</a>
-                        <a href="" class="text-decoration-none">Truyện Full</a>
-                        <a href="" class="text-decoration-none">Truyện Đề Cử</a>
+                        <a href="" class="text-decoration-none">Điều Khoản</a>
+                        <a href="{{ route('guide.show') }}" class="text-decoration-none">Hướng Dẫn</a>
                     </div>
 
                     <div class="py-3">

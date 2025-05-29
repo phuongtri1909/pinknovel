@@ -13,6 +13,20 @@
         @else
             Kết quả tìm kiếm: {{ $query }}
         @endif
+    @elseif(isset($query) && $query === 'new-chapter')
+        Truyện mới nhất
+    @elseif(isset($query) && $query === 'hot')
+        Truyện đề cử
+    @elseif(isset($query) && $query === 'rating')
+        Truyện được đánh giá cao
+    @elseif(isset($query) && $query === 'view')
+        Truyện được xem nhiều
+    @elseif(isset($query) && $query === 'follow')
+        Truyện được theo dõi nhiều
+    @elseif(isset($query) && $query === 'completed')
+        Truyện đã hoàn thành
+    @elseif(isset($query) && $query === 'new')
+        Truyện mới
     @else
         {{ $currentCategory->name }}
     @endif
@@ -31,6 +45,20 @@
         @else
             Kết quả tìm kiếm cho "{{ $query }}" tại {{ config('app.name') }}
         @endif
+    @elseif(isset($query) && $query === 'new-chapter')
+        Truyện mới nhất tại
+    @elseif(isset($query) && $query === 'hot')
+        Truyện đề cử tại
+    @elseif(isset($query) && $query === 'rating')
+        Truyện được đánh giá cao tại
+    @elseif(isset($query) && $query === 'view')
+        Truyện được xem nhiều tại
+    @elseif(isset($query) && $query === 'follow')
+        Truyện được theo dõi nhiều tại
+    @elseif(isset($query) && $query === 'completed')
+        Truyện đã hoàn thành tại
+    @elseif(isset($query) && $query === 'new')
+        Truyện mới tại
     @else
         Truyện thể loại {{ $currentCategory->name }} tại {{ config('app.name') }}
     @endif
@@ -40,7 +68,7 @@
     <div class="mt-5 container-xl">
         <div class="row">
             <!-- Main content area (8 columns) -->
-            <div class="col-12 col-md-7 col-lg-8">
+            <div class="col-12 col-md-7">
                 <div class="bg-white p-3 rounded-4 shadow-sm mb-4">
                     <h2 class="h4 mb-3 fw-bold">
                         @if (isset($isSearch) && $isSearch)
@@ -59,6 +87,27 @@
                                 <i class="fa-solid fa-magnifying-glass fa-lg text-warning"></i>
                                 Kết quả tìm kiếm: "{{ $query }}"
                             @endif
+                        @elseif(isset($query) && $query === 'new-chapter')
+                            <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
+                            Truyện mới nhất
+                        @elseif(isset($query) && $query === 'hot')
+                            <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
+                            Truyện đề cử
+                        @elseif(isset($query) && $query === 'rating')
+                            <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
+                            Truyện được đánh giá cao
+                        @elseif(isset($query) && $query === 'view')
+                            <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
+                            Truyện được xem nhiều
+                        @elseif(isset($query) && $query === 'follow')
+                            <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
+                            Truyện được theo dõi nhiều
+                        @elseif(isset($query) && $query === 'completed')
+                            <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
+                            Truyện đã hoàn thành
+                        @elseif(isset($query) && $query === 'new')
+                            <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
+                            Truyện mới
                         @else
                             <i class="fa-solid fa-layer-group fa-lg text-primary"></i>
                             Truyện thể loại: {{ $currentCategory->name }}
@@ -109,7 +158,7 @@
                                         </div>
                                     </div>
                                     <div class="story-description mt-2 small text-muted d-none d-md-block">
-                                        {!! Str::limit($story->description, 150) !!}
+                                        {!! strip_tags(Str::limit($story->description, 150), '<p><br><strong><b><i><u>') !!}
                                     </div>
                                 </div>
                             </div>
@@ -123,11 +172,12 @@
             </div>
 
             <!-- Sidebar (4 columns) - Now using the component -->
-            <div class="col-12 col-md-5 col-lg-4">
+            <div class="col-12 col-md-5">
 
                 <div class="mb-4">
                     @include('components.recent-reads')
                 </div>
+                
                 <div class="mb-4">
                     <x-categories-widget 
                         :categories="$categories" 
@@ -139,3 +189,5 @@
         </div>
     </div>
 @endsection
+
+

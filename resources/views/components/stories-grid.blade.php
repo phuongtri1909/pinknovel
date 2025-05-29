@@ -3,19 +3,13 @@
         <a href="{{ route('show.page.story', $story->slug) }}">
             <img src="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/story_default.jpg') }}"
                 alt="{{ $story->title }}" class="img-fluid">
+            @if ($story->completed === 1)
+                <span class="badge-full"> Full </span>
+            @endif
         </a>
     </div>
     <div class="story-info px-2 text-sm text-gray-600 fw-semibold">
         <div>
-            @if ($story->completed === 1)
-                <span class="badge rounded-pill bg-success-custom text-white"> Full
-                </span>
-            @else
-                <span class="badge rounded-pill bg-ffe371 text-dark">
-                    Waiting
-                </span>
-            @endif
-
             <h5 class="story-title mb-0 text-sm fw-semibold lh-base">
                 <a href="{{ route('show.page.story', $story->slug) }}" class="text-decoration-none text-dark">
                     {{ $story->title }}
@@ -25,23 +19,22 @@
         <div class="d-flex justify-content-between align-items-center mt-1">
            
             <span>
-                <i class="fas fa-eye eye"></i>
+                <i class="fas fa-eye eye fs-8 text-primary"></i>
                 {{ format_number_short($story->total_views) }}
             </span>
-            
-            <span class="d-flex align-items-center">
-                <i class="fas fa-star star cl-ffe371 "></i>
-                {{ number_format($story->average_rating, 1) }}
+
+            <span class="text-end " title="{{ $story->latestChapter?->created_at?->format('d/m/Y H:i') }}">
+                {{ time_elapsed_string($story->latestChapter?->created_at) }}
             </span>
+           
         </div>
         <div class="story-stats-container mb-2 mt-1">
             <div class="d-flex justify-content-between">
-                <p class="mb-0">Chương {{ $story->latestChapter->number }} </p>
-                
-                <span class="text-end" title="{{ $story->latestChapter?->created_at?->format('d/m/Y H:i') }}">
-                    {{ time_elapsed_string($story->latestChapter?->created_at) }}
+                <span class="d-flex align-items-center">
+                    <i class="fas fa-star star cl-ffe371 fs-8 me-1"></i> 
+                    {{ number_format($story->average_rating, 1) }}
                 </span>
-
+                <span class="mb-0 badge bg-1 text-white small rounded-pill d-flex align-items-center">Chương {{ $story->latestChapter->number }} </span>
             </div>
         </div>
     </div>
@@ -68,6 +61,19 @@
                 transition: transform 0.3s ease;
             }
 
+            .badge-full {
+                position: absolute;
+                top: 10px;
+                right: 10px;
+                background-color: #28a745 !important;
+                color: white;
+                padding: 3px 8px;
+                border-radius: 12px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                z-index: 2;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
 
             .hover-content {
                 color: white;

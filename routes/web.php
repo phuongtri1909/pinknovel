@@ -62,6 +62,13 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
         Route::get('/search', [HomeController::class, 'searchHeader'])->name('searchHeader');
         Route::get('/tac-gia', [HomeController::class, 'searchAuthor'])->name('search.author');
         Route::get('/chuyen-ngu', [HomeController::class, 'searchTranslator'])->name('search.translator');
+        Route::get('story-new-chapter', [HomeController::class, 'showStoryNewChapter'])->name('story.new.chapter');
+        Route::get('story-hot', [HomeController::class, 'showStoryHot'])->name('story.hot');
+        Route::get('story-rating', [HomeController::class, 'showRatingStories'])->name('story.rating');
+        Route::get('story-new', [HomeController::class, 'showStoryNew'])->name('story.new');
+        Route::get('story-view', [HomeController::class, 'showStoryView'])->name('story.view');
+        Route::get('story-follow', [HomeController::class, 'showStoryFollow'])->name('story.follow');
+        Route::get('story-completed', [HomeController::class, 'showCompletedStories'])->name('story.completed');
 
         Route::get('/categories-story/{slug}', [HomeController::class, 'showStoryCategories'])->name('categories.story.show');
 
@@ -81,6 +88,9 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
         Route::post('/comments/{comment}/react', [CommentController::class, 'react'])->name('comments.react');
         Route::get('/stories/{storyId}/comments', [CommentController::class, 'loadComments'])->name('comments.load');
+
+        // Guide routes
+    Route::get('/huong-dan', [GuideController::class, 'show'])->name('guide.show');
 
         Route::group(['prefix' => 'user', 'as' => 'user.', 'middleware' => 'auth'], function () {
             Route::get('profile', [UserController::class, 'userProfile'])->name('profile');
@@ -322,5 +332,4 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
     });
 });
 
-// Guide routes
-Route::get('/huong-dan', [GuideController::class, 'show'])->name('guide.show');
+

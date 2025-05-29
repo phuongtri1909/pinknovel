@@ -1,52 +1,102 @@
-<!-- filepath: d:\truyen\pinknovel\resources\views\components\show_categories.blade.php -->
-<section>
-    <div class="bg-4 mt-5 p-3 border-bottom-custom-1">
-        <div class="border-bottom-custom d-flex justify-content-between align-items-center">
-            <span class="color-3 fw-semibold py-3 fs-5">THỂ LOẠI</span>
-            <a href="" class="text-decoration-none text-gray-600 hover-color-3">xem thêm</a>
-        </div>
-        <div>
-            <div class="row mt-3">
-                @foreach ($categories as $category)
-                    <div class="col-6 col-sm-4 col-md-3 col-lg-2 mb-3">
-                        <a href="" class="link-category text-decoration-none text-dark hover-color-3">
-                            <i class="fas fa-chevron-right category-icon"></i>
-                            <span class="fw-semibold">{{ $category->name }}</span> <span
-                                class="text-gray-600">({{ $category->stories_count }})</span>
-                        </a>
-                    </div>
-                @endforeach
-            </div>
+<!-- filepath: /d:/full_truyen/resources/views/components/categories-widget.blade.php -->
+<div class="sidebar-widget categories-widget rounded-3 shadow-sm mt-4">
+    <div class="widget-header mb-3">
+        <h3 class="fs-5 m-0 text-dark">
+            <i class="fas fa-tags text-primary me-2"></i>
+
+            Thể Loại
+
+        </h3>
+    </div>
+
+    <div class="widget-content">
+        <div class="category-grid">
+            @foreach ($categories as $category)
+                <a href="{{ route('categories.story.show', $category->slug) }}"
+                    class="category-item rounded-4 {{ isset($currentCategory) && $currentCategory->id == $category->id ? 'active' : '' }}">
+                    <span class="category-name">{{ $category->name }}</span>
+                   
+                </a>
+            @endforeach
         </div>
     </div>
-</section>
+</div>
 
 @once
     @push('styles')
         <style>
-            .border-bottom-custom {
-                border-bottom: 1px solid #a7a7a7;
+            /* Categories Widget Styles */
+            .category-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
             }
 
-            .border-bottom-custom-1 {
-                border-bottom: 4px solid var(--primary-color-3);
-            }
-
-            .category-icon {
-                font-size: 12px;
-                margin-right: 8px;
-                color: #666666;
-                transition: all 200ms ease;
-            }
-            
-            .link-category {
-                display: inline-flex;
+            .category-item {
+                display: flex;
                 align-items: center;
+                justify-content: center;
+                padding: 8px;
+                background: #f8f9fa;
+                color: #333;
+                text-decoration: none;
+                border-radius: 4px;
+                text-align: center;
+                transition: all 0.3s;
+                border: 1px solid rgba(0, 0, 0, 0.05);
+            }
+
+            .category-item:hover {
+                background: #007bff;
+                color: white;
+                transform: translateY(-2px);
+            }
+
+            .category-tag {
+                display: inline-block;
+                padding: 2px 8px;
+                margin-right: 4px;
+                background: #f0f2f5;
+                color: #666;
+                border-radius: 12px;
+                font-size: 0.75rem;
+            }
+
+            .category-item.active {
+                background: #007bff;
+                color: white;
+                font-weight: 500;
+            }
+
+            .category-item.active .story-count {
+                background-color: white;
+                color: #007bff;
+            }
+
+
+            /* Responsive adjustments */
+            @media (max-width: 575px) {
+                .category-grid {
+                    grid-template-columns: repeat(2, 1fr);
+                }
             }
             
-            .link-category:hover .category-icon {
-                color: var(--primary-color-3);
-                transform: translateX(2px);
+            @media (min-width: 576px) and (max-width: 767px) {
+                .category-grid {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+            
+            @media (min-width: 768px) and (max-width: 991px) {
+                .category-grid {
+                    grid-template-columns: repeat(4, 1fr);
+                }
+            }
+            
+            @media (min-width: 992px) {
+                .category-grid {
+                    grid-template-columns: repeat(5, 1fr);
+                }
             }
         </style>
     @endpush

@@ -161,7 +161,7 @@ class Story extends Model
         return $this->chapters()->where('status', 'published')->sum('price');
     }
 
-     /**
+    /**
      * Get discount percentage for combo
      */
     public function getDiscountPercentageAttribute()
@@ -169,7 +169,7 @@ class Story extends Model
         if (!$this->has_combo || $this->combo_price <= 0 || $this->total_chapter_price <= 0) {
             return 0;
         }
-        
+
         $discount = (($this->total_chapter_price - $this->combo_price) / $this->total_chapter_price) * 100;
         return round($discount);
     }
@@ -185,6 +185,23 @@ class Story extends Model
     public function isPurchasedBy($userId)
     {
         return $this->purchases()->where('user_id', $userId)->exists();
+    }
+
+    public function storyPurchases()
+    {
+        return $this->hasMany(StoryPurchase::class);
+    }
+
+    public function chapterPurchases()
+    {
+        return $this->hasManyThrough(
+            ChapterPurchase::class,
+            Chapter::class,
+            'story_id',
+            'chapter_id',
+            'id',
+            'id'
+        );
     }
 
     protected $with = ['categories'];

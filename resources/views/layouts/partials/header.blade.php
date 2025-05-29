@@ -111,17 +111,17 @@
                                 </ul>
                             </li>
                             <li class="nav-item">
-                                <a class="text-white nav-link fw-bold" href="">
+                                <a class="text-white nav-link fw-bold" href="{{ route('story.hot') }}">
                                     Truyện hot
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="text-white nav-link fw-bold" href="">
+                                <a class="text-white nav-link fw-bold" href="{{ route('story.new') }}">
                                     Truyện mới
                                 </a>
                             </li>
                             <li class="nav-item">
-                                <a class="text-white nav-link fw-bold" href="">
+                                <a class="text-white nav-link fw-bold" href="{{ route('story.completed') }}">
                                     Truyện full
                                 </a>
                             </li>
@@ -267,19 +267,19 @@
 
                         <hr class="divider my-3">
 
-                        <a href="" class="mobile-menu-item fw-semibold">
+                        <a href="{{ route('story.hot') }}" class="mobile-menu-item fw-semibold">
                             <i class="fa-solid fa-fire fa-lg me-2 color-3"></i> Truyện hot
                         </a>
 
                         <hr class="divider my-3">
 
-                        <a href="" class="mobile-menu-item fw-semibold">
+                        <a href="{{ route('story.new') }}" class="mobile-menu-item fw-semibold">
                             <i class="fa-solid fa-clock fa-lg me-2 color-3"></i> Truyện mới
                         </a>
 
                         <hr class="divider my-3">
 
-                        <a href="" class="mobile-menu-item fw-semibold">
+                        <a href="{{ route('story.completed') }}" class="mobile-menu-item fw-semibold">
                             <i class="fa-solid fa-check fa-lg me-2 color-3"></i> Truyện full
                         </a>
 

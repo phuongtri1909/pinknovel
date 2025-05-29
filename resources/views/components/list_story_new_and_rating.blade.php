@@ -6,15 +6,15 @@
                 <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-book-open" style="color: #22c55e;"></i> Truyện
                     Mới</h2>
                 <div>
-                    <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                    <a class="color-3 text-decoration-none" href="{{ route('story.new.chapter') }}">Xem tất cả <i
                             class="fa-solid fa-arrow-right"></i></a>
                 </div>
             </div>
 
             <!-- Stories Grid -->
             <div class="bg-white rounded-3 p-3">
-                @foreach ($newStories as $story)
-                    @include('components.story_new_rating', ['story' => $story])
+                @foreach ($latestUpdatedStories as $story)
+                    @include('components.story_new', ['story' => $story])
                 @endforeach
             </div>
         </div>
@@ -23,14 +23,14 @@
                 <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-star fa-xl"
                         style="color: #f59e0b;"></i>Đánh giá cao</h2>
                 <div>
-                    <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                    <a class="color-3 text-decoration-none" href="{{ route('story.rating') }}">Xem tất cả <i
                             class="fa-solid fa-arrow-right"></i></a>
                 </div>
             </div>
 
             <div class="bg-white rounded-3 p-3">
-                @foreach ($newStories as $story)
-                    @include('components.story_new_rating', ['story' => $story])
+                @foreach ($ratingStories as $story)
+                    @include('components.story_rating', ['story' => $story])
                 @endforeach
             </div>
         </div>

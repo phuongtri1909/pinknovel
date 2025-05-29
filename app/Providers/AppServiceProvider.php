@@ -13,6 +13,8 @@ use App\Models\Status;
 use App\Models\Chapter;
 use App\Models\Socials;
 use App\Models\Category;
+use App\Models\StoryPurchase;
+use App\Models\ChapterPurchase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
@@ -36,28 +38,28 @@ class AppServiceProvider extends ServiceProvider
         Schema::defaultStringLength(191);
 
         View::composer([
-           'layouts.partials.header',
-           'pages.home',
-           'pages.search.results',
-           'layouts.partials.footer',
-           'pages.chapter'
+            'layouts.partials.header',
+            'pages.home',
+            'pages.search.results',
+            'layouts.partials.footer',
+            'pages.chapter'
         ], function ($view) {
             // Get all categories for standard navigation
             $allCategories = Category::withCount('stories')->orderBy('name')->get();
             $view->with('categories', $allCategories);
-            
+
             // Get top 20 categories with the hottest stories (based on total chapter views and rating)
             $topCategories = Category::select([
-                    'categories.id',
-                    'categories.name',
-                    'categories.slug',
-                    'categories.description',
-                    DB::raw('COUNT(DISTINCT stories.id) as stories_count'),
-                    DB::raw('SUM(chapters.views) as total_views'),
-                    DB::raw('AVG(ratings.rating) as avg_rating'),
-                    // Calculate a "hotness" score combining views and rating
-                    DB::raw('SUM(chapters.views) * AVG(COALESCE(ratings.rating, 3)) as hotness_score')
-                ])
+                'categories.id',
+                'categories.name',
+                'categories.slug',
+                'categories.description',
+                DB::raw('COUNT(DISTINCT stories.id) as stories_count'),
+                DB::raw('SUM(chapters.views) as total_views'),
+                DB::raw('AVG(ratings.rating) as avg_rating'),
+                // Calculate a "hotness" score combining views and rating
+                DB::raw('SUM(chapters.views) * AVG(COALESCE(ratings.rating, 3)) as hotness_score')
+            ])
                 ->join('category_story', 'categories.id', '=', 'category_story.category_id')
                 ->join('stories', 'category_story.story_id', '=', 'stories.id')
                 ->join('chapters', 'stories.id', '=', 'chapters.story_id')
@@ -71,80 +73,150 @@ class AppServiceProvider extends ServiceProvider
                 ->orderByDesc('hotness_score')
                 ->take(20)
                 ->get();
-                
+
             $view->with('topCategories', $topCategories);
-            
+
             // Get top 10 hot stories for today
-            $dailyHotStories = Story::select([
+            $dailyTopPurchased = Story::select([
                 'stories.id',
                 'stories.title',
                 'stories.slug',
                 'stories.description',
                 'stories.cover',
-                DB::raw('COUNT(chapters.id) as chapters_count'),
-                DB::raw('SUM(chapters.views) as total_views'),
-                DB::raw('AVG(daily_ratings.rating) as daily_rating'),
-                DB::raw('(SUM(chapters.views) * AVG(COALESCE(daily_ratings.rating, 3))) as hotness_score')
+                DB::raw('(
+                    SELECT COUNT(*) FROM story_purchases 
+                    WHERE story_purchases.story_id = stories.id
+                    AND DATE(story_purchases.created_at) = CURRENT_DATE()
+                ) + (
+                    SELECT COUNT(*) FROM chapter_purchases 
+                    JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                    WHERE chapters.story_id = stories.id
+                    AND DATE(chapter_purchases.created_at) = CURRENT_DATE()
+                ) as total_purchases'),
+        
+                DB::raw('(
+                    SELECT MAX(latest_time) FROM (
+                        SELECT MAX(story_purchases.created_at) as latest_time
+                        FROM story_purchases
+                        WHERE story_purchases.story_id = stories.id
+                        AND DATE(story_purchases.created_at) = CURRENT_DATE()
+                        UNION
+                        SELECT MAX(chapter_purchases.created_at) as latest_time
+                        FROM chapter_purchases
+                        JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                        WHERE chapters.story_id = stories.id
+                        AND DATE(chapter_purchases.created_at) = CURRENT_DATE()
+                    ) as merged_times
+                ) as latest_purchase_at')
             ])
-            ->with(['latestChapter'])
-            ->join('chapters', 'stories.id', '=', 'chapters.story_id')
-            ->leftJoin(DB::raw('(SELECT story_id, rating FROM ratings WHERE DATE(created_at) = CURRENT_DATE()) as daily_ratings'), 
-                'stories.id', '=', 'daily_ratings.story_id')
             ->where('stories.status', 'published')
-            ->groupBy('stories.id', 'stories.title', 'stories.slug', 'stories.description', 'stories.cover')
-            ->orderByDesc('hotness_score')
-            ->take(10)
-            ->get();
-            
-            // Get top 10 hot stories for this week
-            $weeklyHotStories = Story::select([
+            ->havingRaw('total_purchases > 0')
+            ->orderByDesc('total_purchases')
+            ->limit(10)
+            ->get()
+            ->map(function ($story) {
+                $story->latest_purchase_diff = $story->latest_purchase_at
+                    ? Carbon::parse($story->latest_purchase_at)->diffForHumans()
+                    : 'Chưa có ai mua';
+                return $story;
+            });
+
+            // ==== HOT TUẦN ====
+            $weeklyTopPurchased = Story::select([
                 'stories.id',
                 'stories.title',
                 'stories.slug',
                 'stories.description',
                 'stories.cover',
-                DB::raw('COUNT(chapters.id) as chapters_count'),
-                DB::raw('SUM(chapters.views) as total_views'),
-                DB::raw('AVG(weekly_ratings.rating) as weekly_rating'),
-                DB::raw('(SUM(chapters.views) * AVG(COALESCE(weekly_ratings.rating, 3))) as hotness_score')
+                DB::raw('(
+                    SELECT COUNT(*) FROM story_purchases 
+                    WHERE story_purchases.story_id = stories.id
+                    AND story_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
+                ) + (
+                    SELECT COUNT(*) FROM chapter_purchases 
+                    JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                    WHERE chapters.story_id = stories.id
+                    AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
+                ) as total_purchases'),
+        
+                DB::raw('(
+                    SELECT MAX(latest_time) FROM (
+                        SELECT MAX(story_purchases.created_at) as latest_time
+                        FROM story_purchases
+                        WHERE story_purchases.story_id = stories.id
+                        AND story_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
+                        UNION
+                        SELECT MAX(chapter_purchases.created_at) as latest_time
+                        FROM chapter_purchases
+                        JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                        WHERE chapters.story_id = stories.id
+                        AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
+                    ) as merged_times
+                ) as latest_purchase_at')
             ])
-            ->with(['latestChapter'])
-            ->join('chapters', 'stories.id', '=', 'chapters.story_id')
-            ->leftJoin(DB::raw('(SELECT story_id, rating FROM ratings WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)) as weekly_ratings'), 
-                'stories.id', '=', 'weekly_ratings.story_id')
             ->where('stories.status', 'published')
-            ->groupBy('stories.id', 'stories.title', 'stories.slug', 'stories.description', 'stories.cover')
-            ->orderByDesc('hotness_score')
-            ->take(10)
-            ->get();
-            
-            // Get top 10 hot stories for this month
-            $monthlyHotStories = Story::select([
+            ->havingRaw('total_purchases > 0')
+            ->orderByDesc('total_purchases')
+            ->limit(10)
+            ->get()
+            ->map(function ($story) {
+                $story->latest_purchase_diff = $story->latest_purchase_at
+                    ? Carbon::parse($story->latest_purchase_at)->diffForHumans()
+                    : 'Chưa có ai mua';
+                return $story;
+            });
+
+            // ==== HOT THÁNG ====
+            $monthlyTopPurchased = Story::select([
                 'stories.id',
                 'stories.title',
                 'stories.slug',
                 'stories.description',
                 'stories.cover',
-                DB::raw('COUNT(chapters.id) as chapters_count'),
-                DB::raw('SUM(chapters.views) as total_views'),
-                DB::raw('AVG(monthly_ratings.rating) as monthly_rating'),
-                DB::raw('(SUM(chapters.views) * AVG(COALESCE(monthly_ratings.rating, 3))) as hotness_score')
+                DB::raw('(
+                    SELECT COUNT(*) FROM story_purchases 
+                    WHERE story_purchases.story_id = stories.id
+                    AND story_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
+                ) + (
+                    SELECT COUNT(*) FROM chapter_purchases 
+                    JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                    WHERE chapters.story_id = stories.id
+                    AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
+                ) as total_purchases'),
+        
+                DB::raw('(
+                    SELECT MAX(latest_time) FROM (
+                        SELECT MAX(story_purchases.created_at) as latest_time
+                        FROM story_purchases
+                        WHERE story_purchases.story_id = stories.id
+                        AND story_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
+                        UNION
+                        SELECT MAX(chapter_purchases.created_at) as latest_time
+                        FROM chapter_purchases
+                        JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                        WHERE chapters.story_id = stories.id
+                        AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
+                    ) as merged_times
+                ) as latest_purchase_at')
             ])
-            ->with(['latestChapter'])
-            ->join('chapters', 'stories.id', '=', 'chapters.story_id')
-            ->leftJoin(DB::raw('(SELECT story_id, rating FROM ratings WHERE created_at >= DATE_SUB(CURRENT_DATE(), INTERVAL 30 DAY)) as monthly_ratings'), 
-                'stories.id', '=', 'monthly_ratings.story_id')
             ->where('stories.status', 'published')
-            ->groupBy('stories.id', 'stories.title', 'stories.slug', 'stories.description', 'stories.cover')
-            ->orderByDesc('hotness_score')
-            ->take(10)
-            ->get();
+            ->havingRaw('total_purchases > 0')
+            ->orderByDesc('total_purchases')
+            ->limit(10)
+            ->get()
+            ->map(function ($story) {
+                $story->latest_purchase_diff = $story->latest_purchase_at
+                    ? Carbon::parse($story->latest_purchase_at)->diffForHumans()
+                    : 'Chưa có ai mua';
+                return $story;
+            });
+
 
             $banners = Banner::active()->get();
 
-            $view->with('dailyHotStories', $dailyHotStories);
-            $view->with('weeklyHotStories', $weeklyHotStories);
-            $view->with('monthlyHotStories', $monthlyHotStories);
+            $view->with('dailyTopPurchased', $dailyTopPurchased);
+            $view->with('weeklyTopPurchased', $weeklyTopPurchased);
+            $view->with('monthlyTopPurchased', $monthlyTopPurchased);
             $view->with('banners', $banners);
 
             $donate = Donate::first() ?? new Donate();

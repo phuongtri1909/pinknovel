@@ -3,7 +3,7 @@
     <div class="widget-header mb-3">
         <h3 class="fs-5 m-0 text-dark">
             <i class="fas fa-tags text-primary me-2"></i>
-            @if ($isSearch)
+            @if (!$currentCategory)
                 Thể Loại
             @else
                 {{ $currentCategory->name }}

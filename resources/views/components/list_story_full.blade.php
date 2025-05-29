@@ -4,7 +4,7 @@
         <div class="d-flex justify-content-between align-items-center pt-1 pb-3 rounded-top-custom">
             <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-check-circle" style="color: #57f17d"></i> Hoàn Thành</h2>
             <div>
-                <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                <a class="color-3 text-decoration-none" href="{{ route('story.completed') }}">Xem tất cả <i
                         class="fa-solid fa-arrow-right"></i></a>
             </div>
         </div>
@@ -13,7 +13,7 @@
         <div id="storiesContainerNewSlide" class="rounded-bottom-custom">
             <div class="swiper storyFullSwiper">
                 <div class="swiper-wrapper">
-                    @forelse ($newStories as $story)
+                    @forelse ($completedStories as $story)
                         <div class="swiper-slide">
                             <div class="story-item">
                                 @include('components.item-story-full', ['story' => $story])
@@ -31,7 +31,7 @@
                 </div>
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
-                <div class="swiper-pagination"></div>
+               
             </div>
         </div>
     </div>
@@ -91,8 +91,8 @@
             new Swiper('.storyFullSwiper', {
                 slidesPerView: 1,
                 spaceBetween: 10,
-                loop: true,
-                loopFillGroupWithBlank: true,
+                loop: {{ count($completedStories) > 4 ? 'true' : 'false' }},
+                loopFillGroupWithBlank: {{ count($completedStories) > 4 ? 'true' : 'false' }},
                 pagination: {
                     el: '.swiper-pagination',
                     clickable: true,
@@ -120,10 +120,10 @@
                         spaceBetween: 20,
                     },
                 },
-                autoplay: {
+                autoplay: {{ count($completedStories) > 1 ? 'true' : 'false' }} ? {
                     delay: 3000,
                     disableOnInteraction: false,
-                },
+                } : false,
                 speed: 800,
                 effect: "slide",
             });

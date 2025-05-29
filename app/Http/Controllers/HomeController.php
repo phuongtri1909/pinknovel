@@ -13,10 +13,12 @@ use App\Models\Socials;
 use App\Models\Category;
 use App\Models\UserReading;
 use Illuminate\Http\Request;
+use App\Models\StoryPurchase;
+use App\Models\ChapterPurchase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\ReadingHistoryService;
-use App\Models\ChapterPurchase;
-use App\Models\StoryPurchase;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class HomeController extends Controller
 {
@@ -103,6 +105,211 @@ class HomeController extends Controller
         ]);
     }
 
+    public function showStoryHot()
+    {
+        $query = Story::with(['chapters' => function ($query) {
+            $query->select('id', 'story_id', 'views', 'created_at')
+                ->where('status', 'published');
+        }])
+            ->published()
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'cover',
+                'completed',
+                'description',
+                'created_at',
+                'updated_at',
+                'cover_medium'
+            ])
+            ->withCount([
+                'chapters' => fn($q) => $q->where('status', 'published'),
+                'storyPurchases',
+                'chapterPurchases',
+                'ratings',
+                'bookmarks'
+            ])
+            ->selectSub(function ($q) {
+                $q->from('ratings')
+                    ->selectRaw('AVG(rating)')
+                    ->whereColumn('ratings.story_id', 'stories.id');
+            }, 'average_rating')
+            ->where('updated_at', '>=', now()->subDays(30));
+
+        $stories = $query->get()
+            ->map(function ($story) {
+                $story->hot_score = $this->calculateHotScore($story);
+                return $story;
+            })
+            ->sortByDesc('hot_score')
+            ->values(); // reset index
+
+        // ✅ Paginate thủ công
+        $perPage = 20;
+        $currentPage = LengthAwarePaginator::resolveCurrentPage();
+        $pagedStories = new LengthAwarePaginator(
+            $stories->forPage($currentPage, $perPage),
+            $stories->count(),
+            $perPage,
+            $currentPage,
+            ['path' => request()->url(), 'query' => request()->query()]
+        );
+
+
+
+        return view('pages.search.results', [
+            'stories' => $pagedStories,
+            'query' => 'hot',
+            'isSearch' => false
+        ]);
+    }
+
+    public function showRatingStories()
+    {
+        $stories = Story::join('ratings', 'stories.id', '=', 'ratings.story_id')
+            ->where('status', 'published')
+            ->select('stories.*', DB::raw('AVG(ratings.rating) as average_rating'))
+            ->groupBy('stories.id')
+            ->orderByDesc('average_rating')
+            ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
+            ->paginate(20);
+
+        return view('pages.search.results', [
+            'stories' => $stories,
+            'query' => 'rating',
+            'isSearch' => false
+        ]);
+    }
+
+    public function showStoryNewChapter()
+    {
+        $chapters = Chapter::where('status', 'published')
+            ->select('story_id', DB::raw('MAX(COALESCE(scheduled_publish_at, created_at)) as latest_chapter_time'))
+            ->groupBy('story_id');
+
+        $stories = Story::joinSub($chapters, 'latest_chapters', function ($join) {
+            $join->on('stories.id', '=', 'latest_chapters.story_id');
+        })
+            ->join('ratings', 'stories.id', '=', 'ratings.story_id')
+            ->where('status', 'published')
+            ->select('stories.*', DB::raw('AVG(ratings.rating) as average_rating'))
+            ->groupBy('stories.id')
+            ->orderByDesc('average_rating')
+            ->orderByDesc('latest_chapters.latest_chapter_time')
+            ->paginate(20);
+
+        return view('pages.search.results', [
+            'stories' => $stories,
+            'query' => 'new-chapter',
+            'isSearch' => false
+        ]);
+    }
+
+    public function showStoryNew()
+    {
+        $query = Story::with(['latestChapter' => function ($query) {
+            $query->select('id', 'story_id', 'title', 'slug', 'number', 'views', 'created_at', 'status')
+                ->where('status', 'published');
+        }, 'categories'])
+            ->published()
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'cover',
+                'status',
+                'completed',
+                'reviewed_at',
+                'cover_medium',
+                'updated_at'
+            ])
+            ->withCount(['chapters' => function ($query) {
+                $query->where('status', 'published');
+            }])
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
+            ->whereMonth('reviewed_at', now()->month)
+            ->whereYear('reviewed_at', now()->year)
+            ->orderByDesc('reviewed_at');
+
+        $stories = $query->paginate(20);
+
+    
+
+        return view('pages.search.results', [
+            'stories' => $stories,
+            'query' => 'new',
+            'isSearch' => false
+        ]);
+    }
+
+    public function showStoryView()
+    {
+        $stories = Story::select('stories.*')
+            ->join('chapters', 'stories.id', '=', 'chapters.story_id')
+            ->where('chapters.status', 'published')
+            ->groupBy('stories.id')
+            ->selectRaw('SUM(chapters.views) as total_views')
+            ->orderByDesc('total_views')
+            ->paginate(20);
+        return view('pages.search.results', [
+            'stories' => $stories,
+            'query' => 'view',
+            'isSearch' => false
+        ]);
+    }
+
+    public function showStoryFollow()
+    {
+        $stories = Story::withCount('bookmarks')
+            ->orderByDesc('bookmarks_count')
+            ->paginate(20);
+
+
+        return view('pages.search.results', [
+            'stories' => $stories,
+            'query' => 'follow',
+            'isSearch' => false
+        ]);
+    }
+
+    public function showCompletedStories()
+    {
+        $stories = Story::with('categories')
+            ->published()
+            ->where('completed', true)
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'cover',
+                'completed',
+                'updated_at',
+                'cover_medium'
+            ])
+            ->withCount(['chapters' => function ($query) {
+                $query->where('status', 'published');
+            }])
+            ->latest('updated_at')
+            ->paginate(20);
+
+        return view('pages.search.results', [
+            'stories' => $stories,
+            'query' => 'completed',
+            'isSearch' => false
+        ]);
+    }
+
+
+
     public function index(Request $request)
     {
         // Get hot stories
@@ -111,29 +318,20 @@ class HomeController extends Controller
         // Get new stories
         $newStories = $this->getNewStories($request);
 
-        // Get completed stories
-        $completedStories = Story::with(['categories'])
-            ->published()
-            ->where('completed', true)
-            ->whereHas('chapters', function ($query) {
-                $query->where('status', 'published'); // Chỉ lấy truyện có chương đã xuất bản
-            })
-            ->select([
-                'id',
-                'title',
-                'slug',
-                'cover',
-                'completed',
-                'updated_at'
-            ])
-            ->withCount(['chapters' => function ($query) {
-                $query->where('status', 'published'); // Chỉ đếm chương đã xuất bản
-            }])
-            ->latest('updated_at')
-            ->take(18)
-            ->get();
+        // Get rating stories
+        $ratingStories = $this->getRatingStories();
 
-        //dd($completedStories);
+        // Get latest updated stories
+        $latestUpdatedStories = $this->latestUpdatedStories();
+
+        // Get top viewed stories
+        $topViewedStories = $this->topViewedStories();
+
+        // Get top followed stories
+        $topFollowedStories = $this->topFollowedStories();
+
+        // Get completed stories
+        $completedStories = $this->getCompletedStories($request);
 
         // Handle AJAX requests
         if ($request->ajax()) {
@@ -148,18 +346,42 @@ class HomeController extends Controller
             }
         }
 
-        return view('pages.home', compact('hotStories', 'newStories', 'completedStories'));
+        return view('pages.home', compact('hotStories', 'newStories', 'completedStories', 'ratingStories', 'latestUpdatedStories', 'topViewedStories', 'topFollowedStories'));
     }
+
+    private function getCompletedStories()
+    {
+        return Story::with('categories')
+            ->published()
+            ->where('completed', true)
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'cover',
+                'completed',
+                'updated_at',
+            ])
+            ->withCount(['chapters' => function ($query) {
+                $query->where('status', 'published');
+            }])
+            ->latest('updated_at')
+            ->get();
+    }
+
 
     private function getHotStories($request)
     {
         $query = Story::with(['chapters' => function ($query) {
             $query->select('id', 'story_id', 'views', 'created_at')
-                ->where('status', 'published'); // Chỉ lấy chương đã xuất bản
+                ->where('status', 'published');
         }])
             ->published()
             ->whereHas('chapters', function ($query) {
-                $query->where('status', 'published'); // Chỉ lấy truyện có chương đã xuất bản
+                $query->where('status', 'published');
             })
             ->select([
                 'id',
@@ -171,12 +393,20 @@ class HomeController extends Controller
                 'created_at',
                 'updated_at'
             ])
-            ->withCount(['chapters' => function ($query) {
-                $query->where('status', 'published');
-            }])
+            ->withCount([
+                'chapters' => fn($q) => $q->where('status', 'published'),
+                'storyPurchases',
+                'chapterPurchases',
+                'ratings',
+                'bookmarks'
+            ])
+            ->selectSub(function ($q) {
+                $q->from('ratings')
+                    ->selectRaw('AVG(rating)')
+                    ->whereColumn('ratings.story_id', 'stories.id');
+            }, 'average_rating')
             ->where('updated_at', '>=', now()->subDays(30));
 
-        // Apply category filter if selected
         if ($request->category_id) {
             $query->whereHas('categories', function ($q) use ($request) {
                 $q->where('categories.id', $request->category_id);
@@ -190,45 +420,21 @@ class HomeController extends Controller
             })
             ->sortByDesc('hot_score')
             ->take(12);
+
         return $hotStories;
     }
 
+
     private function calculateHotScore($story)
     {
-        // Get total views of all chapters (đã lọc published trong getHotStories)
-        $totalViews = $story->chapters->sum('views');
-
-        // Get average views per chapter
-        $avgViews = $story->chapters_count > 0 ?
-            $totalViews / $story->chapters_count : 0;
-
-        // Get views in last 7 days
-        $recentViews = $story->chapters()
-            ->where('status', 'published') // Chỉ đếm chương đã xuất bản
-            ->where('created_at', '>=', now()->subDays(7))
-            ->sum('views');
-
-        // Calculate chapter frequency (chapters per day)
-        $daysActive = max(1, $story->created_at->diffInDays(now()));
-        $chapterFrequency = $story->chapters_count / $daysActive;
-
-        // Calculate recency boost (newer stories get higher scores)
-        $daysSinceLastUpdate = $story->updated_at->diffInDays(now());
-        $recencyBoost = 1 + (1 / max(1, $daysSinceLastUpdate));
-
-        // Calculate final score using weighted factors
-        $score = (
-            ($totalViews * 0.3) +
-            ($avgViews * 0.2) +
-            ($recentViews * 0.25) +
-            ($chapterFrequency * 15) +
-            ($story->chapters_count * 5)
-        ) * $recencyBoost;
-
-        return $score;
+        return ($story->story_purchases_count * 3) +
+            ($story->chapter_purchases_count * 2) +
+            ($story->ratings_count * 1.5) +
+            ($story->average_rating * 2) +
+            ($story->bookmarks_count * 1);
     }
 
-    private function getNewStories($request)
+    private function getNewStories()
     {
         $query = Story::with(['latestChapter' => function ($query) {
             $query->select('id', 'story_id', 'title', 'slug', 'number', 'views', 'created_at', 'status')
@@ -241,34 +447,94 @@ class HomeController extends Controller
                 'slug',
                 'cover',
                 'status',
-                'completed'
+                'completed',
+                'reviewed_at',
+                'cover_medium'
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
             }])
             ->whereHas('chapters', function ($query) {
                 $query->where('status', 'published');
-            });
+            })
+            ->whereMonth('reviewed_at', now()->month)
+            ->whereYear('reviewed_at', now()->year);
 
-        // Áp dụng bộ lọc danh mục nếu có
-        if ($request->category_id) {
-            $query->whereHas('categories', function ($q) use ($request) {
-                $q->where('categories.id', $request->category_id);
-            });
-        }
-
-        // Sắp xếp theo thời gian chương mới nhất
-        return $query->orderByDesc(function ($query) {
-            $query->select('created_at')
-                ->from('chapters')
-                ->whereColumn('story_id', 'stories.id')
-                ->where('status', 'published')
-                ->latest()
-                ->limit(1);
-        })
-            ->take(6)
+        return $query->orderByDesc('reviewed_at')
+            ->take(20)
             ->get();
     }
+
+
+    public function latestUpdatedStories()
+    {
+        $chapters = Chapter::where('status', 'published')
+            ->select(
+                'story_id',
+                DB::raw('MAX(COALESCE(scheduled_publish_at, created_at)) as latest_chapter_time'),
+                DB::raw('COUNT(*) as chapters_count')
+            )
+            ->groupBy('story_id');
+
+        $stories = Story::joinSub($chapters, 'latest_chapters', function ($join) {
+            $join->on('stories.id', '=', 'latest_chapters.story_id');
+        })
+            ->join('ratings', 'stories.id', '=', 'ratings.story_id')
+            ->where('status', 'published')
+            ->select(
+                'stories.*',
+                DB::raw('AVG(ratings.rating) as average_rating'),
+                'latest_chapters.chapters_count'
+            )
+            ->groupBy('stories.id', 'latest_chapters.chapters_count')
+            ->orderByDesc('average_rating')
+            ->orderByDesc('latest_chapters.latest_chapter_time')
+            ->limit(10)
+            ->get();
+
+
+        return $stories;
+    }
+
+    public function getRatingStories()
+    {
+        $stories = Story::join('ratings', 'stories.id', '=', 'ratings.story_id')
+            ->where('status', 'published')
+            ->select('stories.*', DB::raw('AVG(ratings.rating) as average_rating'))
+            ->groupBy('stories.id')
+            ->orderByDesc('average_rating')
+            ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
+            ->limit(10)
+            ->get();
+
+
+        return $stories;
+    }
+
+    public function topViewedStories()
+    {
+        $stories = Story::select('stories.*')
+            ->join('chapters', 'stories.id', '=', 'chapters.story_id')
+            ->where('chapters.status', 'published')
+            ->groupBy('stories.id')
+            ->selectRaw('SUM(chapters.views) as total_views')
+            ->orderByDesc('total_views')
+            ->limit(10)
+            ->get();
+
+        return $stories;
+    }
+
+    public function topFollowedStories()
+    {
+        $stories = Story::withCount('bookmarks')
+            ->orderByDesc('bookmarks_count')
+            ->limit(10)
+            ->get();
+
+        return $stories;
+    }
+
     public function showStory(Request $request, $slug)
     {
         $story = Story::where('slug', $slug)->firstOrFail();
@@ -478,7 +744,7 @@ class HomeController extends Controller
                 ->where('chapter_id', $chapter->id)
                 ->first();
         }
-        
+
         // Pass reading progress to view
         $readingProgress = $userReading ? $userReading->progress_percent : 0;
 
@@ -490,21 +756,23 @@ class HomeController extends Controller
         // Admin, mod, author và chủ sở hữu truyện luôn có quyền truy cập
         if (auth()->check()) {
             $user = auth()->user();
-            
-            if (in_array($user->role, ['admin', 'mod']) || 
-                ($user->role == 'author' && $story->user_id == $user->id)) {
+
+            if (
+                in_array($user->role, ['admin', 'mod']) ||
+                ($user->role == 'author' && $story->user_id == $user->id)
+            ) {
                 $hasAccess = true;
             } else {
                 // Kiểm tra nếu đã mua chương này
                 $hasPurchasedChapter = ChapterPurchase::where('user_id', $user->id)
                     ->where('chapter_id', $chapter->id)
                     ->exists();
-                
+
                 // Kiểm tra nếu đã mua truyện này
                 $hasPurchasedStory = StoryPurchase::where('user_id', $user->id)
                     ->where('story_id', $story->id)
                     ->exists();
-                
+
                 $hasAccess = $hasPurchasedChapter || $hasPurchasedStory;
             }
         }
@@ -513,12 +781,12 @@ class HomeController extends Controller
         if (!$chapter->price || $chapter->price == 0) {
             $hasAccess = true;
         }
-        
+
         // Ẩn nội dung nếu không có quyền truy cập
         if (!$hasAccess) {
             // Không xóa content hoàn toàn để có thể hiển thị phần preview nếu cần
             $originalContent = $chapter->content;
-            
+
             // Lấy một phần đầu của nội dung làm preview (ví dụ: 10% đầu tiên)
             $previewLength = min(300, intval(strlen($originalContent) * 0.1));
             $chapter->preview_content = substr($originalContent, 0, $previewLength) . '...';

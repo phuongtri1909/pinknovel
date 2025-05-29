@@ -5,7 +5,7 @@
             <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-fire fa-xl" style="color: #ef4444;"></i> Truyện Đề
                 Cử</h2>
             <div>
-                <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                <a class="color-3 text-decoration-none" href="{{ route('story.hot') }}">Xem tất cả <i
                         class="fa-solid fa-arrow-right"></i></a>
             </div>
         </div>

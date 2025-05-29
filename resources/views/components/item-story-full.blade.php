@@ -24,7 +24,7 @@
                 <div class="badge-custom-full badge small rounded-pill mt-1 border-1 border">
                     <a class="text-decoration-none color-3  fw-semibold"
                         href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}">
-                        {{ $chapter->title }}
+                        {{ Str::limit($chapter->title, 20) }}
                     </a>
                 </div>
             @endforeach

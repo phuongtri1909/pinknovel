@@ -9,15 +9,15 @@
                         <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
                             <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-eye text-primary"></i> Xem Nhiều</h2>
                             <div>
-                                <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                                <a class="color-3 text-decoration-none" href="{{ route('story.view') }}">Xem tất cả <i
                                         class="fa-solid fa-arrow-right"></i></a>
                             </div>
                         </div>
 
                         <!-- Stories Grid -->
                         <div class="bg-white rounded-3 p-3">
-                            @foreach ($newStories as $story)
-                                @include('components.story_new_rating', ['story' => $story])
+                            @foreach ($topViewedStories as $story)
+                                @include('components.story_view', ['story' => $story])
                             @endforeach
                         </div>
                     </div>
@@ -25,14 +25,14 @@
                         <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
                             <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-bookmark me-2" style="color:#ef4444"></i>Theo Dõi Nhiều</h2>
                             <div>
-                                <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                                <a class="color-3 text-decoration-none" href="{{ route('story.follow') }}">Xem tất cả <i
                                         class="fa-solid fa-arrow-right"></i></a>
                             </div>
                         </div>
 
                         <div class="bg-white rounded-3 p-3">
-                            @foreach ($newStories as $story)
-                                @include('components.story_new_rating', ['story' => $story])
+                            @foreach ($topFollowedStories as $story)
+                                @include('components.story_follow', ['story' => $story])
                             @endforeach
                         </div>
                     </div>
@@ -82,7 +82,7 @@
             }
 
             .badge-full {
-                background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+                background: #28a745;
                 color: white;
             }
 

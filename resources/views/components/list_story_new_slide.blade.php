@@ -5,7 +5,7 @@
             <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-brush" style="color: #39cde0"></i> Truyện
                 Mới Phát Hành</h2>
             <div>
-                <a class="color-3 text-decoration-none" href="">Xem tất cả <i
+                <a class="color-3 text-decoration-none" href="{{ route('story.new') }}">Xem tất cả <i
                         class="fa-solid fa-arrow-right"></i></a>
             </div>
         </div>
@@ -93,8 +93,8 @@
             new Swiper('.newStoriesSwiper', {
                 slidesPerView: 1,
                 spaceBetween: 0,
-                loop: true,
-                loopFillGroupWithBlank: true,
+                loop: {{ count($newStories) > 6 ? 'true' : 'false' }},
+                loopFillGroupWithBlank: {{ count($newStories) > 6 ? 'true' : 'false' }},
                 navigation: {
                     nextEl: '.swiper-button-next',
                     prevEl: '.swiper-button-prev',
@@ -102,33 +102,27 @@
                 breakpoints: {
                     0: {
                         slidesPerView: 2,
-                       
                     },
-
                     580: {
                         slidesPerView: 3,
-                        
                     },
                     768: {
                         slidesPerView: 4,
                         spaceBetween: 10,
-                       
                     },
                     1024: {
                         slidesPerView: 5,
                         spaceBetween: 10,
-                       
                     },
                     1300: {
                         slidesPerView: 6,
                         spaceBetween: 10,
-                       
                     },
                 },
-                autoplay: {
+                autoplay: {{ count($newStories) > 1 ? 'true' : 'false' }} ? {
                     delay: 3000,
                     disableOnInteraction: false,
-                },
+                } : false,
                 speed: 800,
                 effect: "slide",
             });

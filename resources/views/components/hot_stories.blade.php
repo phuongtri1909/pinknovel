@@ -34,7 +34,7 @@
             <!-- Daily Hot Stories -->
             <div class="tab-pane fade show active" id="daily" role="tabpanel">
                 <div class="hot-stories-list">
-                    @foreach ($dailyHotStories as $index => $story)
+                    @foreach ($dailyTopPurchased as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
                             <div class="d-flex align-items-center">
                                 <span class="story-rank">
@@ -53,17 +53,35 @@
                                         href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
                                 </h4>
                                 <div class="d-flex">
-                                    @foreach ($story->categories->take(2) as $category)
+                                    @php
+                                        $mainCategories = $story->categories->where('is_main', true);
+                                        $displayCategories = collect();
+                                        
+                                        // Thêm các danh mục chính (tối đa 2)
+                                        foreach($mainCategories->take(2) as $category) {
+                                            $displayCategories->push($category);
+                                        }
+                                        
+                                        // Nếu không đủ 2 danh mục chính, thêm danh mục phụ
+                                        if($displayCategories->count() < 2) {
+                                            $subCategories = $story->categories->where('is_main', false);
+                                            foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
+                                                $displayCategories->push($category);
+                                            }
+                                        }
+                                    @endphp
+                                    
+                                    @foreach ($displayCategories as $category)
                                         <span
                                             class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
 
                                     <div class="text-muted text-sm">
                                         @if ($story->latestChapter)
-                                            {{ $story->latestChapter->created_at->diffForHumans() }}
+                                            {{ $story->latest_purchase_diff ?? 'Chưa có ai mua' }}
                                         @else
                                             Chưa cập nhật
                                         @endif
@@ -78,7 +96,7 @@
             <!-- Weekly Hot Stories -->
             <div class="tab-pane fade" id="weekly" role="tabpanel">
                 <div class="hot-stories-list">
-                    @foreach ($weeklyHotStories as $index => $story)
+                    @foreach ($weeklyTopPurchased as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
                             <div class="d-flex align-items-center">
                                 <span class="story-rank">
@@ -97,17 +115,35 @@
                                         href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
                                 </h4>
                                 <div class="d-flex">
-                                    @foreach ($story->categories->take(2) as $category)
+                                    @php
+                                        $mainCategories = $story->categories->where('is_main', true);
+                                        $displayCategories = collect();
+                                        
+                                        // Thêm các danh mục chính (tối đa 2)
+                                        foreach($mainCategories->take(2) as $category) {
+                                            $displayCategories->push($category);
+                                        }
+                                        
+                                        // Nếu không đủ 2 danh mục chính, thêm danh mục phụ
+                                        if($displayCategories->count() < 2) {
+                                            $subCategories = $story->categories->where('is_main', false);
+                                            foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
+                                                $displayCategories->push($category);
+                                            }
+                                        }
+                                    @endphp
+                                    
+                                    @foreach ($displayCategories as $category)
                                         <span
                                             class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
 
                                     <div class="text-muted text-sm">
                                         @if ($story->latestChapter)
-                                            {{ $story->latestChapter->created_at->diffForHumans() }}
+                                            {{ $story->latest_purchase_diff ?? 'Chưa có ai mua' }}
                                         @else
                                             Chưa cập nhật
                                         @endif
@@ -122,7 +158,7 @@
             <!-- Monthly Hot Stories -->
             <div class="tab-pane fade" id="monthly" role="tabpanel">
                 <div class="hot-stories-list">
-                    @foreach ($monthlyHotStories as $index => $story)
+                    @foreach ($monthlyTopPurchased as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
                             <div class="d-flex align-items-center">
                                 <span class="story-rank">
@@ -141,17 +177,35 @@
                                         href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
                                 </h4>
                                 <div class="d-flex">
-                                    @foreach ($story->categories->take(2) as $category)
+                                    @php
+                                        $mainCategories = $story->categories->where('is_main', true);
+                                        $displayCategories = collect();
+                                        
+                                        // Thêm các danh mục chính (tối đa 2)
+                                        foreach($mainCategories->take(2) as $category) {
+                                            $displayCategories->push($category);
+                                        }
+                                        
+                                        // Nếu không đủ 2 danh mục chính, thêm danh mục phụ
+                                        if($displayCategories->count() < 2) {
+                                            $subCategories = $story->categories->where('is_main', false);
+                                            foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
+                                                $displayCategories->push($category);
+                                            }
+                                        }
+                                    @endphp
+                                    
+                                    @foreach ($displayCategories as $category)
                                         <span
                                             class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
 
                                     <div class="text-muted text-sm">
                                         @if ($story->latestChapter)
-                                            {{ $story->latestChapter->created_at->diffForHumans() }}
+                                            {{ $story->latest_purchase_diff ?? 'Chưa có ai mua' }}
                                         @else
                                             Chưa cập nhật
                                         @endif
