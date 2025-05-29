@@ -53,23 +53,23 @@ class AppServiceProvider extends ServiceProvider
                 'categories.id',
                 'categories.name',
                 'categories.slug',
-                'categories.description',
-                DB::raw('COUNT(DISTINCT stories.id) as stories_count'),
-                DB::raw('SUM(chapters.views) as total_views'),
-                DB::raw('AVG(ratings.rating) as avg_rating'),
-                // Calculate a "hotness" score combining views and rating
-                DB::raw('SUM(chapters.views) * AVG(COALESCE(ratings.rating, 3)) as hotness_score')
+                'categories.description'
             ])
-                ->join('category_story', 'categories.id', '=', 'category_story.category_id')
-                ->join('stories', 'category_story.story_id', '=', 'stories.id')
-                ->join('chapters', 'stories.id', '=', 'chapters.story_id')
+                ->leftJoin('category_story', 'categories.id', '=', 'category_story.category_id')
+                ->leftJoin('stories', 'category_story.story_id', '=', 'stories.id')
+                ->leftJoin('chapters', 'stories.id', '=', 'chapters.story_id')
                 ->leftJoin('ratings', 'stories.id', '=', 'ratings.story_id')
+                ->where('stories.status', '=', 'published')
                 ->groupBy([
                     'categories.id',
-                    'categories.name',
+                    'categories.name', 
                     'categories.slug',
                     'categories.description'
                 ])
+                ->selectRaw('COUNT(DISTINCT stories.id) as stories_count')
+                ->selectRaw('SUM(COALESCE(chapters.views, 0)) as total_views')
+                ->selectRaw('AVG(COALESCE(ratings.rating, 3)) as avg_rating')
+                ->selectRaw('SUM(COALESCE(chapters.views, 0)) * AVG(COALESCE(ratings.rating, 3)) as hotness_score')
                 ->orderByDesc('hotness_score')
                 ->take(20)
                 ->get();
