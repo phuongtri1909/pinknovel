@@ -165,5 +165,45 @@
 
 @push('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            // Kiểm tra nếu là thiết bị di động (màn hình < 992px)
+            function isMobile() {
+                return window.innerWidth < 992;
+            }
+            
+            // Hàm cuộn đến phần nội dung chính
+            function scrollToContent() {
+                if (isMobile()) {
+                    // Lưu trạng thái đã cuộn vào session storage
+                    const hasScrolled = sessionStorage.getItem('hasScrolledToContent');
+                    
+                    // Nếu chưa cuộn trong phiên này
+                    if (!hasScrolled) {
+                        // Lấy vị trí của phần nội dung
+                        const contentOffset = $('.user-content').offset().top;
+                        
+                        // Cuộn xuống vị trí này, trừ đi một chút để có khoảng cách
+                        $('html, body').animate({
+                            scrollTop: contentOffset - 20
+                        }, 500);
+                        
+                        // Đánh dấu đã cuộn
+                        sessionStorage.setItem('hasScrolledToContent', 'true');
+                    }
+                }
+            }
+            
+            // Gọi hàm khi trang đã tải xong
+            setTimeout(scrollToContent, 300);
+            
+            // Thêm sự kiện cho các liên kết trong menu
+            $('.user-nav-link').on('click', function() {
+                // Xóa trạng thái đã cuộn khi người dùng nhấp vào menu mới
+                sessionStorage.removeItem('hasScrolledToContent');
+            });
+        
+        });
+    </script>
     @stack('info_scripts')
 @endpush

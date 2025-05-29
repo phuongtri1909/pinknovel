@@ -256,11 +256,6 @@
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
     <script>
         $(document).ready(function() {
-            CKEDITOR.replace('content', {
-                height: 400,
-                removePlugins: 'image,flash,iframe,easyimage',
-                removeButtons: 'PasteFromWord'
-            });
 
             // Khởi tạo hiển thị tùy thuộc vào trạng thái ban đầu
             togglePricingOptions();
