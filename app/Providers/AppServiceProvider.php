@@ -76,155 +76,11 @@ class AppServiceProvider extends ServiceProvider
 
             $view->with('topCategories', $topCategories);
 
-            // Get top 10 hot stories for today
-            $dailyTopPurchased = Story::from('stories as s')
-                ->select([
-                    's.id',
-                    's.title',
-                    's.slug',
-                    's.description',
-                    's.cover',
-                    DB::raw('
-            (
-                (SELECT COUNT(*) FROM story_purchases 
-                 WHERE story_purchases.story_id = s.id
-                 AND DATE(story_purchases.created_at) = CURRENT_DATE())
-                +
-                (SELECT COUNT(*) FROM chapter_purchases 
-                 JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                 WHERE chapters.story_id = s.id
-                 AND DATE(chapter_purchases.created_at) = CURRENT_DATE())
-            ) as total_purchases
-        '),
-                    DB::raw('
-            (
-                SELECT MAX(latest_time) FROM (
-                    SELECT MAX(story_purchases.created_at) as latest_time
-                    FROM story_purchases
-                    WHERE story_purchases.story_id = s.id
-                    AND DATE(story_purchases.created_at) = CURRENT_DATE()
-                    UNION
-                    SELECT MAX(chapter_purchases.created_at) as latest_time
-                    FROM chapter_purchases
-                    JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                    WHERE chapters.story_id = s.id
-                    AND DATE(chapter_purchases.created_at) = CURRENT_DATE()
-                ) as merged_times
-            ) as latest_purchase_at
-        ')
-                ])
-                ->where('s.status', 'published')
-                ->havingRaw('total_purchases > 0')
-                ->orderByDesc('total_purchases')
-                ->limit(10)
-                ->get()
-                ->map(function ($story) {
-                    $story->latest_purchase_diff = $story->latest_purchase_at
-                        ? Carbon::parse($story->latest_purchase_at)->diffForHumans()
-                        : 'Chưa có ai mua';
-                    return $story;
-                });
+            $dailyTopPurchased = $this->getTopStoriesPurchased(Carbon::today());
 
+            $weeklyTopPurchased = $this->getTopStoriesPurchased(Carbon::today()->subDays(7));
 
-
-            // ==== HOT TUẦN ====
-            $weeklyTopPurchased = Story::from('stories as s')
-                ->select([
-                    's.id',
-                    's.title',
-                    's.slug',
-                    's.description',
-                    's.cover',
-                    DB::raw('
-            (
-                (SELECT COUNT(*) FROM story_purchases 
-                 WHERE story_purchases.story_id = s.id
-                 AND story_purchases.created_at >= CURDATE() - INTERVAL 7 DAY)
-                +
-                (SELECT COUNT(*) FROM chapter_purchases 
-                 JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                 WHERE chapters.story_id = s.id
-                 AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY)
-            ) as total_purchases
-        '),
-                    DB::raw('
-            (
-                SELECT MAX(latest_time) FROM (
-                    SELECT MAX(story_purchases.created_at) as latest_time
-                    FROM story_purchases
-                    WHERE story_purchases.story_id = s.id
-                    AND story_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
-                    UNION
-                    SELECT MAX(chapter_purchases.created_at) as latest_time
-                    FROM chapter_purchases
-                    JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                    WHERE chapters.story_id = s.id
-                    AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
-                ) as merged_times
-            ) as latest_purchase_at
-        ')
-                ])
-                ->where('s.status', 'published')
-                ->havingRaw('total_purchases > 0')
-                ->orderByDesc('total_purchases')
-                ->limit(10)
-                ->get()
-                ->map(function ($story) {
-                    $story->latest_purchase_diff = $story->latest_purchase_at
-                        ? Carbon::parse($story->latest_purchase_at)->diffForHumans()
-                        : 'Chưa có ai mua';
-                    return $story;
-                });
-
-
-            // ==== HOT THÁNG ====
-            $monthlyTopPurchased = Story::from('stories as s')
-                ->select([
-                    's.id',
-                    's.title',
-                    's.slug',
-                    's.description',
-                    's.cover',
-                    DB::raw('
-            (
-                (SELECT COUNT(*) FROM story_purchases 
-                 WHERE story_purchases.story_id = s.id
-                 AND story_purchases.created_at >= CURDATE() - INTERVAL 30 DAY)
-                +
-                (SELECT COUNT(*) FROM chapter_purchases 
-                 JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                 WHERE chapters.story_id = s.id
-                 AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY)
-            ) as total_purchases
-        '),
-                    DB::raw('
-            (
-                SELECT MAX(latest_time) FROM (
-                    SELECT MAX(story_purchases.created_at) as latest_time
-                    FROM story_purchases
-                    WHERE story_purchases.story_id = s.id
-                    AND story_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
-                    UNION
-                    SELECT MAX(chapter_purchases.created_at) as latest_time
-                    FROM chapter_purchases
-                    JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                    WHERE chapters.story_id = s.id
-                    AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
-                ) as merged_times
-            ) as latest_purchase_at
-        ')
-                ])
-                ->where('s.status', 'published')
-                ->havingRaw('total_purchases > 0')
-                ->orderByDesc('total_purchases')
-                ->limit(10)
-                ->get()
-                ->map(function ($story) {
-                    $story->latest_purchase_diff = $story->latest_purchase_at
-                        ? Carbon::parse($story->latest_purchase_at)->diffForHumans()
-                        : 'Chưa có ai mua';
-                    return $story;
-                });
+            $monthlyTopPurchased = $this->getTopStoriesPurchased(Carbon::today()->subDays(30));
 
 
             $banners = Banner::active()->get();
@@ -237,5 +93,51 @@ class AppServiceProvider extends ServiceProvider
             $donate = Donate::first() ?? new Donate();
             $view->with('donate', $donate);
         });
+    }
+
+    private function getTopStoriesPurchased(Carbon $fromDate)
+    {
+        // Purchases từ bảng story_purchases
+        $storyPurchases = DB::table('story_purchases')
+            ->select('story_id', DB::raw('COUNT(*) as purchase_count'), DB::raw('MAX(created_at) as latest'))
+            ->where('created_at', '>=', $fromDate)
+            ->groupBy('story_id');
+
+        // Purchases từ chapter_purchases
+        $chapterPurchases = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->select('chapters.story_id', DB::raw('COUNT(*) as purchase_count'), DB::raw('MAX(chapter_purchases.created_at) as latest'))
+            ->where('chapter_purchases.created_at', '>=', $fromDate)
+            ->groupBy('chapters.story_id');
+
+        // Gom 2 bảng bằng UNION
+        $merged = $storyPurchases->unionAll($chapterPurchases);
+
+        // Tính tổng purchase và latest time
+        $totals = DB::table(DB::raw("({$merged->toSql()}) as purchases"))
+            ->mergeBindings($merged)
+            ->select('story_id', DB::raw('SUM(purchase_count) as total_purchases'), DB::raw('MAX(latest) as latest_purchase_at'))
+            ->groupBy('story_id')
+            ->orderByDesc('total_purchases')
+            ->limit(10)
+            ->get();
+
+        // Lấy danh sách truyện tương ứng
+        $storyIds = $totals->pluck('story_id')->toArray();
+        $stories = Story::whereIn('id', $storyIds)->where('status', 'published')->get()->keyBy('id');
+
+        // Gộp dữ liệu purchase vào model Story
+        return $totals->map(function ($row) use ($stories) {
+            $story = $stories[$row->story_id] ?? null;
+            if (!$story) return null;
+
+            $story->total_purchases = $row->total_purchases;
+            $story->latest_purchase_at = $row->latest_purchase_at;
+            $story->latest_purchase_diff = $row->latest_purchase_at
+                ? Carbon::parse($row->latest_purchase_at)->diffForHumans()
+                : 'Chưa có ai mua';
+
+            return $story;
+        })->filter();
     }
 }
