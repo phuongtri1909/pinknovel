@@ -77,13 +77,14 @@ class AppServiceProvider extends ServiceProvider
             $view->with('topCategories', $topCategories);
 
             // Get top 10 hot stories for today
-            $dailyTopPurchased = Story::select([
-                'stories.id',
-                'stories.title',
-                'stories.slug',
-                'stories.description',
-                'stories.cover'
-            ])
+            $dailyTopPurchased = Story::from('stories')
+    ->select([
+        'stories.id',
+        'stories.title',
+        'stories.slug',
+        'stories.description',
+        'stories.cover'
+    ])
             ->where('stories.status', 'published')
             ->selectSub(function($query) {
                 $query->selectRaw('
@@ -125,13 +126,14 @@ class AppServiceProvider extends ServiceProvider
             });
 
             // ==== HOT TUẦN ====
-            $weeklyTopPurchased = Story::select([
-                'stories.id',
-                'stories.title',
-                'stories.slug',
-                'stories.description',
-                'stories.cover'
-            ])
+            $weeklyTopPurchased = Story::from('stories')
+    ->select([
+        'stories.id',
+        'stories.title',
+        'stories.slug',
+        'stories.description',
+        'stories.cover'
+    ])
             ->where('stories.status', 'published')
             ->selectSub(function($query) {
                 $query->selectRaw('
@@ -173,13 +175,14 @@ class AppServiceProvider extends ServiceProvider
             });
 
             // ==== HOT THÁNG ====
-            $monthlyTopPurchased = Story::select([
-                'stories.id',
-                'stories.title',
-                'stories.slug',
-                'stories.description',
-                'stories.cover'
-            ])
+            $monthlyTopPurchased = Story::from('stories')
+    ->select([
+        'stories.id',
+        'stories.title',
+        'stories.slug',
+        'stories.description',
+        'stories.cover'
+    ])
             ->where('stories.status', 'published')
             ->selectSub(function($query) {
                 $query->selectRaw('
