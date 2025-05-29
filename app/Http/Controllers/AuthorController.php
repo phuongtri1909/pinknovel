@@ -480,11 +480,11 @@ class AuthorController extends Controller
                 $story->cover_thumbnail
             ]);
 
-            return redirect()->route('user.author.stories.index')
+            return redirect()->route('user.author.stories')
                 ->with('success', 'Truyện đã được xóa thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->route('user.author.stories.index')
+            return redirect()->route('user.author.stories')
                 ->with('error', 'Có lỗi xảy ra khi xóa truyện: ' . $e->getMessage());
         }
     }
@@ -660,12 +660,12 @@ class AuthorController extends Controller
 
         foreach ($matches as $match) {
             $chapterNumber = (int) $match[1];
-            
+
             // If there's no title or empty title, use "Chương X" as the title
             $title = !empty($match[2]) ? trim($match[2]) : "Chương {$chapterNumber}";
-            
+
             $content = isset($match[3]) ? trim($match[3]) : '';
-            
+
             $chapters[] = [
                 'number'  => $chapterNumber,
                 'title'   => $title,
@@ -751,7 +751,7 @@ class AuthorController extends Controller
             $isFree = $request->is_free;
             $hasPassword = $request->has_password;
             $password = $hasPassword && $isFree ? bcrypt($request->password) : null;
-            
+
             $successCount = 0;
 
             // Chỉ sử dụng scheduled_publish_at cho chung khi status là draft
@@ -759,11 +759,11 @@ class AuthorController extends Controller
 
             foreach ($chapters as $chapter) {
                 $slug = 'chuong-' . $chapter['number'] . '-' . Str::slug(Str::limit($chapter['title'], 100));
-                
+
                 // Kiểm tra từng chương có lịch riêng không
                 $scheduleDate = null;
                 $chapterStatus = $request->status;
-                
+
                 // Nếu có lịch riêng, chương sẽ tự động chuyển sang draft dù status chung là published
                 if (isset($chapterSchedules[$chapter['number']]) && !empty($chapterSchedules[$chapter['number']])) {
                     $scheduleDate = $chapterSchedules[$chapter['number']];
@@ -804,15 +804,28 @@ class AuthorController extends Controller
     // Hiển thị form chỉnh sửa chương
     public function editChapter(Story $story, $chapterId)
     {
-        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền chỉnh sửa chương của truyện này.');
         }
 
         $chapter = $story->chapters()->findOrFail($chapterId);
-        return view('pages.information.author.author_chapter_edit', compact('story', 'chapter'));
+
+        // Lấy chương trước
+        $prevChapter = $story->chapters()
+            ->where('id', '<', $chapter->id)
+            ->orderByDesc('id')
+            ->first();
+
+        // Lấy chương sau
+        $nextChapter = $story->chapters()
+            ->where('id', '>', $chapter->id)
+            ->orderBy('id')
+            ->first();
+
+        return view('pages.information.author.author_chapter_edit', compact('story', 'chapter', 'prevChapter', 'nextChapter'));
     }
+
 
     // Xử lý cập nhật chương
     public function updateChapter(Request $request, Story $story, $chapterId)
@@ -902,7 +915,7 @@ class AuthorController extends Controller
             if ($request->status == 'draft' && $request->has('scheduled_publish_at')) {
                 $scheduledPublishAt = $request->scheduled_publish_at;
             }
-            
+
             $chapter->update([
                 'slug' => $proposedSlug,
                 'title' => $request->title,
