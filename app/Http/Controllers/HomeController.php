@@ -492,7 +492,7 @@ class HomeController extends Controller
         // Use withSubquery to avoid GROUP BY issues
         return Story::select('stories.id', 'stories.title', 'stories.user_id', 
                             'stories.status', 'stories.reviewed_at', 'stories.slug', 
-                            'stories.created_at')
+                            'stories.created_at', 'stories.updated_at','stories.cover', 'stories.cover_medium', 'stories.cover_thumbnail')
             ->where('stories.status', 'published')
             ->withAvg('ratings as average_rating', 'rating')
             ->joinSub($latestChapters, 'latest_chapters', function($join) {
