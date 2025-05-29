@@ -469,30 +469,33 @@ class HomeController extends Controller
     public function latestUpdatedStories()
     {
         $chapters = Chapter::where('status', 'published')
-            ->select(
-                'story_id',
-                DB::raw('MAX(COALESCE(scheduled_publish_at, created_at)) as latest_chapter_time'),
-                DB::raw('COUNT(*) as chapters_count')
-            )
+            ->select('story_id', DB::raw('MAX(COALESCE(scheduled_publish_at, created_at)) as latest_chapter_time'), DB::raw('COUNT(*) as chapters_count'))
             ->groupBy('story_id');
-
-        $stories = Story::joinSub($chapters, 'latest_chapters', function ($join) {
-            $join->on('stories.id', '=', 'latest_chapters.story_id');
-        })
-            ->join('ratings', 'stories.id', '=', 'ratings.story_id')
-            ->where('status', 'published')
+    
+        $stories = Story::query()
+            ->joinSub($chapters, 'latest_chapters', function ($join) {
+                $join->on('stories.id', '=', 'latest_chapters.story_id');
+            })
+            ->leftJoin('ratings', 'stories.id', '=', 'ratings.story_id')
+            ->where('stories.status', 'published')
             ->select(
-                'stories.*',
+                'stories.id',
+                'stories.title',
+                'stories.user_id',
+                'stories.status',
+                'stories.reviewed_at',
+                'stories.slug',
+                'stories.created_at',
+                'latest_chapters.chapters_count',
                 DB::raw('AVG(ratings.rating) as average_rating'),
-                'latest_chapters.chapters_count'
+                'latest_chapters.latest_chapter_time'
             )
-            ->groupBy('stories.id', 'latest_chapters.chapters_count')
+            ->groupBy('stories.id', 'stories.title', 'stories.user_id', 'stories.status', 'latest_chapters.chapters_count', 'latest_chapters.latest_chapter_time')
             ->orderByDesc('average_rating')
             ->orderByDesc('latest_chapters.latest_chapter_time')
             ->limit(10)
             ->get();
-
-
+    
         return $stories;
     }
 
