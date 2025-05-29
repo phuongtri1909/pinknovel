@@ -170,10 +170,14 @@ class HomeController extends Controller
 
     public function showRatingStories()
     {
-        $stories = Story::join('ratings', 'stories.id', '=', 'ratings.story_id')
+        $stories = Story::select('stories.*')
             ->where('status', 'published')
-            ->select('stories.*', DB::raw('AVG(ratings.rating) as average_rating'))
-            ->groupBy('stories.id')
+            ->withAvg('ratings as average_rating', 'rating')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                      ->from('ratings')
+                      ->whereColumn('ratings.story_id', 'stories.id');
+            })
             ->orderByDesc('average_rating')
             ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
             ->paginate(20);
@@ -187,17 +191,20 @@ class HomeController extends Controller
 
     public function showStoryNewChapter()
     {
-        $chapters = Chapter::where('status', 'published')
-            ->select('story_id', DB::raw('MAX(COALESCE(scheduled_publish_at, created_at)) as latest_chapter_time'))
-            ->groupBy('story_id');
-
-        $stories = Story::joinSub($chapters, 'latest_chapters', function ($join) {
-            $join->on('stories.id', '=', 'latest_chapters.story_id');
-        })
-            ->join('ratings', 'stories.id', '=', 'ratings.story_id')
+        // Get latest chapter information using a subquery
+        $latestChapters = DB::table('chapters')
+            ->select('story_id', 
+                     DB::raw('MAX(COALESCE(scheduled_publish_at, created_at)) as latest_chapter_time'))
             ->where('status', 'published')
-            ->select('stories.*', DB::raw('AVG(ratings.rating) as average_rating'))
-            ->groupBy('stories.id')
+            ->groupBy('story_id');
+        
+        // Use withSubquery to avoid GROUP BY issues
+        $stories = Story::select('stories.*')
+            ->where('stories.status', 'published')
+            ->withAvg('ratings as average_rating', 'rating')
+            ->joinSub($latestChapters, 'latest_chapters', function($join) {
+                $join->on('stories.id', '=', 'latest_chapters.story_id');
+            })
             ->orderByDesc('average_rating')
             ->orderByDesc('latest_chapters.latest_chapter_time')
             ->paginate(20);
@@ -250,13 +257,19 @@ class HomeController extends Controller
 
     public function showStoryView()
     {
+        $storyViews = DB::table('chapters')
+            ->select('story_id', DB::raw('SUM(views) as total_views'))
+            ->where('status', 'published')
+            ->groupBy('story_id');
+        
         $stories = Story::select('stories.*')
-            ->join('chapters', 'stories.id', '=', 'chapters.story_id')
-            ->where('chapters.status', 'published')
-            ->groupBy('stories.id')
-            ->selectRaw('SUM(chapters.views) as total_views')
-            ->orderByDesc('total_views')
+            ->joinSub($storyViews, 'story_views', function($join) {
+                $join->on('stories.id', '=', 'story_views.story_id');
+            })
+            ->addSelect('story_views.total_views')
+            ->orderByDesc('story_views.total_views')
             ->paginate(20);
+        
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => 'view',
@@ -468,42 +481,33 @@ class HomeController extends Controller
 
     public function latestUpdatedStories()
     {
-        $chapters = Chapter::where('status', 'published')
-            ->select('story_id', DB::raw('MAX(COALESCE(scheduled_publish_at, created_at)) as latest_chapter_time'), DB::raw('COUNT(*) as chapters_count'))
+        // Get latest chapter information using a subquery
+        $latestChapters = DB::table('chapters')
+            ->select('story_id', 
+                     DB::raw('MAX(COALESCE(scheduled_publish_at, created_at)) as latest_chapter_time'),
+                     DB::raw('COUNT(*) as chapters_count'))
+            ->where('status', 'published')
             ->groupBy('story_id');
-    
-        $stories = Story::query()
-            ->joinSub($chapters, 'latest_chapters', function ($join) {
+        
+        // Use withSubquery to avoid GROUP BY issues
+        return Story::select('stories.id', 'stories.title', 'stories.user_id', 
+                            'stories.status', 'stories.reviewed_at', 'stories.slug', 
+                            'stories.created_at')
+            ->where('stories.status', 'published')
+            ->withAvg('ratings as average_rating', 'rating')
+            ->joinSub($latestChapters, 'latest_chapters', function($join) {
                 $join->on('stories.id', '=', 'latest_chapters.story_id');
             })
-            ->leftJoin('ratings', 'stories.id', '=', 'ratings.story_id')
-            ->where('stories.status', 'published')
-            ->select(
-                'stories.id',
-                'stories.title',
-                'stories.user_id',
-                'stories.status',
-                'stories.reviewed_at',
-                'stories.slug',
-                'stories.created_at',
-                'latest_chapters.chapters_count',
-                DB::raw('AVG(ratings.rating) as average_rating'),
-                'latest_chapters.latest_chapter_time'
-            )
-            ->groupBy('stories.id', 'stories.title', 'stories.user_id', 'stories.status', 'latest_chapters.chapters_count', 'latest_chapters.latest_chapter_time')
+            ->addSelect('latest_chapters.chapters_count', 'latest_chapters.latest_chapter_time')
             ->orderByDesc('average_rating')
             ->orderByDesc('latest_chapters.latest_chapter_time')
             ->limit(10)
             ->get();
-    
-        return $stories;
     }
 
     public function getRatingStories()
     {
-        $stories = Story::join('ratings', 'stories.id', '=', 'ratings.story_id')
-            ->where('stories.status', 'published')
-            ->select(
+        return Story::select(
                 'stories.id',
                 'stories.user_id',
                 'stories.title',
@@ -514,33 +518,7 @@ class HomeController extends Controller
                 'stories.cover_thumbnail',
                 'stories.completed',
                 'stories.link_aff',
-                'stories.story_type',
-                'stories.author_name',
-                'stories.is_18_plus',
-                'stories.combo_price',
-                'stories.has_combo',
-                'stories.translator_name',
-                'stories.is_monopoly',
-                'stories.submitted_at',
-                'stories.review_note',
-                'stories.admin_note',
-                'stories.created_at',
-                'stories.updated_at',
-                'stories.reviewed_at',
-                DB::raw('AVG(ratings.rating) as average_rating')
-            )
-            ->groupBy(
-                'stories.id',
-                'stories.user_id',
-                'stories.title',
-                'stories.slug',
-                'stories.description',
-                'stories.cover',
-                'stories.cover_medium',
-                'stories.cover_thumbnail',
-                'stories.completed',
-                'stories.link_aff',
-                'stories.story_type',
+                'stories.story_type', 
                 'stories.author_name',
                 'stories.is_18_plus',
                 'stories.combo_price',
@@ -554,23 +532,33 @@ class HomeController extends Controller
                 'stories.updated_at',
                 'stories.reviewed_at'
             )
+            ->where('stories.status', 'published')
+            ->whereExists(function($query) {
+                $query->select(DB::raw(1))
+                      ->from('ratings')
+                      ->whereColumn('ratings.story_id', 'stories.id');
+            })
+            ->withAvg('ratings as average_rating', 'rating')
             ->orderByDesc('average_rating')
             ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
             ->limit(10)
             ->get();
-    
-        return $stories;
     }
     
 
     public function topViewedStories()
     {
+        $storyViews = DB::table('chapters')
+            ->select('story_id', DB::raw('SUM(views) as total_views'))
+            ->where('status', 'published')
+            ->groupBy('story_id');
+        
         $stories = Story::select('stories.*')
-            ->join('chapters', 'stories.id', '=', 'chapters.story_id')
-            ->where('chapters.status', 'published')
-            ->groupBy('stories.id')
-            ->selectRaw('SUM(chapters.views) as total_views')
-            ->orderByDesc('total_views')
+            ->joinSub($storyViews, 'story_views', function($join) {
+                $join->on('stories.id', '=', 'story_views.story_id');
+            })
+            ->addSelect('story_views.total_views')
+            ->orderByDesc('story_views.total_views')
             ->limit(10)
             ->get();
 
