@@ -35,9 +35,14 @@
                 @endif
             @endif
 
-            <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-outline-success">
+            <div>
+                <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-outline-success btn-sm">
                 <i class="fas fa-plus me-1"></i> Chương
             </a>
+             <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-plus me-1"></i> Nhiều Chương
+            </a>
+            </div>
         </div>
     </div>
 

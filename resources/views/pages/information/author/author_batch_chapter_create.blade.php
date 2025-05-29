@@ -64,7 +64,7 @@
         </a>
 
         <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-sm btn-primary">
-            <i class="fas fa-file-alt me-1"></i> Chuyển sang thêm một chương
+            <i class="fas fa-plus me-1"></i> 1 Chương
         </a>
     </div>
 

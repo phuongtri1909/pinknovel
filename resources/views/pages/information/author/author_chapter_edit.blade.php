@@ -89,7 +89,7 @@
 
         <div class="mb-3">
             <label for="content" class="form-label">Nội dung chương <span class="text-danger">*</span></label>
-            <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content">{{ old('content', $chapter->content) }}</textarea>
+            <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content" rows="25">{{ old('content', $chapter->content) }}</textarea>
             @error('content')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror

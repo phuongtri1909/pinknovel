@@ -56,7 +56,7 @@
         </a>
         
         <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}" class="btn btn-sm btn-primary">
-            <i class="fas fa-layer-group me-1"></i> Chuyển sang thêm nhiều chương
+            <i class="fas fa-plus me-1"></i> Nhiều chương
         </a>
     </div>
 
@@ -99,7 +99,7 @@
                 <div class="mb-3">
                     <label for="content" class="form-label">Nội dung chương <span
                             class="text-danger">*</span></label>
-                    <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content">{{ old('content') }}</textarea>
+                    <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content" rows="25">{{ old('content') }}</textarea>
                     @error('content')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
