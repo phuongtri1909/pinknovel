@@ -82,20 +82,24 @@ class AppServiceProvider extends ServiceProvider
                 'stories.title',
                 'stories.slug',
                 'stories.description',
-                'stories.cover',
-                DB::raw('(
-                    SELECT COUNT(*) FROM story_purchases 
+                'stories.cover'
+            ])
+            ->where('stories.status', 'published')
+            ->selectSub(function($query) {
+                $query->selectRaw('
+                    (SELECT COUNT(*) FROM story_purchases 
                     WHERE story_purchases.story_id = stories.id
-                    AND DATE(story_purchases.created_at) = CURRENT_DATE()
-                ) + (
-                    SELECT COUNT(*) FROM chapter_purchases 
+                    AND DATE(story_purchases.created_at) = CURRENT_DATE())
+                    +
+                    (SELECT COUNT(*) FROM chapter_purchases 
                     JOIN chapters ON chapter_purchases.chapter_id = chapters.id
                     WHERE chapters.story_id = stories.id
-                    AND DATE(chapter_purchases.created_at) = CURRENT_DATE()
-                ) as total_purchases'),
-        
-                DB::raw('(
-                    SELECT MAX(latest_time) FROM (
+                    AND DATE(chapter_purchases.created_at) = CURRENT_DATE())'
+                );
+            }, 'total_purchases')
+            ->selectSub(function($query) {
+                $query->selectRaw('
+                    (SELECT MAX(latest_time) FROM (
                         SELECT MAX(story_purchases.created_at) as latest_time
                         FROM story_purchases
                         WHERE story_purchases.story_id = stories.id
@@ -106,10 +110,9 @@ class AppServiceProvider extends ServiceProvider
                         JOIN chapters ON chapter_purchases.chapter_id = chapters.id
                         WHERE chapters.story_id = stories.id
                         AND DATE(chapter_purchases.created_at) = CURRENT_DATE()
-                    ) as merged_times
-                ) as latest_purchase_at')
-            ])
-            ->where('stories.status', 'published')
+                    ) as merged_times)'
+                );
+            }, 'latest_purchase_at')
             ->havingRaw('total_purchases > 0')
             ->orderByDesc('total_purchases')
             ->limit(10)
@@ -127,20 +130,24 @@ class AppServiceProvider extends ServiceProvider
                 'stories.title',
                 'stories.slug',
                 'stories.description',
-                'stories.cover',
-                DB::raw('(
-                    SELECT COUNT(*) FROM story_purchases 
+                'stories.cover'
+            ])
+            ->where('stories.status', 'published')
+            ->selectSub(function($query) {
+                $query->selectRaw('
+                    (SELECT COUNT(*) FROM story_purchases 
                     WHERE story_purchases.story_id = stories.id
-                    AND story_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
-                ) + (
-                    SELECT COUNT(*) FROM chapter_purchases 
+                    AND story_purchases.created_at >= CURDATE() - INTERVAL 7 DAY)
+                    +
+                    (SELECT COUNT(*) FROM chapter_purchases 
                     JOIN chapters ON chapter_purchases.chapter_id = chapters.id
                     WHERE chapters.story_id = stories.id
-                    AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
-                ) as total_purchases'),
-        
-                DB::raw('(
-                    SELECT MAX(latest_time) FROM (
+                    AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY)'
+                );
+            }, 'total_purchases')
+            ->selectSub(function($query) {
+                $query->selectRaw('
+                    (SELECT MAX(latest_time) FROM (
                         SELECT MAX(story_purchases.created_at) as latest_time
                         FROM story_purchases
                         WHERE story_purchases.story_id = stories.id
@@ -151,10 +158,9 @@ class AppServiceProvider extends ServiceProvider
                         JOIN chapters ON chapter_purchases.chapter_id = chapters.id
                         WHERE chapters.story_id = stories.id
                         AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
-                    ) as merged_times
-                ) as latest_purchase_at')
-            ])
-            ->where('stories.status', 'published')
+                    ) as merged_times)'
+                );
+            }, 'latest_purchase_at')
             ->havingRaw('total_purchases > 0')
             ->orderByDesc('total_purchases')
             ->limit(10)
@@ -172,20 +178,24 @@ class AppServiceProvider extends ServiceProvider
                 'stories.title',
                 'stories.slug',
                 'stories.description',
-                'stories.cover',
-                DB::raw('(
-                    SELECT COUNT(*) FROM story_purchases 
+                'stories.cover'
+            ])
+            ->where('stories.status', 'published')
+            ->selectSub(function($query) {
+                $query->selectRaw('
+                    (SELECT COUNT(*) FROM story_purchases 
                     WHERE story_purchases.story_id = stories.id
-                    AND story_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
-                ) + (
-                    SELECT COUNT(*) FROM chapter_purchases 
+                    AND story_purchases.created_at >= CURDATE() - INTERVAL 30 DAY)
+                    +
+                    (SELECT COUNT(*) FROM chapter_purchases 
                     JOIN chapters ON chapter_purchases.chapter_id = chapters.id
                     WHERE chapters.story_id = stories.id
-                    AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
-                ) as total_purchases'),
-        
-                DB::raw('(
-                    SELECT MAX(latest_time) FROM (
+                    AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY)'
+                );
+            }, 'total_purchases')
+            ->selectSub(function($query) {
+                $query->selectRaw('
+                    (SELECT MAX(latest_time) FROM (
                         SELECT MAX(story_purchases.created_at) as latest_time
                         FROM story_purchases
                         WHERE story_purchases.story_id = stories.id
@@ -196,10 +206,9 @@ class AppServiceProvider extends ServiceProvider
                         JOIN chapters ON chapter_purchases.chapter_id = chapters.id
                         WHERE chapters.story_id = stories.id
                         AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
-                    ) as merged_times
-                ) as latest_purchase_at')
-            ])
-            ->where('stories.status', 'published')
+                    ) as merged_times)'
+                );
+            }, 'latest_purchase_at')
             ->havingRaw('total_purchases > 0')
             ->orderByDesc('total_purchases')
             ->limit(10)
