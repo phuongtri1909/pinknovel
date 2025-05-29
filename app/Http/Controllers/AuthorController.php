@@ -648,23 +648,33 @@ class AuthorController extends Controller
     // Hàm phân tích nội dung batch để tách thành các chương
     private function parseChaptersFromBatchContent($batchContent)
     {
-        $pattern = '/\[Chương\s+(\d+)\]\s*:\s*(.+?)\s*\n(.*?)(?=\n\[Chương\s+\d+\]\s*:|\z)/s';
+        // Updated pattern to handle all variations:
+        // 1. "Chương X: Title" (with colon, no space)
+        // 2. "Chương X" (without title)
+        // 3. Multiple blank lines between chapters
+        $pattern = '/Chương\s+(\d+)(?:\s*:\s*([^\r\n]*))?[\r\n]+([\s\S]*?)(?=[\r\n]+Chương\s+\d+|\z)/';
 
         preg_match_all($pattern, $batchContent, $matches, PREG_SET_ORDER);
 
         $chapters = [];
 
         foreach ($matches as $match) {
+            $chapterNumber = (int) $match[1];
+            
+            // If there's no title or empty title, use "Chương X" as the title
+            $title = !empty($match[2]) ? trim($match[2]) : "Chương {$chapterNumber}";
+            
+            $content = isset($match[3]) ? trim($match[3]) : '';
+            
             $chapters[] = [
-                'number'  => (int) $match[1],
-                'title'   => trim($match[2]),
-                'content' => trim($match[3]),
+                'number'  => $chapterNumber,
+                'title'   => $title,
+                'content' => $content,
             ];
         }
 
         return $chapters;
     }
-
 
     // Xử lý lưu nhiều chương cùng lúc
     public function storeBatchChapters(Request $request, Story $story)

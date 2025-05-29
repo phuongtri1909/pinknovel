@@ -81,18 +81,24 @@
             <div class="alert alert-info mb-4">
                 <h5><i class="fas fa-info-circle me-2"></i>Hướng dẫn thêm nhiều chương</h5>
                 <p class="mb-2">Copy & paste nội dung với định dạng sau:</p>
-                <div class="batch-format-example">[Chương 1] : Hai con heo
+                <div class="batch-format-example">Chương 1: Hai con heo
                     Nội dung chương 1 ở đây...
 
-                    [Chương 2] : Ba con chó
+                    Chương 2: Ba con chó
                     Nội dung chương 2 ở đây...
 
-                    [Chương 3] : Bốn con mèo
+                    Chương 3: Bốn con mèo
                     Nội dung chương 3 ở đây...</div>
+                <p class="mt-2">Hoặc định dạng không có tiêu đề:</p>
+                <div class="batch-format-example">Chương 1
+                    Nội dung chương 1 ở đây...
+
+                    Chương 2
+                    Nội dung chương 2 ở đây...</div>
                 <ul class="mt-3 mb-0">
-                    <li>Hệ thống hỗ trợ cả hai định dạng: <code>[Chương X] : Tiêu đề</code> </li>
-                    <li>Hệ thống sẽ <strong>giữ nguyên số chương</strong> từ tiêu đề (ví dụ: "[Chương 5]" sẽ được
+                    <li>Hệ thống sẽ <strong>giữ nguyên số chương</strong> từ tiêu đề (ví dụ: "Chương 5" sẽ được
                         lưu là chương số 5)</li>
+                    <li>Nếu chương không có tiêu đề, hệ thống sẽ tự động đặt tiêu đề là "Chương X"</li>
                     <li>Các chương đã tồn tại (trùng số) sẽ được thông báo</li>
                     <li>Các chương có tiêu đề dẫn đến slug trùng lặp cũng sẽ được thông báo</li>
                     <li>Cài đặt về giá, mật khẩu và trạng thái sẽ áp dụng cho tất cả các chương mới</li>
@@ -365,47 +371,41 @@
 
             // Function to parse chapters from content
             function parseChaptersFromContent(content) {
-                // Default pattern for standard format
-                const pattern = /\[(Chương|Chapter|Chap)\s+(\d+)\]\s*:\s*(.+?)$/m;
-
-                // Find all chapter titles with their positions
                 const chapters = [];
-                const lines = content.split('\n');
-                let currentChapter = null;
-                let currentContent = [];
-
-                for (let i = 0; i < lines.length; i++) {
-                    const line = lines[i];
-
-                    // Try to match standard format
-                    let match = line.match(pattern);
-
-                    if (match) {
-                        // If we were collecting content for a chapter, save it
-                        if (currentChapter) {
-                            currentChapter.content = currentContent.join('\n').trim();
-                            chapters.push(currentChapter);
-                            currentContent = [];
-                        }
-
-                        // Create new chapter
-                        currentChapter = {
-                            number: parseInt(match[2]),
-                            title: match[3],
-                            content: ''
-                        };
-                    } else if (currentChapter) {
-                        // Add to current chapter content
-                        currentContent.push(line);
+                
+                // First, normalize line endings
+                const normalizedContent = content.replace(/\r\n/g, '\n');
+                
+                // Split content by chapter headings
+                // This regex looks for "Chương X" at the start of a line
+                const chapterBlocks = normalizedContent.split(/\n(?=Chương\s+\d+)/);
+                
+                // Process each chapter block
+                chapterBlocks.forEach(block => {
+                    if (!block.trim()) return; // Skip empty blocks
+                    
+                    // Extract the first line (chapter heading) and the rest (content)
+                    const lines = block.trim().split('\n');
+                    const headingLine = lines[0];
+                    
+                    // Match chapter number and optional title
+                    const headingMatch = headingLine.match(/^Chương\s+(\d+)(?:\s*:\s*(.*))?$/);
+                    
+                    if (headingMatch) {
+                        const chapterNumber = parseInt(headingMatch[1]);
+                        const title = headingMatch[2] ? headingMatch[2].trim() : `Chương ${chapterNumber}`;
+                        
+                        // Content is everything after the first line
+                        const content = lines.slice(1).join('\n').trim();
+                        
+                        chapters.push({
+                            number: chapterNumber,
+                            title: title,
+                            content: content
+                        });
                     }
-                }
-
-                // Don't forget the last chapter
-                if (currentChapter) {
-                    currentChapter.content = currentContent.join('\n').trim();
-                    chapters.push(currentChapter);
-                }
-
+                });
+                
                 return chapters;
             }
 
