@@ -86,7 +86,6 @@
                                     (auth()->user()->role === 'admin' && $user->role !== 'admin' && !in_array($user->email, $superAdminEmails)))
                                     <select class="form-select form-select-sm w-auto" id="role-select">
                                         <option value="user" {{ $user->role === 'user' ? 'selected' : '' }}>User</option>
-                                        <option value="mod" {{ $user->role === 'mod' ? 'selected' : '' }}>Mod</option>
                                         <option value="author" {{ $user->role === 'author' ? 'selected' : '' }}>Author</option>
                                         <option value="admin" {{ $user->role === 'admin' ? 'selected' : '' }}>Admin</option>
                                     </select>

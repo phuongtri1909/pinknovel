@@ -151,7 +151,7 @@ class UserController extends Controller
             }
 
             $request->validate([
-                'role' => 'required|in:user,mod,admin'
+                'role' => 'required|in:user,admin,author'
             ], [
                 'role.required' => 'Trường role không được để trống',
                 'role.in' => 'Giá trị không hợp lệ'
