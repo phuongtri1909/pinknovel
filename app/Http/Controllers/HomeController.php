@@ -499,17 +499,66 @@ class HomeController extends Controller
     public function getRatingStories()
     {
         $stories = Story::join('ratings', 'stories.id', '=', 'ratings.story_id')
-            ->where('status', 'published')
-            ->select('stories.*', DB::raw('AVG(ratings.rating) as average_rating'))
-            ->groupBy('stories.id')
+            ->where('stories.status', 'published')
+            ->select(
+                'stories.id',
+                'stories.user_id',
+                'stories.title',
+                'stories.slug',
+                'stories.description',
+                'stories.cover',
+                'stories.cover_medium',
+                'stories.cover_thumbnail',
+                'stories.completed',
+                'stories.link_aff',
+                'stories.story_type',
+                'stories.author_name',
+                'stories.is_18_plus',
+                'stories.combo_price',
+                'stories.has_combo',
+                'stories.translator_name',
+                'stories.is_monopoly',
+                'stories.submitted_at',
+                'stories.review_note',
+                'stories.admin_note',
+                'stories.created_at',
+                'stories.updated_at',
+                'stories.reviewed_at',
+                DB::raw('AVG(ratings.rating) as average_rating')
+            )
+            ->groupBy(
+                'stories.id',
+                'stories.user_id',
+                'stories.title',
+                'stories.slug',
+                'stories.description',
+                'stories.cover',
+                'stories.cover_medium',
+                'stories.cover_thumbnail',
+                'stories.completed',
+                'stories.link_aff',
+                'stories.story_type',
+                'stories.author_name',
+                'stories.is_18_plus',
+                'stories.combo_price',
+                'stories.has_combo',
+                'stories.translator_name',
+                'stories.is_monopoly',
+                'stories.submitted_at',
+                'stories.review_note',
+                'stories.admin_note',
+                'stories.created_at',
+                'stories.updated_at',
+                'stories.reviewed_at'
+            )
             ->orderByDesc('average_rating')
             ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
             ->limit(10)
             ->get();
-
-
+    
         return $stories;
     }
+    
 
     public function topViewedStories()
     {
