@@ -78,73 +78,45 @@ class AppServiceProvider extends ServiceProvider
             $view->with('topCategories', $topCategories);
 
             // Get top 10 hot stories for today
-            $dailyTopPurchased = DB::table('stories as main_table')
-                ->select(
-                    'main_table.id',
-                    'main_table.title',
-                    'main_table.slug',
-                    'main_table.description',
-                    'main_table.cover'
-                )
-                ->where('main_table.status', 'published')
-                ->selectSub(function ($query) {
-                    $query->selectRaw('COUNT(*)')
-                        ->from('story_purchases')
-                        ->whereColumn('story_purchases.story_id', 'main_table.id')
-                        ->whereRaw('DATE(story_purchases.created_at) = CURRENT_DATE()');
-                }, 'story_purchases_count')
-                ->selectSub(function ($query) {
-                    $query->selectRaw('COUNT(*)')
-                        ->from('chapter_purchases')
-                        ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
-                        ->whereColumn('chapters.story_id', 'main_table.id')
-                        ->whereRaw('DATE(chapter_purchases.created_at) = CURRENT_DATE()');
-                }, 'chapter_purchases_count')
-                ->selectSub(function ($query) {
-                    $query->selectRaw('MAX(purchase_time)')
-                        ->from(function ($subQuery) {
-                            $subQuery->select(DB::raw('story_purchases.created_at as purchase_time'))
-                                ->from('story_purchases')
-                                ->whereColumn('story_purchases.story_id', 'main_table.id')
-                                ->whereRaw('DATE(story_purchases.created_at) = CURRENT_DATE()')
-                                ->union(
-                                    DB::table('chapter_purchases')
-                                        ->select('chapter_purchases.created_at')
-                                        ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
-                                        ->whereColumn('chapters.story_id', 'main_table.id')
-                                        ->whereRaw('DATE(chapter_purchases.created_at) = CURRENT_DATE()')
-                                );
-                        }, 'combined_times');
-                }, 'latest_purchase_at')
-                ->where(function ($query) {
-                    $query->whereExists(function ($sub) {
-                        $sub->select(DB::raw(1))
-                            ->from('story_purchases')
-                            ->whereColumn('story_purchases.story_id', 'main_table.id')
-                            ->whereRaw('DATE(story_purchases.created_at) = CURRENT_DATE()');
-                    })
-                        ->orWhereExists(function ($sub) {
-                            $sub->select(DB::raw(1))
-                                ->from('chapter_purchases')
-                                ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
-                                ->whereColumn('chapters.story_id', 'main_table.id')
-                                ->whereRaw('DATE(chapter_purchases.created_at) = CURRENT_DATE()');
-                        });
-                })
-                ->orderByRaw('(COALESCE(story_purchases_count, 0) + COALESCE(chapter_purchases_count, 0)) DESC')
-                ->limit(10)
-                ->get();
-
-
-            // Convert to Story models and add necessary relationships
-            $dailyTopPurchased = collect($dailyTopPurchased)->map(function ($item) {
-                $story = Story::find($item->id);
-                $story->total_purchases = $item->story_purchases_count + $item->chapter_purchases_count;
-                $story->latest_purchase_diff = $item->latest_purchase_at
-                    ? Carbon::parse($item->latest_purchase_at)->diffForHumans()
-                    : 'Chưa có ai mua';
-                return $story;
-            });
+            $purchases = DB::table('stories')
+            ->leftJoin('story_purchases', function ($join) {
+                $join->on('stories.id', '=', 'story_purchases.story_id')
+                     ->whereRaw('DATE(story_purchases.created_at) = CURRENT_DATE()');
+            })
+            ->leftJoin('chapters', 'chapters.story_id', '=', 'stories.id')
+            ->leftJoin('chapter_purchases', function ($join) {
+                $join->on('chapters.id', '=', 'chapter_purchases.chapter_id')
+                     ->whereRaw('DATE(chapter_purchases.created_at) = CURRENT_DATE()');
+            })
+            ->where('stories.status', 'published')
+            ->groupBy('stories.id')
+            ->select(
+                'stories.id',
+                'stories.title',
+                'stories.slug',
+                'stories.description',
+                'stories.cover',
+                DB::raw('COUNT(DISTINCT story_purchases.id) as story_purchases_count'),
+                DB::raw('COUNT(DISTINCT chapter_purchases.id) as chapter_purchases_count'),
+                DB::raw('MAX(GREATEST(
+                    IFNULL(story_purchases.created_at, 0),
+                    IFNULL(chapter_purchases.created_at, 0)
+                )) as latest_purchase_at')
+            )
+            ->havingRaw('story_purchases_count > 0 OR chapter_purchases_count > 0')
+            ->orderByRaw('(story_purchases_count + chapter_purchases_count) DESC')
+            ->limit(10)
+            ->get();
+        
+        // Gán thêm field cho model
+        $dailyTopPurchased = collect($purchases)->map(function ($item) {
+            $story = Story::find($item->id);
+            $story->total_purchases = $item->story_purchases_count + $item->chapter_purchases_count;
+            $story->latest_purchase_diff = $item->latest_purchase_at
+                ? Carbon::parse($item->latest_purchase_at)->diffForHumans()
+                : 'Chưa có ai mua';
+            return $story;
+        });
 
             // ==== HOT TUẦN ====
             $weeklyTopPurchased = DB::table('stories')
