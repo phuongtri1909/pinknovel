@@ -77,22 +77,22 @@ class AppServiceProvider extends ServiceProvider
             $view->with('topCategories', $topCategories);
 
             // Get top 10 hot stories for today
-            $dailyTopPurchased = Story::from('stories')
+            $dailyTopPurchased = Story::from('stories as s')
                 ->select([
-                    'stories.id',
-                    'stories.title',
-                    'stories.slug',
-                    'stories.description',
-                    'stories.cover',
+                    's.id',
+                    's.title',
+                    's.slug',
+                    's.description',
+                    's.cover',
                     DB::raw('
             (
                 (SELECT COUNT(*) FROM story_purchases 
-                 WHERE story_purchases.story_id = stories.id
+                 WHERE story_purchases.story_id = s.id
                  AND DATE(story_purchases.created_at) = CURRENT_DATE())
                 +
                 (SELECT COUNT(*) FROM chapter_purchases 
                  JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                 WHERE chapters.story_id = stories.id
+                 WHERE chapters.story_id = s.id
                  AND DATE(chapter_purchases.created_at) = CURRENT_DATE())
             ) as total_purchases
         '),
@@ -101,19 +101,19 @@ class AppServiceProvider extends ServiceProvider
                 SELECT MAX(latest_time) FROM (
                     SELECT MAX(story_purchases.created_at) as latest_time
                     FROM story_purchases
-                    WHERE story_purchases.story_id = stories.id
+                    WHERE story_purchases.story_id = s.id
                     AND DATE(story_purchases.created_at) = CURRENT_DATE()
                     UNION
                     SELECT MAX(chapter_purchases.created_at) as latest_time
                     FROM chapter_purchases
                     JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                    WHERE chapters.story_id = stories.id
+                    WHERE chapters.story_id = s.id
                     AND DATE(chapter_purchases.created_at) = CURRENT_DATE()
                 ) as merged_times
             ) as latest_purchase_at
         ')
                 ])
-                ->where('stories.status', 'published')
+                ->where('s.status', 'published')
                 ->havingRaw('total_purchases > 0')
                 ->orderByDesc('total_purchases')
                 ->limit(10)
@@ -126,23 +126,24 @@ class AppServiceProvider extends ServiceProvider
                 });
 
 
+
             // ==== HOT TUẦN ====
-            $weeklyTopPurchased = Story::from('stories')
+            $weeklyTopPurchased = Story::from('stories as s')
                 ->select([
-                    'stories.id',
-                    'stories.title',
-                    'stories.slug',
-                    'stories.description',
-                    'stories.cover',
+                    's.id',
+                    's.title',
+                    's.slug',
+                    's.description',
+                    's.cover',
                     DB::raw('
             (
                 (SELECT COUNT(*) FROM story_purchases 
-                 WHERE story_purchases.story_id = stories.id
+                 WHERE story_purchases.story_id = s.id
                  AND story_purchases.created_at >= CURDATE() - INTERVAL 7 DAY)
                 +
                 (SELECT COUNT(*) FROM chapter_purchases 
                  JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                 WHERE chapters.story_id = stories.id
+                 WHERE chapters.story_id = s.id
                  AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY)
             ) as total_purchases
         '),
@@ -151,19 +152,19 @@ class AppServiceProvider extends ServiceProvider
                 SELECT MAX(latest_time) FROM (
                     SELECT MAX(story_purchases.created_at) as latest_time
                     FROM story_purchases
-                    WHERE story_purchases.story_id = stories.id
+                    WHERE story_purchases.story_id = s.id
                     AND story_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
                     UNION
                     SELECT MAX(chapter_purchases.created_at) as latest_time
                     FROM chapter_purchases
                     JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                    WHERE chapters.story_id = stories.id
+                    WHERE chapters.story_id = s.id
                     AND chapter_purchases.created_at >= CURDATE() - INTERVAL 7 DAY
                 ) as merged_times
             ) as latest_purchase_at
         ')
                 ])
-                ->where('stories.status', 'published')
+                ->where('s.status', 'published')
                 ->havingRaw('total_purchases > 0')
                 ->orderByDesc('total_purchases')
                 ->limit(10)
@@ -175,23 +176,24 @@ class AppServiceProvider extends ServiceProvider
                     return $story;
                 });
 
+
             // ==== HOT THÁNG ====
-            $monthlyTopPurchased = Story::from('stories')
+            $monthlyTopPurchased = Story::from('stories as s')
                 ->select([
-                    'stories.id',
-                    'stories.title',
-                    'stories.slug',
-                    'stories.description',
-                    'stories.cover',
+                    's.id',
+                    's.title',
+                    's.slug',
+                    's.description',
+                    's.cover',
                     DB::raw('
             (
                 (SELECT COUNT(*) FROM story_purchases 
-                 WHERE story_purchases.story_id = stories.id
+                 WHERE story_purchases.story_id = s.id
                  AND story_purchases.created_at >= CURDATE() - INTERVAL 30 DAY)
                 +
                 (SELECT COUNT(*) FROM chapter_purchases 
                  JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                 WHERE chapters.story_id = stories.id
+                 WHERE chapters.story_id = s.id
                  AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY)
             ) as total_purchases
         '),
@@ -200,19 +202,19 @@ class AppServiceProvider extends ServiceProvider
                 SELECT MAX(latest_time) FROM (
                     SELECT MAX(story_purchases.created_at) as latest_time
                     FROM story_purchases
-                    WHERE story_purchases.story_id = stories.id
+                    WHERE story_purchases.story_id = s.id
                     AND story_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
                     UNION
                     SELECT MAX(chapter_purchases.created_at) as latest_time
                     FROM chapter_purchases
                     JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                    WHERE chapters.story_id = stories.id
+                    WHERE chapters.story_id = s.id
                     AND chapter_purchases.created_at >= CURDATE() - INTERVAL 30 DAY
                 ) as merged_times
             ) as latest_purchase_at
         ')
                 ])
-                ->where('stories.status', 'published')
+                ->where('s.status', 'published')
                 ->havingRaw('total_purchases > 0')
                 ->orderByDesc('total_purchases')
                 ->limit(10)
