@@ -136,11 +136,11 @@
                     <!-- Giá chương (hiển thị khi chọn Có phí) -->
                     <div class="pricing-options" id="pricingOptions">
                         <div class="mb-3">
-                            <label for="price" class="form-label">Giá chương (Coin) <span
+                            <label for="price" class="form-label">Giá chương (Xu) <span
                                     class="text-danger">*</span></label>
                             <input type="number" class="form-control @error('price') is-invalid @enderror"
                                 id="price" name="price" value="{{ old('price', 5) }}" min="1">
-                            <div class="form-text text-muted">Mức giá tối thiểu là 1 coin.</div>
+                            <div class="form-text text-muted">Mức giá tối thiểu là 1 xu.</div>
                             @error('price')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

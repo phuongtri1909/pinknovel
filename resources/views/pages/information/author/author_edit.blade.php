@@ -528,7 +528,7 @@
                                                 @else
                                                     <span
                                                         class="badge bg-warning text-dark">{{ number_format($chapter->price) }}
-                                                        coin</span>
+                                                        xu</span>
                                                 @endif
                                             </td>
                                             <td>

@@ -188,7 +188,7 @@
                     <tr>
                         <th scope="col" width="10">Chương</th>
                         <th scope="col">Tên chương</th>
-                        <th scope="col">Coin</th>
+                        <th scope="col">Xu</th>
                         <th scope="col" width="120">Trạng thái</th>
                         <th scope="col" width="150">Thời gian</th>
                         <th scope="col" width="110">Hành động</th>

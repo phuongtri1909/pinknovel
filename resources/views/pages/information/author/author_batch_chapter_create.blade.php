@@ -156,7 +156,7 @@
                             <!-- Giá chương hàng loạt -->
                             <div class="pricing-options" id="pricingOptions">
                                 <div class="mb-3">
-                                    <label for="price" class="form-label">Giá chương (Coin) <span
+                                    <label for="price" class="form-label">Giá chương (Xu) <span
                                             class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('price') is-invalid @enderror"
                                         id="price" name="price" value="{{ old('price', 5) }}" min="1">

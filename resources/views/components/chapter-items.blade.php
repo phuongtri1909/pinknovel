@@ -65,7 +65,7 @@
                     @if ($isVip)
                         <span class="coin-box">
                             <span>{{ $chapter->price }}</span>
-                            <span class="fs-7">Coin</span>
+                            <span class="fs-7">Xu</span>
                         </span>
                     @else
                         <span class="free-box">
@@ -85,7 +85,7 @@
                                     </span>
                                 @else
                                     <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
-                                        data-bs-title="{{ $chapter->price }} Coin">
+                                        data-bs-title="{{ $chapter->price }} xu">
                                         <i class="fas fa-crown"></i>
                                     </span>
                                 @endif
@@ -151,7 +151,7 @@
                     @if ($isVip)
                         <span class="coin-box">
                             <span>{{ $chapter->price }}</span>
-                            <span class="fs-7">Coin</span>
+                            <span class="fs-7">Xu</span>
                         </span>
                     @else
                         <span class="free-box">
@@ -171,7 +171,7 @@
                                     </span>
                                 @else
                                     <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
-                                        data-bs-title="{{ $chapter->price }} Coin">
+                                        data-bs-title="{{ $chapter->price }} Xu">
                                         <i class="fas fa-crown"></i>
                                     </span>
                                 @endif

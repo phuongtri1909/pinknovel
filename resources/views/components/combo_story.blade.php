@@ -29,14 +29,14 @@
                     <div class="combo-price-section">
                         <div class="price-comparison">
                             @if ($totalChapterPrice > 0)
-                           <div>Tổng mua lẻ: <span class="old-price">{{ number_format($totalChapterPrice) }} Coin</span></div>
+                           <div>Tổng mua lẻ: <span class="old-price">{{ number_format($totalChapterPrice) }} Xu</span></div>
                             @endif
-                            <div class="new-price">{{ number_format($story->combo_price) }} Coin</div>
+                            <div class="new-price">{{ number_format($story->combo_price) }} Xu</div>
                         </div>
                         <div class="savings-info">
                             @if ($totalChapterPrice > 0 && $savingAmount > 0)
                                 <div class="savings-tag">
-                                    <i class="fas fa-tags"></i> Tiết kiệm {{ number_format($savingAmount) }} Coin
+                                    <i class="fas fa-tags"></i> Tiết kiệm {{ number_format($savingAmount) }} Xu
                                 </div>
                             @endif
                         </div>
