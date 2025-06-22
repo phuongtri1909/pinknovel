@@ -2,7 +2,7 @@
 @section('title', 'Đăng nhập')
 
 @push('styles-main')
-    <link rel="stylesheet" href="{{ asset('assets/css/auth.css') }}">
+    
 @endpush
 
 @section('content-main')
@@ -23,7 +23,18 @@
                                 @endphp
                                 <img class="auth-logo mb-4" src="{{ $logoPath }}" alt="logo">
                             </a>
-                            <h1 class="auth-title">Chào Mừng Trở Lại!</h1>
+                        </div>
+
+                        <a href="{{ route('login.google') }}" class="btn w-100 mb-3 border auth-btn text-dark">
+                            <img src="{{ asset('assets/images/svg/google_2025.svg') }}" alt="Google" class="me-2"
+                                height="30">
+                            Đăng nhập với Google
+                        </a>
+
+                        <div class="d-flex align-items-center text-center my-4">
+                            <hr class="flex-grow-1 border-top border-secondary">
+                            <span class="px-2 text-dark">hoặc</span>
+                            <hr class="flex-grow-1 border-top border-secondary">
                         </div>
 
                         <form action="{{ route('login') }}" method="post">
@@ -54,26 +65,15 @@
                             </div>
 
                             <div class="mb-4 text-end">
-                                <a href="{{ route('forgot-password') }}" class="auth-link">Quên mật khẩu?</a>
+                                <a href="{{ route('forgot-password') }}" class="color-3 text-decoration-none">Quên mật
+                                    khẩu?</a>
                             </div>
 
-                            <button type="submit" class="auth-btn btn w-100">Đăng Nhập</button>
+                            <button type="submit" class="auth-btn btn w-100 border">Đăng Nhập</button>
 
-                            <div class="text-center">
-                                <div class="divider d-flex align-items-center my-4">
-                                    <p class="text-center mx-3 mb-0">Hoặc</p>
-                                </div>
-
-                                <a href="{{ route('login.google') }}" class="btn w-100 mb-3 btn-outline-secondary">
-                                    <img src="{{ asset('assets/images/icons/google.svg') }}" alt="Google" class="me-2"
-                                        height="20">
-                                    Đăng nhập với Google
-                                </a>
-                            </div>
-
-                            <div class="text-center">
+                            <div class="text-center mt-4">
                                 <span>Chưa có tài khoản? </span>
-                                <a href="{{ route('register') }}" class="auth-link">Đăng ký ngay</a>
+                                <a href="{{ route('register') }}" class="auth-link text-decoration-none color-3">Đăng ký ngay</a>
                             </div>
                         </form>
                     </div>

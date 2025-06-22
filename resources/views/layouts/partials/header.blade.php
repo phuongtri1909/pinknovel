@@ -198,11 +198,18 @@
                         @endauth
                     </div>
 
-                    <!-- Mobile Menu Toggle Button - Visible on screens smaller than lg -->
-                    <button class="navbar-toggler border-0 d-lg-none" type="button" data-bs-toggle="offcanvas"
-                        data-bs-target="#offcanvasExample">
-                        <i class="fa-solid fa-bars fa-xl"></i>
-                    </button>
+                    <div class="d-flex">
+                        <button type="button" class="btn border rounded-pill bg-primary-1 d-md-none"
+                            style="width: 40px; height: 40px;" id="mobileSearchToggle">
+                            <i class="fas fa-search"></i>
+                        </button>
+
+                        <!-- Mobile Menu Toggle Button - Visible on screens smaller than lg -->
+                        <button class="navbar-toggler border-0 d-lg-none" type="button" data-bs-toggle="offcanvas"
+                            data-bs-target="#offcanvasExample">
+                            <i class="fa-solid fa-bars fa-xl"></i>
+                        </button>
+                    </div>
 
                 </div>
             </div>
@@ -325,7 +332,8 @@
                                                 <i class="fas fa-user me-2 color-3"></i> Trang cá nhân
                                             </a>
 
-                                            <a class="mobile-menu-item ps-3 py-2 d-block fw-semibold" href="{{ route('logout') }}">
+                                            <a class="mobile-menu-item ps-3 py-2 d-block fw-semibold"
+                                                href="{{ route('logout') }}">
                                                 <i class="fas fa-sign-out-alt me-2 color-3"></i> Đăng xuất
                                             </a>
                                         </div>
@@ -383,6 +391,69 @@
             document.querySelector('.search-container').addEventListener('click', function() {
                 searchInput.focus();
             });
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // Existing header transition code...
+            const header = document.querySelector(".transition-header");
+            const scrollThreshold = 300;
+
+            function handleScroll() {
+                if (window.scrollY > scrollThreshold) {
+                    header.classList.add("scrolled");
+                } else {
+                    header.classList.remove("scrolled");
+                }
+            }
+
+            window.addEventListener("scroll", handleScroll);
+            handleScroll();
+
+            // Search form handling for desktop
+            const searchForm = document.querySelector(".search-container form");
+            if (searchForm) {
+                const searchInput = searchForm.querySelector('input[name="query"]');
+
+                searchForm.addEventListener("submit", function(e) {
+                    if (searchInput.value.trim() === "") {
+                        e.preventDefault();
+                        searchInput.focus();
+                    }
+                });
+
+                document.querySelector(".search-container").addEventListener("click", function() {
+                    searchInput.focus();
+                });
+            }
+
+            // Mobile search toggle functionality
+            const mobileSearchToggle = document.getElementById("mobileSearchToggle");
+            const mobileSearchContainer = document.getElementById("mobileSearchContainer");
+            const mobileSearchInput = document.getElementById("mobileSearchInput");
+
+            if (mobileSearchToggle && mobileSearchContainer) {
+                mobileSearchToggle.addEventListener("click", function() {
+                    // Toggle visibility
+                    if (mobileSearchContainer.style.display === "none" || mobileSearchContainer.style.display === "") {
+                        mobileSearchContainer.style.display = "block";
+
+                        // Scroll to top of page first
+                        window.scrollTo({
+                            top: 0,
+                            behavior: "smooth"
+                        });
+
+                        // Focus the input after scroll completes
+                        setTimeout(() => {
+                            if (mobileSearchInput) {
+                                mobileSearchInput.focus();
+                            }
+                        }, 500);
+                    } else {
+                        mobileSearchContainer.style.display = "none";
+                    }
+                });
+            }
         });
     </script>
 </body>

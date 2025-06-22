@@ -1,5 +1,5 @@
 :root {
-    --primary-color-1: #f6b3b2;
+    --primary-color-1: #f79489;
     --primary-color-2: #fccfd4;
     --primary-color-3: #d86b6b;
     --primary-color-4: #fbd9d9;
@@ -7,6 +7,7 @@
     --primary-color-6: #f9f1f0;
     --purple-color-1: #d8a0db;
     --purple-color-2: #e9c9f9;
+    --primary-bg-1: #d9d9d966;
     --bg-list: #fafafa;
     --color-text: #333;
     --tw-text-opacity: 1;
@@ -15,6 +16,11 @@
 
 body {
     font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+
+
+.bg-primary-1 {
+    background: var(--primary-bg-1) !important;
 }
 
 .border-cl-shopee {
@@ -855,9 +861,7 @@ body {
 .auth-title {
     font-size: 1.8rem;
     font-weight: 600;
-    background: linear-gradient(90deg, rgba(238, 9, 121, 1) 12%, rgba(255, 106, 0, 1) 83%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--primary-color-3);
     margin-bottom: 2rem;
 }
 
@@ -877,15 +881,13 @@ body {
     padding: 12px;
     font-weight: 600;
     letter-spacing: 0.5px;
-    background: linear-gradient(90deg, rgba(238, 9, 121, 1) 12%, rgba(255, 106, 0, 1) 83%);
-    border: none;
-    color: white !important;
+    color: var(--primary-color-3);
     transition: all 0.3s ease;
 }
 
 .auth-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(238, 9, 121, 0.4);
+    box-shadow: 0 5px 15px var(--primary-color-1);
 }
 
 .auth-link {

@@ -53,7 +53,19 @@
                                 @endphp
                                 <img class="auth-logo mb-4" src="{{ $logoPath }}" alt="logo">
                             </a>
-                            <h1 class="auth-title">Tạo Tài Khoản Mới</h1>
+                            <h1 class="auth-title  color-3 text-decoration-none">Tạo Tài Khoản Mới</h1>
+                        </div>
+
+                        <a href="{{ route('login.google') }}" class="btn w-100 mb-3 auth-btn border text-dark">
+                            <img src="{{ asset('assets/images/svg/google_2025.svg') }}" alt="Google" class="me-2"
+                                height="30">
+                            Đăng nhập với Google
+                        </a>
+
+                        <div class="d-flex align-items-center text-center my-4">
+                            <hr class="flex-grow-1 border-top border-secondary">
+                            <span class="px-2 text-dark">hoặc</span>
+                            <hr class="flex-grow-1 border-top border-secondary">
                         </div>
 
                         <form id="registerForm">
@@ -70,26 +82,14 @@
                             </div>
 
                             <div class="box-button">
-                                <button type="submit" class="auth-btn btn w-100" id="btn-send">
+                                <button type="submit" class="auth-btn btn w-100 border" id="btn-send">
                                     Tiếp Tục
                                 </button>
                             </div>
 
-                            <div class="text-center">
-                                <div class="divider d-flex align-items-center my-4">
-                                    <p class="text-center mx-3 mb-0">Hoặc</p>
-                                </div>
-
-                                <a href="{{ route('login.google') }}" class="btn w-100 mb-3 btn-outline-secondary">
-                                    <img src="{{ asset('assets/images/icons/google.svg') }}" alt="Google" class="me-2"
-                                        height="20">
-                                    Đăng nhập với Google
-                                </a>
-                            </div>
-
-                            <div class="text-center">
+                            <div class="text-center mt-4">
                                 <span>Đã có tài khoản? </span>
-                                <a href="{{ route('login') }}" class="auth-link">Đăng nhập</a>
+                                <a href="{{ route('login') }}" class="auth-link color-3 text-decoration-none">Đăng nhập</a>
                             </div>
                         </form>
                     </div>
@@ -177,7 +177,7 @@
                             `);
 
                             $('.box-button').html(`
-                                <button class="w-100 btn btn-lg border-coins-refund-2 color-coins-refund" type="button" id="submitOtpPassword">Xác nhận</button>
+                                <button class="w-100 btn btn-lg border auth-btn" type="button" id="submitOtpPassword">Xác nhận</button>
                             `);
 
 
