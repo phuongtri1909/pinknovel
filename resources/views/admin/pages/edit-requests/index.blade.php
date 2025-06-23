@@ -127,7 +127,7 @@
                                                  class="img-thumbnail" 
                                                  style="max-width: 60px;">
                                         @else
-                                            <img src="{{ asset('images/story_default.png') }}" 
+                                            <img src="{{ asset('assets/images/story_default.png') }}" 
                                                  alt="default cover" 
                                                  class="img-thumbnail" 
                                                  style="max-width: 60px;">
