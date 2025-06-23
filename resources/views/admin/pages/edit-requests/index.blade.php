@@ -128,7 +128,7 @@
                                                  style="max-width: 60px;">
                                         @else
                                             <img src="{{ asset('images/story_default.png') }}" 
-                                                 alt="{{ $editRequest->story->title }}" 
+                                                 alt="default cover" 
                                                  class="img-thumbnail" 
                                                  style="max-width: 60px;">
                                         @endif
