@@ -135,7 +135,7 @@
                                     </td>
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <strong>{{ $editRequest->story->title }}</strong>
+                                            <strong>{{ $editRequest->title }}</strong>
                                             <small>{{ Str::limit($editRequest->title, 30) }}</small>
                                         </div>
                                     </td>
