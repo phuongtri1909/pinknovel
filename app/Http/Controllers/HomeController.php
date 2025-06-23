@@ -375,6 +375,7 @@ class HomeController extends Controller
                 'title',
                 'slug',
                 'cover',
+                'is_18_plus',
                 'completed',
                 'updated_at',
             ])
@@ -402,6 +403,7 @@ class HomeController extends Controller
                 'slug',
                 'cover',
                 'completed',
+                'is_18_plus',
                 'description',
                 'created_at',
                 'updated_at'
@@ -461,6 +463,7 @@ class HomeController extends Controller
                 'cover',
                 'status',
                 'completed',
+                'is_18_plus',
                 'reviewed_at',
                 'cover_medium'
             ])
@@ -491,7 +494,7 @@ class HomeController extends Controller
         
         // Use withSubquery to avoid GROUP BY issues
         return Story::select('stories.id', 'stories.title', 'stories.user_id', 
-                            'stories.status', 'stories.reviewed_at', 'stories.slug', 
+                            'stories.status', 'stories.reviewed_at', 'stories.slug','stories.is_18_plus', 
                             'stories.created_at', 'stories.updated_at','stories.cover', 'stories.cover_medium', 'stories.cover_thumbnail')
             ->where('stories.status', 'published')
             ->withAvg('ratings as average_rating', 'rating')

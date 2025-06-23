@@ -127,7 +127,7 @@
                                                  class="img-thumbnail" 
                                                  style="max-width: 60px;">
                                         @else
-                                            <img src="{{ Storage::url($editRequest->story->cover_thumbnail) }}" 
+                                            <img src="{{ Storage::url($editRequest->story->cover) }}" 
                                                  alt="{{ $editRequest->story->title }}" 
                                                  class="img-thumbnail" 
                                                  style="max-width: 60px;">

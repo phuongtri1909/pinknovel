@@ -8,14 +8,18 @@
                     @foreach ($banners as $banner)
                         <div class="swiper-slide">
                             <div class="slide-content">
-                                <a href="{{ $banner->link ?? route('show.page.story', $banner->story->slug) }}" rel="noopener noreferrer">
+                                <a href="{{ $banner->link ?? route('show.page.story', $banner->story->slug) }}"
+                                    rel="noopener noreferrer">
                                     <img src="{{ asset('storage/' . $banner->image) ?? asset('assets/images/banner_default.jpg') }}"
                                         alt="{{ $banner->alt_text ?? 'Banner Image' }}" loading="lazy">
+                                    @if ($banner->story->is_18_plus === 1)
+                                        @include('components.tag18plus')
+                                    @endif
                                 </a>
-                                @if($banner->title)
-                                <div class="title">
-                                    <span>{{ $banner->title }}</span>
-                                </div>
+                                @if ($banner->title)
+                                    <div class="title">
+                                        <span>{{ $banner->title }}</span>
+                                    </div>
                                 @endif
                             </div>
                         </div>
@@ -79,6 +83,7 @@
                 }
 
                 @media (min-width: 760px) {
+
                     .swiper-button-prev,
                     .swiper-button-next {
                         display: flex;

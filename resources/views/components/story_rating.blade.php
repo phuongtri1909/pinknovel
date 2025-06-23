@@ -1,5 +1,11 @@
 <div class="d-flex align-items-start mb-2 text-gray-600">
-    <img src="{{ Storage::url($story->cover) }}" class="story-image me-3 rounded-start" alt="{{ $story->title }}">
+    <div class="story-image-wrapper position-relative d-inline-block">
+        <img src="{{ Storage::url($story->cover) }}" class="story-image me-3 rounded-start" alt="{{ $story->title }}">
+
+        @if ($story->is_18_plus === 1)
+            @include('components.tag18plus')
+        @endif
+    </div>
     <div class="flex-grow-1">
         <h2 class="fs-6 mb-1">
             <a href="{{ route('show.page.story', $story->slug) }}"

@@ -178,24 +178,24 @@
                 background-color: rgba(25, 135, 84, 0.1);
             }
         }
-        
+
         /* Kiểu dáng cho modal lý do */
         .reason-content {
             background-color: #f8f9fa;
             border-radius: 8px;
             border-left: 4px solid #dc3545;
         }
-        
+
         #reasonText {
             white-space: pre-line;
             color: #444;
             font-size: 15px;
         }
-        
+
         .show-reason-btn {
             cursor: pointer;
         }
-        
+
         .show-reason-btn:hover {
             text-decoration: underline;
         }
@@ -403,7 +403,8 @@
                                                         <i class="fas fa-image me-1"></i> Xem
                                                     </a>
                                                 @elseif ($deposit->note)
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary show-reason-btn"
+                                                    <button type="button"
+                                                        class="btn btn-sm btn-outline-secondary show-reason-btn"
                                                         data-reason="{{ $deposit->note }}">
                                                         <i class="fas fa-comment-alt me-1"></i> Xem ghi chú
                                                     </button>
@@ -610,9 +611,6 @@
         <script>
             // Global error handler
             window.addEventListener('error', function(event) {
-                console.error('Global error caught:', event.error);
-                
-                // Only show user-friendly error for script errors, not for network/resource errors
                 if (event.error && !event.filename.includes('jquery')) {
                     if (typeof Swal !== 'undefined') {
                         Swal.fire({
@@ -631,7 +629,7 @@
                     }
                 }
             });
-            
+
             // Unhandled promise rejection handler
             window.addEventListener('unhandledrejection', function(event) {
                 console.error('Unhandled promise rejection:', event.reason);
@@ -665,12 +663,25 @@
                 }
             });
 
+            const firstBank = $('.bank-option').first();
+            if (firstBank.length > 0) {
+                firstBank.addClass('selected');
+                $('#bankId').val(firstBank.data('bank-id'));
+                $('.bank-error').hide();
+            }
+
             // Xử lý chọn ngân hàng
             $(document).on('click', '.bank-option', function() {
                 $('.bank-option').removeClass('selected');
                 $(this).addClass('selected');
                 $('#bankId').val($(this).data('bank-id'));
                 $('.bank-error').hide();
+
+                $(this).animate({
+                    opacity: 0.7
+                }, 100).animate({
+                    opacity: 1
+                }, 100);
             });
 
             // Cập nhật preview số xu
@@ -681,7 +692,7 @@
             function updateCoinPreview() {
                 try {
                     const amount = parseInt($('#amount').data('raw')) || 0;
-                    
+
                     const feeAmount = (amount * window.coinBankPercent) / 100;
                     const amountAfterFee = amount - feeAmount;
                     const baseCoins = Math.floor(amountAfterFee / window.coinExchangeRate);
@@ -747,21 +758,21 @@
 
                                 var paymentModalEl = document.getElementById('paymentModal');
                                 var paymentModal = new bootstrap.Modal(paymentModalEl);
-                                
+
                                 // Reset biến đánh dấu thanh toán khi mở modal mới
                                 window.paymentSubmitted = false;
-                                
+
                                 paymentModal.show();
                             } else {
-                                showErrorAlert('Có lỗi xảy ra: ' + (response.message ||
-                                    'Không thể xử lý thanh toán'));
+                                showToast('Có lỗi xảy ra: ' + (response.message ||
+                                    'Không thể xử lý thanh toán'), 'error');
                             }
                         },
                         error: function(xhr) {
                             let errorMessage = 'Đã xảy ra lỗi khi xử lý yêu cầu';
-                            
+
                             console.error("XHR Error:", xhr);
-                            
+
                             if (xhr.responseJSON) {
                                 if (xhr.responseJSON.errors) {
                                     // Laravel validation errors
@@ -777,10 +788,11 @@
                             } else if (xhr.status === 422) {
                                 errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
                             } else if (xhr.status === 0) {
-                                errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
+                                errorMessage =
+                                    'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
                             }
 
-                            showErrorAlert(errorMessage);
+                            showToast(errorMessage, 'error');
                         },
                         complete: function() {
                             $('#proceedToPaymentBtn').prop('disabled', false).html(
@@ -914,7 +926,7 @@
                     $('#uploadIconContainer').removeClass('d-none');
                 }
             });
-            
+
 
             // Submit xác nhận đã chuyển khoản với upload ảnh
             $('#evidenceForm').on('submit', function(e) {
@@ -934,7 +946,7 @@
                 $('#evidenceSubmitBtn').prop('disabled', true).html(
                     '<i class="fas fa-spinner fa-spin me-2"></i> Đang xử lý...');
 
-                    
+
                 // Gọi API xác nhận thanh toán
                 $.ajax({
                     url: '{{ route('user.request.payment.confirm') }}',
@@ -946,7 +958,7 @@
                         if (response.success) {
                             // Đánh dấu đã thanh toán thành công để không hiện cảnh báo khi reload
                             window.paymentSubmitted = true;
-                            
+
                             // Đóng modal
                             $('#uploadEvidenceModal').modal('hide');
 
@@ -954,19 +966,20 @@
                             setTimeout(function() {
                                 // Hiển thị toast thông báo thành công
                                 window.showToast(response.message, 'success');
-                                
+
                                 // Tự động reload trang sau 1.5 giây
                                 setTimeout(function() {
                                     window.location.href = window.location.href;
                                 }, 1500);
                             }, 500);
                         } else {
-                            showErrorAlert(response.message || 'Có lỗi xảy ra khi xử lý yêu cầu.');
+
+                            showToast(response.message || 'Có lỗi xảy ra khi xử lý yêu cầu.', 'error');
                         }
                     },
                     error: function(xhr) {
                         console.error("Evidence submission error:", xhr);
-                        
+
                         let errorMessage = 'Đã xảy ra lỗi khi xử lý yêu cầu';
 
                         if (xhr.responseJSON) {
@@ -975,13 +988,14 @@
                                 const errors = xhr.responseJSON.errors;
                                 const firstError = Object.values(errors)[0];
                                 errorMessage = firstError[0] || errorMessage;
-                                
+
                                 // Highlight specific form fields with errors
                                 if (errors.transaction_image) {
                                     $('#transaction_image').addClass('is-invalid');
-                                    $('#transaction_image').next('.invalid-feedback').text(errors.transaction_image[0]);
+                                    $('#transaction_image').next('.invalid-feedback').text(errors
+                                        .transaction_image[0]);
                                 }
-                                
+
                                 if (errors.request_payment_id) {
                                     errorMessage = 'Yêu cầu thanh toán không hợp lệ hoặc đã hết hạn';
                                 }
@@ -998,7 +1012,7 @@
                             errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
                         }
 
-                        showErrorAlert(errorMessage);
+                        showToast(errorMessage, 'error');
                     },
                     complete: function() {
                         // Khôi phục trạng thái nút
@@ -1089,14 +1103,14 @@
             function showCopySuccess($button, originalText) {
                 $button.html('<i class="fas fa-check"></i>');
 
-                // Tạo toast thông báo nhỏ
-                $('<div class="copy-toast success">Đã sao chép</div>')
-                    .appendTo('body')
-                    .fadeIn(200)
-                    .delay(1500)
-                    .fadeOut(200, function() {
-                        $(this).remove();
-                    });
+                // // Tạo toast thông báo nhỏ
+                // $('<div class="copy-toast success">Đã sao chép</div>')
+                //     .appendTo('body')
+                //     .fadeIn(200)
+                //     .delay(1500)
+                //     .fadeOut(200, function() {
+                //         $(this).remove();
+                //     });
 
                 // Khôi phục nút sau 1 giây
                 setTimeout(() => $button.html(originalText), 1000);
@@ -1124,16 +1138,6 @@
                 window.showToast(message, type);
             }
 
-            // Hiển thị thông báo lỗi
-            function showErrorAlert(message) {
-                console.error("Error:", message);
-                
-                window.showAlert('Lỗi', message, 'error');
-                
-                // Log the error to the console for debugging
-                console.error("Error occurred:", message);
-            }
-
             // Xử lý khi nhấn nút đóng modal thanh toán
             $(document).ready(function() {
                 // Xử lý sự kiện khi nhấn nút X hoặc nút đóng
@@ -1146,10 +1150,10 @@
                         function() {
                             // Đánh dấu modal để cho phép đóng
                             $('#paymentModal').data('force-close', true);
-                            
+
                             // Đóng modal thanh toán
                             $('#paymentModal').modal('hide');
-                            
+
                             // Xóa backdrop và reset body
                             setTimeout(function() {
                                 $('.modal-backdrop').remove();
@@ -1157,7 +1161,7 @@
                                 $('body').css('padding-right', '');
                                 $('#paymentModal').data('force-close', false);
                             }, 300);
-                            
+
                             // Hiển thị thông báo đã hủy
                             showNotification('Đã hủy giao dịch thanh toán', 'info');
                         }
@@ -1178,7 +1182,7 @@
 
                 // Kích hoạt tooltip cho lý do từ chối
                 $('[data-bs-toggle="tooltip"]').tooltip();
-                
+
                 // Xử lý hiển thị modal lý do
                 $(document).on('click', '.show-reason-btn', function(e) {
                     e.preventDefault();
@@ -1218,7 +1222,7 @@
                 function updateCoinPreview() {
                     try {
                         const amount = parseInt($('#amount').data('raw')) || 0;
-                        
+
                         const feeAmount = (amount * window.coinBankPercent) / 100;
                         const amountAfterFee = amount - feeAmount;
                         const baseCoins = Math.floor(amountAfterFee / window.coinExchangeRate);
@@ -1280,21 +1284,21 @@
 
                                     var paymentModalEl = document.getElementById('paymentModal');
                                     var paymentModal = new bootstrap.Modal(paymentModalEl);
-                                    
+
                                     // Reset biến đánh dấu thanh toán khi mở modal mới
                                     window.paymentSubmitted = false;
-                                    
+
                                     paymentModal.show();
                                 } else {
-                                    showErrorAlert('Có lỗi xảy ra: ' + (response.message ||
-                                        'Không thể xử lý thanh toán'));
+                                    showToast('Có lỗi xảy ra: ' + (response.message ||
+                                        'Không thể xử lý thanh toán'), 'error');
                                 }
                             },
                             error: function(xhr) {
                                 let errorMessage = 'Đã xảy ra lỗi khi xử lý yêu cầu';
-                                
+
                                 console.error("XHR Error:", xhr);
-                                
+
                                 if (xhr.responseJSON) {
                                     if (xhr.responseJSON.errors) {
                                         // Laravel validation errors
@@ -1310,10 +1314,11 @@
                                 } else if (xhr.status === 422) {
                                     errorMessage = 'Dữ liệu không hợp lệ. Vui lòng kiểm tra lại.';
                                 } else if (xhr.status === 0) {
-                                    errorMessage = 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
+                                    errorMessage =
+                                        'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.';
                                 }
 
-                                showErrorAlert(errorMessage);
+                                showToast(errorMessage, 'error');
                             },
                             complete: function() {
                                 $('#proceedToPaymentBtn').prop('disabled', false).html(

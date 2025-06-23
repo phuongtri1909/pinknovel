@@ -203,13 +203,13 @@
                             <div class="comparison-column">
                                 <div class="comparison-header">Hiện tại</div>
                                 <div class="value {{ $story->description != $editRequest->description ? 'changed' : '' }}">
-                                    {!! nl2br(e($story->description)) !!}
+                                    {!! $story->description !!}
                                 </div>
                             </div>
                             <div class="comparison-column">
                                 <div class="comparison-header">Yêu cầu thay đổi</div>
                                 <div class="value {{ $story->description != $editRequest->description ? 'changed' : '' }}">
-                                    {!! nl2br(e($editRequest->description)) !!}
+                                    {!! $editRequest->description !!}
                                 </div>
                             </div>
                         </div>

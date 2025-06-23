@@ -3,6 +3,10 @@
         <a href="{{ route('show.page.story', $story->slug) }}">
             <img src="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/story_default.jpg') }}"
                 alt="{{ $story->title }}" class="img-fluid">
+            @if($story->is_18_plus === 1)
+                @include('components.tag18plus')
+            @endif
+
             @if ($story->completed === 1)
                 <span class="badge-full"> Full </span>
             @endif

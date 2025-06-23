@@ -2,8 +2,8 @@
 
 @section('title')
     @if (isset($isSearch) && $isSearch)
-        @if(isset($searchType))
-            @if($searchType === 'author')
+        @if (isset($searchType))
+            @if ($searchType === 'author')
                 Tìm truyện của tác giả: {{ $query }}
             @elseif($searchType === 'translator')
                 Tìm truyện dịch bởi: {{ $query }}
@@ -34,8 +34,8 @@
 
 @section('description')
     @if (isset($isSearch) && $isSearch)
-        @if(isset($searchType))
-            @if($searchType === 'author')
+        @if (isset($searchType))
+            @if ($searchType === 'author')
                 Danh sách truyện của tác giả "{{ $query }}" tại {{ config('app.name') }}
             @elseif($searchType === 'translator')
                 Danh sách truyện được dịch bởi "{{ $query }}" tại {{ config('app.name') }}
@@ -72,8 +72,8 @@
                 <div class="bg-white p-3 rounded-4 shadow-sm mb-4">
                     <h2 class="h4 mb-3 fw-bold">
                         @if (isset($isSearch) && $isSearch)
-                            @if(isset($searchType))
-                                @if($searchType === 'author')
+                            @if (isset($searchType))
+                                @if ($searchType === 'author')
                                     <i class="fa-solid fa-user-pen fa-lg text-primary"></i>
                                     Tác giả: "{{ $query }}"
                                 @elseif($searchType === 'translator')
@@ -151,10 +151,12 @@
                                             {{ $story->chapters_count ?? $story->chapters->count() }} chương
                                         </div>
                                         <div class="me-3">
-                                            <i class="fas fa-eye me-1 text-primary"></i> {{ number_format($story->view_count) }}
+                                            <i class="fas fa-eye me-1 text-primary"></i>
+                                            {{ number_format($story->view_count) }}
                                         </div>
                                         <div>
-                                            <i class="fas fa-clock me-1 text-warning"></i> {{ $story->updated_at->diffForHumans() }}
+                                            <i class="fas fa-clock me-1 text-warning"></i>
+                                            {{ $story->updated_at->diffForHumans() }}
                                         </div>
                                     </div>
                                     <div class="story-description mt-2 small text-muted d-none d-md-block">
@@ -177,17 +179,11 @@
                 <div class="mb-4">
                     @include('components.recent-reads')
                 </div>
-                
+
                 <div class="mb-4">
-                    <x-categories-widget 
-                        :categories="$categories" 
-                        :current-category="$currentCategory ?? null" 
-                        :is-search="$isSearch ?? false" 
-                    />
+                    <x-categories-widget :categories="$categories" :current-category="$currentCategory ?? null" :is-search="$isSearch ?? false" />
                 </div>
             </div>
         </div>
     </div>
 @endsection
-
-
