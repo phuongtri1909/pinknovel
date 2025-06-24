@@ -52,11 +52,10 @@
 @section('info_content')
     <div class="mb-4 d-flex justify-content-between align-items-center">
         <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách chương
-        </a>
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
         
-        <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}" class="btn btn-sm btn-primary">
-            <i class="fas fa-plus me-1"></i> Nhiều chương
+        <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}" class="btn btn-sm btn-outline-dark">
+            <i class="fas fa-plus me-1"></i> <i class="fas fa-plus"></i>
         </a>
     </div>
 

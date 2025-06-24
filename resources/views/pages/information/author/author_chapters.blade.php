@@ -36,11 +36,11 @@
             @endif
 
             <div>
-                <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-outline-success btn-sm">
-                <i class="fas fa-plus me-1"></i> Chương
+                <a title="Thêm chương" href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-plus"></i>
             </a>
-             <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}" class="btn btn-outline-success btn-sm">
-                <i class="fas fa-plus me-1"></i> Nhiều Chương
+             <a title="Thêm nhiều chương" href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}" class="btn btn-outline-success btn-sm">
+                <i class="fas fa-plus me-1"></i> <i class="fas fa-plus"></i> 
             </a>
             </div>
         </div>

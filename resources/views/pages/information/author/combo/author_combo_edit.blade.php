@@ -9,7 +9,7 @@
 @section('info_content')
     <div class="mb-4">
         <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách chương
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
         </a>
     </div>
 

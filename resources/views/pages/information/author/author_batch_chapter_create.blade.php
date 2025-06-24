@@ -54,23 +54,35 @@
         .schedule-input {
             margin-top: 10px;
         }
+
+        #guideContent {
+            transition: all 0.3s ease;
+        }
+
+        #toggleGuideBtn {
+            transition: all 0.2s ease;
+        }
+
+        #toggleGuideBtn:hover {
+            transform: translateY(-1px);
+        }
     </style>
 @endpush
 
 @section('info_content')
     <div class="mb-4 d-flex justify-content-between align-items-center">
         <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay lại danh sách chương
+            <i class="fas fa-arrow-left me-1"></i> Quay lại
         </a>
 
-        <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-sm btn-primary">
-            <i class="fas fa-plus me-1"></i> 1 Chương
+        <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-sm btn-outline-dark">
+            <i class="fas fa-plus"></i>
         </a>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-layer-group me-2"></i>Thêm nhiều chương cùng lúc</h5>
+    <div class="card mb-4 rounded-4 border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">Thêm nhiều chương</h5>
         </div>
         <div class="card-body">
             @if (session('error'))
@@ -78,31 +90,46 @@
                     <i class="fas fa-exclamation-triangle me-2"></i> {!! session('error') !!}
                 </div>
             @endif
-            <div class="alert alert-info mb-4">
-                <h5><i class="fas fa-info-circle me-2"></i>Hướng dẫn thêm nhiều chương</h5>
-                <p class="mb-2">Copy & paste nội dung với định dạng sau:</p>
-                <div class="batch-format-example">Chương 1: Hai con heo
-                    Nội dung chương 1 ở đây...
+            <div class="alert alert-info mb-4 rounded-4">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Hướng dẫn thêm nhiều chương</h5>
+                    <button type="button" class="btn btn-sm btn-outline-dark" id="toggleGuideBtn" onclick="toggleGuide()">
+                        <i class="fas fa-chevron-down" id="guideIcon"></i>
+                    </button>
+                </div>
 
-                    Chương 2: Ba con chó
-                    Nội dung chương 2 ở đây...
+                <div id="guideContent" class="mt-3" style="display: none;">
+                    <div class="row">
+                        <div class="col-6">
+                            <p class="mb-2">Copy & paste nội dung với định dạng sau:</p>
+                            <div class="batch-format-example">Chương 1: Hai con heo
+                                Nội dung chương 1 ở đây...
 
-                    Chương 3: Bốn con mèo
-                    Nội dung chương 3 ở đây...</div>
-                <p class="mt-2">Hoặc định dạng không có tiêu đề:</p>
-                <div class="batch-format-example">Chương 1
-                    Nội dung chương 1 ở đây...
+                                Chương 2: Ba con chó
+                                Nội dung chương 2 ở đây...
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <p class="mb-2">Hoặc định dạng không có tiêu đề:</p>
+                            <div class="batch-format-example">Chương 1
+                                Nội dung chương 1 ở đây...
 
-                    Chương 2
-                    Nội dung chương 2 ở đây...</div>
-                <ul class="mt-3 mb-0">
-                    <li>Hệ thống sẽ <strong>giữ nguyên số chương</strong> từ tiêu đề (ví dụ: "Chương 5" sẽ được
-                        lưu là chương số 5)</li>
-                    <li>Nếu chương không có tiêu đề, hệ thống sẽ tự động đặt tiêu đề là "Chương X"</li>
-                    <li>Các chương đã tồn tại (trùng số) sẽ được thông báo</li>
-                    <li>Các chương có tiêu đề dẫn đến slug trùng lặp cũng sẽ được thông báo</li>
-                    <li>Cài đặt về giá, mật khẩu và trạng thái sẽ áp dụng cho tất cả các chương mới</li>
-                </ul>
+                                Chương 2
+                                Nội dung chương 2 ở đây...
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <ul class="mt-3 mb-0">
+                        <li>Hệ thống sẽ <strong>giữ nguyên số chương</strong> từ tiêu đề (ví dụ: "Chương 5" sẽ được
+                            lưu là chương số 5)</li>
+                        <li>Nếu chương không có tiêu đề, hệ thống sẽ tự động đặt tiêu đề là "Chương X"</li>
+                        <li>Các chương đã tồn tại (trùng số) sẽ được thông báo</li>
+                        <li>Các chương có tiêu đề dẫn đến slug trùng lặp cũng sẽ được thông báo</li>
+                        <li>Cài đặt về giá, mật khẩu và trạng thái sẽ áp dụng cho tất cả các chương mới</li>
+                    </ul>
+                </div>
             </div>
 
             <form action="{{ route('user.author.stories.chapters.batch.store', $story->id) }}" method="POST"
@@ -122,183 +149,194 @@
 
 
                 <!-- Phần tùy chọn chương hàng loạt -->
-                <div class="chapter-options">
-                    <h5 class="mb-3">Tùy chọn cho tất cả các chương</h5>
+                <div class="chapter-options rounded-4">
+                    <h5 class="mb-3">Tùy chọn</h5>
 
                     <div class="row">
-                        <div class="col-12 col-md-6">
-                            <!-- Hình thức chương -->
+                        <div class="col-12 col-md-4 row">
+                            <div class="col-12">
+                                <!-- Hình thức chương -->
+                                <div class="mb-3">
+                                    <label class="form-label">Hình thức chương <span class="text-danger">*</span></label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="is_free" id="is_free_yes"
+                                            value="1" {{ old('is_free', '1') == '1' ? 'checked' : '' }}
+                                            onchange="togglePricingOptions()">
+                                        <label class="form-check-label" for="is_free_yes">
+                                            <i class="fas fa-unlock text-success me-1"></i> Miễn phí
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="is_free" id="is_free_no"
+                                            value="0" {{ old('is_free') == '0' ? 'checked' : '' }}
+                                            onchange="togglePricingOptions()">
+                                        <label class="form-check-label" for="is_free_no">
+                                            <i class="fas fa-coins text-warning me-1"></i> Có phí
+                                        </label>
+                                    </div>
+                                    @error('is_free')
+                                        <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <!-- Giá chương hàng loạt -->
+                                <div class="pricing-options" id="pricingOptions">
+                                    <div class="mb-3">
+                                        <label for="price" class="form-label">Giá chương (Xu) <span
+                                                class="text-danger">*</span></label>
+                                        <input type="number" class="form-control @error('price') is-invalid @enderror"
+                                            id="price" name="price" value="{{ old('price', 5) }}" min="1">
+                                        <div class="form-text text-muted">Áp dụng cho tất cả chương.
+                                        </div>
+                                        @error('price')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tùy chọn xuất bản hàng loạt -->
+                        <div class="col-12 col-md-4">
                             <div class="mb-3">
-                                <label class="form-label">Hình thức chương <span class="text-danger">*</span></label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="is_free" id="is_free_yes"
-                                        value="1" {{ old('is_free', '1') == '1' ? 'checked' : '' }}
-                                        onchange="togglePricingOptions()">
-                                    <label class="form-check-label" for="is_free_yes">
-                                        <i class="fas fa-unlock text-success me-1"></i> Miễn phí
+                                <label class="form-label">Xuất bản chương <span class="text-danger">*</span></label>
+
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="radio" name="status" id="status_published"
+                                        value="published" {{ old('status') == 'published' ? 'checked' : '' }}
+                                        onchange="toggleScheduleOptions()">
+                                    <label class="form-check-label" for="status_published">
+                                        <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
                                     </label>
+                                   
                                 </div>
+
                                 <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="is_free" id="is_free_no"
-                                        value="0" {{ old('is_free') == '0' ? 'checked' : '' }}
-                                        onchange="togglePricingOptions()">
-                                    <label class="form-check-label" for="is_free_no">
-                                        <i class="fas fa-coins text-warning me-1"></i> Có phí
+                                    <input class="form-check-input" type="radio" name="status" id="status_draft"
+                                        value="draft" {{ old('status', 'draft') == 'draft' ? 'checked' : '' }}
+                                        onchange="toggleScheduleOptions()">
+                                    <label class="form-check-label" for="status_draft">
+                                        <i class="fas fa-edit text-secondary me-1"></i> Lưu nháp
                                     </label>
+                                    
                                 </div>
-                                @error('is_free')
+
+                            </div>
+
+                            <div class="mb-3" id="scheduleOptionsContainer"
+                                style="{{ old('status') == 'published' ? 'display: none;' : '' }}">
+                                <label class="form-label d-flex align-items-center">
+                                    <input type="checkbox" class="form-check-input me-2" id="enableSchedule"
+                                        onchange="toggleScheduleField()"
+                                        {{ old('scheduled_publish_at') ? 'checked' : '' }}>
+                                    Hẹn giờ xuất bản
+                                </label>
+                                <div id="scheduleField"
+                                    style="{{ old('scheduled_publish_at') ? '' : 'display: none;' }}">
+                                    <input type="datetime-local"
+                                        class="form-control @error('scheduled_publish_at') is-invalid @enderror"
+                                        id="scheduled_publish_at" name="scheduled_publish_at"
+                                        value="{{ old('scheduled_publish_at') }}">
+                                    <div class="form-text text-muted">Tất cả chương sẽ tự động xuất bản vào thời gian
+                                        đã chọn (trừ khi có lịch riêng).</div>
+                                </div>
+                                @error('scheduled_publish_at')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="col-12 col-md-6">
-                            <!-- Giá chương hàng loạt -->
-                            <div class="pricing-options" id="pricingOptions">
-                                <div class="mb-3">
-                                    <label for="price" class="form-label">Giá chương (Xu) <span
-                                            class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('price') is-invalid @enderror"
-                                        id="price" name="price" value="{{ old('price', 5) }}" min="1">
-                                    <div class="form-text text-muted">Mức giá này sẽ áp dụng cho tất cả các chương.</div>
-                                    @error('price')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                        <!-- Mật khẩu hàng loạt -->
+                        <div class="col-12 col-md-4" id="passwordOptions">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="form-label">Các chương có mật khẩu không?</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="has_password"
+                                                id="has_password_no" value="0"
+                                                {{ old('has_password', '0') == '0' ? 'checked' : '' }}
+                                                onchange="togglePasswordField()">
+                                            <label class="form-check-label" for="has_password_no">
+                                                <i class="fas fa-lock-open text-success me-1"></i> Không có mật khẩu
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="has_password"
+                                                id="has_password_yes" value="1"
+                                                {{ old('has_password') == '1' ? 'checked' : '' }}
+                                                onchange="togglePasswordField()">
+                                            <label class="form-check-label" for="has_password_yes">
+                                                <i class="fas fa-lock text-warning me-1"></i> Có mật khẩu
+                                            </label>
+                                        </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="col-12">
+                                    <div class="mb-3" id="passwordField"
+                                        style="{{ old('has_password') == '1' ? '' : 'display: none;' }}">
+                                        <label for="password" class="form-label">Mật khẩu chương <span
+                                                class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="password"
+                                                class="form-control @error('password') is-invalid @enderror"
+                                                id="password" name="password" value="{{ old('password') }}">
+                                            <span class="input-group-text toggle-password"
+                                                onclick="togglePasswordVisibility()">
+                                                <i class="fas fa-eye"></i>
+                                            </span>
+                                        </div>
+                                        <div class="form-text text-muted">Áp dụng cho tất cả các chương.
+                                        </div>
+                                        @error('password')
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
 
                     </div>
 
-                    <!-- Mật khẩu hàng loạt -->
-                    <div class="password-options" id="passwordOptions">
-                        <div class="row">
-                            <div class="col-12 col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Các chương có mật khẩu không?</label>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="has_password"
-                                            id="has_password_yes" value="1"
-                                            {{ old('has_password') == '1' ? 'checked' : '' }}
-                                            onchange="togglePasswordField()">
-                                        <label class="form-check-label" for="has_password_yes">
-                                            <i class="fas fa-lock text-warning me-1"></i> Có mật khẩu
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="has_password"
-                                            id="has_password_no" value="0"
-                                            {{ old('has_password', '0') == '0' ? 'checked' : '' }}
-                                            onchange="togglePasswordField()">
-                                        <label class="form-check-label" for="has_password_no">
-                                            <i class="fas fa-lock-open text-success me-1"></i> Không có mật khẩu
-                                        </label>
-                                    </div>
+                    <!-- Preview chapters section -->
+                    <div id="previewChapters" class="preview-chapters mb-4 {{ old('chapters_count') ? '' : 'd-none' }}">
+                        <h5 class="mb-3">Xem trước các chương</h5>
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Vui lòng kiểm tra các chương đã tách
+                            và
+                            thiết lập lịch đăng (nếu cần)
+                        </div>
+                        <div id="chaptersPreviewContainer">
+                            @if (old('chapters_count'))
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> Vui lòng nhấn "Xem trước các chương" để
+                                    hiển thị lại các chương đã tách.
                                 </div>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <div class="mb-3" id="passwordField"
-                                    style="{{ old('has_password') == '1' ? '' : 'display: none;' }}">
-                                    <label for="password" class="form-label">Mật khẩu chương <span
-                                            class="text-danger">*</span></label>
-                                    <div class="input-group">
-                                        <input type="password"
-                                            class="form-control @error('password') is-invalid @enderror" id="password"
-                                            name="password" value="{{ old('password') }}">
-                                        <span class="input-group-text toggle-password"
-                                            onclick="togglePasswordVisibility()">
-                                            <i class="fas fa-eye"></i>
-                                        </span>
-                                    </div>
-                                    <div class="form-text text-muted">Mật khẩu này sẽ áp dụng cho tất cả các chương.</div>
-                                    <div class="form-text text-success">
-                                        <i class="fas fa-lock me-1"></i> Mật khẩu sẽ được mã hóa an toàn trước khi lưu trữ.
-                                    </div>
-                                    @error('password')
-                                        <div class="text-danger small mt-1">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+                            @endif
+                            <!-- Preview chapters will be dynamically inserted here -->
                         </div>
                     </div>
 
-                    <!-- Tùy chọn xuất bản hàng loạt -->
-                    <div class="publish-options">
-                        <div class="mb-3">
-                            <label class="form-label">Xuất bản chương <span class="text-danger">*</span></label>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="status" id="status_draft"
-                                    value="draft" {{ old('status', 'draft') == 'draft' ? 'checked' : '' }}
-                                    onchange="toggleScheduleOptions()">
-                                <label class="form-check-label" for="status_draft">
-                                    <i class="fas fa-edit text-secondary me-1"></i> Lưu nháp
-                                </label>
-                                <div class="form-text text-muted">Tất cả chương sẽ được lưu dưới dạng nháp.</div>
-                            </div>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="radio" name="status" id="status_published"
-                                    value="published" {{ old('status') == 'published' ? 'checked' : '' }}
-                                    onchange="toggleScheduleOptions()">
-                                <label class="form-check-label" for="status_published">
-                                    <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
-                                </label>
-                                <div class="form-text text-muted">Tất cả chương sẽ được công khai ngay sau khi lưu.
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mb-3" id="scheduleOptionsContainer" style="{{ old('status') == 'published' ? 'display: none;' : '' }}">
-                            <label class="form-label d-flex align-items-center">
-                                <input type="checkbox" class="form-check-input me-2" id="enableSchedule"
-                                    onchange="toggleScheduleField()" {{ old('scheduled_publish_at') ? 'checked' : '' }}>
-                                Hẹn giờ xuất bản cho tất cả chương
-                            </label>
-                            <div id="scheduleField" style="{{ old('scheduled_publish_at') ? '' : 'display: none;' }}">
-                                <input type="datetime-local"
-                                    class="form-control @error('scheduled_publish_at') is-invalid @enderror"
-                                    id="scheduled_publish_at" name="scheduled_publish_at"
-                                    value="{{ old('scheduled_publish_at') }}">
-                                <div class="form-text text-muted">Tất cả chương sẽ tự động xuất bản vào thời gian
-                                    đã chọn (trừ khi có lịch riêng).</div>
-                            </div>
-                            @error('scheduled_publish_at')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <div class="mb-3">
-                            <button type="button" id="btnPreviewChapters" class="btn btn-secondary">
-                                <i class="fas fa-eye me-1"></i> Xem trước các chương
-                            </button>
-                        </div>
-
-                        <!-- Preview chapters section -->
-                        <div id="previewChapters" class="preview-chapters mb-4 {{ old('chapters_count') ? '' : 'd-none' }}">
-                            <h5 class="mb-3">Xem trước các chương</h5>
-                            <div class="alert alert-warning mb-3">
-                                <i class="fas fa-exclamation-triangle me-2"></i> Vui lòng kiểm tra các chương đã tách và
-                                thiết lập lịch đăng (nếu cần)
-                            </div>
-                            <div id="chaptersPreviewContainer">
-                                @if(old('chapters_count'))
-                                    <div class="alert alert-info">
-                                        <i class="fas fa-info-circle me-2"></i> Vui lòng nhấn "Xem trước các chương" để hiển thị lại các chương đã tách.
-                                    </div>
-                                @endif
-                                <!-- Preview chapters will be dynamically inserted here -->
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
-                <div class="d-flex justify-content-end mt-4">
-                    <a href="{{ route('user.author.stories.chapters', $story->id) }}"
-                        class="btn btn-secondary me-2">Hủy</a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save me-1"></i> Lưu tất cả chương
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <button type="button" id="btnPreviewChapters" class="btn btn-outline-dark">
+                        Xem chương
                     </button>
+
+
+                    <div class="d-flex justify-content-end">
+                        <a href="{{ route('user.author.stories.chapters', $story->id) }}"
+                            class="btn btn-outline-danger me-2">Hủy</a>
+                        <button type="submit" class="btn btn-outline-dark">
+                            Lưu
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -307,6 +345,24 @@
 
 @push('info_scripts')
     <script>
+        function toggleGuide() {
+            const guideContent = document.getElementById('guideContent');
+            const guideIcon = document.getElementById('guideIcon');
+            const toggleBtn = document.getElementById('toggleGuideBtn');
+
+            if (guideContent.style.display === 'none') {
+                guideContent.style.display = 'block';
+                guideIcon.classList.remove('fa-chevron-down');
+                guideIcon.classList.add('fa-chevron-up');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-up me-1" id="guideIcon"></i> Ẩn hướng dẫn';
+            } else {
+                guideContent.style.display = 'none';
+                guideIcon.classList.remove('fa-chevron-up');
+                guideIcon.classList.add('fa-chevron-down');
+                toggleBtn.innerHTML = '<i class="fas fa-chevron-down me-1" id="guideIcon"></i> Xem hướng dẫn';
+            }
+        }
+
         $(document).ready(function() {
             // Khởi tạo các hiển thị tùy thuộc vào trạng thái ban đầu
             togglePricingOptions();
@@ -319,15 +375,15 @@
             }
 
             // Restore preview if validation errors occurred
-            @if(old('chapters_count'))
+            @if (old('chapters_count'))
                 // Trigger preview generation as soon as the page loads if we had previous chapters
                 setTimeout(function() {
                     $('#btnPreviewChapters').click();
                 }, 500);
-                
+
                 // Restore individual chapter schedules
-                @foreach(old('chapter_schedules', []) as $chapterNum => $schedule)
-                    @if(!empty($schedule))
+                @foreach (old('chapter_schedules', []) as $chapterNum => $schedule)
+                    @if (!empty($schedule))
                         setTimeout(function() {
                             // Make sure chapter checkbox is checked and field is visible
                             $('#enableSchedule_{{ $chapterNum }}').prop('checked', true);
@@ -344,7 +400,7 @@
                 const batchContent = $('#batch_content').val();
 
                 if (!batchContent.trim()) {
-                    alert('Vui lòng nhập nội dung các chương trước khi xem trước.');
+                    showToast('Vui lòng nhập nội dung các chương trước khi xem trước.', 'warning');
                     return;
                 }
 
@@ -356,8 +412,10 @@
                 const chapters = parseChaptersFromContent(batchContent);
 
                 if (chapters.length === 0) {
-                    alert('Không thể tách nội dung thành các chương. Vui lòng kiểm tra định dạng.');
-                    $('#btnPreviewChapters').html('<i class="fas fa-eye me-1"></i> Xem trước các chương');
+                    showToast(
+                        'Không tìm thấy chương nào trong nội dung đã nhập. Vui lòng kiểm tra định dạng.',
+                        'warning');
+                    $('#btnPreviewChapters').html('Xem trước');
                     $('#btnPreviewChapters').prop('disabled', false);
                     return;
                 }
@@ -365,39 +423,39 @@
                 displayParsedChapters(chapters);
 
                 // Restore button state
-                $('#btnPreviewChapters').html('<i class="fas fa-eye me-1"></i> Cập nhật xem trước');
+                $('#btnPreviewChapters').html('Cập nhật xem trước');
                 $('#btnPreviewChapters').prop('disabled', false);
             });
 
             // Function to parse chapters from content
             function parseChaptersFromContent(content) {
                 const chapters = [];
-                
+
                 // First, normalize line endings
                 const normalizedContent = content.replace(/\r\n/g, '\n');
-                
+
                 // Split content by chapter headings
                 // This regex looks for "Chương X" at the start of a line
                 const chapterBlocks = normalizedContent.split(/\n(?=Chương\s+\d+)/);
-                
+
                 // Process each chapter block
                 chapterBlocks.forEach(block => {
                     if (!block.trim()) return; // Skip empty blocks
-                    
+
                     // Extract the first line (chapter heading) and the rest (content)
                     const lines = block.trim().split('\n');
                     const headingLine = lines[0];
-                    
+
                     // Match chapter number and optional title
                     const headingMatch = headingLine.match(/^Chương\s+(\d+)(?:\s*:\s*(.*))?$/);
-                    
+
                     if (headingMatch) {
                         const chapterNumber = parseInt(headingMatch[1]);
                         const title = headingMatch[2] ? headingMatch[2].trim() : `Chương ${chapterNumber}`;
-                        
+
                         // Content is everything after the first line
                         const content = lines.slice(1).join('\n').trim();
-                        
+
                         chapters.push({
                             number: chapterNumber,
                             title: title,
@@ -405,7 +463,7 @@
                         });
                     }
                 });
-                
+
                 return chapters;
             }
 
@@ -508,7 +566,7 @@
                 $('#scheduleField').hide();
                 $('#scheduled_publish_at').val('');
             }
-            
+
             // If preview is already visible, update it to reflect the new status
             if (!$('#previewChapters').hasClass('d-none') && $('#chaptersPreviewContainer').children().length > 0) {
                 // Re-trigger the preview generation to update the UI
@@ -553,7 +611,7 @@
         $('#batchChapterForm').on('submit', function(e) {
             if ($('#has_password_yes').is(':checked') && $('#password').val() === '') {
                 e.preventDefault();
-                alert('Vui lòng nhập mật khẩu cho các chương.');
+                showToast('Vui lòng nhập mật khẩu cho các chương.', 'warning');
                 $('#password').focus();
                 return false;
             }
@@ -561,12 +619,26 @@
             const batchContent = $('#batch_content').val();
             if (!batchContent.trim()) {
                 e.preventDefault();
-                alert('Vui lòng nhập nội dung các chương.');
+                showToast('Vui lòng nhập nội dung các chương.', 'warning');
                 $('#batch_content').focus();
                 return false;
             }
 
             return true;
         });
+
+        // Toggle guide visibility
+        function toggleGuide() {
+            const guideContent = $('#guideContent');
+            const icon = $('#guideIcon');
+
+            if (guideContent.is(':visible')) {
+                guideContent.slideUp(200);
+                icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+            } else {
+                guideContent.slideDown(200);
+                icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+            }
+        }
     </script>
 @endpush
