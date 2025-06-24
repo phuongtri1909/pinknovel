@@ -474,12 +474,12 @@
                             @endif
                         </div>
                         <div>
-                            <a href="{{ route('user.author.stories.chapters.create', $story->id) }}#batch-upload"
-                                class="btn btn-outline-primary me-2">
-                                <i class="fas fa-layer-group me-1"></i> Thêm nhiều chương
+                            <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
+                                class="btn btn-outline-dark me-2">
+                                <i class="fas fa-plus me-1"></i> Thêm nhiều chương
                             </a>
                             <a href="{{ route('user.author.stories.chapters.create', $story->id) }}"
-                                class="btn btn-primary">
+                                class="btn btn-dark">
                                 <i class="fas fa-plus me-1"></i> Thêm một chương
                             </a>
                         </div>
@@ -534,7 +534,7 @@
                                             <td>
                                                 <div class="btn-group btn-group-sm">
                                                     <a href="{{ route('user.author.stories.chapters.edit', ['story' => $story->id, 'chapter' => $chapter->id]) }}"
-                                                        class="btn btn-outline-primary">
+                                                        class="btn btn-outline-dark">
                                                         <i class="fas fa-edit"></i>
                                                     </a>
                                                     <button type="button" class="btn btn-outline-danger"
@@ -554,12 +554,12 @@
                             <i class="fas fa-info-circle fa-2x mb-3"></i>
                             <p>Truyện chưa có chương nào. Vui lòng thêm ít nhất 3 chương trước khi gửi yêu cầu duyệt.</p>
                             <div class="mt-3">
-                                <a href="{{ route('user.author.stories.chapters.create', $story->id) }}#batch-upload"
-                                    class="btn btn-outline-primary me-2">
-                                    <i class="fas fa-layer-group me-1"></i> Thêm nhiều chương
+                                <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
+                                    class="btn btn-outline-dark me-2">
+                                    <i class="fas fa-plus me-1"></i> Thêm nhiều chương
                                 </a>
                                 <a href="{{ route('user.author.stories.chapters.create', $story->id) }}"
-                                    class="btn btn-primary">
+                                    class="btn btn-dark">
                                     <i class="fas fa-plus me-1"></i> Thêm một chương
                                 </a>
                             </div>
@@ -643,7 +643,7 @@
                                         </div>
 
                                         <div class="d-grid">
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" class="btn btn-outline-dark">
                                                 <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu duyệt
                                             </button>
                                         </div>

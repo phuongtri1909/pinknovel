@@ -1147,7 +1147,6 @@ body {
 .widget-header {
     padding: 1rem;
     border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    background: linear-gradient(135deg, rgba(78, 115, 223, 0.1), rgba(255, 255, 255, 0));
 }
 
 .widget-title {

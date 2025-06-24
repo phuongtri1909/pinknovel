@@ -158,7 +158,7 @@ class StoryEditRequestController extends Controller
             $editRequest->update([
                 'status' => 'approved',
                 'admin_note' => $request->admin_note,
-                'reviewed_at' => now(),
+                'reviewed_at' => Carbon::now(),
             ]);
             
             DB::commit();
@@ -209,7 +209,6 @@ class StoryEditRequestController extends Controller
             $editRequest->update([
                 'status' => 'rejected',
                 'admin_note' => $request->admin_note,
-                'reviewed_at' => now(),
             ]);
             
             // If there were new cover images, delete them

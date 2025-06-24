@@ -105,7 +105,7 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
-                    <h4 class="mb-0">Chi tiết truyện #{{ $story->id }}</h4>
+                    <h4 class="mb-0">Chi tiết truyện: {{ $story->title }}</h4>
                     <a href="{{ route('admin.story-reviews.index') }}" class="btn btn-sm btn-secondary">
                         <i class="fas fa-arrow-left"></i> Quay lại danh sách
                     </a>

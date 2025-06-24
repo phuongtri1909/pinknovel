@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AuthorApplication;
 use App\Notifications\AuthorApplicationStatusChanged;
+use Carbon\Carbon;
 
 class AuthorApplicationController extends Controller
 {
@@ -172,7 +173,7 @@ class AuthorApplicationController extends Controller
             $application->update([
                 'status' => 'approved',
                 'admin_note' => $request->admin_note,
-                'reviewed_at' => now(),
+                'reviewed_at' => Carbon::now(),
             ]);
             
             // Update user role to author
@@ -221,7 +222,7 @@ class AuthorApplicationController extends Controller
             $application->update([
                 'status' => 'rejected',
                 'admin_note' => $request->admin_note,
-                'reviewed_at' => now(),
+                'reviewed_at' => Carbon::now(),
             ]);
             
             // Notify user about application rejection

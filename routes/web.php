@@ -2,9 +2,7 @@
 
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BankController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\StoryController;
@@ -18,15 +16,11 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DepositController;
 use App\Http\Controllers\ReadingController;
 use App\Http\Controllers\SitemapController;
-use App\Http\Controllers\SocialsController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LogoSiteController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\StoryComboController;
 use App\Http\Controllers\Admin\ConfigController;
-use App\Http\Controllers\RecentlyReadController;
-use App\Http\Controllers\CommentReactionController;
-use App\Http\Controllers\StoryEditRequestController;
 use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
 use App\Http\Controllers\RequestPaymentController;
@@ -90,7 +84,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
         Route::get('/stories/{storyId}/comments', [CommentController::class, 'loadComments'])->name('comments.load');
 
         // Guide routes
-    Route::get('/huong-dan', [GuideController::class, 'show'])->name('guide.show');
+        Route::get('/huong-dan', [GuideController::class, 'show'])->name('guide.show');
 
         Route::group(['prefix' => 'user', 'as' => 'user.', 'middleware' => 'auth'], function () {
             Route::get('profile', [UserController::class, 'userProfile'])->name('profile');
@@ -249,17 +243,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::get('/request-payments', [RequestPaymentController::class, 'adminIndex'])->name('request.payments.index');
                     Route::post('/request-payments/delete-expired', [RequestPaymentController::class, 'deleteExpired'])->name('request.payments.delete-expired');
 
-                    // Story Edit Requests
-                    Route::get('/edit-requests', [StoryEditRequestController::class, 'index'])->name('edit-requests.index');
-                    Route::get('/edit-requests/{editRequest}', [StoryEditRequestController::class, 'show'])->name('edit-requests.show');
-                    Route::post('/edit-requests/{editRequest}/approve', [StoryEditRequestController::class, 'approve'])->name('edit-requests.approve');
-                    Route::post('/edit-requests/{editRequest}/reject', [StoryEditRequestController::class, 'reject'])->name('edit-requests.reject');
 
-                    // Author application management routes
-                    Route::get('/author-applications', [AuthorApplicationController::class, 'listApplications'])->name('admin.author-applications.index');
-                    Route::get('/author-applications/{application}', [AuthorApplicationController::class, 'showApplication'])->name('admin.author-applications.show');
-                    Route::post('/author-applications/{application}/approve', [AuthorApplicationController::class, 'approveApplication'])->name('admin.author-applications.approve');
-                    Route::post('/author-applications/{application}/reject', [AuthorApplicationController::class, 'rejectApplication'])->name('admin.author-applications.reject');
 
                     Route::group(['as' => 'admin.'], function () {
                         // Quản lý ngân hàng
@@ -267,6 +251,12 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
                         // Quản lý cấu hình hệ thống
                         Route::resource('configs', ConfigController::class);
+
+                        // Author application management routes
+                        Route::get('/author-applications', [AuthorApplicationController::class, 'listApplications'])->name('author-applications.index');
+                        Route::get('/author-applications/{application}', [AuthorApplicationController::class, 'showApplication'])->name('author-applications.show');
+                        Route::post('/author-applications/{application}/approve', [AuthorApplicationController::class, 'approveApplication'])->name('author-applications.approve');
+                        Route::post('/author-applications/{application}/reject', [AuthorApplicationController::class, 'rejectApplication'])->name('author-applications.reject');
 
                         // Story review routes
                         Route::get('/story-reviews', [StoryReviewController::class, 'index'])->name('story-reviews.index');
@@ -279,7 +269,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                         Route::get('/edit-requests/{editRequest}', [AdminStoryEditRequestController::class, 'show'])->name('edit-requests.show');
                         Route::post('/edit-requests/{editRequest}/approve', [AdminStoryEditRequestController::class, 'approve'])->name('edit-requests.approve');
                         Route::post('/edit-requests/{editRequest}/reject', [AdminStoryEditRequestController::class, 'reject'])->name('edit-requests.reject');
-                    
+
                         // Guide management
                         Route::get('/guide/edit', [GuideController::class, 'edit'])->name('guide.edit');
                         Route::post('/guide/update', [GuideController::class, 'update'])->name('guide.update');
@@ -290,16 +280,12 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                         Route::post('/withdrawals/{withdrawal}/approve', [WithdrawalController::class, 'approve'])->name('withdrawals.approve');
                         Route::post('/withdrawals/{withdrawal}/reject', [WithdrawalController::class, 'reject'])->name('withdrawals.reject');
 
-                         // Social Media Management
+                        // Social Media Management
                         Route::get('socials', [SocialController::class, 'index'])->name('socials.index');
                         Route::post('socials', [SocialController::class, 'store'])->name('socials.store');
                         Route::put('socials/{social}', [SocialController::class, 'update'])->name('socials.update');
                         Route::delete('socials/{social}', [SocialController::class, 'destroy'])->name('socials.destroy');
                     });
-
-                   
-
-                    
                 });
             });
         });
@@ -331,5 +317,3 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
         });
     });
 });
-
-

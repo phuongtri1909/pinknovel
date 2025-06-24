@@ -27,6 +27,7 @@ class Story extends Model
         'translator_name',
         'is_monopoly',
         'submitted_at',
+        'reviewed_at',
         'review_note',
         'admin_note',
     ];

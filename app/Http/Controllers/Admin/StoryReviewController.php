@@ -125,7 +125,7 @@ class StoryReviewController extends Controller
             $story->update([
                 'status' => 'published',
                 'admin_note' => $request->admin_note,
-                'reviewed_at' => now(),
+                'reviewed_at' => Carbon::now(),
             ]);
             
             // Notify the author
@@ -169,7 +169,7 @@ class StoryReviewController extends Controller
             $story->update([
                 'status' => 'rejected',
                 'admin_note' => $request->admin_note,
-                'reviewed_at' => now(),
+                'reviewed_at' => Carbon::now(),
             ]);
             
             // Notify the author

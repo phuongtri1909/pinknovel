@@ -246,7 +246,6 @@ class HomeController extends Controller
 
         $stories = $query->paginate(20);
 
-    
 
         return view('pages.search.results', [
             'stories' => $stories,
