@@ -29,7 +29,7 @@
                         <i class="far fa-star cl-ffe371 "></i>
                     @endif
                 @endfor
-                {{ $rating }}
+               {{ rtrim(rtrim(number_format($rating, 1, '.', ''), '0'), '.') }}
             </span>
     
             <div class="fs-8"><i class="fa-solid fa-eye fs-8 text-primary"></i> {{ number_format($story->total_views) }}</div>

@@ -28,7 +28,7 @@
                         <i class="far fa-star cl-ffe371 "></i>
                     @endif
                 @endfor
-                {{ $rating }}
+                {{ rtrim(rtrim(number_format($rating, 1, '.', ''), '0'), '.') }}
             </span>
 
             <div class="fs-8"><i class="fa-solid fa-bookmark fs-8 text-danger"></i>
