@@ -802,40 +802,6 @@
                 }
             });
 
-            // Populate payment modal with data
-            function populatePaymentModal() {
-                $('#bankName').text(window.paymentInfo.bank.name + ' (' + window.paymentInfo.bank.code + ')');
-                $('#bankAccountNumber').text(window.paymentInfo.bank.account_number);
-                $('#bankAccountName').text(window.paymentInfo.bank.account_name);
-                // Chỉ hiển thị số tiền, không kèm "VNĐ"
-                $('#paymentAmount').text(window.paymentInfo.amount.toLocaleString('vi-VN'));
-                $('#transactionCode').text(window.paymentInfo.transactionCode);
-
-                // Hiển thị thời gian hết hạn
-                if (window.paymentInfo.expiredAt) {
-                    const expiredDate = new Date(window.paymentInfo.expiredAt);
-                    $('#paymentExpiry').text(expiredDate.toLocaleString('vi-VN'));
-                    $('#expiryContainer').removeClass('d-none');
-
-                    // Bắt đầu đếm ngược
-                    startCountdown(expiredDate);
-                } else {
-                    $('#expiryContainer').addClass('d-none');
-                }
-
-                // Display QR code if available
-                if (window.paymentInfo.bank.qr_code) {
-                    $('#bankQrCode').attr('src', window.paymentInfo.bank.qr_code).removeClass('d-none');
-                    $('#qrCodePlaceholder').addClass('d-none');
-                } else {
-                    $('#bankQrCode').addClass('d-none');
-                    $('#qrCodePlaceholder').removeClass('d-none')
-                        .html(
-                            '<div class="text-center text-muted"><i class="fas fa-qrcode fa-3x mb-2"></i><p>QR code không khả dụng</p></div>'
-                        );
-                }
-            }
-
             // Đếm ngược thời gian
             let countdownInterval;
 
@@ -848,7 +814,7 @@
                 // Cập nhật đếm ngược mỗi giây
                 function updateCountdown() {
                     const now = new Date().getTime();
-                    const expiredTime = expiredDate.getTime();
+                    const expiredTime = new Date(expiredDate).getTime();
                     const timeRemaining = expiredTime - now;
 
                     if (timeRemaining <= 0) {
@@ -895,6 +861,48 @@
 
                 // Cập nhật mỗi giây
                 countdownInterval = setInterval(updateCountdown, 1000);
+            }
+
+            // Populate payment modal with data
+            function populatePaymentModal() {
+                $('#bankName').text(window.paymentInfo.bank.name + ' (' + window.paymentInfo.bank.code + ')');
+                $('#bankAccountNumber').text(window.paymentInfo.bank.account_number);
+                $('#bankAccountName').text(window.paymentInfo.bank.account_name);
+                $('#paymentAmount').text(window.paymentInfo.amount.toLocaleString('vi-VN'));
+                $('#transactionCode').text(window.paymentInfo.transactionCode);
+
+                // Hiển thị thời gian hết hạn
+                if (window.paymentInfo.expiredAt) {
+                    // Tạo Date object từ ISO string - JavaScript sẽ tự động convert về local timezone
+                    const expiredDate = new Date(window.paymentInfo.expiredAt);
+                    
+                    // Hiển thị thời gian theo múi giờ local
+                    $('#paymentExpiry').text(expiredDate.toLocaleString('vi-VN', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    }));
+                    
+                    $('#expiryContainer').removeClass('d-none');
+                    startCountdown(expiredDate);
+                } else {
+                    $('#expiryContainer').addClass('d-none');
+                }
+
+                // Display QR code if available
+                if (window.paymentInfo.bank.qr_code) {
+                    $('#bankQrCode').attr('src', window.paymentInfo.bank.qr_code).removeClass('d-none');
+                    $('#qrCodePlaceholder').addClass('d-none');
+                } else {
+                    $('#bankQrCode').addClass('d-none');
+                    $('#qrCodePlaceholder').removeClass('d-none')
+                        .html(
+                            '<div class="text-center text-muted"><i class="fas fa-qrcode fa-3x mb-2"></i><p>QR code không khả dụng</p></div>'
+                        );
+                }
             }
 
             // Xử lý nút "tôi đã chuyển khoản"

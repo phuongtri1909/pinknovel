@@ -12,6 +12,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\DepositNotificationMail;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 
@@ -66,7 +68,7 @@ class RequestPaymentController extends Controller
             $transactionCode = 'TX' . strtoupper(Str::random(8)) . Carbon::now()->format('dmy');
             
             // Thời hạn của yêu cầu thanh toán (1 giờ)
-            $expiredAt = Carbon::now()->addHours(1);
+            $expiredAt = Carbon::now()->addHour();
             
             // Tạo yêu cầu thanh toán
             $requestPayment = RequestPayment::create([
@@ -98,7 +100,7 @@ class RequestPaymentController extends Controller
                     'coins' => $coins,
                     'fee' => $feeAmount,
                     'transaction_code' => $transactionCode,
-                    'expired_at' => $expiredAt->format('Y-m-d H:i:s')
+                    'expired_at' => $expiredAt->toIso8601String()
                 ]
             ]);
         } catch (\Exception $e) {
@@ -165,8 +167,14 @@ class RequestPaymentController extends Controller
                 'status' => 'pending',
             ]);
 
+            // Load relationships for email
+            $deposit->load(['user', 'bank']);
+
             // Đánh dấu yêu cầu thanh toán là đã hoàn thành
             $requestPayment->markAsCompleted($deposit->id);
+
+            // Gửi email thông báo cho super admin
+            $this->sendDepositNotificationToAdmin($deposit);
 
             DB::commit();
 
@@ -183,10 +191,45 @@ class RequestPaymentController extends Controller
                 Storage::disk('public')->delete($imagePath);
             }
 
+            Log::error('Error in deposit confirmation: ' . $e->getMessage());
+
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Gửi email thông báo yêu cầu nạp tiền cho super admin
+     */
+    private function sendDepositNotificationToAdmin(Deposit $deposit)
+    {
+        try {
+            // Lấy email super admin từ .env
+            $superAdminEmails = env('SUPER_ADMIN_EMAILS');
+            
+            if (empty($superAdminEmails)) {
+                Log::warning('SUPER_ADMIN_EMAILS not configured in .env file');
+                return;
+            }
+
+            // Chuyển đổi string thành array nếu có nhiều email
+            $emailArray = explode(',', $superAdminEmails);
+            $emailArray = array_map('trim', $emailArray); // Loại bỏ khoảng trắng
+            $emailArray = array_filter($emailArray); // Loại bỏ email rỗng
+
+            foreach ($emailArray as $email) {
+                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                    Mail::to($email)->send(new DepositNotificationMail($deposit));
+                } else {
+                    Log::warning("Invalid email address in SUPER_ADMIN_EMAILS: {$email}");
+                }
+            }
+
+        } catch (\Exception $e) {
+            // Log lỗi nhưng không throw exception để không ảnh hưởng đến luồng chính
+            Log::error('Failed to send deposit notification email: ' . $e->getMessage());
         }
     }
 

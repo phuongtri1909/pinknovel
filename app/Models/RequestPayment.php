@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class RequestPayment extends Model
 {
@@ -42,9 +43,15 @@ class RequestPayment extends Model
     }
 
     // Kiểm tra xem yêu cầu đã hết hạn chưa
-    public function isExpired()
+     public function isExpired()
     {
-        return $this->expired_at && now()->greaterThan($this->expired_at);
+        $appTimezone = config('app.timezone', 'Asia/Ho_Chi_Minh');
+        $now = Carbon::now($appTimezone);
+        
+        // Convert expired_at về múi giờ của app để so sánh
+        $expiredAt = $this->expired_at->setTimezone($appTimezone);
+        
+        return $now->greaterThan($expiredAt);
     }
 
     // Đánh dấu là đã hoàn thành và liên kết với deposit
