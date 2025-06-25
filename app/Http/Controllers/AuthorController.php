@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\StoryEditRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
 
@@ -231,8 +232,10 @@ class AuthorController extends Controller
                 ]);
             }
 
+            Log::error('Error creating story: ' . $e->getMessage());
+
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra khi tạo truyện: ' . $e->getMessage())->withInput();
+                ->with('error', 'Có lỗi xảy ra khi tạo truyện')->withInput();
         }
     }
 
@@ -448,8 +451,9 @@ class AuthorController extends Controller
                 ]);
             }
 
+            Log::error('Error updating story: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra khi cập nhật truyện: ' . $e->getMessage())->withInput();
+                ->with('error', 'Có lỗi xảy ra khi cập nhật truyện')->withInput();
         }
     }
 
@@ -484,8 +488,9 @@ class AuthorController extends Controller
                 ->with('success', 'Truyện đã được xóa thành công.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Error deleting story: ' . $e->getMessage());
             return redirect()->route('user.author.stories')
-                ->with('error', 'Có lỗi xảy ra khi xóa truyện: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi xóa truyện');
         }
     }
 
@@ -511,7 +516,8 @@ class AuthorController extends Controller
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('success', 'Truyện đã được đánh dấu là hoàn thành. Bạn có thể tạo combo trọn bộ ngay bây giờ!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            Log::error('Error marking story as complete: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi đánh dấu truyện là hoàn thành.');
         }
     }
 
@@ -639,8 +645,9 @@ class AuthorController extends Controller
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('success', 'Đã tạo chương ' . $request->number . ' thành công');
         } catch (\Exception $e) {
+            Log::error('Error creating chapter: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())
+                ->with('error', 'Có lỗi xảy ra khi tạo chương. Vui lòng thử lại.')
                 ->withInput();
         }
     }
@@ -797,7 +804,8 @@ class AuthorController extends Controller
                 ->with('success', "Đã tạo thành công {$successCount} chương mới.");
         } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->with('error', 'Lỗi khi lưu chương: ' . $e->getMessage())->withInput();
+            Log::error('Error creating batch chapters: ' . $e->getMessage());
+            return back()->with('error', 'Lỗi khi lưu chương')->withInput();
         }
     }
 
@@ -932,8 +940,9 @@ class AuthorController extends Controller
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('success', 'Cập nhật chương ' . $request->number . ' thành công');
         } catch (\Exception $e) {
+            Log::error('Error updating chapter: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())
+                ->with('error', 'Có lỗi xảy ra khi cập nhật chương. Vui lòng thử lại.')
                 ->withInput();
         }
     }
@@ -954,8 +963,9 @@ class AuthorController extends Controller
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('success', 'Xóa chương thành công');
         } catch (\Exception $e) {
+            Log::error('Error deleting chapter: ' . $e->getMessage());
             return redirect()->route('user.author.stories.chapters', $story->id)
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi xóa chương. Vui lòng thử lại.');
         }
     }
 
@@ -992,8 +1002,9 @@ class AuthorController extends Controller
             return redirect()->route('user.author.stories.edit', $story->id)
                 ->with('success', 'Truyện đã được gửi đi và đang chờ phê duyệt.');
         } catch (\Exception $e) {
+            Log::error('Error submitting story for review: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi gửi yêu cầu duyệt. Vui lòng thử lại.');
         }
     }
 

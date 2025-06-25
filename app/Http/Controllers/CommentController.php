@@ -6,6 +6,7 @@ use App\Models\Story;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Models\CommentReaction;
+use Illuminate\Support\Facades\Log;
 
 class CommentController extends Controller
 {
@@ -244,7 +245,7 @@ class CommentController extends Controller
                 'message' => 'Không có quyền thực hiện'
             ], 403);
         } catch (\Exception $e) {
-            // Even if there's an error, if the comment is already gone, return success
+           Log::error('Error deleting comment: ' . $e->getMessage());
             $stillExists = Comment::find($comment);
             if (!$stillExists) {
                 return response()->json([
@@ -255,7 +256,7 @@ class CommentController extends Controller
             
             return response()->json([
                 'status' => 'error',
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                'message' => 'Có lỗi xảy ra khi xóa bình luận'
             ], 500);
         }
     }
@@ -366,9 +367,10 @@ class CommentController extends Controller
                 ]);
             }
         } catch (\Exception $e) {
+            Log::error('Error saving comment: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Lỗi khi lưu bình luận: ' . $e->getMessage()
+                'message' => 'Lỗi khi lưu bình luận'
             ], 500);
         }
     }

@@ -77,7 +77,8 @@ class DepositController extends Controller
             return redirect()->back()->with('success', 'Đã phê duyệt giao dịch và cộng ' . $deposit->coins . ' xu vào tài khoản người dùng.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            \Log::error('Error approving deposit: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi phê duyệt giao dịch');
         }
     }
 
@@ -104,7 +105,8 @@ class DepositController extends Controller
 
             return redirect()->back()->with('success', 'Đã từ chối giao dịch.');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            \Log::error('Error rejecting deposit: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi từ chối giao dịch');
         }
     }
 

@@ -66,7 +66,7 @@ class PublishScheduledChapters extends Command
                             $this->info("Đã xuất bản chương {$chapter->number}: {$chapter->title} của truyện ID={$chapter->story_id}");
                             Log::info("Xuất bản tự động: Chương {$chapter->number} '{$chapter->title}' của truyện ID={$chapter->story_id} (theo lịch: {$scheduledTime})");
                         } catch (\Exception $e) {
-                            $this->error("Lỗi khi xuất bản chương {$chapter->number}: {$e->getMessage()}");
+                            $this->error("Lỗi khi xuất bản chương {$chapter->number}}");
                             Log::error("Lỗi xuất bản tự động: Chương {$chapter->number} - {$e->getMessage()}");
                         }
                     }
@@ -75,7 +75,7 @@ class PublishScheduledChapters extends Command
             $this->info("Hoàn thành: Đã xuất bản tổng cộng {$processedCount}/{$chapterCount} chương.");
             
         } catch (\Exception $e) {
-            $this->error("Lỗi khi thực hiện xuất bản chương: {$e->getMessage()}");
+            $this->error("Lỗi khi thực hiện xuất bản chương}");
             Log::error("Lỗi xuất bản tự động: {$e->getMessage()}");
         }
     }

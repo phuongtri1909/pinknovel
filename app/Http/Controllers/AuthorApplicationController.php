@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\AuthorApplication;
 use App\Notifications\AuthorApplicationStatusChanged;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class AuthorApplicationController extends Controller
 {
@@ -84,8 +85,9 @@ class AuthorApplicationController extends Controller
             return redirect()->route('user.author.application')
                 ->with('success', 'Đơn đăng ký của bạn đã được gửi thành công và đang chờ xét duyệt.');
         } catch (\Exception $e) {
+            Log::error('Error submitting author application: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())
+                ->with('error', 'Có lỗi xảy ra, vui lòng thử lại sau.')
                 ->withInput();
         }
     }
@@ -189,9 +191,10 @@ class AuthorApplicationController extends Controller
             return redirect()->route('admin.author-applications.index')
                 ->with('success', 'Đơn đăng ký đã được phê duyệt và người dùng đã được nâng cấp thành tác giả.');
         } catch (\Exception $e) {
+            Log::error('Error approving author application: ' . $e->getMessage());
             DB::rollBack();
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi phê duyệt đơn đăng ký');
         }
     }
     
@@ -231,8 +234,9 @@ class AuthorApplicationController extends Controller
             return redirect()->route('admin.author-applications.index')
                 ->with('success', 'Đơn đăng ký đã bị từ chối.');
         } catch (\Exception $e) {
+            Log::error('Error rejecting author application: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi từ chối đơn đăng ký. Vui lòng thử lại sau.');
         }
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Story;
 use App\Models\StoryCombo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class StoryComboController extends Controller
@@ -94,7 +95,8 @@ class StoryComboController extends Controller
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('success', 'Đã tạo combo thành công!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())->withInput();
+            Log::error('Error creating story combo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi tạo combo')->withInput();
         }
     }
 
@@ -172,7 +174,8 @@ class StoryComboController extends Controller
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('success', 'Đã cập nhật combo thành công!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage())->withInput();
+            Log::error('Error updating story combo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi cập nhật combo' )->withInput();
         }
     }
 
@@ -203,7 +206,8 @@ class StoryComboController extends Controller
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('success', 'Đã xóa combo thành công!');
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            Log::error('Error deleting story combo: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi xóa combo' )->withInput();
         }
     }
 }

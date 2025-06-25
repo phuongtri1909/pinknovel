@@ -176,8 +176,9 @@ class StoryEditRequestController extends Controller
                 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error approving edit request: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi phê duyệt yêu cầu chỉnh sửa');
         }
     }
     
@@ -230,8 +231,9 @@ class StoryEditRequestController extends Controller
                 
         } catch (\Exception $e) {
             DB::rollBack();
+            \Log::error('Error rejecting edit request: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi từ chối yêu cầu chỉnh sửa');
         }
     }
 }

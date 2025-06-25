@@ -55,7 +55,8 @@ class AuthorController extends Controller
             return redirect()->back()->with('success', 'Đã phê duyệt yêu cầu chỉnh sửa.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return redirect()->back()->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+            \Log::error('Error approving edit request: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Có lỗi xảy ra khi phê duyệt yêu cầu chỉnh sửa');
         }
     }
 }

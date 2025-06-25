@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Mail\OTPForgotPWMail;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Intervention\Image\Facades\Image;
@@ -177,10 +178,11 @@ class AuthController extends Controller
                     'url' => route('home'),
                 ]);
             } catch (Exception $e) {
+                Log::error('Registration error:', ['error' => $e->getMessage()]);
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.',
-                    'error' => $e->getMessage(),
+                    'error' => 'Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.',
                 ], 500);
             }
         }
@@ -234,10 +236,11 @@ class AuthController extends Controller
                 'message' => 'Đăng ký thành công, hãy kiểm tra email của bạn để lấy mã OTP',
             ]);
         } catch (Exception $e) {
+            Log::error('Registration error:', ['error' => $e->getMessage()]);
             return response()->json([
                 'status' => 'error',
                 'message' => 'Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.',
-                'error' => $e->getMessage(),
+                'error' => 'Đã xảy ra lỗi trong quá trình đăng ký. Vui lòng thử lại sau.',
             ], 500);
         }
     }
@@ -384,10 +387,11 @@ class AuthController extends Controller
                                 'url' => route('home'),
                             ]);
                         } catch (Exception $e) {
+                            Log::error('Reset password error:', ['error' => $e->getMessage()]);
                             return response()->json([
                                 'status' => 'error',
                                 'message' => 'Đã xảy ra lỗi trong quá trình đặt lại mật khẩu. Vui lòng thử lại sau.',
-                                'error' => $e->getMessage(),
+                                'error' => 'Đã xảy ra lỗi trong quá trình đặt lại mật khẩu. Vui lòng thử lại sau.',
                             ], 500);
                         }
                     }
@@ -419,10 +423,11 @@ class AuthController extends Controller
                     'message' => 'Hãy kiểm tra email của bạn để lấy mã OTP',
                 ], 200);
             } catch (Exception $e) {
+                Log::error('Forgot password error:', ['error' => $e->getMessage()]);
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Đã xảy ra lỗi trong quá trình đặt lại mật khẩu. Vui lòng thử lại sau.',
-                    'error' => $e->getMessage(),
+                    'error' => 'Đã xảy ra lỗi trong quá trình đặt lại mật khẩu. Vui lòng thử lại sau.',
                 ], 500);
             }
         }

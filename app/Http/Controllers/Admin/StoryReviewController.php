@@ -137,8 +137,9 @@ class StoryReviewController extends Controller
                 ->with('success', 'Truyện đã được phê duyệt và xuất bản thành công.');
                 
         } catch (\Exception $e) {
+            Log::error('Error approving story: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi phê duyệt truyện '));
         }
     }
     
@@ -181,8 +182,9 @@ class StoryReviewController extends Controller
                 ->with('success', 'Truyện đã bị từ chối.');
                 
         } catch (\Exception $e) {
+            Log::error('Error rejecting story: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+                ->with('error', 'Có lỗi xảy ra khi từ chối truyện.');
         }
     }
 } 

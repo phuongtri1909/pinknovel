@@ -104,10 +104,11 @@ class RequestPaymentController extends Controller
                 ]
             ]);
         } catch (\Exception $e) {
+            Log::error('Error creating request payment: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
-                'message' => 'Đã xảy ra lỗi khi tạo yêu cầu thanh toán: ' . $e->getMessage()
+                'message' => 'Đã xảy ra lỗi khi tạo yêu cầu thanh toán'
             ], 500);
         }
     }
@@ -195,7 +196,7 @@ class RequestPaymentController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+                'message' => 'Có lỗi xảy ra khi xác nhận yêu cầu nạp xu. Vui lòng thử lại sau.'
             ], 500);
         }
     }
