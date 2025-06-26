@@ -124,7 +124,8 @@ class HomeController extends Controller
                 'description',
                 'created_at',
                 'updated_at',
-                'cover_medium'
+                'cover_medium',
+                'author_name'
             ])
             ->withCount([
                 'chapters' => fn($q) => $q->where('status', 'published'),
@@ -234,7 +235,8 @@ class HomeController extends Controller
                 'completed',
                 'reviewed_at',
                 'cover_medium',
-                'updated_at'
+                'updated_at',
+                'author_name'
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
@@ -307,7 +309,8 @@ class HomeController extends Controller
                 'cover',
                 'completed',
                 'updated_at',
-                'cover_medium'
+                'cover_medium',
+                'author_name'
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
@@ -379,6 +382,7 @@ class HomeController extends Controller
                 'is_18_plus',
                 'completed',
                 'updated_at',
+                'author_name'
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
@@ -407,7 +411,8 @@ class HomeController extends Controller
                 'is_18_plus',
                 'description',
                 'created_at',
-                'updated_at'
+                'updated_at',
+                'author_name'
             ])
             ->withCount([
                 'chapters' => fn($q) => $q->where('status', 'published'),
@@ -466,7 +471,8 @@ class HomeController extends Controller
                 'completed',
                 'is_18_plus',
                 'reviewed_at',
-                'cover_medium'
+                'cover_medium',
+                'author_name'
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
@@ -508,7 +514,8 @@ class HomeController extends Controller
             'stories.updated_at',
             'stories.cover',
             'stories.cover_medium',
-            'stories.cover_thumbnail'
+            'stories.cover_thumbnail',
+            'stories.author_name',
         )
             ->where('stories.status', 'published')
             ->withAvg('ratings as average_rating', 'rating')
@@ -597,7 +604,9 @@ class HomeController extends Controller
 
     public function showStory(Request $request, $slug)
     {
-        $story = Story::where('slug', $slug)->firstOrFail();
+        $story = Story::where('slug', $slug)
+                ->published()
+                ->firstOrFail();
 
         // Eager load necessary relationships
         $story->load(['categories']);
@@ -606,7 +615,7 @@ class HomeController extends Controller
         $chapters = Chapter::where('story_id', $story->id)
             ->published()
             ->orderBy('number', 'desc')
-            ->paginate(20); // Show 20 chapters per page
+            ->paginate(20); 
 
         // Calculate stats
         $stats = [

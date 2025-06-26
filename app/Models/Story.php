@@ -32,6 +32,11 @@ class Story extends Model
         'admin_note',
     ];
 
+    const STATUS_DRAFT = 'draft';
+    const STATUS_PENDING = 'pending';
+    const STATUS_PUBLISHED = 'published';
+    const STATUS_REJECTED = 'rejected';
+
 
     public function banners()
     {
@@ -61,12 +66,25 @@ class Story extends Model
 
     public function scopePublished($query)
     {
-        return $query->where('status', 'published');
+        $user = auth()->user();
+
+        return $query->where(function ($q) use ($user) {
+            $q->where('status', self::STATUS_PUBLISHED);
+
+            if ($user) {
+                $q->orWhere('user_id', $user->id);
+
+                if ($user->role === User::ROLE_ADMIN) {
+                    $q->orWhereRaw('1 = 1');
+                }
+            }
+        });
     }
+
 
     public function scopeDraft($query)
     {
-        return $query->where('status', 'draft');
+        return $query->where('status', self::STATUS_DRAFT);
     }
 
     public function scopePopular($query)
@@ -93,7 +111,7 @@ class Story extends Model
     public function latestChapter()
     {
         return $this->hasOne(Chapter::class)
-            ->where('status', 'published')
+            ->where('status', self::STATUS_PUBLISHED)
             ->orderByDesc('number');
     }
     /**

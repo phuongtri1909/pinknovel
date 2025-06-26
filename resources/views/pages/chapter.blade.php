@@ -117,7 +117,9 @@
                 <!-- Chapter Content -->
                 <div id="chapter-content" class="rounded-4 chapter-content mb-4">
                     @if (isset($hasAccess) && $hasAccess)
-                        {!! nl2br(e($chapter->content)) !!}
+                        <div style="line-height: 2;">
+                            {!! nl2br(e($chapter->content)) !!}
+                        </div>
                     @else
                         <div class="chapter-preview">
                             <!-- Hiển thị thông báo mua chương -->
@@ -235,7 +237,7 @@
     </section>
 
     <!-- Reading Settings Floating Button -->
-    <div class="reading-settings-container">
+    <div class="reading-settings-container position-fixed bottom-0 start-0 mx-2 mb-2 mx-md-4">
         <div class="reading-settings-menu">
             <button class="reading-setting-btn fullscreen-btn" title="Toàn màn hình">
                 <i class="fas fa-expand"></i>
@@ -321,9 +323,6 @@
         }
 
         .reading-settings-container {
-            position: fixed;
-            left: 20px;
-            bottom: 24px;
             z-index: 1000;
         }
 
@@ -687,19 +686,27 @@
             background-color: var(--primary-color-3);
             color: white;
         }
-        
+
         .bookmark-btn.active:hover {
             background-color: var(--primary-color-4);
             color: white;
         }
-        
+
         /* Animation for bookmark button */
         @keyframes bookmark-pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
-        
+
         .bookmark-btn.active i {
             animation: bookmark-pulse 0.3s ease-in-out;
         }
@@ -709,7 +716,7 @@
             background-color: var(--primary-color-1);
             color: white;
         }
-        
+
         body.dark-mode .bookmark-btn.active:hover {
             background-color: var(--primary-color-2);
         }
@@ -723,11 +730,11 @@
     <!-- Script xử lý đánh dấu trang (bookmark) -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const bookmarkBtn = document.querySelector('.bookmark-btn');
-            @auth
+                const bookmarkBtn = document.querySelector('.bookmark-btn');
+                @auth
                 // Kiểm tra trạng thái bookmark khi tải trang
                 checkBookmarkStatus();
-                
+
                 // Xử lý sự kiện click bookmark
                 bookmarkBtn.addEventListener('click', toggleBookmark);
             @else
@@ -742,15 +749,15 @@
                         cancelButtonText: 'Hủy'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            window.location.href = '{{ route("login") }}';
+                            window.location.href = '{{ route('login') }}';
                         }
                     });
                 });
             @endauth
-            
+
             function checkBookmarkStatus() {
                 @auth
-                    fetch('{{ route("user.bookmark.status") }}?story_id={{ $story->id }}', {
+                fetch('{{ route('user.bookmark.status') }}?story_id={{ $story->id }}', {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
                         }
@@ -767,68 +774,68 @@
                         }
                     })
                     .catch(error => console.error('Error checking bookmark status:', error));
-                @endauth
-            }
-            
-            function toggleBookmark() {
-                @auth
-                    // CSRF token
-                    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-                    
-                    fetch('{{ route("user.bookmark.toggle") }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({
-                            story_id: {{ $story->id }},
-                            chapter_id: {{ $chapter->id }}
-                        })
+            @endauth
+        }
+
+        function toggleBookmark() {
+            @auth
+            // CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+            fetch('{{ route('user.bookmark.toggle') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        story_id: {{ $story->id }},
+                        chapter_id: {{ $chapter->id }}
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.status === 'added') {
-                            bookmarkBtn.classList.add('active');
-                            bookmarkBtn.title = 'Bỏ đánh dấu';
-                            
-                            
-                            // Hiển thị thông báo thành công
-                            Swal.fire({
-                                title: 'Thành công!',
-                                text: data.message,
-                                icon: 'success',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        } else if (data.status === 'removed') {
-                            bookmarkBtn.classList.remove('active');
-                            bookmarkBtn.title = 'Đánh dấu trang';
-                            
-                            
-                            // Hiển thị thông báo đã xóa
-                            Swal.fire({
-                                title: 'Đã xóa!',
-                                text: data.message,
-                                icon: 'info',
-                                timer: 2000,
-                                showConfirmButton: false
-                            });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error toggling bookmark:', error);
-                        
-                        // Hiển thị thông báo lỗi
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'added') {
+                        bookmarkBtn.classList.add('active');
+                        bookmarkBtn.title = 'Bỏ đánh dấu';
+
+
+                        // Hiển thị thông báo thành công
                         Swal.fire({
-                            title: 'Lỗi!',
-                            text: 'Đã xảy ra lỗi khi thực hiện đánh dấu truyện',
-                            icon: 'error'
+                            title: 'Thành công!',
+                            text: data.message,
+                            icon: 'success',
+                            timer: 2000,
+                            showConfirmButton: false
                         });
+                    } else if (data.status === 'removed') {
+                        bookmarkBtn.classList.remove('active');
+                        bookmarkBtn.title = 'Đánh dấu trang';
+
+
+                        // Hiển thị thông báo đã xóa
+                        Swal.fire({
+                            title: 'Đã xóa!',
+                            text: data.message,
+                            icon: 'info',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error toggling bookmark:', error);
+
+                    // Hiển thị thông báo lỗi
+                    Swal.fire({
+                        title: 'Lỗi!',
+                        text: 'Đã xảy ra lỗi khi thực hiện đánh dấu truyện',
+                        icon: 'error'
                     });
-                @endauth
-            }
+                });
+        @endauth
+        }
         });
     </script>
 

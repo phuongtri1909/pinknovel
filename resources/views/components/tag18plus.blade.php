@@ -1,4 +1,4 @@
-<span class="tag-18">18+</span>
+{{-- <span class="tag-18">18+</span>
 @once
     @push('styles')
         <style>
@@ -39,4 +39,4 @@
             }
         </style>
     @endpush
-@endonce
+@endonce --}}

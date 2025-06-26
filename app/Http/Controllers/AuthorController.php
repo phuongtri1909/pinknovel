@@ -579,7 +579,7 @@ class AuthorController extends Controller
         }
 
         $request->validate([
-            'title' => 'required',
+            'title' => 'nullable|max:255|unique:chapters,title,' . $story->id . ',story_id',
             'content' => 'required',
             'number' => [
                 'required',
@@ -598,6 +598,8 @@ class AuthorController extends Controller
             'status' => 'required|in:draft,published',
         ], [
             'title.required' => 'Tên chương không được để trống',
+            'title.unique' => 'Tên chương này đã tồn tại trong truyện',
+            'title.max' => 'Tên chương không được quá 255 ký tự',
             'content.required' => 'Nội dung chương không được để trống',
             'number.required' => 'Số chương không được để trống',
             'number.integer' => 'Số chương phải là số nguyên',
@@ -630,7 +632,7 @@ class AuthorController extends Controller
 
             $chapter = $story->chapters()->create([
                 'slug' => $proposedSlug,
-                'title' => $request->title,
+                'title' => $request->title ?: 'Chương ' . $request->number,
                 'content' => $request->content,
                 'number' => $request->number,
                 'status' => $request->status,
@@ -847,7 +849,7 @@ class AuthorController extends Controller
         $chapter = $story->chapters()->findOrFail($chapterId);
 
         $request->validate([
-            'title' => 'required',
+            'title' => 'nullable|max:255|unique:chapters,title,' . $chapter->id . ',id,story_id,' . $story->id,
             'content' => 'required',
             'number' => [
                 'required',
@@ -880,6 +882,8 @@ class AuthorController extends Controller
             'status' => 'required|in:draft,published',
         ], [
             'title.required' => 'Tên chương không được để trống',
+            'title.max' => 'Tên chương không được quá 255 ký tự',
+            'title.unique' => 'Tên chương này đã tồn tại trong truyện',
             'content.required' => 'Nội dung chương không được để trống',
             'number.required' => 'Số chương không được để trống',
             'number.integer' => 'Số chương phải là số nguyên',
@@ -926,7 +930,7 @@ class AuthorController extends Controller
 
             $chapter->update([
                 'slug' => $proposedSlug,
-                'title' => $request->title,
+                'title' => $request->title ?: 'Chương ' . $request->number,
                 'content' => $request->content,
                 'number' => $request->number,
                 'status' => $request->status,
@@ -937,7 +941,7 @@ class AuthorController extends Controller
                 'scheduled_publish_at' => $scheduledPublishAt,
             ]);
 
-            return redirect()->route('user.author.stories.chapters', $story->id)
+            return redirect()->back()
                 ->with('success', 'Cập nhật chương ' . $request->number . ' thành công');
         } catch (\Exception $e) {
             Log::error('Error updating chapter: ' . $e->getMessage());

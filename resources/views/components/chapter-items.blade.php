@@ -62,6 +62,7 @@
                                 <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
                                     class="text-muted chapter-link {{ $isRead ? 'chapter-read' : '' }} {{ $isVip ? 'vip-chapter' : '' }}">
                     @endif
+
                     @if ($isVip)
                         <span class="coin-box">
                             <span>{{ $chapter->price }}</span>
@@ -76,7 +77,11 @@
 
                     <span class="chapter-info ms-2">
                         <span class="chapter-title">
-                            Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
+                            <span class="chapter-title">
+                                {{ $chapter->title && trim($chapter->title) !== 'Chương ' . $chapter->number
+                                    ? 'Chương ' . $chapter->number . ': ' . $chapter->title
+                                    : 'Chương ' . $chapter->number }}
+                            </span>
                             @if ($isVip)
                                 @if ($hasAccess)
                                     <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -162,7 +167,11 @@
 
                     <span class="chapter-info ms-2">
                         <span class="chapter-title">
-                            Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
+                            <span class="chapter-title">
+                                {{ $chapter->title && trim($chapter->title) !== 'Chương ' . $chapter->number
+                                    ? 'Chương ' . $chapter->number . ': ' . $chapter->title
+                                    : 'Chương ' . $chapter->number }}
+                            </span>
                             @if ($isVip)
                                 @if ($hasAccess)
                                     <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -236,7 +245,7 @@
                     @if ($isVip)
                         <span class="coin-box">
                             <span>{{ $chapter->price }}</span>
-                            <span class="fs-7">Coin</span>
+                            <span class="fs-7">Xu</span>
                         </span>
                     @else
                         <span class="free-box">
@@ -247,7 +256,11 @@
 
                     <span class="chapter-info ms-2">
                         <span class="chapter-title">
-                            Chương {{ $chapter->number }}{{ $chapter->title ? ': ' . $chapter->title : '' }}
+                            <span class="chapter-title">
+                                {{ $chapter->title && trim($chapter->title) !== 'Chương ' . $chapter->number
+                                    ? 'Chương ' . $chapter->number . ': ' . $chapter->title
+                                    : 'Chương ' . $chapter->number }}
+                            </span>
                             @if ($isVip)
                                 @if ($hasAccess)
                                     <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -256,7 +269,7 @@
                                     </span>
                                 @else
                                     <span class="vip-badge" data-bs-toggle="tooltip" data-bs-placement="top"
-                                        data-bs-title="{{ $chapter->price }} Coin">
+                                        data-bs-title="{{ $chapter->price }} Xu">
                                         <i class="fas fa-crown"></i>
                                     </span>
                                 @endif

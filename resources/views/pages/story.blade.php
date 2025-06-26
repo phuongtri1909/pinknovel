@@ -137,77 +137,77 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            @if($story->is_18_plus)
-                // Tạo key duy nhất cho mỗi truyện
-                const storyWarningKey = 'story_18_warning_{{ $story->id }}';
+            // @if($story->is_18_plus)
+            //     // Tạo key duy nhất cho mỗi truyện
+            //     const storyWarningKey = 'story_18_warning_{{ $story->id }}';
                 
-                // Kiểm tra xem đã hiển thị cảnh báo cho truyện này chưa
-                if (!localStorage.getItem(storyWarningKey)) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: '⚠️ Cảnh báo nội dung 18+',
-                        html: `
-                            <div class="text-start">
-                                <p><strong>Truyện này chứa nội dung dành cho người từ 18 tuổi trở lên:</strong></p>
-                                <ul class="text-start" style="margin-left: 20px;">
-                                    <li>Nội dung bạo lực, tình dục</li>
-                                    <li>Ngôn từ không phù hợp với trẻ em</li>
-                                    <li>Tình tiết người lớn</li>
-                                </ul>
-                                <p class="text-danger"><strong>Bạn có đủ 18 tuổi và muốn tiếp tục đọc?</strong></p>
-                            </div>
-                        `,
-                        showCancelButton: true,
-                        confirmButtonText: '✅ Tôi đủ 18 tuổi',
-                        cancelButtonText: '❌ Quay lại',
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#6c757d',
-                        allowOutsideClick: false,
-                        allowEscapeKey: false,
-                        customClass: {
-                            popup: 'animate__animated animate__fadeInDown',
-                            confirmButton: 'btn btn-danger fw-bold',
-                            cancelButton: 'btn btn-secondary fw-bold'
-                        },
-                        backdrop: `
-                            rgba(0,0,0,0.8)
-                            left top
-                            no-repeat
-                        `
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            // Lưu vào localStorage để không hiển thị lại
-                            localStorage.setItem(storyWarningKey, 'confirmed');
+            //     // Kiểm tra xem đã hiển thị cảnh báo cho truyện này chưa
+            //     if (!localStorage.getItem(storyWarningKey)) {
+            //         Swal.fire({
+            //             icon: 'warning',
+            //             title: '⚠️ Cảnh báo nội dung 18+',
+            //             html: `
+            //                 <div class="text-start">
+            //                     <p><strong>Truyện này chứa nội dung dành cho người từ 18 tuổi trở lên:</strong></p>
+            //                     <ul class="text-start" style="margin-left: 20px;">
+            //                         <li>Nội dung bạo lực, tình dục</li>
+            //                         <li>Ngôn từ không phù hợp với trẻ em</li>
+            //                         <li>Tình tiết người lớn</li>
+            //                     </ul>
+            //                     <p class="text-danger"><strong>Bạn có đủ 18 tuổi và muốn tiếp tục đọc?</strong></p>
+            //                 </div>
+            //             `,
+            //             showCancelButton: true,
+            //             confirmButtonText: '✅ Tôi đủ 18 tuổi',
+            //             cancelButtonText: '❌ Quay lại',
+            //             confirmButtonColor: '#d33',
+            //             cancelButtonColor: '#6c757d',
+            //             allowOutsideClick: false,
+            //             allowEscapeKey: false,
+            //             customClass: {
+            //                 popup: 'animate__animated animate__fadeInDown',
+            //                 confirmButton: 'btn btn-danger fw-bold',
+            //                 cancelButton: 'btn btn-secondary fw-bold'
+            //             },
+            //             backdrop: `
+            //                 rgba(0,0,0,0.8)
+            //                 left top
+            //                 no-repeat
+            //             `
+            //         }).then((result) => {
+            //             if (result.isConfirmed) {
+            //                 // Lưu vào localStorage để không hiển thị lại
+            //                 localStorage.setItem(storyWarningKey, 'confirmed');
                             
-                            // Hiển thị thông báo xác nhận
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Đã xác nhận',
-                                text: 'Chúc bạn đọc truyện vui vẻ!',
-                                timer: 1500,
-                                showConfirmButton: false,
-                                customClass: {
-                                    popup: 'animate__animated animate__fadeInUp'
-                                }
-                            });
-                        } else {
-                            // Người dùng không đồng ý, chuyển về trang chủ
-                            Swal.fire({
-                                icon: 'info',
-                                title: 'Đã hủy',
-                                text: 'Bạn sẽ được chuyển về trang chủ',
-                                timer: 2000,
-                                showConfirmButton: false,
-                                customClass: {
-                                    popup: 'animate__animated animate__fadeOut'
-                                }
-                            }).then(() => {
-                                window.location.href = '{{ route("home") }}';
-                            });
-                        }
-                    });
-                }
-            @endif
+            //                 // Hiển thị thông báo xác nhận
+            //                 Swal.fire({
+            //                     icon: 'success',
+            //                     title: 'Đã xác nhận',
+            //                     text: 'Chúc bạn đọc truyện vui vẻ!',
+            //                     timer: 1500,
+            //                     showConfirmButton: false,
+            //                     customClass: {
+            //                         popup: 'animate__animated animate__fadeInUp'
+            //                     }
+            //                 });
+            //             } else {
+            //                 // Người dùng không đồng ý, chuyển về trang chủ
+            //                 Swal.fire({
+            //                     icon: 'info',
+            //                     title: 'Đã hủy',
+            //                     text: 'Bạn sẽ được chuyển về trang chủ',
+            //                     timer: 2000,
+            //                     showConfirmButton: false,
+            //                     customClass: {
+            //                         popup: 'animate__animated animate__fadeOut'
+            //                     }
+            //                 }).then(() => {
+            //                     window.location.href = '{{ route("home") }}';
+            //                 });
+            //             }
+            //         });
+            //     }
+            // @endif
         });
     </script>
 @endpush

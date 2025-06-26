@@ -36,7 +36,7 @@
         </div>
 
        
-        <div class="fs-8"><i class="fa-solid fa-user fs-8 text-info"></i> {{ $story->user->name }}</div>
+        <div class="fs-8"><i class="fa-solid fa-user fs-8 text-info"></i> {{ $story->author_name }}</div>
 
         <div class="d-flex justify-content-between align-items-center">
             <div class="d-flex flex-wrap gap-1 my-2 text-sm">

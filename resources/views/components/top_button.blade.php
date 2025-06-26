@@ -1,4 +1,4 @@
-<button id="topButton" class="btn bg-3 rounded-circle position-fixed bottom-0 end-0 m-4" 
+<button id="topButton" class="btn bg-3 rounded-circle position-fixed bottom-0 end-0 mx-2 mb-2 mx-md-4" 
         style="display: none; z-index: 1000;">
     <i class="fas fa-arrow-up text-white"></i>
 </button>

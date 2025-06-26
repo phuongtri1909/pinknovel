@@ -230,7 +230,7 @@
                                 </div>
                             </td>
                             <td>
-                                <div class="fw-bold">{{ $story->title }}</div>
+                                <a href="{{  route('show.page.story', $story->slug) }}" class="fw-bold text-decoration-none text-dark">{{ $story->title }}</a>
                                 <div class="text-muted small">
                                     <span class="me-2"><i class="fas fa-book me-1"></i>{{ $story->chapters->count() }}
                                         chương</span>

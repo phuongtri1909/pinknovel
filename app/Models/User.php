@@ -37,6 +37,10 @@ class User extends Authenticatable
         'coins'
     ];
 
+    const ROLE_USER = 'user';
+    const ROLE_AUTHOR = 'author';
+    const ROLE_ADMIN = 'admin';
+
     /**
      * Get all chapter purchases made by this user
      */

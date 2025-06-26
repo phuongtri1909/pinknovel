@@ -54,17 +54,20 @@
                         style="width: 60px; height: 80px; object-fit: cover;">
                 </div>
                 <div class="col-md-7">
-                    <h5 class="card-title mb-1">{{ $story->title }}
+                    <a href="{{ route('show.page.story', $story->slug) }}" class="card-title mb-1 fs-6 text-dark text-decoration-none fw-bold">{{ $story->title }}
                         @if ($story->is_18_plus)
                             <span class="badge bg-danger ms-2"><i class="fas fa-exclamation-triangle me-1"></i> 18+</span>
                         @endif
-                    </h5>
+                    </a>
                     <div class="text-muted small mb-2">
                         <span class="me-3">
                             <i class="fas fa-book me-1"></i> {{ $story->chapters->count() }} chương
                         </span>
                         <span>
                             <i class="fas fa-calendar-alt me-1"></i> Cập nhật: {{ $story->updated_at->format('d/m/Y H:i') }}
+                        </span>
+                        <span class="badge bg-warning ms-2">
+                            {{ $story->getTotalChapterPriceAttribute() }} <i class="fa-solid fa-sack-dollar"></i>
                         </span>
                     </div>
                     <div>
@@ -199,7 +202,7 @@
                         <tr>
                             <td>{{ $chapter->number }}</td>
                             <td>
-                                <div class="fw-bold">{{ $chapter->title }}</div>
+                                <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}" class="fw-bold text-decoration-none text-dark">{{ $chapter->title }}</a>
                                 <div class="text-muted small">
                                     <i class="fas fa-eye me-1"></i> {{ number_format($chapter->views) }} lượt xem
                                 </div>
