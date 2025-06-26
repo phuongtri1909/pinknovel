@@ -8,34 +8,124 @@
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('css/category-tags.css') }}" rel="stylesheet" />
     <style>
-        .preview-cover {
-            max-width: 140px;
-            max-height: 180px;
-            object-fit: cover;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        .cover-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .cover-container {
+        .cover-upload-area:hover {
+            border-color: var(--primary-color-3);
+            background-color: rgba(var(--primary-rgb), 0.05);
+        }
+
+        .cover-upload-area.dragover {
+            border-color: var(--primary-color-3);
+            background-color: rgba(var(--primary-rgb), 0.1);
+        }
+
+        .cover-preview-container {
             position: relative;
-            width: fit-content;
+            display: inline-block;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
-        .cover-container .btn-remove {
+        .cover-preview-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .preview-cover {
+            display: block;
+            max-width: 200px;
+            height: auto;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .cover-overlay {
             position: absolute;
-            top: -10px;
-            right: -10px;
-            background: white;
-            border-radius: 50%;
-            color: #dc3545;
-            width: 25px;
-            height: 25px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #dc3545;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 10px;
+        }
+
+        .cover-preview-container:hover .cover-overlay {
+            opacity: 1;
+        }
+
+        .cover-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cover-action-btn {
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cover-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .cover-action-btn.change {
+            color: var(--primary-color-3);
+        }
+
+        .cover-action-btn.remove {
+            color: #dc3545;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #6c757d;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+
+        #cover {
+            display: none;
         }
     </style>
 @endpush
@@ -51,6 +141,43 @@
         @csrf
         <div class="row">
             <div class="col-md-8">
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Ảnh bìa <span class="text-danger">*</span></label>
+
+                    <input type="file" id="cover" name="cover" accept="image/*" required>
+                    @error('cover')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+
+                    <!-- Upload Area -->
+                    <div class="cover-upload-area" id="uploadArea">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <div class="upload-text">Chọn ảnh bìa truyện</div>
+                        <div class="upload-hint">Kéo thả ảnh vào đây hoặc click để chọn</div>
+                        <div class="upload-hint mt-2">
+                            <small>Tỷ lệ ảnh tốt nhất: 2:3 | Kích thước tối thiểu: 300x450px</small>
+                        </div>
+                    </div>
+
+                    <!-- Preview Area -->
+                    <div class="cover-preview d-none mt-3" id="previewArea">
+                        <div class="cover-preview-container">
+                            <img src="" class="preview-cover" id="coverPreview" alt="Preview">
+                            <div class="cover-overlay">
+                                <div class="cover-actions">
+                                    <button type="button" class="cover-action-btn change" id="changeCover" title="Thay đổi ảnh">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button type="button" class="cover-action-btn remove" id="removeCover" title="Xóa ảnh">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label for="title" class="form-label">Tiêu đề truyện <span class="text-danger">*</span></label>
                     <input type="text" class="form-control @error('title') is-invalid @enderror" id="title"
@@ -62,12 +189,25 @@
 
                 <div class="mb-3">
                     <label for="category_input" class="form-label">Thể loại <span class="text-danger">*</span></label>
-                    <p class="text-muted small">Nhập các thể loại phân cách bởi dấu phẩy (,). Ví dụ: Tình cảm, Hài hước,
-                        Viễn tưởng</p>
-                    <input type="text" class="form-control @error('category_input') is-invalid @enderror"
-                        id="category_input" name="category_input" value="{{ old('category_input') }}" required>
+                    
+                    <div class="category-input-container @error('category_input') is-invalid @enderror" id="categoryContainer">
+                        <div class="category-tags" id="categoryTags"></div>
+                        <input type="text" 
+                               class="category-input" 
+                               id="categoryInput" 
+                               autocomplete="off">
+                        <div class="category-suggestions d-none" id="categorySuggestions"></div>
+                    </div>
+                    
+                    <!-- Hidden input to store selected categories -->
+                    <input type="hidden" name="category_input" id="categoryInputHidden" value="{{ old('category_input') }}">
+                    
+                    <div class="form-text text-muted">
+                       Nhập thể loại hoặc dán nhiều thể loại cách nhau bằng dấu phẩy...
+                    </div>
+                    
                     @error('category_input')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
                     @enderror
                 </div>
 
@@ -82,6 +222,9 @@
             </div>
 
             <div class="col-md-4">
+
+
+
                 <div class="mb-3">
                     <label for="author_name" class="form-label">Tên tác giả <span class="text-danger">*</span></label>
                     <input type="text" class="form-control @error('author_name') is-invalid @enderror" id="author_name"
@@ -111,19 +254,19 @@
                             có)</span></label>
                     <input type="text" class="form-control @error('translator_name') is-invalid @enderror"
                         id="translator_name" name="translator_name" value="{{ old('translator_name') }}">
-                    <div class="form-text text-muted">Điền nếu đây là truyện dịch hoặc sưu tầm</div>
+                    <div class="form-text text-muted">Điền tên người dịch/edit truyện</div>
                     @error('translator_name')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
 
                 <div class="mb-3">
-                    <label for="is_monopoly" class="form-label">Truyện độc quyền <span class="text-muted">(nếu
+                    <label for="is_monopoly" class="form-label mb-0">Truyện độc quyền <span class="text-muted">(nếu
                             có)</span></label>
                     <input type="checkbox" class="form-check-input" id="is_monopoly" name="is_monopoly" value="1"
                         {{ old('is_monopoly') ? 'checked' : '' }}>
                     <div class="form-text text-muted">
-                        Chọn nếu truyện là độc quyền và không được phép sưu tầm hoặc dịch.
+                        Chọn nếu truyện chỉ đăng duy nhất tại Pink Novel
                     </div>
                     @error('is_monopoly')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -132,12 +275,13 @@
 
                 <div class="mb-3 mt-4">
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="is_18_plus" name="is_18_plus" value="1"
-                            {{ old('is_18_plus') ? 'checked' : '' }}>
-                        <label class="form-check-label" for="is_18_plus">
+                        <label class="form-check-label fw-bold" for="is_18_plus">
                             <span class="badge bg-danger me-1"><i class="fas fa-exclamation-triangle"></i> 18+</span>
                             Truyện có nội dung người lớn
                         </label>
+                        <input class="form-check-input" type="checkbox" id="is_18_plus" name="is_18_plus"
+                            value="1" {{ old('is_18_plus') ? 'checked' : '' }}>
+
                         <div class="form-text text-danger">
                             Chọn nếu truyện có nội dung nhạy cảm, bạo lực hoặc tình dục không phù hợp với độc giả dưới 18
                             tuổi.
@@ -145,31 +289,14 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label for="cover" class="form-label">Ảnh bìa <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control @error('cover') is-invalid @enderror" id="cover"
-                        name="cover" accept="image/*" required>
-                    @error('cover')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
 
-                    <div class="mt-3 cover-preview d-none">
-                        <div class="cover-container">
-                            <img src="" class="preview-cover" id="coverPreview">
-                            <span class="btn-remove" id="removeCover"><i class="fas fa-times"></i></span>
-                        </div>
-                    </div>
-                    <div class="text-muted mt-2 small">
-                        <i class="fas fa-info-circle"></i> Tỷ lệ ảnh tốt nhất là 2:3, kích thước tối thiểu 300x450 pixels.
-                    </div>
-                </div>
             </div>
         </div>
 
         <div class="d-flex justify-content-end mt-4">
-            <a href="{{ route('user.author.stories') }}" class="btn btn-secondary me-2">Hủy</a>
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save me-1"></i> Đăng truyện
+            <a href="{{ route('user.author.stories') }}" class="btn btn-outline-danger me-2">Hủy</a>
+            <button type="submit" class="btn btn-outline-dark">
+                Đăng truyện
             </button>
         </div>
     </form>
@@ -178,28 +305,93 @@
 @push('info_scripts')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
+    <script src="{{ asset('js/category-tags.js') }}"></script>
     <script>
         $(document).ready(function() {
-            // Xử lý preview ảnh bìa
-            $('#cover').change(function() {
+            // Cover upload functionality (existing code)
+            const $coverInput = $('#cover');
+            const $uploadArea = $('#uploadArea');
+            const $previewArea = $('#previewArea');
+            const $coverPreview = $('#coverPreview');
+
+            // Click upload area to select file
+            $uploadArea.on('click', function() {
+                $coverInput.click();
+            });
+
+            // Change cover button
+            $(document).on('click', '#changeCover', function(e) {
+                e.stopPropagation();
+                $coverInput.click();
+            });
+
+            // Remove cover button
+            $(document).on('click', '#removeCover', function(e) {
+                e.stopPropagation();
+                $coverInput.val('');
+                $previewArea.addClass('d-none');
+                $uploadArea.removeClass('d-none');
+            });
+
+            // Handle file selection
+            $coverInput.on('change', function() {
                 const file = this.files[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        $('#coverPreview').attr('src', e.target.result);
-                        $('.cover-preview').removeClass('d-none');
+                        $coverPreview.attr('src', e.target.result);
+                        $uploadArea.addClass('d-none');
+                        $previewArea.removeClass('d-none');
                     }
                     reader.readAsDataURL(file);
                 }
             });
 
-            // Xử lý xóa ảnh bìa
-            $('#removeCover').click(function() {
-                $('#cover').val('');
-                $('.cover-preview').addClass('d-none');
+            // Drag and drop functionality
+            $uploadArea.on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('dragover');
             });
 
-            // Thay thế Summernote bằng CKEditor
+            $uploadArea.on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+            });
+
+            $uploadArea.on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+                
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        $coverInput[0].files = files;
+                        $coverInput.trigger('change');
+                    }
+                }
+            });
+
+            // Initialize Category Tags
+            const defaultCategories = [
+                'Tình cảm', 'Hài hước', 'Viễn tưởng', 'Kinh dí', 'Trinh thám', 
+                'Hành động', 'Phiêu lưu', 'Lãng mạn', 'Drama', 'Học đường',
+                'Sinh tồn', 'Isekai', 'Xuyên không', 'Tu tiên', 'Đô thị',
+                'Quân sự', 'Lịch sử', 'Thể thao', 'Game', 'Mecha'
+            ];
+            
+            const allCategories = @json($allCategories ?? null) || defaultCategories;
+
+            const categoryTags = new CategoryTags({
+                containerSelector: '#categoryContainer',
+                inputSelector: '#categoryInput',
+                hiddenInputSelector: '#categoryInputHidden',
+                tagsSelector: '#categoryTags',
+                suggestionsSelector: '#categorySuggestions',
+                allCategories: allCategories
+            });
+
+            // CKEditor
             CKEDITOR.replace('description2', {
                 on: {
                     change: function(evt) {

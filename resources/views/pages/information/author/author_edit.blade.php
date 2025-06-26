@@ -8,36 +8,128 @@
 
 @push('styles')
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="{{ asset('css/category-tags.css') }}" rel="stylesheet" />
     <style>
-        .preview-cover {
-            max-width: 140px;
-            max-height: 180px;
-            object-fit: cover;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        /* Cover upload styles... (same as before) */
+        .cover-upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: #f8f9fa;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
-        .cover-container {
+        .cover-upload-area:hover {
+            border-color: var(--primary-color-3);
+            background-color: rgba(var(--primary-rgb), 0.05);
+        }
+
+        .cover-upload-area.dragover {
+            border-color: var(--primary-color-3);
+            background-color: rgba(var(--primary-rgb), 0.1);
+        }
+
+        .cover-preview-container {
             position: relative;
-            width: fit-content;
+            display: inline-block;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
-        .cover-container .btn-remove {
+        .cover-preview-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .preview-cover {
+            display: block;
+            max-width: 200px;
+            height: auto;
+            border: none;
+            border-radius: 10px;
+        }
+
+        .cover-overlay {
             position: absolute;
-            top: -10px;
-            right: -10px;
-            background: white;
-            border-radius: 50%;
-            color: #dc3545;
-            width: 25px;
-            height: 25px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 1px solid #dc3545;
-            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 10px;
         }
 
+        .cover-preview-container:hover .cover-overlay {
+            opacity: 1;
+        }
+
+        .cover-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .cover-action-btn {
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .cover-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .cover-action-btn.change {
+            color: var(--primary-color-3);
+        }
+
+        .cover-action-btn.remove {
+            color: #dc3545;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            color: #6c757d;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #adb5bd;
+            font-size: 0.9rem;
+        }
+
+        #cover {
+            display: none;
+        }
+
+        /* Existing styles... */
         .nav-tabs .nav-link {
             border: none;
             border-bottom: 3px solid transparent;
@@ -214,11 +306,86 @@
                         @method('PUT')
                         <div class="row">
                             <div class="col-md-8">
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Ảnh bìa
+                                        {{ $story->cover ? '' : '<span class="text-danger">*</span>' }}</label>
+
+                                    <input type="file" id="cover" name="cover" accept="image/*"
+                                        {{ $story->cover ? '' : 'required' }}>
+                                    @error('cover')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+
+                                    @if ($story->cover)
+                                        <!-- Preview Area for existing cover -->
+                                        <div class="cover-preview mt-3" id="previewArea">
+                                            <div class="cover-preview-container">
+                                                <img src="{{ Storage::url($story->cover) }}" class="preview-cover"
+                                                    id="coverPreview" alt="Cover">
+                                                <div class="cover-overlay">
+                                                    <div class="cover-actions">
+                                                        <button type="button" class="cover-action-btn change"
+                                                            id="changeCover" title="Thay đổi ảnh">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button type="button" class="cover-action-btn remove"
+                                                            id="removeCover" title="Xóa ảnh">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Upload Area (hidden initially) -->
+                                        <div class="cover-upload-area d-none" id="uploadArea">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <div class="upload-text">Chọn ảnh bìa mới</div>
+                                            <div class="upload-hint">Kéo thả ảnh vào đây hoặc click để chọn</div>
+                                            <div class="upload-hint mt-2">
+                                                <small>Tỷ lệ ảnh tốt nhất: 2:3 | Kích thước tối thiểu: 300x450px</small>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <!-- Upload Area for new cover -->
+                                        <div class="cover-upload-area" id="uploadArea">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <div class="upload-text">Chọn ảnh bìa truyện</div>
+                                            <div class="upload-hint">Kéo thả ảnh vào đây hoặc click để chọn</div>
+                                            <div class="upload-hint mt-2">
+                                                <small>Tỷ lệ ảnh tốt nhất: 2:3 | Kích thước tối thiểu: 300x450px</small>
+                                            </div>
+                                        </div>
+
+                                        <!-- Preview Area (hidden initially) -->
+                                        <div class="cover-preview d-none mt-3" id="previewArea">
+                                            <div class="cover-preview-container">
+                                                <img src="" class="preview-cover" id="coverPreview"
+                                                    alt="Preview">
+                                                <div class="cover-overlay">
+                                                    <div class="cover-actions">
+                                                        <button type="button" class="cover-action-btn change"
+                                                            id="changeCover" title="Thay đổi ảnh">
+                                                            <i class="fas fa-edit"></i>
+                                                        </button>
+                                                        <button type="button" class="cover-action-btn remove"
+                                                            id="removeCover" title="Xóa ảnh">
+                                                            <i class="fas fa-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+
                                 <div class="mb-3">
                                     <label for="title" class="form-label">Tiêu đề truyện <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                        id="title" name="title" value="{{ old('title', $story->title) }}" required>
+                                        id="title" name="title" value="{{ old('title', $story->title) }}"
+                                        required>
                                     @error('title')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -227,13 +394,25 @@
                                 <div class="mb-3">
                                     <label for="category_input" class="form-label">Thể loại <span
                                             class="text-danger">*</span></label>
-                                    <p class="text-muted small">Nhập các thể loại phân cách bởi dấu phẩy (,). Ví dụ: Tình
-                                        cảm, Hài hước, Viễn tưởng</p>
-                                    <input type="text" class="form-control @error('category_input') is-invalid @enderror"
-                                        id="category_input" name="category_input"
-                                        value="{{ old('category_input', $categoryNames) }}" required>
+
+                                    <div class="category-input-container @error('category_input') is-invalid @enderror"
+                                        id="categoryContainer">
+                                        <div class="category-tags" id="categoryTags"></div>
+                                        <input type="text" class="category-input" id="categoryInput"
+                                            autocomplete="off">
+                                        <div class="category-suggestions d-none" id="categorySuggestions"></div>
+                                    </div>
+
+                                    <!-- Hidden input to store selected categories -->
+                                    <input type="hidden" name="category_input" id="categoryInputHidden"
+                                        value="{{ old('category_input', $categoryNames) }}">
+
+                                    <div class="form-text text-muted">
+                                        Nhập thể loại hoặc dán nhiều thể loại cách nhau bằng dấu phẩy...
+                                    </div>
+
                                     @error('category_input')
-                                        <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
                                     @enderror
                                 </div>
 
@@ -249,6 +428,9 @@
                             </div>
 
                             <div class="col-md-4">
+
+
+
                                 <div class="mb-3">
                                     <label for="author_name" class="form-label">Tên tác giả <span
                                             class="text-danger">*</span></label>
@@ -289,19 +471,19 @@
                                         class="form-control @error('translator_name') is-invalid @enderror"
                                         id="translator_name" name="translator_name"
                                         value="{{ old('translator_name', $story->translator_name) }}">
-                                    <div class="form-text text-muted">Điền nếu đây là truyện dịch hoặc sưu tầm</div>
+                                    <div class="form-text text-muted">Điền tên người dịch/edit truyện</div>
                                     @error('translator_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="is_monopoly" class="form-label">Truyện độc quyền <span
+                                    <label for="is_monopoly" class="form-label mb-0">Truyện độc quyền <span
                                             class="text-muted">(nếu có)</span></label>
                                     <input type="checkbox" class="form-check-input" id="is_monopoly" name="is_monopoly"
                                         value="1" {{ old('is_monopoly', $story->is_monopoly) ? 'checked' : '' }}>
                                     <div class="form-text text-muted">
-                                        Chọn nếu truyện là độc quyền và không được phép sưu tầm hoặc dịch.
+                                        Chọn nếu truyện chỉ đăng duy nhất tại Pink Novel
                                     </div>
                                     @error('is_monopoly')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -313,7 +495,7 @@
                                         <input class="form-check-input" type="checkbox" id="is_18_plus"
                                             name="is_18_plus" value="1"
                                             {{ old('is_18_plus', $story->is_18_plus) ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="is_18_plus">
+                                        <label class="form-check-label fw-bold" for="is_18_plus">
                                             <span class="badge bg-danger me-1"><i class="fas fa-exclamation-triangle"></i>
                                                 18+</span>
                                             Truyện có nội dung người lớn
@@ -325,28 +507,7 @@
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="cover" class="form-label">Ảnh bìa
-                                        {{ $story->cover ? '' : '<span class="text-danger">*</span>' }}</label>
-                                    <input type="file" class="form-control @error('cover') is-invalid @enderror"
-                                        id="cover" name="cover" accept="image/*"
-                                        {{ $story->cover ? '' : 'required' }}>
-                                    @error('cover')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
 
-                                    <div class="mt-3 cover-preview {{ $story->cover ? '' : 'd-none' }}">
-                                        <div class="cover-container">
-                                            <img src="{{ $story->cover ? Storage::url($story->cover) : '' }}"
-                                                class="preview-cover" id="coverPreview">
-                                            <span class="btn-remove" id="removeCover"><i class="fas fa-times"></i></span>
-                                        </div>
-                                    </div>
-                                    <div class="text-muted mt-2 small">
-                                        <i class="fas fa-info-circle"></i> Tỷ lệ ảnh tốt nhất là 2:3, kích thước tối thiểu
-                                        300x450 pixels.
-                                    </div>
-                                </div>
 
                                 @if ($story->status == 'pending')
                                     <div class="alert alert-warning mt-4">
@@ -385,32 +546,36 @@
 
                                 @if ($story->status == 'rejected')
                                     <div class="alert alert-danger mt-4">
-                                        <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ chối:</strong></div>
-                                        <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản trị viên.</p>
-                                        
+                                        <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ
+                                                chối:</strong></div>
+                                        <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản
+                                            trị viên.</p>
+
                                         @if ($story->admin_note)
                                             <div class="mt-2">
                                                 <strong>Lý do từ chối:</strong>
-                                                <div class="p-2 bg-light rounded border border-danger mt-1">{{ $story->admin_note }}</div>
+                                                <div class="p-2 bg-light rounded border border-danger mt-1">
+                                                    {{ $story->admin_note }}</div>
                                             </div>
                                         @endif
-                                        
-                                        <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để gửi lại yêu cầu.</p>
+
+                                        <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để
+                                            gửi lại yêu cầu.</p>
                                     </div>
                                 @endif
                             </div>
                         </div>
 
                         <div class="d-flex justify-content-end mt-4">
-                            <a href="{{ route('user.author.stories') }}" class="btn btn-secondary me-2">Hủy</a>
+                            <a href="{{ route('user.author.stories') }}" class="btn btn-outline-danger me-2">Hủy</a>
                             @if ($story->status == 'published' && $story->hasPendingEditRequest())
                                 <button type="button" class="btn btn-secondary" disabled>
                                     <i class="fas fa-clock me-1"></i> Đang chờ duyệt
                                 </button>
                             @elseif($story->status == 'published')
-                                <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal"
                                     data-bs-target="#confirmEditModal">
-                                    <i class="fas fa-save me-1"></i> Lưu thông tin
+                                    Lưu thông tin
                                 </button>
 
                                 <!-- Modal xác nhận chỉnh sửa -->
@@ -441,16 +606,17 @@
                                                 <p class="mt-3">Bạn có muốn tiếp tục?</p>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-secondary"
+                                                <button type="button" class="btn btn-outline-danger"
                                                     data-bs-dismiss="modal">Hủy bỏ</button>
-                                                <button type="submit" class="btn btn-primary">Gửi yêu cầu duyệt</button>
+                                                <button type="submit" class="btn btn-outline-dark">Gửi yêu cầu
+                                                    duyệt</button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             @else
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-1"></i> Lưu thông tin
+                                <button type="submit" class="btn btn-outline-dark">
+                                    Lưu thông tin
                                 </button>
                             @endif
                         </div>
@@ -659,7 +825,8 @@
                                 @if ($story->submitted_at)
                                     <div class="d-flex align-items-center mt-3">
                                         <div class="text-muted me-3">Đã gửi yêu cầu vào:</div>
-                                        <div class="fw-bold">{{ \Carbon\Carbon::parse($story->submitted_at)->format('H:i:s d/m/Y') }}</div>
+                                        <div class="fw-bold">
+                                            {{ \Carbon\Carbon::parse($story->submitted_at)->format('H:i:s d/m/Y') }}</div>
                                     </div>
                                 @endif
 
@@ -679,28 +846,31 @@
                                     <i class="fas fa-times-circle me-2"></i>
                                     <strong>Đã bị từ chối:</strong> Truyện của bạn không được duyệt.
                                 </div>
-                                
+
                                 @if ($story->admin_note)
                                     <div class="mt-3">
                                         <div class="fw-bold text-danger mb-2">Lý do từ chối:</div>
-                                        <div class="p-3 bg-light rounded border border-danger">{{ $story->admin_note }}</div>
+                                        <div class="p-3 bg-light rounded border border-danger">{{ $story->admin_note }}
+                                        </div>
                                     </div>
                                 @endif
-                                
+
                                 <div class="alert alert-info mt-3">
                                     <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Hướng dẫn:</strong> Vui lòng chỉnh sửa truyện theo phản hồi của quản trị viên, 
+                                    <strong>Hướng dẫn:</strong> Vui lòng chỉnh sửa truyện theo phản hồi của quản trị viên,
                                     sau đó bạn có thể gửi lại yêu cầu duyệt.
                                 </div>
-                                
+
                                 @if ($story->chapters->count() >= 3)
-                                    <form action="{{ route('user.author.stories.submit.for.review', $story->id) }}" method="POST" class="review-form">
+                                    <form action="{{ route('user.author.stories.submit.for.review', $story->id) }}"
+                                        method="POST" class="review-form">
                                         @csrf
                                         <div class="mb-3">
                                             <label for="review_note" class="form-label">Ghi chú cho quản trị viên</label>
-                                            <textarea class="form-control" id="review_note" name="review_note" rows="4" 
+                                            <textarea class="form-control" id="review_note" name="review_note" rows="4"
                                                 placeholder="Giải thích những thay đổi bạn đã thực hiện để khắc phục vấn đề...">{{ old('review_note') }}</textarea>
-                                            <div class="form-text">Vui lòng giải thích những thay đổi bạn đã thực hiện để khắc phục vấn đề.</div>
+                                            <div class="form-text">Vui lòng giải thích những thay đổi bạn đã thực hiện để
+                                                khắc phục vấn đề.</div>
                                         </div>
 
                                         <div class="d-grid">
@@ -712,7 +882,8 @@
                                 @else
                                     <div class="alert alert-warning mt-3">
                                         <i class="fas fa-exclamation-triangle me-2"></i>
-                                        <strong>Chưa đủ điều kiện:</strong> Truyện cần có ít nhất 3 chương trước khi gửi lại yêu cầu duyệt.
+                                        <strong>Chưa đủ điều kiện:</strong> Truyện cần có ít nhất 3 chương trước khi gửi lại
+                                        yêu cầu duyệt.
                                     </div>
                                 @endif
                             @endif
@@ -727,33 +898,99 @@
 @push('info_scripts')
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
+    <script src="{{ asset('js/category-tags.js') }}"></script>
     <script>
         $(document).ready(function() {
-            // Xử lý preview ảnh bìa
-            $('#cover').change(function() {
+            // Cover upload functionality (existing code)
+            const $coverInput = $('#cover');
+            const $uploadArea = $('#uploadArea');
+            const $previewArea = $('#previewArea');
+            const $coverPreview = $('#coverPreview');
+            const originalCoverSrc = '{{ $story->cover ? Storage::url($story->cover) : '' }}';
+
+            // Click upload area to select file
+            $uploadArea.on('click', function() {
+                $coverInput.click();
+            });
+
+            // Change cover button
+            $(document).on('click', '#changeCover', function(e) {
+                e.stopPropagation();
+                $coverInput.click();
+            });
+
+            // Remove cover button
+            $(document).on('click', '#removeCover', function(e) {
+                e.stopPropagation();
+                $coverInput.val('');
+
+                if (originalCoverSrc) {
+                    $coverPreview.attr('src', originalCoverSrc);
+                } else {
+                    $previewArea.addClass('d-none');
+                    $uploadArea.removeClass('d-none');
+                }
+            });
+
+            // Handle file selection
+            $coverInput.on('change', function() {
                 const file = this.files[0];
                 if (file) {
                     const reader = new FileReader();
                     reader.onload = function(e) {
-                        $('#coverPreview').attr('src', e.target.result);
-                        $('.cover-preview').removeClass('d-none');
+                        $coverPreview.attr('src', e.target.result);
+                        $uploadArea.addClass('d-none');
+                        $previewArea.removeClass('d-none');
                     }
                     reader.readAsDataURL(file);
                 }
             });
 
-            // Xử lý xóa ảnh bìa
-            $('#removeCover').click(function() {
-                $('#cover').val('');
-                $('.cover-preview').addClass('d-none');
-                // Nếu đã có ảnh bìa trước đó, hiển thị lại
-                @if ($story->cover)
-                    $('#coverPreview').attr('src', '{{ Storage::url($story->cover) }}');
-                    $('.cover-preview').removeClass('d-none');
-                @endif
+            // Drag and drop functionality
+            $uploadArea.on('dragover', function(e) {
+                e.preventDefault();
+                $(this).addClass('dragover');
             });
 
-            // Thay thế Summernote bằng CKEditor
+            $uploadArea.on('dragleave', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+            });
+
+            $uploadArea.on('drop', function(e) {
+                e.preventDefault();
+                $(this).removeClass('dragover');
+
+                const files = e.originalEvent.dataTransfer.files;
+                if (files.length > 0) {
+                    const file = files[0];
+                    if (file.type.startsWith('image/')) {
+                        $coverInput[0].files = files;
+                        $coverInput.trigger('change');
+                    }
+                }
+            });
+
+            // Initialize Category Tags
+            const defaultCategories = [
+                'Tình cảm', 'Hài hước', 'Viễn tưởng', 'Kinh dí', 'Trinh thám',
+                'Hành động', 'Phiêu lưu', 'Lãng mạn', 'Drama', 'Học đường',
+                'Sinh tồn', 'Isekai', 'Xuyên không', 'Tu tiên', 'Đô thị',
+                'Quân sự', 'Lịch sử', 'Thể thao', 'Game', 'Mecha'
+            ];
+
+            const allCategories = @json($allCategories ?? null) || defaultCategories;
+
+            const categoryTags = new CategoryTags({
+                containerSelector: '#categoryContainer',
+                inputSelector: '#categoryInput',
+                hiddenInputSelector: '#categoryInputHidden',
+                tagsSelector: '#categoryTags',
+                suggestionsSelector: '#categorySuggestions',
+                allCategories: allCategories
+            });
+
+            // CKEditor
             CKEDITOR.replace('description', {
                 on: {
                     change: function(evt) {
@@ -764,12 +1001,11 @@
                 removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
             });
 
-            // Xử lý chuyển tab nếu có lỗi
+            // Tab handling and other existing functionality
             @if ($errors->has('review_note'))
                 $('#storyTab button[data-bs-target="#review"]').tab('show');
             @endif
 
-            // Xử lý chuyển tab từ URL hash
             let hash = window.location.hash;
             if (hash) {
                 const tab = hash.replace('#', '');
@@ -778,13 +1014,12 @@
                 }
             }
 
-            // Cập nhật URL khi chuyển tab
             $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
                 const target = $(e.target).data('bs-target');
                 history.pushState(null, null, target);
             });
 
-            // Theo dõi các thay đổi so với dữ liệu ban đầu
+            // Change detection functionality
             function detectChanges() {
                 let changes = [];
                 const originalData = {
@@ -794,10 +1029,11 @@
                     translator_name: @json($story->translator_name),
                     story_type: @json($story->story_type),
                     categories: @json($categoryNames),
+                    is_18_plus: @json($story->is_18_plus),
                     cover: $('#cover').val() ? true : false
                 };
 
-                  //kiểm tra translator_name
+                // Check changes (existing logic)
                 if ($('#translator_name').val() !== originalData.translator_name) {
                     const oldValue = originalData.translator_name || '(không có)';
                     const newValue = $('#translator_name').val() || '(không có)';
@@ -805,30 +1041,26 @@
                         '</span> → <span class="text-success">' + newValue + '</span></li>');
                 }
 
-                // Kiểm tra title
                 if ($('#title').val() !== originalData.title) {
                     changes.push('<li>Tiêu đề: <span class="text-danger">' + originalData.title +
                         '</span> → <span class="text-success">' + $('#title').val() + '</span></li>');
                 }
 
-                // Kiểm tra mô tả
                 if (originalData.description) {
                     changes.push('<li>Mô tả đã được thay đổi</li>');
                 }
 
-                // Kiểm tra tác giả
                 if ($('#author_name').val() !== originalData.author_name) {
                     changes.push('<li>Tên tác giả: <span class="text-danger">' + originalData.author_name +
                         '</span> → <span class="text-success">' + $('#author_name').val() + '</span></li>');
                 }
 
-                // Kiểm tra thể loại
-                if ($('#category_input').val() !== originalData.categories) {
+                if ($('#categoryInputHidden').val() !== originalData.categories) {
                     changes.push('<li>Thể loại: <span class="text-danger">' + originalData.categories +
-                        '</span> → <span class="text-success">' + $('#category_input').val() + '</span></li>');
+                        '</span> → <span class="text-success">' + $('#categoryInputHidden').val() +
+                        '</span></li>');
                 }
 
-                // Kiểm tra loại truyện
                 if ($('#story_type').val() !== originalData.story_type) {
                     const storyTypes = {
                         'original': 'Sáng tác',
@@ -836,11 +1068,11 @@
                         'collected': 'Sưu tầm'
                     };
                     changes.push('<li>Loại truyện: <span class="text-danger">' + storyTypes[originalData
-                        .story_type] + '</span> → <span class="text-success">' + storyTypes[$('#story_type')
-                        .val()] + '</span></li>');
+                        .story_type] +
+                        '</span> → <span class="text-success">' + storyTypes[$('#story_type').val()] +
+                        '</span></li>');
                 }
 
-                // Kiểm tra ảnh bìa
                 if (originalData.cover) {
                     changes.push('<li>Ảnh bìa được thay đổi</li>');
                 }
@@ -851,14 +1083,13 @@
                     } else {
                         changes.push(
                             '<li>Bỏ đánh dấu truyện là <span class="text-success">nội dung thông thường</span></li>'
-                        );
+                            );
                     }
                 }
 
                 return changes;
             }
 
-            // Cập nhật danh sách thay đổi khi mở modal xác nhận
             $('#confirmEditModal').on('show.bs.modal', function(e) {
                 const changes = detectChanges();
                 const changesList = $('#changesList');
