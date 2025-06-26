@@ -54,22 +54,22 @@ class RequestPaymentController extends Controller
         try {
             // Calculate coins and apply discount
             $amount = $request->amount;
-            
+
             // Apply bank fee
             $feeAmount = ($amount * $this->coinBankPercent) / 100;
 
             // Số tiền sau khi trừ phí
             $amountAfterFee = $amount - $feeAmount;
-            
+
             // Số xu sau khi trừ phí
             $coins = floor($amountAfterFee / $this->coinExchangeRate);
-            
+
             // Create transaction code
-            $transactionCode = 'TX' . strtoupper(Str::random(8)) . Carbon::now()->format('dmy');
-            
+            $transactionCode = $this->generateUniqueTransactionCode();
+
             // Thời hạn của yêu cầu thanh toán (1 giờ)
             $expiredAt = Carbon::now()->addHour();
-            
+
             // Tạo yêu cầu thanh toán
             $requestPayment = RequestPayment::create([
                 'user_id' => Auth::id(),
@@ -80,10 +80,10 @@ class RequestPaymentController extends Controller
                 'fee' => $feeAmount,
                 'expired_at' => $expiredAt
             ]);
-            
+
             // Lấy thông tin bank để trả về
             $bank = Bank::findOrFail($request->bank_id);
-            
+
             return response()->json([
                 'success' => true,
                 'request_payment_id' => $requestPayment->id,
@@ -105,12 +105,40 @@ class RequestPaymentController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Error creating request payment: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi tạo yêu cầu thanh toán'
             ], 500);
         }
+    }
+
+    private function generateUniqueTransactionCode()
+    {
+        $maxAttempts = 10;
+        $attempt = 0;
+
+        do {
+            $attempt++;
+            $userId = Auth::id();
+
+            $shortTimestamp = (time() % 100000);
+
+            $timestampBase36 = strtoupper(base_convert($shortTimestamp, 10, 36));
+            $random = strtoupper(substr(str_shuffle('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'), 0, 2));
+
+            $transactionCode = "P{$userId}{$timestampBase36}{$random}";
+
+            $exists = RequestPayment::where('transaction_code', $transactionCode)->exists() ||
+                Deposit::where('transaction_code', $transactionCode)->exists();
+        } while ($exists && $attempt < $maxAttempts);
+
+        if ($exists) {
+            $shortUuid = strtoupper(substr(str_replace('-', '', Str::uuid()), 0, 8));
+            $transactionCode = "P{$userId}{$shortUuid}";
+        }
+
+        return $transactionCode;
     }
 
     // Xác nhận đã chuyển khoản và tải lên chứng từ
@@ -209,7 +237,7 @@ class RequestPaymentController extends Controller
         try {
             // Lấy email super admin từ .env
             $superAdminEmails = env('SUPER_ADMIN_EMAILS');
-            
+
             if (empty($superAdminEmails)) {
                 Log::warning('SUPER_ADMIN_EMAILS not configured in .env file');
                 return;
@@ -227,7 +255,6 @@ class RequestPaymentController extends Controller
                     Log::warning("Invalid email address in SUPER_ADMIN_EMAILS: {$email}");
                 }
             }
-
         } catch (\Exception $e) {
             // Log lỗi nhưng không throw exception để không ảnh hưởng đến luồng chính
             Log::error('Failed to send deposit notification email: ' . $e->getMessage());
@@ -248,7 +275,7 @@ class RequestPaymentController extends Controller
             if ($request->status === 'expired') {
                 $query->whereNotNull('expired_at')->where('expired_at', '<', now())->where('is_completed', false);
             } elseif ($request->status === 'pending') {
-                $query->where('is_completed', false)->where(function($q) {
+                $query->where('is_completed', false)->where(function ($q) {
                     $q->whereNull('expired_at')->orWhere('expired_at', '>=', now());
                 });
             } elseif ($request->status === 'completed') {
