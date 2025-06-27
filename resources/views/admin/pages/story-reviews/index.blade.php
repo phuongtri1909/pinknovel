@@ -179,7 +179,7 @@
                     
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-4">
-                        {{ $stories->appends(request()->except('page'))->links() }}
+                        <x-pagination :paginator="$stories" />
                     </div>
                 </div>
             </div>
