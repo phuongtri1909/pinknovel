@@ -30,7 +30,7 @@
                      
 
                         {{ $chapter->title && trim($chapter->title) !== 'Chương ' . $chapter->number
-                                    ? 'Chương ' . $chapter->number . ': ' . Str::limit($chapter->title, 20)
+                                    ? 'Chương ' . $chapter->number . ': ' . Str::limit($chapter->title, 10)
                                     : 'Chương ' . $chapter->number }}
                     </a>
                 </div>
