@@ -993,7 +993,7 @@
                             </div>
                         </td>
                         <td>${contentHtml}</td>
-                        <td class="transaction-amount text-shadow-custom">${transaction.amount_paid.toLocaleString()} xu</td>
+                        <td class="transaction-amount text-shadow-custom">${transaction.amount_received.toLocaleString()} xu</td>
                     `;
                     
                     row.style.opacity = '0';

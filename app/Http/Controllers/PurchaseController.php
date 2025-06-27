@@ -149,6 +149,10 @@ class PurchaseController extends Controller
                 $authorEarnings = round($rawEarnings); 
                 DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
 
+                DB::table('chapter_purchases')->where('user_id', $user->id)
+                    ->where('chapter_id', $chapter->id)
+                    ->update(['amount_received' => $authorEarnings]);
+
                 DB::commit();
                 $success = true;
             } catch (\Illuminate\Database\QueryException $e) {
@@ -313,6 +317,10 @@ class PurchaseController extends Controller
                 $rawEarnings = ($story->combo_price * $authorPercentage) / 100;
                 $authorEarnings = round($rawEarnings); 
                 DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
+
+                DB::table('story_purchases')->where('user_id', $user->id)
+                    ->where('story_id', $story->id)
+                    ->update(['amount_received' => $authorEarnings]);
 
                 DB::commit();
                 $success = true;

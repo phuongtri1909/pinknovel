@@ -13,6 +13,7 @@ class StoryPurchase extends Model
         'user_id',
         'story_id',
         'amount_paid',
+        'amount_received'
     ];
 
     /**

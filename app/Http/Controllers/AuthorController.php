@@ -38,7 +38,7 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereMonth('chapter_purchases.created_at', date('m'))
             ->whereYear('chapter_purchases.created_at', date('Y'))
-            ->sum('chapter_purchases.amount_paid');
+            ->sum('chapter_purchases.amount_received');
 
         // Cộng thêm doanh thu từ việc bán trọn bộ trong tháng hiện tại
         $totalRevenue += DB::table('story_purchases')
@@ -46,7 +46,7 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereMonth('story_purchases.created_at', date('m'))
             ->whereYear('story_purchases.created_at', date('Y'))
-            ->sum('story_purchases.amount_paid');
+            ->sum('story_purchases.amount_received');
 
         // Lấy doanh thu của tháng trước để so sánh
         $lastMonthDate = \Carbon\Carbon::now()->subMonth();
@@ -56,7 +56,7 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereMonth('chapter_purchases.created_at', $lastMonthDate->month)
             ->whereYear('chapter_purchases.created_at', $lastMonthDate->year)
-            ->sum('chapter_purchases.amount_paid');
+            ->sum('chapter_purchases.amount_received');
 
         // Cộng thêm doanh thu từ việc bán trọn bộ trong tháng trước
         $lastMonthRevenue += DB::table('story_purchases')
@@ -64,7 +64,7 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereMonth('story_purchases.created_at', $lastMonthDate->month)
             ->whereYear('story_purchases.created_at', $lastMonthDate->year)
-            ->sum('story_purchases.amount_paid');
+            ->sum('story_purchases.amount_received');
 
         // Tính tỷ lệ thay đổi
         $revenueChange = 0;
@@ -1095,12 +1095,12 @@ class AuthorController extends Controller
             ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
             ->join('stories', 'chapters.story_id', '=', 'stories.id')
             ->where('stories.user_id', Auth::id())
-            ->sum('chapter_purchases.amount_paid');
+            ->sum('chapter_purchases.amount_received');
 
         $totalStoryRevenue = DB::table('story_purchases')
             ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
             ->where('stories.user_id', Auth::id())
-            ->sum('story_purchases.amount_paid');
+            ->sum('story_purchases.amount_received');
 
         // Tính tổng số tiền
         $grandTotal = $totalRevenue + $totalStoryRevenue;
@@ -1113,7 +1113,7 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereMonth('chapter_purchases.created_at', $lastMonthDate->month)
             ->whereYear('chapter_purchases.created_at', $lastMonthDate->year)
-            ->sum('chapter_purchases.amount_paid');
+            ->sum('chapter_purchases.amount_received');
 
         // Cộng thêm doanh thu từ việc bán trọn bộ trong tháng trước
         $lastMonthRevenue += DB::table('story_purchases')
@@ -1121,7 +1121,7 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereMonth('story_purchases.created_at', $lastMonthDate->month)
             ->whereYear('story_purchases.created_at', $lastMonthDate->year)
-            ->sum('story_purchases.amount_paid');
+            ->sum('story_purchases.amount_received');
 
         // Tính tỷ lệ thay đổi
         $revenueChange = 0;
@@ -1140,7 +1140,7 @@ class AuthorController extends Controller
 
         // Lấy truyện bán chạy nhất (có nhiều lượt mua nhất)
         $topStories = DB::table('stories')
-            ->select('stories.id', 'stories.title', 'stories.slug', DB::raw('COUNT(story_purchases.id) as purchase_count'), DB::raw('SUM(story_purchases.amount_paid) as total_revenue'))
+            ->select('stories.id', 'stories.title', 'stories.slug', DB::raw('COUNT(story_purchases.id) as purchase_count'), DB::raw('SUM(story_purchases.amount_received) as total_revenue'))
             ->leftJoin('story_purchases', 'stories.id', '=', 'story_purchases.story_id')
             ->where('stories.user_id', Auth::id())
             ->groupBy('stories.id', 'stories.title', 'stories.slug')
@@ -1151,7 +1151,7 @@ class AuthorController extends Controller
 
         // Lấy chương bán chạy nhất
         $topChapters = DB::table('chapters')
-            ->select('chapters.id', 'chapters.title', 'chapters.slug', 'stories.title as story_title', 'stories.slug as story_slug', DB::raw('COUNT(chapter_purchases.id) as purchase_count'), DB::raw('SUM(chapter_purchases.amount_paid) as total_revenue'))
+            ->select('chapters.id', 'chapters.title', 'chapters.slug', 'stories.title as story_title', 'stories.slug as story_slug', DB::raw('COUNT(chapter_purchases.id) as purchase_count'), DB::raw('SUM(chapter_purchases.amount_received) as total_revenue'))
             ->join('stories', 'chapters.story_id', '=', 'stories.id')
             ->leftJoin('chapter_purchases', 'chapters.id', '=', 'chapter_purchases.chapter_id')
             ->where('stories.user_id', Auth::id())
@@ -1201,7 +1201,7 @@ class AuthorController extends Controller
             ->join('stories', 'chapters.story_id', '=', 'stories.id')
             ->where('stories.user_id', Auth::id())
             ->whereYear('chapter_purchases.created_at', $year)
-            ->selectRaw('MONTH(chapter_purchases.created_at) as month, SUM(chapter_purchases.amount_paid) as total')
+            ->selectRaw('MONTH(chapter_purchases.created_at) as month, SUM(chapter_purchases.amount_received) as total')
             ->groupBy('month')
             ->get()
             ->pluck('total', 'month')
@@ -1212,7 +1212,7 @@ class AuthorController extends Controller
             ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
             ->where('stories.user_id', Auth::id())
             ->whereYear('story_purchases.created_at', $year)
-            ->selectRaw('MONTH(story_purchases.created_at) as month, SUM(story_purchases.amount_paid) as total')
+            ->selectRaw('MONTH(story_purchases.created_at) as month, SUM(story_purchases.amount_received) as total')
             ->groupBy('month')
             ->get()
             ->pluck('total', 'month')
@@ -1290,7 +1290,7 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereYear('chapter_purchases.created_at', $year)
             ->whereMonth('chapter_purchases.created_at', $month)
-            ->selectRaw('DAY(chapter_purchases.created_at) as day, SUM(chapter_purchases.amount_paid) as total')
+            ->selectRaw('DAY(chapter_purchases.created_at) as day, SUM(chapter_purchases.amount_received) as total')
             ->groupBy('day')
             ->get()
             ->pluck('total', 'day')
@@ -1302,7 +1302,7 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereYear('story_purchases.created_at', $year)
             ->whereMonth('story_purchases.created_at', $month)
-            ->selectRaw('DAY(story_purchases.created_at) as day, SUM(story_purchases.amount_paid) as total')
+            ->selectRaw('DAY(story_purchases.created_at) as day, SUM(story_purchases.amount_received) as total')
             ->groupBy('day')
             ->get()
             ->pluck('total', 'day')
@@ -1389,7 +1389,7 @@ class AuthorController extends Controller
             ->select(
                 'chapter_purchases.id',
                 'chapter_purchases.created_at',
-                'chapter_purchases.amount_paid',
+                'chapter_purchases.amount_received',
                 'chapters.title as chapter_title',
                 'chapters.slug as chapter_slug',
                 'chapters.number as chapter_number',
@@ -1414,7 +1414,7 @@ class AuthorController extends Controller
             ->select(
                 'story_purchases.id',
                 'story_purchases.created_at',
-                'story_purchases.amount_paid',
+                'story_purchases.amount_received',
                 DB::raw("'' as chapter_title"),
                 DB::raw("'' as chapter_slug"),
                 DB::raw("0 as chapter_number"),
@@ -1460,7 +1460,7 @@ class AuthorController extends Controller
 
         // Query lấy truyện bán chạy nhất
         $query = DB::table('stories')
-            ->select('stories.id', 'stories.title', 'stories.slug', DB::raw('COUNT(story_purchases.id) as purchase_count'), DB::raw('SUM(story_purchases.amount_paid) as total_revenue'))
+            ->select('stories.id', 'stories.title', 'stories.slug', DB::raw('COUNT(story_purchases.id) as purchase_count'), DB::raw('SUM(story_purchases.amount_received) as total_revenue'))
             ->leftJoin('story_purchases', 'stories.id', '=', 'story_purchases.story_id')
             ->where('stories.user_id', Auth::id())
             ->whereYear('story_purchases.created_at', $year);
@@ -1497,7 +1497,7 @@ class AuthorController extends Controller
 
         // Query lấy chương bán chạy nhất
         $query = DB::table('chapters')
-            ->select('chapters.id', 'chapters.title', 'chapters.slug', 'chapters.number', 'stories.title as story_title', 'stories.slug as story_slug', DB::raw('COUNT(chapter_purchases.id) as purchase_count'), DB::raw('SUM(chapter_purchases.amount_paid) as total_revenue'))
+            ->select('chapters.id', 'chapters.title', 'chapters.slug', 'chapters.number', 'stories.title as story_title', 'stories.slug as story_slug', DB::raw('COUNT(chapter_purchases.id) as purchase_count'), DB::raw('SUM(chapter_purchases.amount_received) as total_revenue'))
             ->join('stories', 'chapters.story_id', '=', 'stories.id')
             ->leftJoin('chapter_purchases', 'chapters.id', '=', 'chapter_purchases.chapter_id')
             ->where('stories.user_id', Auth::id())

@@ -13,6 +13,7 @@ class ChapterPurchase extends Model
         'user_id',
         'chapter_id',
         'amount_paid',
+        'amount_received',
     ];
 
     /**
