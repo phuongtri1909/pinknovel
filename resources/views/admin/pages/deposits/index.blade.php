@@ -181,7 +181,7 @@
                         </table>
                     </div>
                     <div class="px-4 pt-4">
-                        {{ $deposits->withQueryString()->links() }}
+                        <x-pagination :paginator="$deposits" />
                     </div>
                 </div>
             </div>

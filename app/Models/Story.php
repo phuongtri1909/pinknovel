@@ -66,19 +66,7 @@ class Story extends Model
 
     public function scopePublished($query)
     {
-        $user = auth()->user();
-
-        return $query->where(function ($q) use ($user) {
-            $q->where('status', self::STATUS_PUBLISHED);
-
-            if ($user) {
-                $q->orWhere('user_id', $user->id);
-
-                if ($user->role === User::ROLE_ADMIN) {
-                    $q->orWhereRaw('1 = 1');
-                }
-            }
-        });
+        return $query->where('status', self::STATUS_PUBLISHED);
     }
 
 
