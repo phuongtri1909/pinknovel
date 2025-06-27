@@ -81,7 +81,7 @@
             </div>
 
             <div class="d-flex justify-content-center mt-4">
-                {{ $withdrawalRequests->links() }}
+                <x-pagination :paginator="$withdrawalRequests" />
             </div>
         @endif
     </div>

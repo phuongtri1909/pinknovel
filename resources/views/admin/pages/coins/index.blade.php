@@ -74,7 +74,7 @@
                         </table>
                     </div>
                     <div class="d-flex justify-content-center mt-3">
-                        {{ $users->links() }}
+                        <x-pagination :paginator="$users" />
                     </div>
                 </div>
             </div>
