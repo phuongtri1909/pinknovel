@@ -40,25 +40,28 @@
             <div class="d-flex flex-wrap gap-1 my-2 text-sm">
                 @php
                     $mainCategories = $story->categories->where('is_main', true);
+                    $subCategories = $story->categories->where('is_main', false);
                     $displayCategories = collect();
 
-                    // Thêm các danh mục chính (tối đa 2)
-                    foreach ($mainCategories->take(2) as $category) {
-                        $displayCategories->push($category);
-                    }
+                    if ($mainCategories->isNotEmpty()) {
+                        foreach ($mainCategories->take(2) as $category) {
+                            $displayCategories->push($category);
+                        }
 
-                    // Nếu chỉ có 1 danh mục chính, thêm 1 danh mục phụ
-                    if ($displayCategories->count() == 1) {
-                        $subCategory = $story->categories->where('is_main', false)->first();
-                        if ($subCategory) {
-                            $displayCategories->push($subCategory);
+                        // Nếu chỉ có 1 danh mục chính, thêm 1 danh mục phụ
+                        if ($displayCategories->count() === 1 && $subCategories->isNotEmpty()) {
+                            $displayCategories->push($subCategories->first());
+                        }
+                    } else {
+                        foreach ($subCategories->take(2) as $category) {
+                            $displayCategories->push($category);
                         }
                     }
                 @endphp
+               
 
                 @foreach ($displayCategories as $category)
-                    <span
-                        class="badge bg-1 text-white small rounded-pill d-flex align-items-center">{{ $category->name }}</span>
+                    <span class="badge bg-1 text-white small rounded-pill d-flex align-items-center">{{ $category->name }}</span>
                 @endforeach
 
             </div>
