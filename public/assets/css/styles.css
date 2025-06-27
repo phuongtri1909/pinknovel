@@ -8,6 +8,7 @@
     --purple-color-1: #d8a0db;
     --purple-color-2: #e9c9f9;
     --primary-bg-1: #d9d9d966;
+    --primary-bg-2: #f0f8ff;
     --bg-list: #fafafa;
     --color-text: #333;
     --tw-text-opacity: 1;
@@ -18,6 +19,9 @@ body {
     font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
+.bg-primary-bg-2 {
+    background: var(--primary-bg-2) !important;
+}
 
 .bg-primary-1 {
     background: var(--primary-bg-1) !important;

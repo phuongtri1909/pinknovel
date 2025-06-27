@@ -139,7 +139,7 @@ class StoryReviewController extends Controller
         } catch (\Exception $e) {
             Log::error('Error approving story: ' . $e->getMessage());
             return redirect()->back()
-                ->with('error', 'Có lỗi xảy ra khi phê duyệt truyện '));
+                ->with('error', 'Có lỗi xảy ra khi phê duyệt truyện ');
         }
     }
     

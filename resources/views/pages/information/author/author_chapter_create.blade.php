@@ -37,6 +37,24 @@
             font-size: 0.85em;
         }
 
+        .content-stats {
+            background-color: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #e9ecef;
+        }
+
+        .content-stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .content-stats .stat-number {
+            font-weight: 600;
+            color: #495057;
+        }
+
         .batch-format-example {
             background-color: #eee;
             padding: 15px;
@@ -60,11 +78,8 @@
             </a>
     </div>
 
-    <div class="card mb-4">
-        <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Thêm một chương mới</h5>
-        </div>
-        <div class="card-body">
+    <div class=" mb-4">
+        <div class="">
             <form action="{{ route('user.author.stories.chapters.store', $story->id) }}" method="POST"
                 id="singleChapterForm">
                 @csrf
@@ -95,10 +110,22 @@
 
                 <div class="mb-3">
                     <label for="content" class="form-label">Nội dung chương <span class="text-danger">*</span></label>
-                    <textarea class="form-control @error('content') is-invalid @enderror" id="content" name="content" rows="25">{{ old('content') }}</textarea>
+                    <textarea class="form-control rounded-4 @error('content') is-invalid @enderror" id="content" name="content" rows="25">{{ old('content') }}</textarea>
                     @error('content')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
+                    
+                    <!-- Thêm thống kê từ và ký tự -->
+                    <div class="mt-2 d-flex justify-content-between">
+                        <div class="text-muted small">
+                            <i class="fas fa-file-word me-1 text-primary"></i>
+                            <span id="wordCount">0</span> từ
+                        </div>
+                        <div class="text-muted small">
+                            <i class="fas fa-keyboard me-1 text-info"></i>
+                            <span id="charCount">0</span> ký tự
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Phần tùy chọn chương -->
@@ -247,7 +274,7 @@
                 </div>
 
                 <div class="d-flex justify-content-end mt-4">
-                    <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-danger me-2">Hủy</a>
+                    <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-outline-danger me-2">Hủy</a>
                     <button type="submit" class="btn btn-outline-dark">
                         Lưu
                     </button>
@@ -261,7 +288,6 @@
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
     <script>
         $(document).ready(function() {
-
             // Khởi tạo hiển thị tùy thuộc vào trạng thái ban đầu
             togglePricingOptions();
             togglePasswordField();
@@ -271,7 +297,67 @@
             if ($('#has_password_yes').is(':checked')) {
                 $('#passwordField').show();
             }
+
+            // Khởi tạo đếm từ và ký tự
+            updateContentStats();
+            
+            // Bind event listeners cho content textarea
+            $('#content').on('input paste keyup', function() {
+                updateContentStats();
+            });
         });
+
+        // Function to count words in Vietnamese text
+        function countWords(text) {
+            if (!text || typeof text !== 'string') return 0;
+            
+            // Remove extra whitespace and normalize
+            const normalizedText = text.replace(/\s+/g, ' ').trim();
+            
+            if (normalizedText === '') return 0;
+            
+            // Count words by splitting on whitespace
+            const words = normalizedText.split(' ').filter(word => word.length > 0);
+            
+            return words.length;
+        }
+
+        // Function to update content statistics
+        function updateContentStats() {
+            const content = $('#content').val();
+            const wordCount = countWords(content);
+            const charCount = content.length;
+            
+            // Update display with number formatting
+            $('#wordCount').text(wordCount.toLocaleString());
+            $('#charCount').text(charCount.toLocaleString());
+            
+            // Add color coding based on content length
+            const wordCountElement = $('#wordCount');
+            const charCountElement = $('#charCount');
+            
+            // Reset classes
+            wordCountElement.removeClass('text-danger text-warning text-success');
+            charCountElement.removeClass('text-danger text-warning text-success');
+            
+            // Word count color coding
+            if (wordCount === 0) {
+                wordCountElement.addClass('text-danger');
+            } else if (wordCount < 100) {
+                wordCountElement.addClass('text-warning');
+            } else {
+                wordCountElement.addClass('text-success');
+            }
+            
+            // Character count color coding
+            if (charCount === 0) {
+                charCountElement.addClass('text-danger');
+            } else if (charCount < 500) {
+                charCountElement.addClass('text-warning');
+            } else {
+                charCountElement.addClass('text-success');
+            }
+        }
 
         function togglePricingOptions() {
             var isFree = $('#is_free_yes').is(':checked');

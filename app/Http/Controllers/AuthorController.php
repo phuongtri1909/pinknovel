@@ -1515,4 +1515,40 @@ class AuthorController extends Controller
 
         return response()->json($topChapters);
     }
+
+    public function checkDuplicates(Request $request, Story $story)
+    {
+            if ($story->user_id != Auth::id()) {
+                return response()->json([
+                    'error' => 'Bạn không có quyền truy cập truyện này.'
+                ], 403);
+            }
+
+        $chapterNumbers = $request->input('chapter_numbers', []);
+        $chapterTitles = $request->input('chapter_titles', []);
+
+        // Check for duplicate chapter numbers
+        $duplicateNumbers = Chapter::where('story_id', $story->id)
+            ->whereIn('number', $chapterNumbers)
+            ->pluck('number')
+            ->toArray();
+
+        // Check for duplicate titles (by slug)
+        $duplicateTitles = [];
+        foreach ($chapterTitles as $title) {
+            $slug = Str::slug($title);
+            $exists = Chapter::where('story_id', $story->id)
+                ->where('slug', $slug)
+                ->exists();
+
+            if ($exists) {
+                $duplicateTitles[] = $title;
+            }
+        }
+
+        return response()->json([
+            'duplicate_numbers' => $duplicateNumbers,
+            'duplicate_titles' => $duplicateTitles
+        ]);
+    }
 }

@@ -46,9 +46,7 @@
         .preview-chapters {
             margin-top: 20px;
             padding: 15px;
-            background-color: #f0f8ff;
             border-radius: 5px;
-            border: 1px solid #cce5ff;
         }
 
         .schedule-input {
@@ -67,6 +65,32 @@
             transform: translateY(-1px);
         }
     </style>
+
+    <style>
+        #guideContent {
+            transition: all 0.3s ease;
+        }
+
+        #toggleGuideBtn {
+            transition: all 0.2s ease;
+        }
+
+        #toggleGuideBtn:hover {
+            transform: translateY(-1px);
+        }
+
+        #previewContent {
+            transition: all 0.3s ease;
+        }
+
+        #togglePreviewBtn {
+            transition: all 0.2s ease;
+        }
+
+        #togglePreviewBtn:hover {
+            transform: translateY(-1px);
+        }
+    </style>
 @endpush
 
 @section('info_content')
@@ -80,17 +104,14 @@
         </a>
     </div>
 
-    <div class="card mb-4 rounded-4 border-0 shadow-sm">
-        <div class="card-header bg-white">
-            <h5 class="mb-0">Thêm nhiều chương</h5>
-        </div>
-        <div class="card-body">
+    <div class="mb-4">
+        <div>
             @if (session('error'))
                 <div class="alert alert-danger mb-4">
                     <i class="fas fa-exclamation-triangle me-2"></i> {!! session('error') !!}
                 </div>
             @endif
-            <div class="alert alert-info mb-4 rounded-4">
+            <div class="alert bg-primary-bg-2 mb-4 rounded-4">
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Hướng dẫn thêm nhiều chương</h5>
                     <button type="button" class="btn btn-sm btn-outline-dark" id="toggleGuideBtn" onclick="toggleGuide()">
@@ -139,14 +160,46 @@
                 <div class="mb-3">
                     <label for="batch_content" class="form-label">Nội dung các chương <span
                             class="text-danger">*</span></label>
-                    <textarea class="form-control @error('batch_content') is-invalid @enderror" id="batch_content" name="batch_content"
-                        rows="15">{{ old('batch_content') }}</textarea>
+                    <textarea class="form-control rounded-4 @error('batch_content') is-invalid @enderror" id="batch_content"
+                        name="batch_content" rows="15">{{ old('batch_content') }}</textarea>
                     @error('batch_content')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
+                <div class="text-center">
+                    <button type="button" id="btnPreviewChapters" class="btn btn-outline-dark mb-3 ">
+                        Xem chương
+                    </button>
+                </div>
 
 
+                <!-- Preview chapters section -->
+                <div id="previewChapters"
+                    class="preview-chapters bg-primary-bg-2 mb-4 rounded-4 {{ old('chapters_count') ? '' : 'd-none' }}">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="mb-0">Xem trước các chương</h5>
+                        <button type="button" class="btn btn-sm btn-outline-dark" id="togglePreviewBtn"
+                            onclick="togglePreview()">
+                            <i class="fas fa-chevron-up" id="previewIcon"></i>
+                        </button>
+                    </div>
+
+                    <div id="previewContent">
+                        <div class="alert alert-warning mb-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Vui lòng kiểm tra các chương đã tách
+                            và
+                            thiết lập lịch đăng (nếu cần)
+                        </div>
+                        <div id="chaptersPreviewContainer">
+                            @if (old('chapters_count'))
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i> Vui lòng nhấn "Xem trước các chương" để
+                                    hiển thị lại các chương đã tách.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Phần tùy chọn chương hàng loạt -->
                 <div class="chapter-options rounded-4">
@@ -210,7 +263,7 @@
                                     <label class="form-check-label" for="status_published">
                                         <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
                                     </label>
-                                   
+
                                 </div>
 
                                 <div class="form-check">
@@ -220,7 +273,7 @@
                                     <label class="form-check-label" for="status_draft">
                                         <i class="fas fa-edit text-secondary me-1"></i> Lưu nháp
                                     </label>
-                                    
+
                                 </div>
 
                             </div>
@@ -302,42 +355,17 @@
 
                     </div>
 
-                    <!-- Preview chapters section -->
-                    <div id="previewChapters" class="preview-chapters mb-4 {{ old('chapters_count') ? '' : 'd-none' }}">
-                        <h5 class="mb-3">Xem trước các chương</h5>
-                        <div class="alert alert-warning mb-3">
-                            <i class="fas fa-exclamation-triangle me-2"></i> Vui lòng kiểm tra các chương đã tách
-                            và
-                            thiết lập lịch đăng (nếu cần)
-                        </div>
-                        <div id="chaptersPreviewContainer">
-                            @if (old('chapters_count'))
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle me-2"></i> Vui lòng nhấn "Xem trước các chương" để
-                                    hiển thị lại các chương đã tách.
-                                </div>
-                            @endif
-                            <!-- Preview chapters will be dynamically inserted here -->
-                        </div>
-                    </div>
-
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center">
 
-                    <button type="button" id="btnPreviewChapters" class="btn btn-outline-dark">
-                        Xem chương
+                <div class="d-flex justify-content-end">
+                    <a href="{{ route('user.author.stories.chapters', $story->id) }}"
+                        class="btn btn-outline-danger me-2">Hủy</a>
+                    <button type="submit" class="btn btn-outline-dark">
+                        Lưu
                     </button>
-
-
-                    <div class="d-flex justify-content-end">
-                        <a href="{{ route('user.author.stories.chapters', $story->id) }}"
-                            class="btn btn-outline-danger me-2">Hủy</a>
-                        <button type="submit" class="btn btn-outline-dark">
-                            Lưu
-                        </button>
-                    </div>
                 </div>
+
             </form>
         </div>
     </div>
@@ -345,6 +373,19 @@
 
 @push('info_scripts')
     <script>
+        function togglePreview() {
+            const previewContent = $('#previewContent');
+            const icon = $('#previewIcon');
+
+            if (previewContent.is(':visible')) {
+                previewContent.slideUp(200);
+                icon.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+            } else {
+                previewContent.slideDown(200);
+                icon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+            }
+        }
+
         function toggleGuide() {
             const guideContent = document.getElementById('guideContent');
             const guideIcon = document.getElementById('guideIcon');
@@ -415,16 +456,27 @@
                     showToast(
                         'Không tìm thấy chương nào trong nội dung đã nhập. Vui lòng kiểm tra định dạng.',
                         'warning');
-                    $('#btnPreviewChapters').html('Xem trước');
+                    $('#btnPreviewChapters').html('Xem chương');
                     $('#btnPreviewChapters').prop('disabled', false);
                     return;
                 }
 
-                displayParsedChapters(chapters);
+                // Check trùng số chương và tiêu đề trước khi hiển thị
+                checkDuplicateChapters(chapters).then(function(result) {
+                    displayParsedChapters(chapters, result.duplicates, result.duplicateTitles,
+                        result);
 
-                // Restore button state
-                $('#btnPreviewChapters').html('Cập nhật xem trước');
-                $('#btnPreviewChapters').prop('disabled', false);
+                    // Restore button state
+                    $('#btnPreviewChapters').html('Cập nhật xem trước');
+                    $('#btnPreviewChapters').prop('disabled', false);
+                }).catch(function(error) {
+                    console.error('Error checking duplicates:', error);
+                    // Vẫn hiển thị chapters nhưng không có thông tin duplicate
+                    displayParsedChapters(chapters, [], [], {});
+
+                    $('#btnPreviewChapters').html('Cập nhật xem trước');
+                    $('#btnPreviewChapters').prop('disabled', false);
+                });
             });
 
             // Function to parse chapters from content
@@ -467,14 +519,227 @@
                 return chapters;
             }
 
-            // Function to display parsed chapters
-            function displayParsedChapters(chapters) {
+            // Function to create slug (mimic Laravel Str::slug)
+            function createSlug(text) {
+                return text
+                    .toLowerCase()
+                    .normalize('NFD')
+                    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+                    .replace(/[đĐ]/g, 'd') // Handle Vietnamese đ
+                    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                    .trim()
+                    .replace(/\s+/g, '-') // Replace spaces with hyphens
+                    .replace(/-+/g, '-') // Remove multiple hyphens
+                    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+            }
+
+            // Function to count words in Vietnamese text
+            function countWords(text) {
+                if (!text || typeof text !== 'string') return 0;
+
+                // Remove extra whitespace and normalize
+                const normalizedText = text.replace(/\s+/g, ' ').trim();
+
+                if (normalizedText === '') return 0;
+
+                // Count words by splitting on whitespace
+                const words = normalizedText.split(' ').filter(word => word.length > 0);
+
+                return words.length;
+            }
+
+            // Function to find internal duplicates trong chính input
+            function findInternalDuplicates(chapters) {
+                const duplicateNumbers = [];
+                const duplicateTitles = [];
+                const seenNumbers = new Set();
+                const seenSlugs = new Set();
+
+                chapters.forEach(chapter => {
+                    // Check duplicate numbers
+                    if (seenNumbers.has(chapter.number)) {
+                        if (!duplicateNumbers.includes(chapter.number)) {
+                            duplicateNumbers.push(chapter.number);
+                        }
+                    } else {
+                        seenNumbers.add(chapter.number);
+                    }
+
+                    // Check duplicate titles (by slug) - CHỈ với những chương có tiêu đề tùy chỉnh
+                    const isDefaultTitle = chapter.title === `Chương ${chapter.number}`;
+
+                    if (!isDefaultTitle) {
+                        const slug = createSlug(chapter.title);
+                        if (seenSlugs.has(slug)) {
+                            if (!duplicateTitles.includes(chapter.title)) {
+                                duplicateTitles.push(chapter.title);
+                            }
+                        } else {
+                            seenSlugs.add(slug);
+                        }
+                    }
+                });
+
+                return {
+                    numbers: duplicateNumbers,
+                    titles: duplicateTitles
+                };
+            }
+
+            // Function to check duplicate chapters via AJAX
+            function checkDuplicateChapters(chapters) {
+                return new Promise(function(resolve, reject) {
+                    // Trước tiên, tìm tất cả trùng lặp internal
+                    const internalDuplicates = findInternalDuplicates(chapters);
+
+                    // Luôn luôn check với database, bất kể có internal duplicates hay không
+                    const chapterNumbers = chapters.map(ch => ch.number);
+
+                    // CHỈ gửi những tiêu đề tùy chỉnh lên server để check
+                    const customTitles = chapters
+                        .filter(ch => ch.title !== `Chương ${ch.number}`)
+                        .map(ch => ch.title);
+
+                    $.ajax({
+                        url: '{{ route('user.author.stories.chapters.check-duplicates', $story->id) }}',
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            chapter_numbers: chapterNumbers,
+                            chapter_titles: customTitles // Chỉ gửi custom titles
+                        },
+                        success: function(response) {
+                            // Merge internal và database duplicates
+                            const allDuplicateNumbers = [
+                                ...internalDuplicates.numbers,
+                                ...(response.duplicate_numbers || [])
+                            ];
+
+                            const allDuplicateTitles = [
+                                ...internalDuplicates.titles,
+                                ...(response.duplicate_titles || [])
+                            ];
+
+                            // Remove duplicates from merged arrays
+                            const uniqueDuplicateNumbers = [...new Set(allDuplicateNumbers)];
+                            const uniqueDuplicateTitles = [...new Set(allDuplicateTitles)];
+
+                            resolve({
+                                duplicates: uniqueDuplicateNumbers,
+                                duplicateTitles: uniqueDuplicateTitles,
+                                internalDuplicates: internalDuplicates,
+                                databaseDuplicates: {
+                                    numbers: response.duplicate_numbers || [],
+                                    titles: response.duplicate_titles || []
+                                }
+                            });
+                        },
+                        error: function(xhr, status, error) {
+                            // Nếu AJAX lỗi, chỉ trả về internal duplicates
+                            resolve({
+                                duplicates: internalDuplicates.numbers,
+                                duplicateTitles: internalDuplicates.titles,
+                                internalDuplicates: internalDuplicates,
+                                databaseDuplicates: {
+                                    numbers: [],
+                                    titles: []
+                                }
+                            });
+                        }
+                    });
+                });
+            }
+
+            // Function to display parsed chapters với kiểm tra trùng lặp và đếm từ
+            function displayParsedChapters(chapters, duplicateNumbers = [], duplicateTitles = [],
+                duplicateInfo = {}) {
                 const container = $('#chaptersPreviewContainer');
                 container.empty();
 
-                let html = '<div class="table-responsive"><table class="table table-bordered table-hover">';
-                html +=
-                    '<thead class="table-light"><tr><th>STT</th><th>Số chương</th><th>Tiêu đề</th><th>Độ dài nội dung</th><th>Hẹn giờ đăng riêng</th></tr></thead><tbody>';
+                let html = '';
+
+                // Show warnings if there are duplicates
+                if (duplicateNumbers.length > 0 || duplicateTitles.length > 0) {
+                    html += '<div class="alert alert-danger mb-3">';
+                    html +=
+                        '<h6 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Phát hiện trùng lặp:</h6>';
+
+                    // Show internal duplicates
+                    if (duplicateInfo.internalDuplicates &&
+                        (duplicateInfo.internalDuplicates.numbers.length > 0 || duplicateInfo.internalDuplicates
+                            .titles.length > 0)) {
+                        html += '<div class="mb-2">';
+                        html +=
+                            '<strong><i class="fas fa-file-alt text-danger me-1"></i>Trùng lặp trong nội dung nhập:</strong>';
+
+                        if (duplicateInfo.internalDuplicates.numbers.length > 0) {
+                            html += '<br><span class="ms-3">• Số chương: ' + duplicateInfo.internalDuplicates
+                                .numbers.join(', ') + '</span>';
+                        }
+
+                        if (duplicateInfo.internalDuplicates.titles.length > 0) {
+                            html += '<br><span class="ms-3">• Tiêu đề: ' + duplicateInfo.internalDuplicates.titles
+                                .join(', ') + '</span>';
+                        }
+                        html += '</div>';
+                    }
+
+                    // Show database duplicates
+                    if (duplicateInfo.databaseDuplicates &&
+                        (duplicateInfo.databaseDuplicates.numbers.length > 0 || duplicateInfo.databaseDuplicates
+                            .titles.length > 0)) {
+                        html += '<div class="mb-2">';
+                        html +=
+                            '<strong><i class="fas fa-database text-warning me-1"></i>Chương đã tồn tại:</strong>';
+
+                        if (duplicateInfo.databaseDuplicates.numbers.length > 0) {
+                            html += '<br><span class="ms-3">• Số chương: ' + duplicateInfo.databaseDuplicates
+                                .numbers.join(', ') + '</span>';
+                        }
+
+                        if (duplicateInfo.databaseDuplicates.titles.length > 0) {
+                            html += '<br><span class="ms-3">• Tiêu đề: ' + duplicateInfo.databaseDuplicates.titles
+                                .join(', ') + '</span>';
+                        }
+                        html += '</div>';
+                    }
+
+                    // General note
+                    html += '<div class="mt-2">';
+                    html += '<small class="text-muted">';
+                    html += '<strong>Lưu ý:</strong> ';
+
+                    if (duplicateInfo.internalDuplicates &&
+                        (duplicateInfo.internalDuplicates.numbers.length > 0 || duplicateInfo.internalDuplicates
+                            .titles.length > 0)) {
+                        html += 'Các chương trùng lặp trong nội dung nhập cần được chỉnh sửa. ';
+                    }
+
+                    if (duplicateInfo.databaseDuplicates &&
+                        (duplicateInfo.databaseDuplicates.numbers.length > 0 || duplicateInfo.databaseDuplicates
+                            .titles.length > 0)) {
+                        html += 'Các chương trùng với database sẽ không được tạo mới. ';
+                    }
+
+                    html += 'Vui lòng chỉnh sửa trước khi lưu.';
+                    html += '</small>';
+                    html += '</div>';
+
+                    html += '</div>';
+                }
+
+                html += '<div class="table-responsive"><table class="table table-bordered table-hover">';
+                html += '<thead class="table-light">';
+                html += '<tr>';
+                html += '<th>STT</th>';
+                html += '<th>Số chương</th>';
+                html += '<th>Tiêu đề</th>';
+                html += '<th>Số từ</th>';
+                html += '<th>Số ký tự</th>';
+                html += '<th>Trạng thái</th>';
+                html += '<th>Hẹn giờ đăng riêng</th>';
+                html += '</tr>';
+                html += '</thead><tbody>';
 
                 // Add info alert about scheduling when "Xuất bản ngay" is selected
                 const isPublished = $('#status_published').is(':checked');
@@ -487,46 +752,237 @@
                     ` + html;
                 }
 
+                // Track duplicates cho highlighting - bao gồm cả internal và database duplicates
+                const duplicateNumbersSet = new Set();
+                const duplicateTitlesSet = new Set();
+
+                // Tìm tất cả instances của duplicate numbers và titles (cả internal và database)
+                chapters.forEach(chapter => {
+                    const chapterNumberCount = chapters.filter(ch => ch.number === chapter.number).length;
+
+                    // CHỈ check trùng tiêu đề với những chương có tiêu đề tùy chỉnh
+                    const isDefaultTitle = chapter.title === `Chương ${chapter.number}`;
+                    let chapterTitleCount = 1; // Default là không trùng
+
+                    if (!isDefaultTitle) {
+                        const chapterTitleSlug = createSlug(chapter.title);
+                        chapterTitleCount = chapters.filter(ch => {
+                            const otherIsDefaultTitle = ch.title === `Chương ${ch.number}`;
+                            return !otherIsDefaultTitle && createSlug(ch.title) ===
+                                chapterTitleSlug;
+                        }).length;
+                    }
+
+                    // Check internal duplicates
+                    if (chapterNumberCount > 1) {
+                        duplicateNumbersSet.add(chapter.number);
+                    }
+
+                    if (!isDefaultTitle && chapterTitleCount > 1) {
+                        duplicateTitlesSet.add(chapter.title);
+                    }
+
+                    // Check database duplicates
+                    if (duplicateNumbers.includes(chapter.number)) {
+                        duplicateNumbersSet.add(chapter.number);
+                    }
+
+                    if (!isDefaultTitle && duplicateTitles.includes(chapter.title)) {
+                        duplicateTitlesSet.add(chapter.title);
+                    }
+                });
+
                 chapters.forEach((chapter, index) => {
-                    const contentLength = chapter.content.length;
-                    const contentPreview = contentLength > 0 ?
-                        `${contentLength} ký tự` :
-                        '<span class="text-danger">Không có nội dung</span>';
+                    const wordCount = countWords(chapter.content);
+                    const charCount = chapter.content.length;
+
+                    // Check if this chapter is duplicate
+                    const isDuplicateNumber = duplicateNumbersSet.has(chapter.number);
+                    const isDefaultTitle = chapter.title === `Chương ${chapter.number}`;
+                    const isDuplicateTitle = !isDefaultTitle && duplicateTitlesSet.has(chapter.title);
+                    const isDuplicate = isDuplicateNumber || isDuplicateTitle;
+
+                    // Determine duplicate type for better labeling
+                    let duplicateType = '';
+                    const isInternalDuplicateNumber = duplicateInfo.internalDuplicates &&
+                        duplicateInfo.internalDuplicates.numbers.includes(chapter.number);
+                    const isInternalDuplicateTitle = !isDefaultTitle && duplicateInfo.internalDuplicates &&
+                        duplicateInfo.internalDuplicates.titles.includes(chapter.title);
+                    const isDatabaseDuplicateNumber = duplicateInfo.databaseDuplicates &&
+                        duplicateInfo.databaseDuplicates.numbers.includes(chapter.number);
+                    const isDatabaseDuplicateTitle = !isDefaultTitle && duplicateInfo.databaseDuplicates &&
+                        duplicateInfo.databaseDuplicates.titles.includes(chapter.title);
+
+                    if (isInternalDuplicateNumber || isInternalDuplicateTitle) {
+                        if (isDatabaseDuplicateNumber || isDatabaseDuplicateTitle) {
+                            duplicateType = 'Trùng input & Đã tồn tại';
+                        } else {
+                            duplicateType = 'Trùng input';
+                        }
+                    } else if (isDatabaseDuplicateNumber || isDatabaseDuplicateTitle) {
+                        duplicateType = 'Đã tồn tại';
+                    }
+
+                    // Row class for duplicate indication
+                    const rowClass = isDuplicate ? 'table-danger' : '';
+
+                    // Status column
+                    let statusHtml = '';
+                    if (isDuplicate) {
+                        statusHtml =
+                            `<span class="badge bg-danger"><i class="fas fa-times me-1"></i>${duplicateType}</span>`;
+                    } else {
+                        if (wordCount === 0) {
+                            statusHtml =
+                                '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle me-1"></i>Không có nội dung</span>';
+                        } else if (wordCount < 100) {
+                            statusHtml =
+                                '<span class="badge bg-warning"><i class="fas fa-exclamation-triangle me-1"></i>Nội dung ngắn</span>';
+                        } else {
+                            statusHtml =
+                                '<span class="badge bg-success"><i class="fas fa-check me-1"></i>OK</span>';
+                        }
+                    }
+
+                    // Content statistics
+                    const wordDisplay = wordCount > 0 ?
+                        `<strong>${wordCount.toLocaleString()}</strong> từ` :
+                        '<span class="text-danger">0 từ</span>';
+
+                    const charDisplay = charCount > 0 ?
+                        `${charCount.toLocaleString()} ký tự` :
+                        '<span class="text-danger">0 ký tự</span>';
+
+                    // Warning text cho duplicate - more detailed
+                    let duplicateWarning = '';
+                    if (isDuplicateNumber && isDuplicateTitle) {
+                        let warningParts = [];
+                        if (isInternalDuplicateNumber || isInternalDuplicateTitle) {
+                            warningParts.push('input');
+                        }
+                        if (isDatabaseDuplicateNumber || isDatabaseDuplicateTitle) {
+                            warningParts.push('Đã tồn tại');
+                        }
+                        duplicateWarning =
+                            `<br><small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Số & tiêu đề trùng (${warningParts.join(', ')})</small>`;
+                    } else if (isDuplicateNumber) {
+                        let warningParts = [];
+                        if (isInternalDuplicateNumber) {
+                            warningParts.push('input');
+                        }
+                        if (isDatabaseDuplicateNumber) {
+                            warningParts.push('Đã tồn tại');
+                        }
+                        duplicateWarning =
+                            `<br><small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Số chương trùng (${warningParts.join(', ')})</small>`;
+                    } else if (isDuplicateTitle) {
+                        let warningParts = [];
+                        if (isInternalDuplicateTitle) {
+                            warningParts.push('input');
+                        }
+                        if (isDatabaseDuplicateTitle) {
+                            warningParts.push('Đã tồn tại');
+                        }
+                        duplicateWarning =
+                            `<br><small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Tiêu đề trùng (${warningParts.join(', ')})</small>`;
+                    }
+
+                    // Hiển thị tiêu đề với style khác nếu là default title
+                    const titleDisplay = isDefaultTitle ?
+                        `<span class="text-muted">${chapter.title}</span> <small class="text-muted">(mặc định)</small>` :
+                        chapter.title;
 
                     html += `
-                        <tr>
+                        <tr class="${rowClass}">
                             <td>${index + 1}</td>
-                            <td>Chương ${chapter.number}</td>
-                            <td>${chapter.title}</td>
-                            <td>${contentPreview}</td>
                             <td>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input chapter-schedule-toggle" 
-                                        type="checkbox" 
-                                        id="enableSchedule_${chapter.number}" 
-                                        data-chapter="${chapter.number}"
-                                        onchange="toggleChapterSchedule(${chapter.number})">
-                                    <label class="form-check-label" for="enableSchedule_${chapter.number}">
-                                        Hẹn giờ riêng ${isPublished ? '<small class="text-info">(sẽ lưu nháp)</small>' : ''}
-                                    </label>
-                                </div>
-                                <div class="schedule-input d-none" id="scheduleField_${chapter.number}">
-                                    <input type="datetime-local" 
-                                        class="form-control form-control-sm chapter-schedule-date" 
-                                        id="schedule_${chapter.number}" 
-                                        name="chapter_schedules[${chapter.number}]">
-                                </div>
+                                <strong>Chương ${chapter.number}</strong>
+                                ${isDuplicateNumber ? duplicateWarning : ''}
+                            </td>
+                            <td>
+                                ${titleDisplay}
+                                ${isDuplicateTitle && !isDuplicateNumber ? duplicateWarning : ''}
+                            </td>
+                            <td>${wordDisplay}</td>
+                            <td>${charDisplay}</td>
+                            <td>${statusHtml}</td>
+                            <td>
+                                ${isDuplicate ? 
+                                    '<span class="text-muted">N/A</span>' : 
+                                    `<div class="form-check mb-2">
+                                                            <input class="form-check-input chapter-schedule-toggle" 
+                                                                type="checkbox" 
+                                                                id="enableSchedule_${chapter.number}" 
+                                                                data-chapter="${chapter.number}"
+                                                                onchange="toggleChapterSchedule(${chapter.number})">
+                                                            <label class="form-check-label" for="enableSchedule_${chapter.number}">
+                                                                Hẹn giờ riêng ${isPublished ? '<small class="text-info">(sẽ lưu nháp)</small>' : ''}
+                                                            </label>
+                                                        </div>
+                                                        <div class="schedule-input d-none" id="scheduleField_${chapter.number}">
+                                                            <input type="datetime-local" 
+                                                                class="form-control form-control-sm chapter-schedule-date" 
+                                                                id="schedule_${chapter.number}" 
+                                                                name="chapter_schedules[${chapter.number}]">
+                                                        </div>`
+                                }
                             </td>
                         </tr>
                     `;
                 });
 
                 html += '</tbody></table></div>';
+
+                // Add summary statistics
+                const totalWords = chapters.reduce((sum, ch) => sum + countWords(ch.content), 0);
+                const totalChars = chapters.reduce((sum, ch) => sum + ch.content.length, 0);
+                const validChapters = chapters.filter((ch, index) =>
+                    !duplicateNumbersSet.has(ch.number) &&
+                    !duplicateTitlesSet.has(ch.title)
+                ).length;
+
+                html += '<div class="row mt-3">';
+                html += '<div class="col-md-3">';
+                html += '<div class="card text-center border-primary">';
+                html += '<div class="card-body">';
+                html += '<h5 class="card-title text-primary">' + chapters.length + '</h5>';
+                html += '<p class="card-text small">Tổng chương phát hiện</p>';
+                html += '</div></div></div>';
+
+                html += '<div class="col-md-3">';
+                html += '<div class="card text-center border-success">';
+                html += '<div class="card-body">';
+                html += '<h5 class="card-title text-success">' + validChapters + '</h5>';
+                html += '<p class="card-text small">Chương hợp lệ</p>';
+                html += '</div></div></div>';
+
+                html += '<div class="col-md-3">';
+                html += '<div class="card text-center border-info">';
+                html += '<div class="card-body">';
+                html += '<h5 class="card-title text-info">' + totalWords.toLocaleString() + '</h5>';
+                html += '<p class="card-text small">Tổng số từ</p>';
+                html += '</div></div></div>';
+
+                html += '<div class="col-md-3">';
+                html += '<div class="card text-center border-secondary">';
+                html += '<div class="card-body">';
+                html += '<h5 class="card-title text-secondary">' + totalChars.toLocaleString() + '</h5>';
+                html += '<p class="card-text small">Tổng ký tự</p>';
+                html += '</div></div></div>';
+                html += '</div>';
+
                 html += '<input type="hidden" id="chapters_count" name="chapters_count" value="' + chapters.length +
                     '">';
 
                 container.html(html);
                 $('#previewChapters').removeClass('d-none');
+
+                const previewContent = $('#previewContent');
+                const previewIcon = $('#previewIcon');
+                if (!previewContent.is(':visible')) {
+                    previewContent.slideDown(200);
+                    previewIcon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+                }
             }
         });
 
@@ -609,6 +1065,23 @@
 
         // Validation before form submission
         $('#batchChapterForm').on('submit', function(e) {
+            // Check duplicate chapters before submission
+            const batchContent = $('#batch_content').val();
+            if (!batchContent.trim()) {
+                e.preventDefault();
+                showToast('Vui lòng nhập nội dung các chương.', 'warning');
+                $('#batch_content').focus();
+                return false;
+            }
+
+            // Check if there are any duplicate chapters in preview
+            const duplicateRows = $('#chaptersPreviewContainer .table-danger');
+            if (duplicateRows.length > 0) {
+                e.preventDefault();
+                showToast('Có chương trùng lặp! Vui lòng chỉnh sửa trước khi lưu.', 'error');
+                return false;
+            }
+
             if ($('#has_password_yes').is(':checked') && $('#password').val() === '') {
                 e.preventDefault();
                 showToast('Vui lòng nhập mật khẩu cho các chương.', 'warning');
@@ -616,11 +1089,11 @@
                 return false;
             }
 
-            const batchContent = $('#batch_content').val();
-            if (!batchContent.trim()) {
+            // Check if chapters were previewed
+            if ($('#chaptersPreviewContainer').children().length === 0) {
                 e.preventDefault();
-                showToast('Vui lòng nhập nội dung các chương.', 'warning');
-                $('#batch_content').focus();
+                showToast('Vui lòng xem trước các chương trước khi lưu.', 'warning');
+                $('#btnPreviewChapters').focus();
                 return false;
             }
 

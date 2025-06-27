@@ -24,10 +24,14 @@
                 $latestChapters = $story->chapters()->published()->latest()->take(2)->get();
             @endphp
             @foreach ($latestChapters as $chapter)
-                <div class="badge-custom-full badge small rounded-pill mt-1 border-1 border">
+                <div class="badge-custom-full badge small rounded-pill mt-3 border-1 border">
                     <a class="text-decoration-none color-3  fw-semibold"
                         href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}">
-                        {{ Str::limit($chapter->title, 20) }}
+                     
+
+                        {{ $chapter->title && trim($chapter->title) !== 'Chương ' . $chapter->number
+                                    ? 'Chương ' . $chapter->number . ': ' . Str::limit($chapter->title, 20)
+                                    : 'Chương ' . $chapter->number }}
                     </a>
                 </div>
             @endforeach

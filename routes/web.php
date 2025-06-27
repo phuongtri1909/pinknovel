@@ -136,6 +136,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 Route::post('/stories/{story}/submit-for-review', [AuthorController::class, 'submitForReview'])->name('stories.submit.for.review');
 
 
+                Route::post('/stories/{story}/chapters/check-duplicates', [AuthorController::class, 'checkDuplicates'])
+                    ->name('stories.chapters.check-duplicates');
 
                 // Thêm route API để kiểm tra trạng thái truyện
                 Route::get('/stories/{story}/check-status', [AuthorController::class, 'checkStoryStatus'])->name('stories.check.status');
