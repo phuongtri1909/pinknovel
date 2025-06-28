@@ -86,26 +86,28 @@
                                         </div>
                                     </div>
 
-                                    <div class="info-row d-flex mt-2">
-                                        <div class="info-label">
-                                            <span class="color-3 fw-semibold">Tác Giả</span>
+                                    @if (auth()->check() && auth()->user()->role != 'user')
+                                        <div class="info-row d-flex mt-2">
+                                            <div class="info-label">
+                                                <span class="color-3 fw-semibold">Tác Giả</span>
+                                            </div>
+                                            <div class="info-content">
+                                                <a href="{{ route('search.author', ['query' => $story->author_name]) }}"
+                                                    class="text-decoration-none text-dark">
+                                                    {{ $story->author_name }}
+                                                </a>
+                                            </div>
                                         </div>
-                                        <div class="info-content">
-                                            <a href="{{ route('search.author', ['query' => $story->author_name]) }}"
-                                                class="text-decoration-none text-dark">
-                                                {{ $story->author_name }}
-                                            </a>
-                                        </div>
-                                    </div>
+                                    @endif
 
                                     <div class="info-row d-flex">
                                         <div class="info-label">
                                             <span class="color-3 fw-semibold">Chuyển Ngữ</span>
                                         </div>
                                         <div class="info-content">
-                                            <a href="{{ route('search.translator', ['query' => $story->translator_name]) }}"
+                                            <a href="{{ route('search.translator', ['query' => $story->user->name]) }}"
                                                 class="text-decoration-none text-dark">
-                                                {{ $story->translator_name }}
+                                                {{ $story->user->name }}
                                             </a>
                                         </div>
                                     </div>

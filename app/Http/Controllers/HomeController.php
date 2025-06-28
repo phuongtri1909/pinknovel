@@ -76,8 +76,11 @@ class HomeController extends Controller
         // Search in stories by translator name
         $stories = Story::query()
             ->published()
-            ->where('translator_name', 'LIKE', "%{$query}%")
-            ->with(['categories', 'chapters'])
+            ->whereHas('user', function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%");
+            })
+            ->orWhere('translator_name', 'LIKE', "%{$query}%")
+            ->with(['categories', 'chapters', 'user'])
             ->paginate(20);
 
         return view('pages.search.results', [
@@ -594,7 +597,7 @@ class HomeController extends Controller
     public function topFollowedStories()
     {
         $stories = Story::withCount('bookmarks')
-            ->where('status', 'published') 
+            ->where('status', 'published')
             ->having('bookmarks_count', '>', 0)
             ->orderByDesc('bookmarks_count')
             ->limit(10)
@@ -605,8 +608,8 @@ class HomeController extends Controller
     public function showStory(Request $request, $slug)
     {
         $story = Story::where('slug', $slug)
-                ->published()
-                ->firstOrFail();
+            ->published()
+            ->firstOrFail();
 
         // Eager load necessary relationships
         $story->load(['categories']);
@@ -615,7 +618,7 @@ class HomeController extends Controller
         $chapters = Chapter::where('story_id', $story->id)
             ->published()
             ->orderBy('number', 'desc')
-            ->paginate(20); 
+            ->paginate(20);
 
         // Calculate stats
         $stats = [
