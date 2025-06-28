@@ -1518,11 +1518,11 @@ class AuthorController extends Controller
 
     public function checkDuplicates(Request $request, Story $story)
     {
-            if ($story->user_id != Auth::id()) {
-                return response()->json([
-                    'error' => 'Bạn không có quyền truy cập truyện này.'
-                ], 403);
-            }
+        if ($story->user_id != Auth::id()) {
+            return response()->json([
+                'error' => 'Bạn không có quyền truy cập truyện này.'
+            ], 403);
+        }
 
         $chapterNumbers = $request->input('chapter_numbers', []);
         $chapterTitles = $request->input('chapter_titles', []);
@@ -1550,5 +1550,159 @@ class AuthorController extends Controller
             'duplicate_numbers' => $duplicateNumbers,
             'duplicate_titles' => $duplicateTitles
         ]);
+    }
+
+    public function bulkPriceForm(Story $story)
+    {
+        if ($story->user_id != Auth::id()) {
+            return response()->json([
+                'error' => 'Bạn không có quyền truy cập truyện này.'
+            ], 403);
+        }
+
+        $chapters = $story->chapters()
+            ->where('status', 'published')
+            ->orderBy('number')
+            ->get();
+
+        return view('pages.information.author.author_chapters_bulk_price', compact('story', 'chapters'));
+    }
+
+    /**
+     * Update chapter prices in bulk
+     */
+    public function bulkPriceUpdate(Request $request, Story $story)
+    {
+        if ($story->user_id != Auth::id()) {
+            return redirect()->route('user.author.stories.chapters', $story->id)
+                ->with('error', 'Bạn không có quyền truy cập truyện này.');
+        }
+
+        $request->validate([
+            'update_type' => 'required|in:all_same,individual',
+            'all_price' => 'required_if:update_type,all_same|nullable|numeric|min:0',
+            'chapter_prices' => 'required_if:update_type,individual|array',
+            'chapter_prices.*' => 'nullable|numeric|min:0',
+            'selected_chapters' => 'required|array|min:1',
+            'selected_chapters.*' => 'exists:chapters,id',
+        ], [
+            'update_type.required' => 'Vui lòng chọn loại cập nhật.',
+            'all_price.required_if' => 'Vui lòng nhập giá áp dụng cho tất cả.',
+            'all_price.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
+            'chapter_prices.required_if' => 'Vui lòng nhập giá cho từng chương.',
+            'chapter_prices.*.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
+            'selected_chapters.required' => 'Vui lòng chọn ít nhất một chương.',
+            'selected_chapters.min' => 'Vui lòng chọn ít nhất một chương.',
+        ]);
+
+        $selectedChapterIds = $request->selected_chapters;
+
+        try {
+            DB::beginTransaction();
+
+            if ($request->update_type === 'all_same') {
+                // Cập nhật tất cả chapters được chọn với cùng giá
+                $allPrice = $request->all_price;
+                $isFree = empty($allPrice) || $allPrice == 0;
+
+                $updateData = [
+                    'is_free' => $isFree,
+                    'price' => $isFree ? null : $allPrice,
+                ];
+
+                $updatedCount = Chapter::whereIn('id', $selectedChapterIds)
+                    ->where('story_id', $story->id)
+                    ->where('status', 'published')
+                    ->where(function ($query) use ($isFree, $allPrice) {
+                        // Chỉ update những chapter có thay đổi
+                        $query->where('is_free', '!=', $isFree)
+                            ->orWhere('price', '!=', $isFree ? null : $allPrice);
+                    })
+                    ->update($updateData);
+
+                Log::info("Bulk price update - All same", [
+                    'story_id' => $story->id,
+                    'chapter_ids' => $selectedChapterIds,
+                    'new_price' => $allPrice,
+                    'is_free' => $isFree,
+                    'updated_count' => $updatedCount,
+                    'user_id' => auth()->id()
+                ]);
+            } else {
+                // Cập nhật từng chương với giá riêng
+                $updatedCount = 0;
+
+                foreach ($selectedChapterIds as $chapterId) {
+                    if (array_key_exists($chapterId, $request->chapter_prices)) {
+                        $newPrice = $request->chapter_prices[$chapterId];
+                        $isFree = empty($newPrice) || $newPrice == 0;
+
+                        $chapter = Chapter::where('id', $chapterId)
+                            ->where('story_id', $story->id)
+                            ->where('status', 'published')
+                            ->first();
+
+                        if ($chapter) {
+                            // Kiểm tra xem có thay đổi thực sự không
+                            $needsUpdate = false;
+
+                            if ($isFree) {
+                                // Nếu set miễn phí: is_free = true, price = null
+                                if (!$chapter->is_free || $chapter->price !== null) {
+                                    $needsUpdate = true;
+                                }
+                            } else {
+                                // Nếu có giá: is_free = false, price = giá mới
+                                if ($chapter->is_free || $chapter->price != $newPrice) {
+                                    $needsUpdate = true;
+                                }
+                            }
+
+                            if ($needsUpdate) {
+                                $oldPrice = $chapter->price;
+                                $oldIsFree = $chapter->is_free;
+
+                                $chapter->update([
+                                    'is_free' => $isFree,
+                                    'price' => $isFree ? null : $newPrice,
+                                ]);
+
+                                $updatedCount++;
+
+                                Log::info("Individual chapter price updated", [
+                                    'story_id' => $story->id,
+                                    'chapter_id' => $chapterId,
+                                    'chapter_number' => $chapter->number,
+                                    'old_price' => $oldPrice,
+                                    'old_is_free' => $oldIsFree,
+                                    'new_price' => $isFree ? null : $newPrice,
+                                    'new_is_free' => $isFree,
+                                    'user_id' => auth()->id()
+                                ]);
+                            }
+                        }
+                    }
+                }
+            }
+
+            DB::commit();
+
+            if ($updatedCount > 0) {
+                return redirect()
+                    ->back()
+                    ->with('success', "Đã cập nhật giá cho {$updatedCount} chương thành công.");
+            } else {
+                return back()->with('warning', 'Không có chương nào được cập nhật (thông tin mới giống thông tin cũ).');
+            }
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Bulk price update failed', [
+                'story_id' => $story->id,
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return back()->withErrors(['error' => 'Có lỗi xảy ra khi cập nhật giá. Vui lòng thử lại.']);
+        }
     }
 }

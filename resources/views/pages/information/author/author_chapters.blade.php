@@ -14,7 +14,7 @@
             </a>
         </div>
 
-        <div>
+        <div class="text-end">
             @if ($story->chapters->count() < 3 && $story->status == 'draft')
                 <span class="badge bg-warning text-dark me-2">
                     <i class="fas fa-exclamation-triangle me-1"></i> Cần thêm {{ 3 - $story->chapters->count() }} chương nữa
@@ -29,19 +29,23 @@
                     </a>
                 @else
                     <a href="{{ route('user.author.stories.combo.create', $story->id) }}"
-                        class="btn btn-outline-primary me-2">
+                        class="btn btn-outline-primary btn-sm me-2">
                         <i class="fas fa-tags me-1"></i> Tạo combo
                     </a>
                 @endif
             @endif
 
+            <div class="mb-2"></div>
+
             <div>
-                <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-outline-success btn-sm">
-                <i class="fas fa-plus me-1"></i> Chương
-            </a>
-             <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}" class="btn btn-outline-success btn-sm">
-                <i class="fas fa-plus me-1"></i> Nhiều Chương
-            </a>
+                <a href="{{ route('user.author.stories.chapters.create', $story->id) }}"
+                    class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-plus me-1"></i> Chương
+                </a>
+                <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
+                    class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-plus me-1"></i> Nhiều Chương
+                </a>
             </div>
         </div>
     </div>
@@ -54,7 +58,8 @@
                         style="width: 60px; height: 80px; object-fit: cover;">
                 </div>
                 <div class="col-md-7">
-                    <a href="{{ route('show.page.story', $story->slug) }}" class="card-title mb-1 fs-6 text-dark text-decoration-none fw-bold">{{ $story->title }}
+                    <a href="{{ route('show.page.story', $story->slug) }}"
+                        class="card-title mb-1 fs-6 text-dark text-decoration-none fw-bold">{{ $story->title }}
                         @if ($story->is_18_plus)
                             <span class="badge bg-danger ms-2"><i class="fas fa-exclamation-triangle me-1"></i> 18+</span>
                         @endif
@@ -64,7 +69,8 @@
                             <i class="fas fa-book me-1"></i> {{ $story->chapters->count() }} chương
                         </span>
                         <span>
-                            <i class="fas fa-calendar-alt me-1"></i> Cập nhật: {{ $story->updated_at->format('d/m/Y H:i') }}
+                            <i class="fas fa-calendar-alt me-1"></i> Cập nhật:
+                            {{ $story->updated_at->format('d/m/Y H:i') }}
                         </span>
                         <span class="badge bg-warning ms-2">
                             {{ $story->getTotalChapterPriceAttribute() }} <i class="fa-solid fa-sack-dollar"></i>
@@ -113,10 +119,33 @@
                             </a>
                         @endif
 
+                        <div class="mb-2"></div>
+
                         <a href="{{ route('user.author.stories.edit', $story->id) }}"
                             class="btn btn-sm btn-outline-primary">
                             <i class="fas fa-edit me-1"></i> Sửa thông tin
                         </a>
+
+                        @if ($story->chapters()->where('status', 'published')->count() > 0)
+                            <a href="{{ route('user.author.stories.chapters.bulk-price', $story->id) }}"
+                                class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-coins me-1"></i> Cập nhật giá
+                            </a>
+                        @endif
+                    </div>
+
+                    <div class="mb-2"></div>
+
+                    <div>
+                        <a href="{{ route('user.author.stories.chapters.create', $story->id) }}"
+                            class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-plus me-1"></i> Chương
+                        </a>
+                        <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
+                            class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-plus me-1"></i> Nhiều Chương
+                        </a>
+
                     </div>
                 </div>
             </div>
@@ -171,13 +200,13 @@
             </div>
         </div>
     @elseif($story->completed)
-        <div class="alert alert-info mb-4 d-flex align-items-center justify-content-between">
+        <div class="alert bg-primary-bg-2 mb-4 d-flex align-items-center justify-content-between">
             <div>
                 <i class="fas fa-info-circle me-2"></i>
                 Truyện của bạn đã hoàn thành. Bạn có thể tạo combo trọn bộ để độc giả mua với mức giá ưu đãi.
             </div>
             <div>
-                <a href="{{ route('user.author.stories.combo.create', $story->id) }}" class="btn btn-info btn-sm">
+                <a href="{{ route('user.author.stories.combo.create', $story->id) }}" class="btn btn-outline-info btn-sm">
                     <i class="fas fa-tags me-1"></i> Tạo combo ngay
                 </a>
             </div>
@@ -202,7 +231,8 @@
                         <tr>
                             <td>{{ $chapter->number }}</td>
                             <td>
-                                <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}" class="fw-bold text-decoration-none text-dark">{{ $chapter->title }}</a>
+                                <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
+                                    class="fw-bold text-decoration-none text-dark">{{ $chapter->title }}</a>
                                 <div class="text-muted small">
                                     <i class="fas fa-eye me-1"></i> {{ number_format($chapter->views) }} lượt xem
                                 </div>
@@ -210,7 +240,7 @@
                             <td>
                                 @if ($chapter->is_free == true)
                                     <span class="badge bg-secondary">Miễn phí</span>
-                                    @if($chapter->password)
+                                    @if ($chapter->password)
                                         <span class="badge bg-warning text-dark"><i class="fa-solid fa-lock"></i></span>
                                     @endif
                                 @else
@@ -408,7 +438,7 @@
                     // Cập nhật ngay lập tức
                     updateCountdown(countdownText, targetTimestamp, chapterId);
                 });
- 
+
                 // Cập nhật tất cả đồng hồ mỗi giây
                 setInterval(() => {
                     timers.forEach(timer => {
