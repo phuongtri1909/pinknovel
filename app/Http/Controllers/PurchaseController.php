@@ -140,7 +140,8 @@ class PurchaseController extends Controller
                 // Create purchase record
                 DB::table('chapter_purchases')->updateOrInsert(
                     ['user_id' => $user->id, 'chapter_id' => $chapter->id],
-                    ['amount_paid' => $chapter->price, 'updated_at' => now(), 'created_at' => now()]
+                    ['amount_paid' => $chapter->price, 'updated_at' => now(), 'created_at' => now()],
+                    ['amount_received' => 0]
                 );
 
                 // cộng tiền cho tác giả
@@ -309,7 +310,8 @@ class PurchaseController extends Controller
                 StoryPurchase::create([
                     'user_id' => $user->id,
                     'story_id' => $story->id,
-                    'amount_paid' => $story->combo_price
+                    'amount_paid' => $story->combo_price,
+                    'amount_received' => 0,
                 ]);
 
                 // Cộng tiền cho tác giả
