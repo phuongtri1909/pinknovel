@@ -131,29 +131,32 @@ class PurchaseController extends Controller
                     ], 400);
                 }
 
+                // cộng tiền cho tác giả
+                $authorPercentage = $story->is_monopoly ? Config::getConfig('monopoly_author_percentage', 90) : Config::getConfig('non_monopoly_author_percentage', 70);
+                $rawEarnings = ($chapter->price * $authorPercentage) / 100;
+                $authorEarnings = round($rawEarnings);
+
                 // Deduct coins from user
                 DB::table('users')->where('id', $user->id)->update([
                     'coins' => $user->coins - $chapter->price
                 ]);
                 $user->coins -= $chapter->price; // Update the model instance
 
-                // Create purchase record
-                DB::table('chapter_purchases')->updateOrInsert(
-                    ['user_id' => $user->id, 'chapter_id' => $chapter->id],
-                    ['amount_paid' => $chapter->price, 'updated_at' => now(), 'created_at' => now()],
-                    ['amount_received' => 0]
+                // Create purchase record với amount_received đã tính
+                ChapterPurchase::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'chapter_id' => $chapter->id
+                    ],
+                    [
+                        'amount_paid' => $chapter->price,
+                        'amount_received' => $authorEarnings,
+                        'updated_at' => now(),
+                        'created_at' => now()
+                    ]
                 );
 
-                // cộng tiền cho tác giả
-                $authorPercentage = $story->is_monopoly ? Config::getConfig('monopoly_author_percentage', 90) : Config::getConfig('non_monopoly_author_percentage', 70);
-                $rawEarnings = ($chapter->price * $authorPercentage) / 100;
-                $authorEarnings = round($rawEarnings); 
                 DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
-
-                DB::table('chapter_purchases')->where('user_id', $user->id)
-                    ->where('chapter_id', $chapter->id)
-                    ->update(['amount_received' => $authorEarnings]);
-
                 DB::commit();
                 $success = true;
             } catch (\Illuminate\Database\QueryException $e) {
@@ -302,27 +305,24 @@ class PurchaseController extends Controller
                     ], 400);
                 }
 
+                // Cộng tiền cho tác giả
+                $authorPercentage = $story->is_monopoly ? Config::getConfig('monopoly_author_percentage', 90) : Config::getConfig('non_monopoly_author_percentage', 70);
+                $rawEarnings = ($story->combo_price * $authorPercentage) / 100;
+                $authorEarnings = round($rawEarnings);
+
                 // Deduct coins from user
                 $freshUser->coins -= $story->combo_price;
                 $freshUser->save();
 
-                // Create purchase record
                 StoryPurchase::create([
                     'user_id' => $user->id,
                     'story_id' => $story->id,
                     'amount_paid' => $story->combo_price,
-                    'amount_received' => 0,
+                    'amount_received' => $authorEarnings,
                 ]);
 
-                // Cộng tiền cho tác giả
-                $authorPercentage = $story->is_monopoly ? Config::getConfig('monopoly_author_percentage', 90) : Config::getConfig('non_monopoly_author_percentage', 70);
-                $rawEarnings = ($story->combo_price * $authorPercentage) / 100;
-                $authorEarnings = round($rawEarnings); 
-                DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
 
-                DB::table('story_purchases')->where('user_id', $user->id)
-                    ->where('story_id', $story->id)
-                    ->update(['amount_received' => $authorEarnings]);
+                DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
 
                 DB::commit();
                 $success = true;
