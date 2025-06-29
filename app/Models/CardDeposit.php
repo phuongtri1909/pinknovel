@@ -55,7 +55,7 @@ class CardDeposit extends Model
         200000 => '200.000 VNĐ',
         300000 => '300.000 VNĐ',
         500000 => '500.000 VNĐ',
-        1000000 => '1.000.000 VNĐ'
+        // 1000000 => '1.000.000 VNĐ'
     ];
 
     const STATUS_PENDING = 'pending';
