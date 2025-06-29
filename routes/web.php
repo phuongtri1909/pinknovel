@@ -52,6 +52,10 @@ Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories'])-
 
 Route::post('/card-deposit/callback', [CardDepositController::class, 'callback'])->name('card.deposit.callback');
 
+
+// Route::get('/check-card', [CardDepositController::class, 'checkCardForm'])->name('check.card.form');
+// Route::post('/check-card', [CardDepositController::class, 'checkCard'])->name('check.card');
+
 Route::group(['middleware' => 'check.ip.ban'], function () {
     Route::middleware(['check.ban:ban_login'])->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -119,6 +123,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::get('/card-deposit', [CardDepositController::class, 'index'])->name('card.deposit');
             Route::post('/card-deposit', [CardDepositController::class, 'store'])->name('card.deposit.store');
             Route::get('/card-deposit/status/{id}', [CardDepositController::class, 'checkStatus'])->name('card.deposit.status');
+
 
             // Routes cho tác giả - sử dụng middleware 'role' mới
             Route::group(['middleware' => 'role:author,admin', 'prefix' => 'author', 'as' => 'author.'], function () {

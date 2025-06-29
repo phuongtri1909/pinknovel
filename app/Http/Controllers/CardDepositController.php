@@ -27,6 +27,12 @@ class CardDepositController extends Controller
         $this->coinCardPercent = Config::getConfig('coin_card_percent', 30);
         $this->tsrPartnerKey = env('TSR_PARTNER_KEY', '6dd372151552c79c1fbabc49d02829f4');
         $this->tsrPartnerId = env('TSR_PARTNER_ID', '0601968451');
+        // Log::info('CardDepositController initialized', [
+        //     'coin_exchange_rate' => $this->coinExchangeRate,
+        //     'coin_card_percent' => $this->coinCardPercent,
+        //     'tsr_partner_id' => $this->tsrPartnerId,
+        //     'tsr_partner_key' => $this->tsrPartnerKey
+        // ]);
     }
 
     /**
@@ -60,7 +66,7 @@ class CardDepositController extends Controller
         // Validate với CARD_TYPES dynamic
         $allowedCardTypes = array_keys(CardDeposit::CARD_TYPES);
         $allowedAmounts = array_keys(CardDeposit::CARD_VALUES);
-        
+
         $request->validate([
             'telco' => 'required|in:' . implode(',', $allowedCardTypes),
             'serial' => 'required|string|min:10|max:20',
@@ -86,20 +92,20 @@ class CardDepositController extends Controller
             ->first();
 
         if ($existingSuccessCard) {
-            Log::warning('Attempted to reuse successful card', [
-                'user_id' => Auth::id(),
-                'existing_user_id' => $existingSuccessCard->user_id,
-                'existing_request_id' => $existingSuccessCard->request_id,
-                'serial' => substr($request->serial, 0, 4) . '****',
-                'code' => substr($request->code, 0, 4) . '****',
-                'processed_at' => $existingSuccessCard->processed_at
-            ]);
-            
+            // Log::warning('Attempted to reuse successful card', [
+            //     'user_id' => Auth::id(),
+            //     'existing_user_id' => $existingSuccessCard->user_id,
+            //     'existing_request_id' => $existingSuccessCard->request_id,
+            //     'serial' => substr($request->serial, 0, 4) . '****',
+            //     'code' => substr($request->code, 0, 4) . '****',
+            //     'processed_at' => $existingSuccessCard->processed_at
+            // ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Thẻ này đã được nạp thành công trước đó vào lúc ' . 
-                           $existingSuccessCard->processed_at->format('d/m/Y H:i:s') . 
-                           '. Không thể sử dụng lại thẻ đã nạp.',
+                'message' => 'Thẻ này đã được nạp thành công trước đó vào lúc ' .
+                    $existingSuccessCard->processed_at->format('d/m/Y H:i:s') .
+                    '. Không thể sử dụng lại thẻ đã nạp.',
                 'existing_status' => 'success',
                 'processed_at' => $existingSuccessCard->processed_at->format('d/m/Y H:i:s')
             ], 400);
@@ -140,7 +146,7 @@ class CardDepositController extends Controller
                 'user_id' => Auth::id(),
                 'attempts_last_hour' => $recentAttempts
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn đã nạp quá nhiều lần trong 1 giờ qua. Vui lòng thử lại sau.',
@@ -179,14 +185,14 @@ class CardDepositController extends Controller
                 'user_agent' => $request->userAgent()
             ]);
 
-            Log::info('New card deposit created', [
-                'card_deposit_id' => $cardDeposit->id,
-                'user_id' => Auth::id(),
-                'request_id' => $requestId,
-                'telco' => $request->telco,
-                'amount' => $amount,
-                'coins' => $coins
-            ]);
+            // Log::info('New card deposit created', [
+            //     'card_deposit_id' => $cardDeposit->id,
+            //     'user_id' => Auth::id(),
+            //     'request_id' => $requestId,
+            //     'telco' => $request->telco,
+            //     'amount' => $amount,
+            //     'coins' => $coins
+            // ]);
 
             // Gọi API TheSieuRe
             $apiResponse = $this->callTSRApi($cardDeposit);
@@ -249,7 +255,7 @@ class CardDepositController extends Controller
         do {
             $requestId = rand(100000000, 999999999);
         } while (CardDeposit::where('request_id', $requestId)->exists());
-        
+
         return $requestId;
     }
 
@@ -263,6 +269,12 @@ class CardDepositController extends Controller
 
             // Tính signature theo TSR: md5(partner_key + code + serial)
             $signature = md5($this->tsrPartnerKey . $cardDeposit->pin . $cardDeposit->serial);
+            // Log::info('TSR API Signature', [
+            //     'partner_key' => $this->tsrPartnerKey,
+            //     'code' => $cardDeposit->pin,
+            //     'serial' => $cardDeposit->serial,
+            //     'signature' => $signature
+            // ]);
 
             // Tạo multipart data như trong Postman
             $multipart = [
@@ -301,16 +313,16 @@ class CardDepositController extends Controller
             ];
 
             // Log request data để debug
-            Log::info('TSR API Request (Guzzle)', [
-                'url' => $url,
-                'partner_id' => $this->tsrPartnerId,
-                'request_id' => $cardDeposit->request_id,
-                'telco' => $cardDeposit->type,
-                'amount' => $cardDeposit->amount,
-                'code' => substr($cardDeposit->pin, 0, 4) . '****',
-                'serial' => substr($cardDeposit->serial, 0, 4) . '****',
-                'sign' => $signature
-            ]);
+            // Log::info('TSR API Request (Guzzle)', [
+            //     'url' => $url,
+            //     'partner_id' => $this->tsrPartnerId,
+            //     'request_id' => $cardDeposit->request_id,
+            //     'telco' => $cardDeposit->type,
+            //     'amount' => $cardDeposit->amount,
+            //     'code' => substr($cardDeposit->pin, 0, 4) . '****',
+            //     'serial' => substr($cardDeposit->serial, 0, 4) . '****',
+            //     'sign' => $signature
+            // ]);
 
             // Khởi tạo Guzzle client
             $client = new Client([
@@ -336,12 +348,12 @@ class CardDepositController extends Controller
             $httpCode = $response->getStatusCode();
             $responseData = json_decode($responseBody, true);
 
-            Log::info('TSR API Response (Guzzle)', [
-                'request_id' => $cardDeposit->request_id,
-                'http_code' => $httpCode,
-                'response_body' => $responseBody,
-                'response_data' => $responseData
-            ]);
+            // Log::info('TSR API Response (Guzzle)', [
+            //     'request_id' => $cardDeposit->request_id,
+            //     'http_code' => $httpCode,
+            //     'response_body' => $responseBody,
+            //     'response_data' => $responseData
+            // ]);
 
             if ($responseData && isset($responseData['status'])) {
                 switch ((int)$responseData['status']) {
@@ -407,39 +419,36 @@ class CardDepositController extends Controller
                 'message' => 'Không nhận được phản hồi hợp lệ từ hệ thống xử lý thẻ',
                 'response_data' => $responseData
             ];
-
         } catch (ConnectException $e) {
-            Log::error('TSR API Connection Error: ' . $e->getMessage(), [
-                'request_id' => $cardDeposit->request_id ?? 'unknown',
-                'error_type' => 'connection',
-                'trace' => $e->getTraceAsString()
-            ]);
+            // Log::error('TSR API Connection Error: ' . $e->getMessage(), [
+            //     'request_id' => $cardDeposit->request_id ?? 'unknown',
+            //     'error_type' => 'connection',
+            //     'trace' => $e->getTraceAsString()
+            // ]);
 
             return [
                 'success' => false,
                 'message' => 'Không thể kết nối đến hệ thống xử lý thẻ. Vui lòng thử lại sau.',
                 'response_data' => null
             ];
-
         } catch (RequestException $e) {
             $response = $e->getResponse();
             $statusCode = $response ? $response->getStatusCode() : 'unknown';
             $responseBody = $response ? $response->getBody()->getContents() : 'no response';
 
-            Log::error('TSR API Request Error: ' . $e->getMessage(), [
-                'request_id' => $cardDeposit->request_id ?? 'unknown',
-                'error_type' => 'request',
-                'status_code' => $statusCode,
-                'response_body' => $responseBody,
-                'trace' => $e->getTraceAsString()
-            ]);
+            // Log::error('TSR API Request Error: ' . $e->getMessage(), [
+            //     'request_id' => $cardDeposit->request_id ?? 'unknown',
+            //     'error_type' => 'request',
+            //     'status_code' => $statusCode,
+            //     'response_body' => $responseBody,
+            //     'trace' => $e->getTraceAsString()
+            // ]);
 
             return [
                 'success' => false,
                 'message' => 'Lỗi khi gửi yêu cầu đến hệ thống xử lý thẻ. Vui lòng thử lại sau.',
                 'response_data' => null
             ];
-
         } catch (\Exception $e) {
             Log::error('TSR API General Error: ' . $e->getMessage(), [
                 'request_id' => $cardDeposit->request_id ?? 'unknown',
@@ -463,7 +472,7 @@ class CardDepositController extends Controller
         try {
             // Kiểm tra content type và lấy dữ liệu
             $contentType = $request->header('content-type', '');
-            
+
             if (str_contains($contentType, 'application/json')) {
                 $callbackData = $request->json()->all();
                 Log::info('TSR Callback received (JSON)', $callbackData);
@@ -627,10 +636,9 @@ class CardDepositController extends Controller
             );
 
             return response('OK', 200);
-
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error('Callback processing error: ' . $e->getMessage(), [
                 'request_data' => $request->all(),
                 'trace' => $e->getTraceAsString()
@@ -666,11 +674,11 @@ class CardDepositController extends Controller
         $user = User::find($cardDeposit->user_id);
         if ($user) {
             $oldCoins = $user->coins;
-            
+
             // Sử dụng atomic increment để tránh race condition
             $affectedRows = User::where('id', $cardDeposit->user_id)
                 ->increment('coins', $coins);
-            
+
             if ($affectedRows > 0) {
                 Log::info('Card deposit successful - Coins added', [
                     'request_id' => $callbackData['request_id'],
@@ -719,5 +727,173 @@ class CardDepositController extends Controller
             'note' => $cardDeposit->note,
             'processed_at' => $cardDeposit->processed_at?->format('d/m/Y H:i:s')
         ]);
+    }
+
+    public function checkCardForm()
+    {
+        return view('pages.information.deposit.check_card');
+    }
+
+    public function checkCard(Request $request)
+    {
+        $request->validate([
+            'telco' => 'required|string',
+            'code' => 'required|string',
+            'serial' => 'required|string',
+            'amount' => 'required|integer',
+            'partner_id' => 'required|string',
+            'domain' => 'required|string'
+        ]);
+
+        try {
+            // Tính signature theo format: md5(partner_key + code + serial)
+            $partnerKey = $request->partner_key ?? $this->tsrPartnerKey;
+            $signature = md5($partnerKey . $request->code . $request->serial);
+
+            Log::info('Check Card Signature', [
+                'partner_key' => $partnerKey,
+                'code' => $request->code,
+                'serial' => $request->serial,
+                'signature' => $signature
+            ]);
+
+            // Tạo request ID random
+            $requestId = rand(100000, 999999);
+
+            // Setup Guzzle client
+            $client = new Client([
+                'timeout' => 30,
+                'connect_timeout' => 10,
+                'headers' => [
+                    'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept' => 'application/json, text/plain, */*',
+                ]
+            ]);
+
+            // Tạo URL từ domain
+            $url = 'http://' . $request->domain . '/chargingws/v2';
+
+            // Tạo multipart data
+            $multipart = [
+                [
+                    'name' => 'telco',
+                    'contents' => $request->telco
+                ],
+                [
+                    'name' => 'code',
+                    'contents' => $request->code
+                ],
+                [
+                    'name' => 'serial',
+                    'contents' => $request->serial
+                ],
+                [
+                    'name' => 'amount',
+                    'contents' => (string)$request->amount
+                ],
+                [
+                    'name' => 'request_id',
+                    'contents' => (string)$requestId
+                ],
+                [
+                    'name' => 'partner_id',
+                    'contents' => $request->partner_id
+                ],
+                [
+                    'name' => 'sign',
+                    'contents' => $signature
+                ],
+                [
+                    'name' => 'command',
+                    'contents' => 'check'
+                ]
+            ];
+
+            Log::info('Check Card Request', [
+                'url' => $url,
+                'partner_id' => $request->partner_id,
+                'request_id' => $requestId,
+                'telco' => $request->telco,
+                'amount' => $request->amount,
+                'code' => substr($request->code, 0, 4) . '****',
+                'serial' => substr($request->serial, 0, 4) . '****',
+                'sign' => $signature
+            ]);
+
+            // Gửi request
+            $response = $client->post($url, [
+                'multipart' => $multipart,
+                'timeout' => 30,
+                'connect_timeout' => 10
+            ]);
+
+            // Lấy response
+            $responseBody = $response->getBody()->getContents();
+            $httpCode = $response->getStatusCode();
+            $responseData = json_decode($responseBody, true);
+
+            Log::info('Check Card Response', [
+                'request_id' => $requestId,
+                'http_code' => $httpCode,
+                'response_body' => $responseBody,
+                'response_data' => $responseData
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'request_data' => [
+                    'url' => $url,
+                    'telco' => $request->telco,
+                    'code' => substr($request->code, 0, 4) . '****',
+                    'serial' => substr($request->serial, 0, 4) . '****',
+                    'amount' => $request->amount,
+                    'request_id' => $requestId,
+                    'partner_id' => $request->partner_id,
+                    'signature' => $signature,
+                    'command' => 'check'
+                ],
+                'response_data' => [
+                    'http_code' => $httpCode,
+                    'raw_response' => $responseBody,
+                    'parsed_response' => $responseData,
+                    'status' => $responseData['status'] ?? 'unknown',
+                    'message' => $responseData['message'] ?? 'No message',
+                    'trans_id' => $responseData['trans_id'] ?? null
+                ]
+            ]);
+        } catch (ConnectException $e) {
+            Log::error('Check Card Connection Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'error_type' => 'connection',
+                'message' => 'Không thể kết nối đến server: ' . $e->getMessage()
+            ], 500);
+        } catch (RequestException $e) {
+            $response = $e->getResponse();
+            $statusCode = $response ? $response->getStatusCode() : 'unknown';
+            $responseBody = $response ? $response->getBody()->getContents() : 'no response';
+
+            Log::error('Check Card Request Error: ' . $e->getMessage(), [
+                'status_code' => $statusCode,
+                'response_body' => $responseBody
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error_type' => 'request',
+                'message' => 'Lỗi request: ' . $e->getMessage(),
+                'status_code' => $statusCode,
+                'response_body' => $responseBody
+            ], 500);
+        } catch (\Exception $e) {
+            Log::error('Check Card General Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'error_type' => 'general',
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
