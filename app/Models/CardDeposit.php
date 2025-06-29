@@ -35,14 +35,14 @@ class CardDeposit extends Model
     // Loại thẻ được hỗ trợ (theo TSR)
     const CARD_TYPES = [
         'VIETTEL' => 'Viettel',
-        'GARENA' => 'Garena',
-        'ZING' => 'Zing',
+        // 'GARENA' => 'Garena',
+        // 'ZING' => 'Zing',
         'VINAPHONE' => 'Vinaphone',
         'MOBIFONE' => 'Mobifone',
         'VNMOBI' => 'Vietnamobile',
-        'VCOIN' => 'Vcoin',
-        'SCOIN' => 'Scoin',
-        'APPOTA' => 'Appota',  
+        // 'VCOIN' => 'Vcoin',
+        // 'SCOIN' => 'Scoin',
+        // 'APPOTA' => 'Appota',  
     ];
 
     // Mệnh giá thẻ được hỗ trợ (theo TSR)
