@@ -209,14 +209,14 @@ class User extends Authenticatable
         $storyIds = Story::where('user_id', $this->id)->pluck('id');
         
         // Calculate revenue from story purchases
-        $storyRevenue = StoryPurchase::whereIn('story_id', $storyIds)->sum('amount_paid');
+        $storyRevenue = StoryPurchase::whereIn('story_id', $storyIds)->sum('amount_received');
         
         // Calculate revenue from chapter purchases
         $chapterRevenue = ChapterPurchase::whereHas('chapter', function($query) {
             $query->whereHas('story', function($query) {
                 $query->where('user_id', $this->id);
             });
-        })->sum('amount_paid');
+        })->sum('amount_received');
         
         return $storyRevenue + $chapterRevenue;
     }
