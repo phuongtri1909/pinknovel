@@ -26,12 +26,12 @@
         }
 
         .amount-option:hover {
-            border-color: #0d6efd;
+            border-color: var(--primary-color-3);
             background-color: rgba(13, 110, 253, 0.05);
         }
 
         .amount-option.selected {
-            border-color: #0d6efd;
+            border-color: var(--primary-color-3);
             background-color: rgba(13, 110, 253, 0.1);
         }
 
@@ -256,6 +256,27 @@
                 font-size: 2rem;
             }
         }
+
+        .amount-option.selected::before {
+            content: '✓';
+            position: absolute;
+            top: 0px;
+            right: 4px;
+            color: white;
+            font-size: 14px;
+            z-index: 1;
+        }
+
+        .amount-option.selected::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0px;
+            width: 20px;
+            height: 20px;
+            border-radius: 0 6px 0 12px;
+            background-color: var(--primary-color-3);
+        }
     </style>
 @endpush
 
@@ -308,7 +329,7 @@
                             <div class="row">
                                 @foreach (\App\Models\CardDeposit::CARD_VALUES as $value => $label)
                                     <div class="col-md-3 col-6">
-                                        <div class="amount-option {{ $value === 50000 ? 'selected' : '' }}"
+                                        <div class="amount-option position-relative {{ $value === 50000 ? 'selected' : '' }}"
                                             data-amount="{{ $value }}">
                                             <div class="fw-bold">{{ $label }}</div>
                                         </div>
