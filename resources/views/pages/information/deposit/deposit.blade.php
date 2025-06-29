@@ -199,14 +199,52 @@
         .show-reason-btn:hover {
             text-decoration: underline;
         }
+
+        .deposit-tabs {
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 30px;
+        }
+
+        .deposit-tab {
+            padding: 15px 25px;
+            background: transparent;
+            border: none;
+            color: #6c757d;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .deposit-tab:hover {
+            color: var(--primary-color-3);
+            background-color: rgba(13, 110, 253, 0.05);
+            text-decoration: none;
+        }
+
+        .deposit-tab.active {
+            color: var(--primary-color-3);
+            border-bottom-color: var(--primary-color-3);
+            background-color: rgba(13, 110, 253, 0.05);
+        }
     </style>
 @endpush
 
 @section('info_content')
+
+    <div class="deposit-tabs d-flex mb-4">
+        <a href="{{ route('user.deposit') }}" class="deposit-tab active">
+            <i class="fas fa-university me-2"></i>Bank
+        </a>
+        <a href="{{ route('user.card.deposit') }}" class="deposit-tab">
+            <i class="fas fa-credit-card me-2"></i>Card
+        </a>
+    </div>
+
     <div class="deposit-container" id="depositContainer">
         <div class="row">
             <div class="col-lg-8">
-                <div class="deposit-card">
+                <div class="">
                     <div class="deposit-card-header">
                         <h5 class="mb-0">Nạp xu qua chuyển khoản ngân hàng</h5>
                     </div>
@@ -286,34 +324,6 @@
                                 </button>
                             </div>
                         </form>
-                    </div>
-                </div>
-
-                <div class="deposit-card">
-                    <div class="deposit-card-header">
-                        <h5 class="mb-0">Nạp xu bằng thẻ cào (Sắp ra mắt)</h5>
-                    </div>
-                    <div class="deposit-card-body">
-                        <div class="deposit-method disabled" style="opacity: 0.6; cursor: not-allowed;">
-                            <div class="d-flex align-items-center">
-                                <div class="deposit-method-icon">
-                                    <i class="fas fa-credit-card"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-1">Nạp bằng thẻ cào điện thoại</h6>
-                                    <p class="mb-0 small text-muted">Hỗ trợ các loại thẻ: Viettel, Mobifone, Vinaphone...
-                                    </p>
-                                </div>
-                                <div class="ms-auto">
-                                    <span class="badge bg-secondary">Sắp ra mắt</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="alert alert-info mt-3">
-                            <i class="fas fa-info-circle me-2"></i> Tính năng nạp xu bằng thẻ cào sẽ sớm được ra mắt. Vui
-                            lòng sử dụng chuyển khoản ngân hàng để nạp xu trong thời gian này.
-                        </div>
                     </div>
                 </div>
             </div>
@@ -875,7 +885,7 @@
                 if (window.paymentInfo.expiredAt) {
                     // Tạo Date object từ ISO string - JavaScript sẽ tự động convert về local timezone
                     const expiredDate = new Date(window.paymentInfo.expiredAt);
-                    
+
                     // Hiển thị thời gian theo múi giờ local
                     $('#paymentExpiry').text(expiredDate.toLocaleString('vi-VN', {
                         year: 'numeric',
@@ -885,7 +895,7 @@
                         minute: '2-digit',
                         second: '2-digit'
                     }));
-                    
+
                     $('#expiryContainer').removeClass('d-none');
                     startCountdown(expiredDate);
                 } else {

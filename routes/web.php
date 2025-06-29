@@ -3,8 +3,10 @@
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CoinController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\GuideController;
 use App\Http\Controllers\StoryController;
 use App\Http\Controllers\AuthorController;
 use App\Http\Controllers\BannerController;
@@ -16,21 +18,20 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DepositController;
 use App\Http\Controllers\ReadingController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LogoSiteController;
 use App\Http\Controllers\PurchaseController;
 use App\Http\Controllers\StoryComboController;
+use App\Http\Controllers\WithdrawalController;
+use App\Http\Controllers\CardDepositController;
 use App\Http\Controllers\Admin\ConfigController;
+use App\Http\Controllers\Admin\SocialController;
+use App\Http\Controllers\RequestPaymentController;
+use App\Http\Controllers\Admin\StoryReviewController;
 use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
-use App\Http\Controllers\RequestPaymentController;
-use App\Http\Controllers\BookmarkController;
-use App\Http\Controllers\Admin\StoryReviewController;
 use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
-use App\Http\Controllers\CoinController;
-use App\Http\Controllers\Admin\SocialController;
-use App\Http\Controllers\GuideController;
-use App\Http\Controllers\WithdrawalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -48,6 +49,8 @@ Route::get('/sitemap-main.xml', [SitemapController::class, 'main'])->name('sitem
 Route::get('/sitemap-stories.xml', [SitemapController::class, 'stories'])->name('sitemap.stories');
 Route::get('/sitemap-chapters.xml', [SitemapController::class, 'chapters'])->name('sitemap.chapters');
 Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories'])->name('sitemap.categories');
+
+Route::post('/card-deposit/callback', [CardDepositController::class, 'callback'])->name('card.deposit.callback');
 
 Route::group(['middleware' => 'check.ip.ban'], function () {
     Route::middleware(['check.ban:ban_login'])->group(function () {
@@ -111,6 +114,11 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             // Request Payment Routes
             Route::post('/request-payment', [RequestPaymentController::class, 'store'])->name('request.payment.store');
             Route::post('/request-payment/confirm', [RequestPaymentController::class, 'confirm'])->name('request.payment.confirm');
+
+            // Card Deposit Routes
+            Route::get('/card-deposit', [CardDepositController::class, 'index'])->name('card.deposit');
+            Route::post('/card-deposit', [CardDepositController::class, 'store'])->name('card.deposit.store');
+            Route::get('/card-deposit/status/{id}', [CardDepositController::class, 'checkStatus'])->name('card.deposit.status');
 
             // Routes cho tác giả - sử dụng middleware 'role' mới
             Route::group(['middleware' => 'role:author,admin', 'prefix' => 'author', 'as' => 'author.'], function () {
