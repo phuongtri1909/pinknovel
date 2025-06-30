@@ -316,15 +316,14 @@ class AuthorController extends Controller
 
         DB::beginTransaction();
         try {
-            // Kiểm tra trạng thái của truyện
-            if ($story->status === 'published') {
-                // Nếu story đã xuất bản, tạo edit request thay vì cập nhật trực tiếp
+            // UPDATED LOGIC: Check if story is published AND completed
+            if ($story->status === 'published' && $story->completed == 1) {
+                // Nếu story đã xuất bản VÀ đã hoàn thành, tạo edit request
 
                 // Kiểm tra xem đã có edit request nào đang chờ duyệt chưa
                 if ($story->hasPendingEditRequest()) {
                     return redirect()->back()
-                        ->with('error', 'Đã có một yêu cầu chỉnh sửa đang chờ duyệt. Vui lòng đợi admin xét duyệt.')
-                        ->withInput();
+                        ->with('error', 'Truyện này đã có yêu cầu chỉnh sửa đang chờ duyệt. Vui lòng chờ admin xử lý trước khi gửi yêu cầu mới.');
                 }
 
                 // Kiểm tra xem có thay đổi thực sự nào không
@@ -337,7 +336,8 @@ class AuthorController extends Controller
                     $story->author_name !== $request->author_name ||
                     $story->translator_name !== $request->translator_name ||
                     $story->story_type !== $request->story_type ||
-                    $story->is_monopoly !== $request->is_monopoly
+                    $story->is_18_plus !== $request->has('is_18_plus') ||
+                    $story->is_monopoly !== $request->has('is_monopoly')
                 ) {
                     $hasChanges = true;
                 }
@@ -358,8 +358,7 @@ class AuthorController extends Controller
                 // Nếu không có thay đổi thực sự, thông báo và quay lại
                 if (!$hasChanges) {
                     return redirect()->back()
-                        ->with('info', 'Không có thay đổi nào được phát hiện so với thông tin hiện tại.')
-                        ->withInput();
+                        ->with('info', 'Không có thay đổi nào được phát hiện.');
                 }
 
                 $editRequestData = [
@@ -380,7 +379,6 @@ class AuthorController extends Controller
 
                 // Xử lý ảnh bìa nếu có upload mới
                 if ($request->hasFile('cover')) {
-                    // Xử lý ảnh mới
                     $coverPaths = $this->processAndSaveImage($request->file('cover'));
 
                     $editRequestData['cover'] = $coverPaths['original'];
@@ -394,9 +392,9 @@ class AuthorController extends Controller
                 DB::commit();
 
                 return redirect()->route('user.author.stories.edit', $story->id)
-                    ->with('success', 'Yêu cầu chỉnh sửa truyện đã được gửi đi và đang chờ phê duyệt.');
+                    ->with('success', 'Truyện đã hoàn thành nên yêu cầu chỉnh sửa đã được gửi đi và đang chờ admin phê duyệt.');
             } else {
-                // Nếu story chưa xuất bản (nháp hoặc đang chờ duyệt), cập nhật trực tiếp
+                // UPDATED: Nếu story chưa hoàn thành hoặc chưa xuất bản, cập nhật trực tiếp
                 $data = [
                     'title' => $request->title,
                     'slug' => Str::slug($request->title),
@@ -406,8 +404,12 @@ class AuthorController extends Controller
                     'translator_name' => $request->translator_name,
                     'is_18_plus' => $request->has('is_18_plus'),
                     'is_monopoly' => $request->has('is_monopoly'),
-                    'status' => 'draft',
                 ];
+
+                // Chỉ thay đổi status thành draft nếu đang pending
+                if ($story->status === 'pending') {
+                    $data['status'] = 'draft';
+                }
 
                 // Xử lý ảnh bìa nếu có upload mới
                 if ($request->hasFile('cover')) {
@@ -436,8 +438,17 @@ class AuthorController extends Controller
                     Storage::disk('public')->delete($oldImages);
                 }
 
+                $message = 'Truyện đã được cập nhật thành công.';
+                
+                // Thông báo khác nhau tùy theo trạng thái
+                if ($story->status === 'published' && $story->completed == 0) {
+                    $message .= ' Truyện chưa hoàn thành nên có thể chỉnh sửa tự do mà không cần phê duyệt.';
+                } elseif ($story->status !== 'published') {
+                    $message .= ' Truyện chưa xuất bản nên có thể chỉnh sửa tự do.';
+                }
+
                 return redirect()->route('user.author.stories.edit', $story->id)
-                    ->with('success', 'Truyện đã được cập nhật');
+                    ->with('success', $message);
             }
         } catch (\Exception $e) {
             DB::rollBack();

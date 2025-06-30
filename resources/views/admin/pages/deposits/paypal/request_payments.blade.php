@@ -159,14 +159,14 @@
                         },
                         success: function(response) {
                             if (response.success) {
-                                alert(response.message);
+                                showToast('Thành công!', response.message, 'success');
                                 window.location.reload();
                             } else {
-                                alert('Có lỗi xảy ra: ' + response.message);
+                                showToast('Có lỗi xảy ra', response.message, 'error');
                             }
                         },
                         error: function(xhr) {
-                            alert('Đã xảy ra lỗi!');
+                            showToast('Đã xảy ra lỗi!', xhr.responseJSON.message, 'error');
                         }
                     });
                 }

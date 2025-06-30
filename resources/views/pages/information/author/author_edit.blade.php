@@ -232,27 +232,6 @@
         </a>
     </div>
 
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if (session('error'))
-        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
-            {{ session('error') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
-    @if (session('info'))
-        <div class="alert alert-info alert-dismissible fade show mb-4" role="alert">
-            {{ session('info') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
-
     <div class="story-info-card">
         <div class="story-info-header">
             <h4 class="mb-0">{{ $story->title }}</h4>
@@ -511,56 +490,57 @@
 
                                 @if ($story->status == 'pending')
                                     <div class="alert alert-warning mt-4">
-                                        <div class="mb-2"><i class="fas fa-info-circle me-2"></i> <strong>Lưu
-                                                ý:</strong></div>
-                                        <p>Truyện của bạn đang chờ phê duyệt. Nếu bạn cập nhật thông tin, truyện sẽ quay lại
-                                            trạng thái nháp và cần gửi yêu cầu phê duyệt lại.</p>
+                                        <div class="mb-2"><i class="fas fa-info-circle me-2"></i> <strong>Lưu ý:</strong>
+                                        </div>
+                                        <p>Truyện của bạn đang chờ phê duyệt. Nếu bạn cập nhật thông tin, truyện sẽ quay lại trạng thái nháp và cần gửi yêu cầu phê duyệt lại.</p>
                                     </div>
                                 @endif
 
                                 @if ($story->status == 'published')
-                                    <div class="alert alert-info mt-4">
-                                        <div class="mb-2"><i class="fas fa-info-circle me-2"></i> <strong>Lưu
-                                                ý:</strong></div>
-                                        <p>Truyện của bạn đang được xuất bản. Khi bạn chỉnh sửa thông tin, hệ thống sẽ gửi
-                                            yêu cầu duyệt cho admin và những thay đổi sẽ được áp dụng sau khi admin phê
-                                            duyệt.</p>
-                                        <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê duyệt.
-                                        </p>
-                                    </div>
+                                    @if ($story->completed == 1)
+                                        {{-- Truyện đã hoàn thành --}}
+                                        <div class="alert alert-warning mt-4">
+                                            <div class="mb-2"><i class="fas fa-lock me-2"></i> <strong>Truyện đã hoàn thành:</strong>
+                                            </div>
+                                            <p>Truyện của bạn đã được đánh dấu là hoàn thành. Khi bạn chỉnh sửa thông tin, hệ thống sẽ gửi yêu cầu duyệt cho admin và những thay đổi sẽ được áp dụng sau khi admin phê duyệt.</p>
+                                            <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê duyệt.</p>
+                                        </div>
+                                    @else
+                                        {{-- Truyện chưa hoàn thành --}}
+                                        <div class="alert alert-success mt-4">
+                                            <div class="mb-2"><i class="fas fa-edit me-2"></i> <strong>Truyện chưa hoàn thành:</strong>
+                                            </div>
+                                            <p>Truyện của bạn đang được xuất bản nhưng chưa hoàn thành. Bạn có thể chỉnh sửa thông tin tự do mà không cần phê duyệt admin.</p>
+                                            <p>Khi nào đánh dấu truyện là hoàn thành thì việc chỉnh sửa sẽ cần phê duyệt.</p>
+                                        </div>
+                                    @endif
                                 @endif
 
                                 @if ($story->status == 'published' && $story->hasPendingEditRequest())
                                     <div class="alert alert-warning mt-4">
-                                        <div class="mb-2"><i class="fas fa-clock me-2"></i> <strong>Đang chờ
-                                                duyệt:</strong></div>
-                                        <p>Bạn đã gửi yêu cầu chỉnh sửa thông tin truyện này và đang chờ admin phê duyệt.
-                                        </p>
-                                        <p>Bạn không thể thực hiện thêm thay đổi cho đến khi yêu cầu hiện tại được xử lý.
-                                        </p>
-                                        <p><small>Thời gian gửi yêu cầu:
-                                                {{ $story->latestPendingEditRequest()->submitted_at->format('H:i:s d/m/Y') }}</small>
+                                        <div class="mb-2"><i class="fas fa-clock me-2"></i> <strong>Đang chờ duyệt:</strong>
+                                        </div>
+                                        <p>Bạn đã gửi yêu cầu chỉnh sửa thông tin truyện này và đang chờ admin phê duyệt.</p>
+                                        <p>Bạn không thể thực hiện thêm thay đổi cho đến khi yêu cầu hiện tại được xử lý.</p>
+                                        <p><small>Thời gian gửi yêu cầu: {{ $story->latestPendingEditRequest()->submitted_at->format('H:i:s d/m/Y') }}</small>
                                         </p>
                                     </div>
                                 @endif
 
                                 @if ($story->status == 'rejected')
                                     <div class="alert alert-danger mt-4">
-                                        <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ
-                                                chối:</strong></div>
-                                        <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản
-                                            trị viên.</p>
+                                        <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ chối:</strong>
+                                        </div>
+                                        <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản trị viên.</p>
 
                                         @if ($story->admin_note)
                                             <div class="mt-2">
                                                 <strong>Lý do từ chối:</strong>
-                                                <div class="p-2 bg-light rounded border border-danger mt-1">
-                                                    {{ $story->admin_note }}</div>
+                                                <div class="p-2 bg-light rounded border border-danger mt-1">{{ $story->admin_note }}</div>
                                             </div>
                                         @endif
 
-                                        <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để
-                                            gửi lại yêu cầu.</p>
+                                        <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để gửi lại yêu cầu.</p>
                                     </div>
                                 @endif
                             </div>
@@ -568,14 +548,15 @@
 
                         <div class="d-flex justify-content-end mt-4">
                             <a href="{{ route('user.author.stories') }}" class="btn btn-outline-danger me-2">Hủy</a>
+                            
                             @if ($story->status == 'published' && $story->hasPendingEditRequest())
                                 <button type="button" class="btn btn-secondary" disabled>
                                     <i class="fas fa-clock me-1"></i> Đang chờ duyệt
                                 </button>
-                            @elseif($story->status == 'published')
-                                <button type="button" class="btn btn-outline-dark" data-bs-toggle="modal"
-                                    data-bs-target="#confirmEditModal">
-                                    Lưu thông tin
+                            @elseif($story->status == 'published' && $story->completed == 1)
+                                {{-- Truyện đã hoàn thành, cần phê duyệt --}}
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#confirmEditModal">
+                                    <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu chỉnh sửa
                                 </button>
 
                                 <!-- Modal xác nhận chỉnh sửa -->
@@ -583,22 +564,22 @@
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Xác nhận
-                                                    chỉnh sửa</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
+                                                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Xác nhận chỉnh sửa</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
-                                                <p>Truyện của bạn đang được xuất bản.</p>
-                                                <p>Khi bạn chỉnh sửa thông tin, hệ thống sẽ gửi yêu cầu duyệt cho admin và
-                                                    những thay đổi sẽ được áp dụng sau khi admin phê duyệt.</p>
-                                                <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê
-                                                    duyệt.</p>
+                                                <div class="alert alert-warning">
+                                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                                    <strong>Truyện đã hoàn thành</strong>
+                                                </div>
+                                                
+                                                <p>Truyện của bạn đã được đánh dấu là hoàn thành.</p>
+                                                <p>Khi bạn chỉnh sửa thông tin, hệ thống sẽ gửi yêu cầu duyệt cho admin và những thay đổi sẽ được áp dụng sau khi admin phê duyệt.</p>
+                                                <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê duyệt.</p>
 
                                                 <div class="mt-3">
                                                     <h6>Các thay đổi sẽ được gửi:</h6>
-                                                    <div id="changesListContainer" class="border p-3 mt-2"
-                                                        style="max-height: 200px; overflow-y: auto;">
+                                                    <div id="changesListContainer" class="border p-3 mt-2" style="max-height: 200px; overflow-y: auto;">
                                                         <ul id="changesList" class="mb-0"></ul>
                                                     </div>
                                                 </div>
@@ -606,15 +587,16 @@
                                                 <p class="mt-3">Bạn có muốn tiếp tục?</p>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-outline-danger"
-                                                    data-bs-dismiss="modal">Hủy bỏ</button>
-                                                <button type="submit" class="btn btn-outline-dark">Gửi yêu cầu
-                                                    duyệt</button>
+                                                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Hủy bỏ</button>
+                                                <button type="submit" class="btn btn-warning">
+                                                    <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu duyệt
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             @else
+                                {{-- Truyện chưa hoàn thành hoặc chưa xuất bản, có thể sửa tự do --}}
                                 <button type="submit" class="btn btn-outline-dark">
                                     Lưu thông tin
                                 </button>
