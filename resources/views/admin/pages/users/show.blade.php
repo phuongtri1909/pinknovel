@@ -279,7 +279,7 @@
                                 </table>
                                 @if($counts['deposits'] > 5)
                                     <div class="d-flex justify-content-center mt-3">
-                                        {{ $deposits->fragment('deposits')->links() }}
+                                        <x-pagination :paginator="$deposits" />
                                     </div>
                                     <div class="text-center mt-3">
                                         <button class="btn btn-sm btn-primary load-more" data-type="deposits">
@@ -369,7 +369,7 @@
                                 </table>
                                 @if($counts['chapter_purchases'] > 5)
                                     <div class="d-flex justify-content-center mt-3">
-                                        {{ $chapterPurchases->fragment('chapter-purchases')->links() }}
+                                        <x-pagination :paginator="$chapterPurchases" />
                                     </div>
                                     <div class="text-center mt-3">
                                         <button class="btn btn-sm btn-primary load-more" data-type="chapter-purchases">
@@ -429,7 +429,7 @@
                                 </table>
                                 @if($counts['bookmarks'] > 5)
                                     <div class="d-flex justify-content-center mt-3">
-                                        {{ $bookmarks->fragment('bookmarks')->links() }}
+                                        <x-pagination :paginator="$bookmarks" />
                                     </div>
                                     <div class="text-center mt-3">
                                         <button class="btn btn-sm btn-primary load-more" data-type="bookmarks">
@@ -484,7 +484,7 @@
                                 </table>
                                 @if($counts['coin_transactions'] > 5)
                                     <div class="d-flex justify-content-center mt-3">
-                                        {{ $coinTransactions->fragment('coin-transactions')->links() }}
+                                        <x-pagination :paginator="$coinTransactions" />
                                     </div>
                                     <div class="text-center mt-3">
                                         <button class="btn btn-sm btn-primary load-more" data-type="coin-transactions">

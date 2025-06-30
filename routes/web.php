@@ -31,10 +31,11 @@ use App\Http\Controllers\PaypalDepositController;
 use App\Http\Controllers\RequestPaymentController;
 use App\Http\Controllers\Admin\StoryReviewController;
 use App\Http\Controllers\AuthorApplicationController;
+use App\Http\Controllers\Admin\StoryTransferController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
-use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
 use App\Http\Controllers\Admin\CardDepositController as AdminCardDepositController;
 use App\Http\Controllers\Admin\PaypalDepositController as AdminPaypalDepositController;
+use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
 
 /*
 |--------------------------------------------------------------------------
@@ -271,6 +272,15 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
 
                     Route::group(['as' => 'admin.'], function () {
+
+                        Route::get('/story-transfer', [StoryTransferController::class, 'index'])->name('story-transfer.index');
+                        Route::get('/story-transfer/history', [StoryTransferController::class, 'history'])->name('story-transfer.history');
+                        Route::get('/story-transfer/history/{history}', [StoryTransferController::class, 'historyShow'])->name('story-transfer.history.show');
+                        Route::get('/story-transfer/{story}', [StoryTransferController::class, 'show'])->name('story-transfer.show');
+                        Route::post('/story-transfer/{story}', [StoryTransferController::class, 'transfer'])->name('story-transfer.transfer');
+                        Route::post('/story-transfer-bulk', [StoryTransferController::class, 'bulkTransfer'])->name('story-transfer.bulk');
+                        Route::get('/api/author-stories', [StoryTransferController::class, 'getAuthorStories'])->name('story-transfer.author-stories');
+
                         // Quản lý ngân hàng
                         Route::resource('banks', AdminBankController::class);
 

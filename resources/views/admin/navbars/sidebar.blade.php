@@ -78,6 +78,17 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('admin.story-transfer.*') ? 'active' : '' }}"
+                    href="{{ route('admin.story-transfer.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fas fa-exchange-alt text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Chuyển nhượng truyện</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('admin.author-applications.*') ? 'active' : '' }}"
                     href="{{ route('admin.author-applications.index') }}">
                     <div

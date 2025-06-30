@@ -768,7 +768,7 @@ class UserController extends Controller
                 'data' => $data,
                 'user' => $user
             ])->render(),
-            'pagination' => $data->links()->toHtml(),
+            'pagination' => $data->links('components.pagination')->toHtml(),
             'has_more' => $data->hasMorePages()
         ]);
     }
