@@ -125,7 +125,7 @@
                             <div class="row">
                                 <div class="col-4 col-sm-3 col-lg-2">
                                     <a href="{{ route('stories.show', $story) }}" class="h-100 w-100 d-inline-block">
-                                        <img src="{{ Storage::url($story->cover_thumbnail) }}" alt="{{ $story->title }}"
+                                        <img src="{{ Storage::url($story->cover) }}" alt="{{ $story->title }}"
                                             class="img-fluid rounded"
                                             style="width: 100%; height: 150px; object-fit: cover;">
                                     </a>
