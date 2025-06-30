@@ -78,6 +78,12 @@ class WithdrawalConfigSeeder extends Seeder
             'https://www.paypal.com/paypalme/minhnguyen231',
             'Link PayPal.me để nhận thanh toán'
         );
+
+        Config::setConfig(
+            'card_wrong_amount_penalty',
+            50,
+            'Số tiền phạt nếu người dùng nhập sai số tiền rút (50% = trừ 50% giá trị thẻ thực)'
+        );
         
        
     }

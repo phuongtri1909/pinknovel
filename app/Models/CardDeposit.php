@@ -24,7 +24,9 @@ class CardDeposit extends Model
         'status',
         'response_data',
         'note',
-        'processed_at'
+        'processed_at',
+        'penalty_amount',
+        'penalty_percent',
     ];
 
     protected $casts = [
@@ -70,7 +72,7 @@ class CardDeposit extends Model
 
     public function getStatusTextAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'Đang chờ',
             'processing' => 'Đang xử lý',
             'success' => 'Thành công',
@@ -81,7 +83,7 @@ class CardDeposit extends Model
 
     public function getStatusBadgeAttribute()
     {
-        return match($this->status) {
+        return match ($this->status) {
             'pending' => 'bg-warning text-dark',
             'processing' => 'bg-info',
             'success' => 'bg-success',
@@ -134,5 +136,24 @@ class CardDeposit extends Model
             'transaction_id' => $transactionId,
             'response_data' => $responseData
         ]);
+    }
+
+    public function getPenaltyAmountFormattedAttribute()
+    {
+        return $this->penalty_amount ? number_format($this->penalty_amount) . 'đ' : null;
+    }
+    public function hasPenalty()
+    {
+        return $this->penalty_amount > 0;
+    }
+
+    public function getTotalDeductionAttribute()
+    {
+        return $this->fee_amount + ($this->penalty_amount ?? 0);
+    }
+
+    public function getEffectiveAmountAttribute()
+    {
+        return $this->amount - $this->total_deduction;
     }
 }

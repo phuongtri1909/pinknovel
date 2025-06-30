@@ -399,6 +399,22 @@
                             </div>
                         </div>
 
+                        <div class="alert alert-danger mb-4">
+                            <h6><i class="fas fa-info-circle me-2"></i>Thông tin phí và chính sách</h6>
+                            <ul class="mb-0">
+                             
+                                <li class="text-danger">
+                                    <strong>Lưu ý:</strong> Nếu nạp sai mệnh giá thẻ, bạn sẽ bị trừ thêm
+                                    <strong>{{ \App\Models\Config::getConfig('card_wrong_amount_penalty', 50) }}%</strong>
+                                    phí phạt trên mệnh giá thực của thẻ.
+                                </li>
+                                <li class="text-warning">
+                                    <strong>Ví dụ:</strong> Thẻ 100k nhưng thực tế chỉ có 50k → Nhận được xu tương ứng với
+                                    25k (50k - 50% phạt - phí hệ thống)
+                                </li>
+                            </ul>
+                        </div>
+
                         <div class="d-grid">
                             <button type="submit" class="submit-card-btn" id="submitBtn">
                                 <i class="fas fa-paper-plane me-2"></i>Nạp thẻ ngay
@@ -478,55 +494,57 @@
                                 </thead>
                                 <tbody>
                                     @foreach ($cardDeposits as $deposit)
-                                        <tr>
+                                        <tr
+                                            class="{{ $deposit->status === 'success' ? 'table-success' : ($deposit->status === 'failed' ? 'table-danger' : 'table-warning') }}">
+                                            <td>{{ $deposit->id }}</td>
+                                            <td>{{ $deposit->card_type_text }}</td>
+                                            <td>{{ $deposit->amount_formatted }}</td>
+
+                                            {{-- Cột xu nhận được với thông tin penalty --}}
                                             <td>
-                                                <span class="badge bg-secondary">
-                                                    {{ $deposit->card_type_name }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <strong>{{ $deposit->amount_formatted }}</strong>
-                                            </td>
-                                            <td>
-                                                <strong class="text-primary">
-                                                    <i class="fas fa-coins me-1"></i>{{ $deposit->coins_formatted }}
-                                                </strong>
-                                            </td>
-                                            <td>
-                                                <div>{{ $deposit->created_at->format('d/m/Y H:i') }}</div>
-                                                <small
-                                                    class="text-muted">{{ $deposit->created_at->diffForHumans() }}</small>
-                                            </td>
-                                            <td>
-                                                <span class="badge status-badge {{ $deposit->status_badge }}">
-                                                    {{ $deposit->status_text }}
-                                                </span>
-                                                @if ($deposit->note)
-                                                    <div class="small text-muted mt-1">
-                                                        {{ Str::limit($deposit->note, 30) }}
-                                                    </div>
+                                                <strong>{{ number_format($deposit->coins) }} xu</strong>
+
+                                                @if ($deposit->status === 'success')
+                                                    <br>
+                                                    <small class="text-muted">
+                                                        Phí hệ thống: {{ number_format($deposit->fee_amount) }}đ
+                                                        ({{ $deposit->fee_percent }}%)
+                                                        @if ($deposit->hasPenalty())
+                                                            <br><span class="text-danger">
+                                                                Phí phạt sai mệnh giá:
+                                                                {{ $deposit->penalty_amount_formatted }}
+                                                                ({{ $deposit->penalty_percent }}%)
+                                                            </span>
+                                                        @endif
+                                                    </small>
                                                 @endif
                                             </td>
+
                                             <td>
-                                                @if ($deposit->status === 'processing' || $deposit->status === 'pending')
-                                                    <button class="btn btn-sm btn-outline-primary check-status-btn"
-                                                        data-id="{{ $deposit->id }}">
-                                                        <i class="fas fa-sync me-1"></i>Kiểm tra
+                                                <span
+                                                    class="badge bg-{{ $deposit->status === 'success' ? 'success' : ($deposit->status === 'failed' ? 'danger' : 'warning') }}">
+                                                    {{ $deposit->status_text }}
+                                                </span>
+
+                                                @if ($deposit->hasPenalty())
+                                                    <br><small class="badge bg-warning mt-1">Sai mệnh giá</small>
+                                                @endif
+                                            </td>
+
+                                            <td>
+                                                {{ $deposit->created_at->format('d/m/Y H:i') }}
+                                                @if ($deposit->processed_at)
+                                                    <br><small class="text-muted">Xử lý:
+                                                        {{ $deposit->processed_at->format('d/m/Y H:i') }}</small>
+                                                @endif
+                                            </td>
+
+                                            <td>
+                                                @if ($deposit->note)
+                                                    <button class="btn btn-sm btn-outline-info" data-bs-toggle="tooltip"
+                                                        title="{{ $deposit->note }}">
+                                                        <i class="fas fa-info-circle"></i>
                                                     </button>
-                                                @elseif($deposit->note)
-                                                    <button class="btn btn-sm btn-outline-info show-note-btn"
-                                                        data-note="{{ $deposit->note }}"
-                                                        data-deposit="{{ json_encode([
-                                                            'type' => $deposit->card_type_name,
-                                                            'amount' => $deposit->amount_formatted,
-                                                            'coins' => $deposit->coins_formatted,
-                                                            'status' => $deposit->status_text,
-                                                            'time' => $deposit->created_at->format('d/m/Y H:i:s'),
-                                                        ]) }}">
-                                                        <i class="fas fa-info-circle me-1"></i>Chi tiết
-                                                    </button>
-                                                @else
-                                                    <span class="text-muted">-</span>
                                                 @endif
                                             </td>
                                         </tr>

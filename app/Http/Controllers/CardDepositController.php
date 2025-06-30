@@ -18,6 +18,7 @@ class CardDepositController extends Controller
 {
     public $coinExchangeRate;
     public $coinCardPercent;
+    public $cardWrongAmountPenalty;
     public $tsrPartnerKey;
     public $tsrPartnerId;
 
@@ -25,6 +26,7 @@ class CardDepositController extends Controller
     {
         $this->coinExchangeRate = Config::getConfig('coin_exchange_rate', 100);
         $this->coinCardPercent = Config::getConfig('coin_card_percent', 30);
+        $this->cardWrongAmountPenalty = Config::getConfig('card_wrong_amount_penalty', 50);
         $this->tsrPartnerKey = env('TSR_PARTNER_KEY', '6dd372151552c79c1fbabc49d02829f4');
         $this->tsrPartnerId = env('TSR_PARTNER_ID', '0601968451');
         // Log::info('CardDepositController initialized', [
@@ -470,7 +472,6 @@ class CardDepositController extends Controller
     public function callback(Request $request)
     {
         try {
-            // Kiểm tra content type và lấy dữ liệu
             $contentType = $request->header('content-type', '');
 
             if (str_contains($contentType, 'application/json')) {
@@ -481,7 +482,6 @@ class CardDepositController extends Controller
                 Log::info('TSR Callback received (Form)', $callbackData);
             }
 
-            // Validate callback data
             if (!isset($callbackData['callback_sign']) || !isset($callbackData['request_id'])) {
                 Log::error('Callback missing required fields', $callbackData);
                 return response('Missing required fields', 400);
@@ -499,7 +499,6 @@ class CardDepositController extends Controller
             $telco = $callbackData['telco'] ?? null;
             $callbackSign = $callbackData['callback_sign'];
 
-            // Validate signature
             if (!$code || !$serial) {
                 Log::error('Callback missing code or serial', $callbackData);
                 return response('Missing code or serial', 400);
@@ -527,7 +526,6 @@ class CardDepositController extends Controller
                 return response('Card deposit not found', 404);
             }
 
-            // **CRITICAL: Kiểm tra đã xử lý thành công chưa để tránh duplicate**
             if ($cardDeposit->status === CardDeposit::STATUS_SUCCESS) {
                 Log::warning('Attempted duplicate callback processing for successful transaction', [
                     'request_id' => $requestId,
@@ -539,7 +537,6 @@ class CardDepositController extends Controller
                 return response('Transaction already completed successfully', 200);
             }
 
-            // **CRITICAL: Sử dụng database lock để tránh race condition**
             $cardDeposit = CardDeposit::where('request_id', $requestId)
                 ->lockForUpdate()
                 ->first();
@@ -579,13 +576,13 @@ class CardDepositController extends Controller
             switch ((int)$status) {
                 case 1:
                     // Thẻ đúng - thành công
-                    $this->processSuccessfulCard($cardDeposit, $callbackDataToSave, $value ?? $amount, 'Nạp thẻ thành công');
+                    $this->processSuccessfulCard($cardDeposit, $callbackDataToSave, $value ?? $amount, 'Nạp thẻ thành công', false);
                     break;
 
                 case 2:
-                    // Thành công nhưng sai mệnh giá
+                    // Thành công nhưng sai mệnh giá - áp dụng penalty
                     $note = "Thẻ đúng nhưng sai mệnh giá. Mệnh giá khai báo: " . number_format($declaredValue) . "đ, Mệnh giá thực: " . number_format($value) . "đ";
-                    $this->processSuccessfulCard($cardDeposit, $callbackDataToSave, $value ?? $amount, $note);
+                    $this->processSuccessfulCard($cardDeposit, $callbackDataToSave, $value ?? $amount, $note, true); // NEW: pass true for wrong amount
                     break;
 
                 case 3:
@@ -651,15 +648,36 @@ class CardDepositController extends Controller
     /**
      * Xử lý thẻ thành công với duplicate protection
      */
-    private function processSuccessfulCard($cardDeposit, $callbackData, $realAmount, $note)
+    private function processSuccessfulCard($cardDeposit, $callbackData, $realAmount, $note, $isWrongAmount = false)
     {
-        // Tính toán lại số xu
-        $feeAmount = ($realAmount * $cardDeposit->fee_percent) / 100;
-        $amountAfterFee = $realAmount - $feeAmount;
-        $coins = floor($amountAfterFee / $this->coinExchangeRate);
+        if ($isWrongAmount) {
+            $penaltyPercent = $this->cardWrongAmountPenalty;
+            $penaltyAmount = ($realAmount * $penaltyPercent) / 100;
+            $amountAfterPenalty = $realAmount - $penaltyAmount;
 
-        // Cập nhật transaction
-        $cardDeposit->update([
+            $feeAmount = ($amountAfterPenalty * $cardDeposit->fee_percent) / 100;
+            $amountAfterFee = $amountAfterPenalty - $feeAmount;
+            $coins = floor($amountAfterFee / $this->coinExchangeRate);
+
+            $note .= ". Phí phạt sai mệnh giá: " . number_format($penaltyAmount) . "đ (-{$penaltyPercent}%)";
+
+            Log::info('Wrong amount penalty applied', [
+                'request_id' => $callbackData['request_id'],
+                'real_amount' => $realAmount,
+                'penalty_percent' => $penaltyPercent,
+                'penalty_amount' => $penaltyAmount,
+                'amount_after_penalty' => $amountAfterPenalty,
+                'fee_amount' => $feeAmount,
+                'final_coins' => $coins
+            ]);
+        } else {
+            $feeAmount = ($realAmount * $cardDeposit->fee_percent) / 100;
+            $amountAfterFee = $realAmount - $feeAmount;
+            $coins = floor($amountAfterFee / $this->coinExchangeRate);
+            $penaltyAmount = 0;
+        }
+
+        $updateData = [
             'status' => CardDeposit::STATUS_SUCCESS,
             'transaction_id' => $callbackData['trans_id'],
             'amount' => $realAmount,
@@ -668,9 +686,16 @@ class CardDepositController extends Controller
             'response_data' => $callbackData,
             'processed_at' => now(),
             'note' => $note
-        ]);
+        ];
 
-        // **CRITICAL: Cộng xu với protection**
+        if ($isWrongAmount) {
+            $updateData['penalty_amount'] = $penaltyAmount;
+            $updateData['penalty_percent'] = $this->cardWrongAmountPenalty;
+        }
+
+        $cardDeposit->update($updateData);
+
+
         $user = User::find($cardDeposit->user_id);
         if ($user) {
             $oldCoins = $user->coins;
@@ -686,7 +711,9 @@ class CardDepositController extends Controller
                     'coins_added' => $coins,
                     'user_coins_before' => $oldCoins,
                     'user_coins_after' => $oldCoins + $coins,
-                    'real_amount' => $realAmount
+                    'real_amount' => $realAmount,
+                    'is_wrong_amount' => $isWrongAmount,
+                    'penalty_amount' => $penaltyAmount ?? 0
                 ]);
             } else {
                 Log::error('Failed to increment user coins', [
