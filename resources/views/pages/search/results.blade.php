@@ -123,29 +123,32 @@
                     @foreach ($stories as $story)
                         <div class="story-item border-bottom pb-3 pt-3">
                             <div class="row">
-                                <div class="col-3 col-md-2">
-                                    <a href="{{ route('stories.show', $story) }}">
+                                <div class="col-4 col-sm-3 col-lg-2">
+                                    <a href="{{ route('stories.show', $story) }}" class="h-100 w-100 d-inline-block">
                                         <img src="{{ Storage::url($story->cover_medium) }}" alt="{{ $story->title }}"
                                             class="img-fluid rounded"
-                                            style="width: 100%; height: 120px; object-fit: cover;">
+                                            style="width: 100%; height: 150px; object-fit: scale-down;">
                                     </a>
                                 </div>
-                                <div class="col-9 col-md-10">
+                                <div class="col-8 col-sm-9 col-lg-10">
                                     <h6 class="h6 mb-1">
                                         <a href="{{ route('show.page.story', $story->slug) }}"
                                             class="text-dark text-decoration-none">
                                             {{ $story->title }}
                                         </a>
                                     </h6>
-                                    <div class="categories mb-2">
+                                    @if (auth()->check() && auth()->user()->role != 'user')
+                                        <span class="small text-muted mt-2"><i class="fa-solid fa-user"></i> Tác giả: {{ $story->author_name }}</span>
+                                    @endif
+                                    {{-- <div class="categories mb-2">
                                         @foreach ($story->categories as $category)
                                             <a href="{{ route('categories.story.show', $category->slug) }}"
-                                                class="category-tag text-decoration-none">
+                                                class="text-decoration-none">
                                                 {{ $category->name }}
                                             </a>
                                         @endforeach
-                                    </div>
-                                    <div class="d-flex small text-muted">
+                                    </div> --}}
+                                    {{-- <div class="d-flex small text-muted">
                                         <div class="me-3">
                                             <i class="fas fa-book-open me-1 text-danger"></i>
                                             {{ $story->chapters_count ?? $story->chapters->count() }} chương
@@ -158,7 +161,7 @@
                                             <i class="fas fa-clock me-1 text-warning"></i>
                                             {{ $story->updated_at->diffForHumans() }}
                                         </div>
-                                    </div>
+                                    </div> --}}
                                     <div class="story-description mt-2 small text-muted d-none d-md-block">
                                         {!! strip_tags(Str::limit($story->description, 150), '<p><br><strong><b><i><u>') !!}
                                     </div>
