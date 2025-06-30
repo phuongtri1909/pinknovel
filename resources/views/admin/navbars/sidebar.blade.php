@@ -6,7 +6,10 @@
         @php
             // Get the logo from LogoSite model
             $logoSite = \App\Models\LogoSite::first();
-            $logoPath = $logoSite && $logoSite->logo ? Storage::url($logoSite->logo) : asset('assets/images/logo/logo_site.webp');
+            $logoPath =
+                $logoSite && $logoSite->logo
+                    ? Storage::url($logoSite->logo)
+                    : asset('assets/images/logo/logo_site.webp');
         @endphp
         <a class="d-flex m-0 justify-content-center text-wrap" href="{{ route('home') }}">
             <img height="70" class="logo_site" src="{{ $logoPath }}" alt="{{ config('app.name') }} logo">
@@ -64,7 +67,7 @@
             </li>
 
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('stories.*','stories.chapters.*') ? 'active' : '' }}"
+                <a class="nav-link {{ Route::currentRouteNamed('stories.*', 'stories.chapters.*') ? 'active' : '' }}"
                     href="{{ route('stories.index') }}">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
@@ -85,7 +88,7 @@
                         @php
                             $pendingCount = \App\Models\AuthorApplication::where('status', 'pending')->count();
                         @endphp
-                        @if($pendingCount > 0)
+                        @if ($pendingCount > 0)
                             <span class="badge bg-danger ms-2">{{ $pendingCount }}</span>
                         @endif
                     </span>
@@ -103,7 +106,7 @@
                         @php
                             $pendingStoryCount = \App\Models\Story::where('status', 'pending')->count();
                         @endphp
-                        @if($pendingStoryCount > 0)
+                        @if ($pendingStoryCount > 0)
                             <span class="badge bg-danger ms-2">{{ $pendingStoryCount }}</span>
                         @endif
                     </span>
@@ -121,7 +124,7 @@
                         @php
                             $pendingEditCount = \App\Models\StoryEditRequest::where('status', 'pending')->count();
                         @endphp
-                        @if($pendingEditCount > 0)
+                        @if ($pendingEditCount > 0)
                             <span class="badge bg-danger ms-2">{{ $pendingEditCount }}</span>
                         @endif
                     </span>
@@ -139,7 +142,7 @@
                 </a>
             </li>
 
-            
+
 
             {{-- <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('donate.*') ? 'active' : '' }}"
@@ -153,30 +156,23 @@
             </li> --}}
 
             <li class="nav-item">
-                <a href="{{ route('admin.withdrawals.index') }}" class="nav-link {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.withdrawals.index') }}"
+                    class="nav-link {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-money-bill-transfer text-dark icon-sidebar"></i>
                     </div>
                     <span class="nav-link-text ms-1">Quản lý rút xu
                         @php
-                            $pendingWithdrawalsCount = \App\Models\WithdrawalRequest::where('status', 'pending')->count();
+                            $pendingWithdrawalsCount = \App\Models\WithdrawalRequest::where(
+                                'status',
+                                'pending',
+                            )->count();
                         @endphp
-                        @if($pendingWithdrawalsCount > 0)
+                        @if ($pendingWithdrawalsCount > 0)
                             <span class="badge bg-danger ms-2">{{ $pendingWithdrawalsCount }}</span>
                         @endif
                     </span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('deposits.*') ? 'active' : '' }}"
-                    href="{{ route('deposits.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-money-bill-transfer text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Quản lý giao dịch</span>
                 </a>
             </li>
 
@@ -190,6 +186,48 @@
                     <span class="nav-link-text ms-1">Quản lý Ngân hàng</span>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('deposits.*') ? 'active' : '' }}"
+                    href="{{ route('deposits.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-university text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Nạp xu - Bank</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('admin.card-deposits.*') ? 'active' : '' }}"
+                    href="{{ route('admin.card-deposits.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-credit-card text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Nạp xu - Thẻ cào</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('admin.paypal-deposits.*') ? 'active' : '' }}"
+                    href="{{ route('admin.paypal-deposits.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fab fa-paypal text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Nạp xu - PayPal
+                        @php
+                            $pendingPaypalCount = \App\Models\PaypalDeposit::where('status', 'processing')->count();
+                        @endphp
+                        @if ($pendingPaypalCount > 0)
+                            <span class="badge bg-danger ms-2">{{ $pendingPaypalCount }}</span>
+                        @endif
+                    </span>
+                </a>
+            </li>
+
+
 
             <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('comments.all') ? 'active' : '' }}"
@@ -262,16 +300,17 @@
             </li>
 
             <li class="nav-item">
-                <a href="{{ route('admin.guide.edit') }}" class="nav-link {{ request()->routeIs('admin.guide.*') ? 'active' : '' }}">
+                <a href="{{ route('admin.guide.edit') }}"
+                    class="nav-link {{ request()->routeIs('admin.guide.*') ? 'active' : '' }}">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-book text-dark icon-sidebar"></i>
                     </div>
                     <span class="nav-link-text ms-1">Quản lý Hướng dẫn</span>
                 </a>
-            </li> 
+            </li>
 
-            
+
 
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>

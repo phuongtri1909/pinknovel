@@ -33,6 +33,8 @@ use App\Http\Controllers\Admin\StoryReviewController;
 use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
 use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
+use App\Http\Controllers\Admin\CardDepositController as AdminCardDepositController;
+use App\Http\Controllers\Admin\PaypalDepositController as AdminPaypalDepositController;
 
 /*
 |--------------------------------------------------------------------------
@@ -274,6 +276,18 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
                         // Quản lý cấu hình hệ thống
                         Route::resource('configs', ConfigController::class);
+
+                        // Quản lý Card Deposit
+                        Route::get('/card-deposits', [AdminCardDepositController::class, 'adminIndex'])->name('card-deposits.index');
+
+                        // Quản lý PayPal Deposit
+                        Route::get('/paypal-deposits', [AdminPaypalDepositController::class, 'adminIndex'])->name('paypal-deposits.index');
+                        Route::post('/paypal-deposits/{deposit}/approve', [AdminPaypalDepositController::class, 'approve'])->name('paypal-deposits.approve');
+                        Route::post('/paypal-deposits/{deposit}/reject', [AdminPaypalDepositController::class, 'reject'])->name('paypal-deposits.reject');
+
+                        // Quản lý Request Payment PayPal
+                        Route::get('/request-payment-paypal', [AdminPaypalDepositController::class, 'requestPaymentIndex'])->name('request-payment-paypal.index');
+                        Route::post('/request-payment-paypal/delete-expired', [AdminPaypalDepositController::class, 'deleteExpiredRequests'])->name('request-payment-paypal.delete-expired');
 
                         // Author application management routes
                         Route::get('/author-applications', [AuthorApplicationController::class, 'listApplications'])->name('author-applications.index');
