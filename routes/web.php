@@ -27,6 +27,7 @@ use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\CardDepositController;
 use App\Http\Controllers\Admin\ConfigController;
 use App\Http\Controllers\Admin\SocialController;
+use App\Http\Controllers\PaypalDepositController;
 use App\Http\Controllers\RequestPaymentController;
 use App\Http\Controllers\Admin\StoryReviewController;
 use App\Http\Controllers\AuthorApplicationController;
@@ -124,6 +125,10 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::post('/card-deposit', [CardDepositController::class, 'store'])->name('card.deposit.store');
             Route::get('/card-deposit/status/{id}', [CardDepositController::class, 'checkStatus'])->name('card.deposit.status');
 
+            Route::get('/paypal-deposit', [PaypalDepositController::class, 'index'])->name('paypal.deposit');
+            Route::post('/paypal-deposit', [PaypalDepositController::class, 'store'])->name('paypal.deposit.store');
+            Route::post('/paypal-deposit/confirm', [PaypalDepositController::class, 'confirm'])->name('paypal.deposit.confirm');
+            Route::get('/paypal-deposit/status/{transactionCode}', [PaypalDepositController::class, 'checkStatus'])->name('paypal.deposit.status');
 
             // Routes cho tác giả - sử dụng middleware 'role' mới
             Route::group(['middleware' => 'role:author,admin', 'prefix' => 'author', 'as' => 'author.'], function () {

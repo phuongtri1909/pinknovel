@@ -283,12 +283,15 @@
 @section('info_content')
 
     <!-- Deposit Tabs -->
-    <div class="deposit-tabs d-flex">
-        <a href="{{ route('user.deposit') }}" class="deposit-tab">
+    <div class="deposit-tabs d-flex mb-4">
+        <a href="{{ route('user.deposit') }}" class="deposit-tab ">
             <i class="fas fa-university me-2"></i>Bank
         </a>
         <a href="{{ route('user.card.deposit') }}" class="deposit-tab active">
             <i class="fas fa-credit-card me-2"></i>Card
+        </a>
+        <a href="{{ route('user.paypal.deposit') }}" class="deposit-tab">
+            <i class="fab fa-paypal me-2"></i>PayPal
         </a>
     </div>
 

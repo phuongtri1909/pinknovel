@@ -72,6 +72,12 @@ class WithdrawalConfigSeeder extends Seeder
             70,
             'Phần trăm tác giả nhận được khi truyện không được độc quyền 70%'
         );
+
+        Config::setConfig(
+            'paypal_me_link',
+            'https://www.paypal.com/paypalme/minhnguyen231',
+            'Link PayPal.me để nhận thanh toán'
+        );
         
        
     }

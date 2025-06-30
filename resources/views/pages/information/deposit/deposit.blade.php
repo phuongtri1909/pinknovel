@@ -239,6 +239,9 @@
         <a href="{{ route('user.card.deposit') }}" class="deposit-tab">
             <i class="fas fa-credit-card me-2"></i>Card
         </a>
+        <a href="{{ route('user.paypal.deposit') }}" class="deposit-tab">
+            <i class="fab fa-paypal me-2"></i>PayPal
+        </a>
     </div>
 
     <div class="deposit-container" id="depositContainer">
