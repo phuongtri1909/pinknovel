@@ -138,8 +138,39 @@
                                         </a>
                                     </h6>
                                     @if (auth()->check() && auth()->user()->role != 'user')
-                                        <span class="small text-muted mt-2"><i class="fa-solid fa-user"></i> Tác giả: {{ $story->author_name }}</span>
+                                        <span class="small text-muted mt-2"><i class="fa-solid fa-user"></i> Tác giả:
+                                            {{ $story->author_name }}</span>
                                     @endif
+
+                                    <div class="d-flex flex-wrap gap-1 my-2 text-sm">
+                                        @php
+                                            $mainCategories = $story->categories->where('is_main', true);
+                                            $subCategories = $story->categories->where('is_main', false);
+                                            $displayCategories = collect();
+
+                                            if ($mainCategories->isNotEmpty()) {
+                                                foreach ($mainCategories->take(2) as $category) {
+                                                    $displayCategories->push($category);
+                                                }
+
+                                                // Nếu chỉ có 1 danh mục chính, thêm 1 danh mục phụ
+                                                if ($displayCategories->count() === 1 && $subCategories->isNotEmpty()) {
+                                                    $displayCategories->push($subCategories->first());
+                                                }
+                                            } else {
+                                                foreach ($subCategories->take(2) as $category) {
+                                                    $displayCategories->push($category);
+                                                }
+                                            }
+                                        @endphp
+
+
+                                        @foreach ($displayCategories as $category)
+                                            <span
+                                                class="badge bg-1 text-white small rounded-pill d-flex align-items-center">{{ $category->name }}</span>
+                                        @endforeach
+
+                                    </div>
                                     {{-- <div class="categories mb-2">
                                         @foreach ($story->categories as $category)
                                             <a href="{{ route('categories.story.show', $category->slug) }}"
