@@ -425,7 +425,7 @@
                 </div>
                 <div class="revenue-card-value">
                     <i class="fas fa-chart-line"></i>
-                    <span id="total-revenue">{{ number_format($grandTotal) }} xu</span>
+                    <span class="fw-bold text-warning" id="total-revenue">{{ number_format($grandTotal) }} xu</span>
                 </div>
                 <div class="revenue-card-footer">
                     Tổng doanh thu từ trước đến nay
@@ -441,7 +441,7 @@
                 </div>
                 <div class="revenue-card-value">
                     <i class="fas fa-balance-scale"></i>
-                    <span>{{ number_format($lastMonthRevenue ?? 0) }} xu</span>
+                    <span class="fw-bold text-warning">{{ number_format($lastMonthRevenue ?? 0) }} xu</span>
                 </div>
                 <div class="revenue-card-footer">
                     @if(isset($revenueChangePercent) && $revenueChangePercent != 0)
@@ -469,7 +469,7 @@
                 </div>
                 <div class="revenue-card-value">
                     <i class="fas fa-book-open"></i>
-                    <span id="chapter-revenue">Đang tải...</span>
+                    <span class="fw-bold text-warning" id="chapter-revenue">Đang tải...</span>
                 </div>
                 <div class="revenue-card-footer">
                     Doanh thu từ việc bán chương trong kỳ
@@ -485,7 +485,7 @@
                 </div>
                 <div class="revenue-card-value">
                     <i class="fas fa-book"></i>
-                    <span id="story-revenue">Đang tải...</span>
+                    <span class="fw-bold text-warning" id="story-revenue">Đang tải...</span>
                 </div>
                 <div class="revenue-card-footer">
                     Doanh thu từ việc bán trọn bộ trong kỳ
@@ -1190,40 +1190,7 @@
             });
     }
     
-    function floatingAnimation() {
-        const cards = document.querySelectorAll('.revenue-card');
-        
-        cards.forEach((card, index) => {
-            const delay = index * 200;
-            
-            card.style.opacity = '0';
-            card.style.transform = 'translateY(20px)';
-            card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            
-            setTimeout(() => {
-                card.style.opacity = '1';
-                card.style.transform = 'translateY(0)';
-                
-                setTimeout(() => {
-                    card.style.animation = `floating-${index + 1} 3s ease-in-out infinite`;
-                    const keyframes = `
-                        @keyframes floating-${index + 1} {
-                            0% { transform: translateY(0); }
-                            50% { transform: translateY(-8px); }
-                            100% { transform: translateY(0); }
-                        }
-                    `;
-                    const styleSheet = document.createElement('style');
-                    styleSheet.innerHTML = keyframes;
-                    document.head.appendChild(styleSheet);
-                }, 500);
-            }, delay);
-        });
-    }
-    
     document.addEventListener('DOMContentLoaded', function() {
-        // Khởi tạo hiệu ứng nổi cho các thẻ
-        floatingAnimation();
         
         // Khởi tạo hiệu ứng hover cho các thẻ
         initCardHoverEffects();
