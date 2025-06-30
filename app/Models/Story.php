@@ -30,6 +30,8 @@ class Story extends Model
         'reviewed_at',
         'review_note',
         'admin_note',
+        'is_featured',
+        'featured_order',
     ];
 
     const STATUS_DRAFT = 'draft';
@@ -209,6 +211,39 @@ class Story extends Model
             'id',
             'id'
         );
+    }
+
+    public function getFeaturedStatusTextAttribute()
+    {
+        return $this->is_featured ? 'Đề cử' : 'Thường';
+    }
+
+    public function getFeaturedBadgeAttribute()
+    {
+        if ($this->is_featured) {
+            return '<span class="badge bg-gradient-warning">Đề cử #' . $this->featured_order . '</span>';
+        }
+        return '';
+    }
+
+    public function getIsFeaturedAttribute($value)
+    {
+        return (bool) $value;
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true)->orderBy('featured_order');
+    }
+
+    public function scopeNotFeatured($query)
+    {
+        return $query->where('is_featured', false);
+    }
+
+    public static function getNextFeaturedOrder()
+    {
+        return self::where('is_featured', true)->max('featured_order') + 1;
     }
 
     protected $with = ['categories'];

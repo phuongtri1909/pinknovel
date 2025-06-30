@@ -74,6 +74,7 @@ class StoryController extends Controller
         $totalStories = Story::count();
         $publishedStories = Story::where('status', 'published')->count();
         $draftStories = Story::where('status', 'draft')->count();
+        $featuredStories = Story::where('is_featured', true)->count(); // NEW
 
         // Apply status filter
         if ($request->status) {
@@ -87,20 +88,31 @@ class StoryController extends Controller
             });
         }
 
+        // Apply featured filter - NEW
+        if ($request->featured !== null && $request->featured !== '') {
+            $query->where('is_featured', (bool) $request->featured);
+        }
+
         // Apply search filter
         if ($request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                    ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('author_name', 'like', "%{$search}%");
             });
         }
 
-        $stories = $query->latest()->paginate(15);
-        
+        // Order by featured first, then by latest - NEW
+        $query->orderBy('is_featured', 'desc')
+            ->orderBy('featured_order', 'asc')
+            ->orderBy('created_at', 'desc');
+
+        $stories = $query->paginate(15);
+
         // Add query params to pagination links
-        if ($request->hasAny(['status', 'category', 'search'])) {
-            $stories->appends($request->only(['status', 'category', 'search']));
+        if ($request->hasAny(['status', 'category', 'search', 'featured'])) {
+            $stories->appends($request->only(['status', 'category', 'search', 'featured']));
         }
 
         // Get categories for filter dropdown
@@ -111,7 +123,8 @@ class StoryController extends Controller
             'categories',
             'totalStories',
             'publishedStories',
-            'draftStories'
+            'draftStories',
+            'featuredStories' // NEW
         ));
     }
 
@@ -135,6 +148,7 @@ class StoryController extends Controller
             'author_name' => 'nullable|string|max:100',
             'translator_name' => 'nullable|string|max:100',
             'story_type' => 'nullable|string|in:original,translated,rewritten',
+            'featured_order' => 'nullable|integer|min:1', // NEW
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -155,6 +169,8 @@ class StoryController extends Controller
             'author_name.max' => 'Tên tác giả không được quá 100 ký tự.',
             'translator_name.max' => 'Tên dịch giả không được quá 100 ký tự.',
             'story_type.in' => 'Loại truyện không hợp lệ.',
+            'featured_order.integer' => 'Thứ tự đề cử phải là số nguyên.',
+            'featured_order.min' => 'Thứ tự đề cử phải lớn hơn 0.',
         ]);
 
         DB::beginTransaction();
@@ -163,9 +179,27 @@ class StoryController extends Controller
 
             // Set has_combo based on checkbox
             $hasCombo = $request->has('has_combo');
-            
-            // If has_combo is false, combo_price is 0
             $comboPrice = $hasCombo ? $request->combo_price : 0;
+
+            // Handle featured - NEW
+            $isFeatured = $request->has('is_featured');
+            $featuredOrder = null;
+
+            if ($isFeatured) {
+                if ($request->featured_order) {
+                    // Check if order already exists
+                    $existingStory = Story::where('featured_order', $request->featured_order)
+                        ->where('is_featured', true)
+                        ->first();
+                    if ($existingStory) {
+                        throw new \Exception('Thứ tự đề cử ' . $request->featured_order . ' đã được sử dụng bởi truyện khác.');
+                    }
+                    $featuredOrder = $request->featured_order;
+                } else {
+                    // Auto assign next order
+                    $featuredOrder = Story::getNextFeaturedOrder();
+                }
+            }
 
             $story = Story::create([
                 'user_id' => auth()->id(),
@@ -184,6 +218,8 @@ class StoryController extends Controller
                 'story_type' => $request->story_type,
                 'is_18_plus' => $request->has('is_18_plus'),
                 'is_monopoly' => $request->has('is_monopoly'),
+                'is_featured' => $isFeatured, // NEW
+                'featured_order' => $featuredOrder, // NEW
             ]);
 
             $story->categories()->attach($request->categories);
@@ -201,7 +237,7 @@ class StoryController extends Controller
 
             Log::error('Error creating story:', ['error' => $e->getMessage()]);
             return redirect()->route('stories.create')
-                ->with('error', 'Có lỗi xảy ra khi tạo truyện.')->withInput();
+                ->with('error', 'Có lỗi xảy ra khi tạo truyện: ' . $e->getMessage())->withInput();
         }
 
         return redirect()->route('stories.index')
@@ -228,6 +264,7 @@ class StoryController extends Controller
             'author_name' => 'nullable|string|max:100',
             'translator_name' => 'nullable|string|max:100',
             'story_type' => 'nullable|string|in:original,translated,rewritten',
+            'featured_order' => 'nullable|integer|min:1', // NEW
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -247,15 +284,39 @@ class StoryController extends Controller
             'author_name.max' => 'Tên tác giả không được quá 100 ký tự.',
             'translator_name.max' => 'Tên dịch giả không được quá 100 ký tự.',
             'story_type.in' => 'Loại truyện không hợp lệ.',
+            'featured_order.integer' => 'Thứ tự đề cử phải là số nguyên.',
+            'featured_order.min' => 'Thứ tự đề cử phải lớn hơn 0.',
         ]);
 
         DB::beginTransaction();
         try {
             // Set has_combo based on checkbox
             $hasCombo = $request->has('has_combo');
-            
-            // If has_combo is false, combo_price is 0
             $comboPrice = $hasCombo ? $request->combo_price : 0;
+
+            // Handle featured - NEW
+            $isFeatured = $request->has('is_featured');
+            $featuredOrder = $story->featured_order; // Keep current order by default
+
+            if ($isFeatured) {
+                if ($request->featured_order && $request->featured_order != $story->featured_order) {
+                    // Check if new order already exists
+                    $existingStory = Story::where('featured_order', $request->featured_order)
+                        ->where('is_featured', true)
+                        ->where('id', '!=', $story->id)
+                        ->first();
+                    if ($existingStory) {
+                        throw new \Exception('Thứ tự đề cử ' . $request->featured_order . ' đã được sử dụng bởi truyện khác.');
+                    }
+                    $featuredOrder = $request->featured_order;
+                } elseif (!$story->is_featured) {
+                    // Story becoming featured for first time
+                    $featuredOrder = $request->featured_order ?: Story::getNextFeaturedOrder();
+                }
+            } else {
+                // Story no longer featured
+                $featuredOrder = null;
+            }
 
             $data = [
                 'title' => $request->title,
@@ -271,6 +332,8 @@ class StoryController extends Controller
                 'story_type' => $request->story_type,
                 'is_18_plus' => $request->has('is_18_plus'),
                 'is_monopoly' => $request->has('is_monopoly'),
+                'is_featured' => $isFeatured, // NEW
+                'featured_order' => $featuredOrder, // NEW
             ];
 
             if ($request->hasFile('cover')) {
@@ -309,7 +372,86 @@ class StoryController extends Controller
             }
             Log::error('Error updating story:', ['error' => $e->getMessage()]);
             return redirect()->route('stories.edit', $story)
-                ->with('error', 'Có lỗi xảy ra khi cập nhật truyện.')->withInput();
+                ->with('error', 'Có lỗi xảy ra khi cập nhật truyện: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    public function toggleFeatured(Story $story)
+    {
+        DB::beginTransaction();
+        try {
+            if ($story->is_featured) {
+                // Remove from featured
+                $story->update([
+                    'is_featured' => false,
+                    'featured_order' => null
+                ]);
+                $message = "Đã bỏ đề cử truyện '{$story->title}'.";
+            } else {
+                // Add to featured
+                $story->update([
+                    'is_featured' => true,
+                    'featured_order' => Story::getNextFeaturedOrder()
+                ]);
+                $message = "Đã đặt truyện '{$story->title}' làm truyện đề cử.";
+            }
+
+            DB::commit();
+
+            return redirect()->route('stories.index')
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->route('stories.index')
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk update featured status - NEW METHOD
+     */
+    public function bulkUpdateFeatured(Request $request)
+    {
+        $request->validate([
+            'story_ids' => 'required|array',
+            'story_ids.*' => 'exists:stories,id',
+            'action' => 'required|in:feature,unfeature',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            if ($request->action === 'feature') {
+                // Feature selected stories
+                $nextOrder = Story::getNextFeaturedOrder();
+
+                foreach ($request->story_ids as $storyId) {
+                    Story::where('id', $storyId)->update([
+                        'is_featured' => true,
+                        'featured_order' => $nextOrder++
+                    ]);
+                }
+
+                $message = 'Đã đặt ' . count($request->story_ids) . ' truyện làm truyện đề cử.';
+            } else {
+                // Unfeature selected stories
+                Story::whereIn('id', $request->story_ids)->update([
+                    'is_featured' => false,
+                    'featured_order' => null
+                ]);
+
+                $message = 'Đã bỏ đề cử ' . count($request->story_ids) . ' truyện.';
+            }
+
+            DB::commit();
+
+            return redirect()->route('stories.index')
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return redirect()->route('stories.index')
+                ->with('error', 'Có lỗi xảy ra: ' . $e->getMessage());
         }
     }
 
@@ -318,38 +460,38 @@ class StoryController extends Controller
         // Load story with relationships
         $story->load(['user', 'categories']);
         $story->loadCount('chapters');
-        
+
         // Get story purchase data
         $story_purchases = $story->purchases()
             ->with('user')
             ->latest()
             ->paginate(10, ['*'], 'story_page');
         $story_purchases_count = $story->purchases()->count();
-        
+
         // Get chapter purchase data for this story's chapters
-        $chapter_purchases = \App\Models\ChapterPurchase::whereHas('chapter', function($query) use ($story) {
+        $chapter_purchases = \App\Models\ChapterPurchase::whereHas('chapter', function ($query) use ($story) {
             $query->where('story_id', $story->id);
         })->with(['user', 'chapter'])
-          ->latest()
-          ->paginate(10, ['*'], 'chapter_page');
-        $chapter_purchases_count = \App\Models\ChapterPurchase::whereHas('chapter', function($query) use ($story) {
+            ->latest()
+            ->paginate(10, ['*'], 'chapter_page');
+        $chapter_purchases_count = \App\Models\ChapterPurchase::whereHas('chapter', function ($query) use ($story) {
             $query->where('story_id', $story->id);
         })->count();
-        
+
         // Get bookmark data
         $bookmarks = $story->bookmarks()
             ->with(['user', 'lastChapter'])
             ->latest()
             ->paginate(10, ['*'], 'bookmark_page');
         $bookmarks_count = $story->bookmarks()->count();
-        
+
         // Calculate total revenue (story purchases + chapter purchases)
         $story_revenue = $story->purchases()->sum('amount_paid');
-        $chapter_revenue = \App\Models\ChapterPurchase::whereHas('chapter', function($query) use ($story) {
+        $chapter_revenue = \App\Models\ChapterPurchase::whereHas('chapter', function ($query) use ($story) {
             $query->where('story_id', $story->id);
         })->sum('amount_paid');
         $total_revenue = $story_revenue + $chapter_revenue;
-        
+
         return view('admin.pages.story.show', compact(
             'story',
             'story_purchases',

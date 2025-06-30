@@ -242,6 +242,10 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
                     Route::resource('categories', CategoryController::class);
                     Route::resource('stories', StoryController::class);
+                    Route::patch('/stories/{story}/toggle-featured', [StoryController::class, 'toggleFeatured'])->name('stories.toggle-featured'); // NEW
+                    Route::post('/stories/bulk-featured', [StoryController::class, 'bulkUpdateFeatured'])->name('stories.bulk-featured');
+
+
                     Route::resource('stories.chapters', ChapterController::class);
 
 

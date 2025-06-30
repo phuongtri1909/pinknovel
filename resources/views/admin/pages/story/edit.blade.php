@@ -199,6 +199,30 @@
                                         </div>
                                     </div>
                                 </div>
+
+                                <div class="form-group mt-3">
+                                    <div class="d-flex align-items-center">
+                                        <label class="mb-0 me-3" for="is_featured">Truyện đề cử</label>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" name="is_featured" class="form-check-input" id="is_featured"
+                                                role="switch" {{ old('is_featured', $story->is_featured) ? 'checked' : '' }}>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div id="featured-order-container" class="form-group mt-3" style="{{ old('is_featured', $story->is_featured) ? '' : 'display: none;' }}">
+                                    <label for="featured_order">Thứ tự đề cử</label>
+                                    <input type="number" name="featured_order" id="featured_order" 
+                                           class="form-control @error('featured_order') is-invalid @enderror"
+                                           value="{{ old('featured_order', $story->featured_order) }}" min="1" 
+                                           placeholder="Để trống để tự động gán thứ tự">
+                                    <small class="form-text text-muted">
+                                        Số nhỏ sẽ hiển thị trước. Hiện tại có {{ \App\Models\Story::where('is_featured', true)->count() }} truyện đề cử.
+                                    </small>
+                                    @error('featured_order')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
 
                             <div class="col-12 text-center mt-4">
@@ -310,6 +334,20 @@
                 document.getElementById('savings').textContent = savings > 0 ? savings : 0;
                 document.getElementById('savings-percent').textContent = savingsPercent > 0 ? savingsPercent : 0;
             }
+
+            // Handle featured toggle
+            const isFeaturedCheckbox = document.getElementById('is_featured');
+            const featuredOrderContainer = document.getElementById('featured-order-container');
+            const featuredOrderInput = document.getElementById('featured_order');
+            
+            isFeaturedCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    featuredOrderContainer.style.display = 'block';
+                } else {
+                    featuredOrderContainer.style.display = 'none';
+                    featuredOrderInput.value = '';
+                }
+            });
         });
     </script>
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
