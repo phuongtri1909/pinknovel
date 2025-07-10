@@ -174,54 +174,56 @@
             <!-- Chapters List -->
             <div class="mb-4">
                 <h5 class="mb-3">Danh sách chương:</h5>
-                <div class="row" id="chaptersContainer">
+                <div class="row g-1" id="chaptersContainer">
                     @foreach ($chapters as $chapter)
-                        <div class="col-md-6 col-lg-4 mb-3 chapter-item"
-                            data-is-free="{{ $chapter->is_free ? 'true' : 'false' }}">
+                        <div class="col-12 chapter-item" data-is-free="{{ $chapter->is_free ? 'true' : 'false' }}">
                             <div class="chapter-card card h-100" onclick="toggleChapter({{ $chapter->id }})">
-                                <div class="card-body">
-                                    <div class="form-check mb-2">
+                                <div class="card-body d-flex justify-content-between align-items-center py-2 ">
+                                    <div class="form-check d-flex align-items-center">
                                         <input class="form-check-input chapter-checkbox" type="checkbox"
                                             name="selected_chapters[]" value="{{ $chapter->id }}"
                                             id="chapter_{{ $chapter->id }}"
                                             {{ in_array($chapter->id, old('selected_chapters', [])) ? 'checked' : '' }}>
                                         <label class="form-check-label fw-bold" for="chapter_{{ $chapter->id }}">
-                                            Chương {{ $chapter->number }}
+                                            Chương {{ $chapter->number }} :
                                         </label>
+
+                                        <h6 class="card-title mb-0">{{ $chapter->title }}</h6>
                                     </div>
 
-                                    <h6 class="card-title">{{ $chapter->title }}</h6>
-
-                                    <div class="mb-2">
-                                        @if ($chapter->is_free)
-                                            <span class="badge bg-success">
-                                                <i class="fas fa-gift me-1"></i>Miễn phí
-                                            </span>
-                                            @if ($chapter->password)
-                                                <span class="badge bg-warning text-dark">
-                                                    <i class="fas fa-lock"></i> Có mật khẩu
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            @if ($chapter->is_free)
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-gift me-1"></i>Miễn phí
+                                                </span>
+                                                @if ($chapter->password)
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fas fa-lock"></i> Có mật khẩu
+                                                    </span>
+                                                @endif
+                                            @else
+                                                <span class="badge bg-primary">
+                                                    <i class="fas fa-coins me-1"></i>{{ number_format($chapter->price) }}
+                                                    xu
                                                 </span>
                                             @endif
-                                        @else
-                                            <span class="badge bg-primary">
-                                                <i class="fas fa-coins me-1"></i>{{ number_format($chapter->price) }} xu
-                                            </span>
-                                        @endif
-                                    </div>
+                                        </div>
 
 
-                                    <!-- Individual Price Input (hidden by default) -->
-                                    <div class="individual-price-field mt-3" style="display: none;">
-                                        <label class="form-label small">Giá mới (xu):</label>
-                                        <input type="number"
-                                            class="form-control form-control-sm price-input @error('chapter_prices.' . $chapter->id) is-invalid @enderror"
-                                            name="chapter_prices[{{ $chapter->id }}]"
-                                            value="{{ old('chapter_prices.' . $chapter->id, $chapter->is_free ? '' : $chapter->price) }}"
-                                            min="0" step="1" placeholder="Trống = miễn phí">
-                                        <small class="form-text text-muted">Trống/0 = miễn phí</small>
-                                        @error('chapter_prices.' . $chapter->id)
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
+                                        <!-- Individual Price Input (hidden by default) -->
+                                        <div class="individual-price-field" style="display: none;">
+                                            <label class="form-label small">Giá mới (xu):</label>
+                                            <input type="number"
+                                                class="form-control form-control-sm price-input @error('chapter_prices.' . $chapter->id) is-invalid @enderror"
+                                                name="chapter_prices[{{ $chapter->id }}]"
+                                                value="{{ old('chapter_prices.' . $chapter->id, $chapter->is_free ? '' : $chapter->price) }}"
+                                                min="0" step="1" placeholder="Trống = miễn phí">
+                                            <small class="form-text text-muted">Trống/0 = miễn phí</small>
+                                            @error('chapter_prices.' . $chapter->id)
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
                                 </div>
                             </div>

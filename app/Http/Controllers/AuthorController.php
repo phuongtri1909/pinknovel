@@ -439,7 +439,7 @@ class AuthorController extends Controller
                 }
 
                 $message = 'Truyện đã được cập nhật thành công.';
-                
+
                 // Thông báo khác nhau tùy theo trạng thái
                 if ($story->status === 'published' && $story->completed == 0) {
                     $message .= ' Truyện chưa hoàn thành nên có thể chỉnh sửa tự do mà không cần phê duyệt.';
@@ -1573,6 +1573,7 @@ class AuthorController extends Controller
 
         $chapters = $story->chapters()
             ->where('status', 'published')
+            ->select('id', 'title', 'number', 'is_free', 'price','password')
             ->orderBy('number')
             ->get();
 
