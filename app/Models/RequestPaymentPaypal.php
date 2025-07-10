@@ -11,7 +11,9 @@ class RequestPaymentPaypal extends Model
     protected $fillable = [
         'user_id',
         'payment_type',
+        'base_usd_amount',
         'usd_amount',
+        'payment_method',
         'vnd_amount',
         'coins',
         'exchange_rate',
@@ -150,6 +152,8 @@ class RequestPaymentPaypal extends Model
             'user_id' => $this->user_id,
             'request_payment_paypal_id' => $this->id,
             'usd_amount' => $this->usd_amount,
+            'base_usd_amount' => $this->base_usd_amount,
+            'payment_method' => $this->payment_method,
             'vnd_amount' => $this->vnd_amount,
             'coins' => $this->coins,
             'exchange_rate' => $this->exchange_rate,

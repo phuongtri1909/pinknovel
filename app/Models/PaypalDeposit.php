@@ -13,8 +13,10 @@ class PaypalDeposit extends Model
     protected $fillable = [
         'user_id',
         'request_payment_paypal_id',
+        'base_usd_amount',
         'usd_amount',
-        'vnd_amount', 
+        'payment_method',
+        'vnd_amount',
         'coins',
         'exchange_rate',
         'fee_percent',
@@ -122,7 +124,7 @@ class PaypalDeposit extends Model
         do {
             $code = 'PP' . strtoupper(substr(md5(time() . rand()), 0, 8));
         } while (self::where('transaction_code', $code)->exists());
-        
+
         return $code;
     }
 
@@ -152,7 +154,7 @@ class PaypalDeposit extends Model
 
         // Add coins to user
         $this->user->increment('coins', $this->coins);
-        
+
         return true;
     }
 

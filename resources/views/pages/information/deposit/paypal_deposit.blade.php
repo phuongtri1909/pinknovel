@@ -240,9 +240,12 @@
         }
 
         @keyframes flashSuccess {
-            0%, 100% {
+
+            0%,
+            100% {
                 background-color: transparent;
             }
+
             50% {
                 background-color: rgba(25, 135, 84, 0.1);
             }
@@ -277,6 +280,7 @@
                 opacity: 0;
                 transform: translateY(20px);
             }
+
             to {
                 opacity: 0.9;
                 transform: translateY(0);
@@ -300,6 +304,55 @@
             .pending-request-item {
                 padding: 20px;
             }
+        }
+
+        .payment-method-option {
+            margin-bottom: 15px;
+        }
+
+        .payment-method-card {
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .payment-method-option .form-check-input:checked+.form-check-label .payment-method-card {
+            border-color: #ffc439;
+            background: rgba(255, 196, 57, 0.2);
+            box-shadow: 0 0 15px rgba(255, 196, 57, 0.3);
+        }
+
+        .payment-method-card:hover {
+            border-color: rgba(255, 196, 57, 0.7);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .payment-method-option .form-check-input {
+            margin-top: 0.5rem;
+        }
+
+        .payment-method-option .form-check-label {
+            cursor: pointer;
+            width: 100%;
+        }
+
+        #paymentMethodFeeRow {
+            display: none;
+        }
+
+        #paymentMethodFeeRow.show {
+            display: flex;
+        }
+
+        .preview-item.highlight {
+            background: rgba(255, 196, 57, 0.2);
+            border-radius: 5px;
+            padding: 10px;
+            margin: 5px 0;
         }
     </style>
 @endpush
@@ -357,6 +410,55 @@
                                 <div class="invalid-feedback" id="emailError"></div>
                             </div>
                         </div>
+
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-handshake me-2"></i>Loại thanh toán PayPal
+                                </label>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check payment-method-option">
+                                            <input class="form-check-input" type="radio" name="payment_method"
+                                                id="friendsFamily" value="friends_family" checked>
+                                            <label class="form-check-label" for="friendsFamily">
+                                                <div class="payment-method-card">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="fas fa-users text-success me-2"></i>
+                                                        <strong>Friends & Family</strong>
+                                                    </div>
+                                                    <p class="mb-1 small">Gửi tiền cho người thân, bạn bè</p>
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check payment-method-option">
+                                            <input class="form-check-input" type="radio" name="payment_method"
+                                                id="goodsServices" value="goods_services">
+                                            <label class="form-check-label" for="goodsServices">
+                                                <div class="payment-method-card">
+                                                    <div class="d-flex align-items-center mb-2">
+                                                        <i class="fas fa-shopping-cart text-warning me-2"></i>
+                                                        <strong>Goods & Services</strong>
+                                                    </div>
+                                                    <p class="mb-1 small">Thanh toán hàng hóa, dịch vụ</p>
+
+                                                </div>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Lưu ý:</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li><strong>Friends & Family:</strong> Miễn phí PayPal, giá gốc không đổi</li>
+                                        <li><strong>Goods & Services:</strong> PayPal tính phí để bù phí</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="preview-box" id="previewBox">
@@ -364,12 +466,24 @@
                             <i class="fas fa-calculator me-2"></i>Chi tiết giao dịch
                         </h6>
                         <div class="preview-item">
-                            <span>Số tiền USD:</span>
-                            <span id="previewUSD">$5.00</span>
+                            <span>Số tiền USD gốc:</span>
+                            <span id="previewBaseUSD">$5.00</span>
+                        </div>
+                        <div class="preview-item" id="paymentMethodFeeRow">
+                            <span>Phí loại thanh toán:</span>
+                            <span id="previewMethodFee">$0.00</span>
+                        </div>
+                        <div class="preview-item">
+                            <span>Tổng tiền cần gửi:</span>
+                            <span id="previewTotalUSD">$5.00</span>
                         </div>
                         <div class="preview-item">
                             <span>Xu nhận được:</span>
                             <span id="previewCoins">1,000 xu</span>
+                        </div>
+                        <div class="preview-item">
+                            <span>Loại thanh toán:</span>
+                            <span id="previewPaymentMethod">Friends & Family</span>
                         </div>
                     </div>
 
@@ -412,10 +526,11 @@
 
     <!-- Pending Request Section (Only show latest pending after confirmed) -->
     @php
-        $latestPendingRequest = isset($pendingRequests) && $pendingRequests->count() > 0 ? $pendingRequests->first() : null;
+        $latestPendingRequest =
+            isset($pendingRequests) && $pendingRequests->count() > 0 ? $pendingRequests->first() : null;
     @endphp
 
-    @if($latestPendingRequest)
+    @if ($latestPendingRequest)
         <div class="row mt-4">
             <div class="col-12">
                 <div class="pending-request-item">
@@ -425,7 +540,7 @@
                         </h5>
                         <span class="badge bg-warning text-dark fs-6">Chờ xác nhận</span>
                     </div>
-                    
+
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <div class="text-center">
@@ -434,17 +549,18 @@
                             </div>
                         </div>
                         <div class="col-md-4 text-center">
-                            <div class="fw-bold text-success fs-5">${{ number_format($latestPendingRequest->usd_amount, 2) }}</div>
+                            <div class="fw-bold text-success fs-5">
+                                ${{ number_format($latestPendingRequest->usd_amount, 2) }}</div>
                             <div class="text-muted">{{ number_format($latestPendingRequest->coins) }} xu</div>
                             <small class="text-muted">{{ $latestPendingRequest->created_at->format('d/m/Y H:i') }}</small>
                         </div>
                         <div class="col-md-4 text-center">
-                            <button class="btn btn-success btn-lg confirm-payment-btn mb-2" 
-                                    data-code="{{ $latestPendingRequest->transaction_code }}"
-                                    data-amount="${{ number_format($latestPendingRequest->usd_amount, 2) }}"
-                                    data-content="{{ $latestPendingRequest->content }}"
-                                    data-paypal-url="{{ $latestPendingRequest->paypal_me_link }}"
-                                    data-coins="{{ number_format($latestPendingRequest->coins) }}">
+                            <button class="btn btn-success btn-lg confirm-payment-btn mb-2"
+                                data-code="{{ $latestPendingRequest->transaction_code }}"
+                                data-amount="${{ number_format($latestPendingRequest->usd_amount, 2) }}"
+                                data-content="{{ $latestPendingRequest->content }}"
+                                data-paypal-url="{{ $latestPendingRequest->paypal_me_link }}"
+                                data-coins="{{ number_format($latestPendingRequest->coins) }}">
                                 <i class="fas fa-check me-2"></i>Đã thanh toán qua PayPal
                             </button>
                             <div class="text-danger small">
@@ -456,7 +572,8 @@
 
                     <div class="alert alert-info mt-3 mb-0">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Hướng dẫn:</strong> Sau khi hoàn tất thanh toán qua PayPal với nội dung "{{ $latestPendingRequest->content }}", 
+                        <strong>Hướng dẫn:</strong> Sau khi hoàn tất thanh toán qua PayPal với nội dung
+                        "{{ $latestPendingRequest->content }}",
                         hãy nhấn nút "Đã thanh toán qua PayPal" để tải lên ảnh chứng minh.
                     </div>
                 </div>
@@ -495,12 +612,14 @@
                                         <tr>
                                             <td>
                                                 <span class="fw-bold">{{ $deposit->transaction_code }}</span>
-                                                @if($deposit->requestPaymentPaypal)
-                                                    <br><small class="text-muted">{{ $deposit->requestPaymentPaypal->paypal_email }}</small>
+                                                @if ($deposit->requestPaymentPaypal)
+                                                    <br><small
+                                                        class="text-muted">{{ $deposit->requestPaymentPaypal->paypal_email }}</small>
                                                 @endif
                                             </td>
                                             <td>
-                                                <strong class="text-primary">${{ number_format($deposit->usd_amount, 2) }}</strong>
+                                                <strong
+                                                    class="text-primary">${{ number_format($deposit->usd_amount, 2) }}</strong>
                                             </td>
                                             <td>
                                                 <strong class="text-success">
@@ -509,18 +628,23 @@
                                             </td>
                                             <td>
                                                 <div>{{ $deposit->created_at->format('d/m/Y H:i') }}</div>
-                                                <small class="text-muted">{{ $deposit->created_at->diffForHumans() }}</small>
+                                                <small
+                                                    class="text-muted">{{ $deposit->created_at->diffForHumans() }}</small>
                                             </td>
                                             <td>
-                                                @if($deposit->status == 'pending')
+                                                @if ($deposit->status == 'pending')
                                                     <span class="badge bg-warning text-dark">
                                                         <i class="fas fa-clock me-1"></i>Đang xử lý
+                                                    </span>
+                                                @elseif($deposit->status == 'processing')
+                                                    <span class="badge bg-info text-dark">
+                                                        <i class="fas fa-spinner me-1"></i>Đang xử lý
                                                     </span>
                                                 @elseif($deposit->status == 'approved')
                                                     <span class="badge bg-success">
                                                         <i class="fas fa-check me-1"></i>Đã duyệt
                                                     </span>
-                                                @else
+                                                @elseif($deposit->status == 'rejected')
                                                     <span class="badge bg-danger">
                                                         <i class="fas fa-times me-1"></i>Từ chối
                                                     </span>
@@ -532,11 +656,11 @@
                                                 @endif
                                             </td>
                                             <td>
-                                                @if($deposit->image)
-                                                    <a href="{{ Storage::url($deposit->image) }}" 
-                                                       class="btn btn-sm btn-outline-success" 
-                                                       data-fancybox="paypal-images"
-                                                       data-caption="Chứng từ #{{ $deposit->transaction_code }}">
+                                                @if ($deposit->image)
+                                                    <a href="{{ Storage::url($deposit->image) }}"
+                                                        class="btn btn-sm btn-outline-success"
+                                                        data-fancybox="paypal-images"
+                                                        data-caption="Chứng từ #{{ $deposit->transaction_code }}">
                                                         <i class="fas fa-image me-1"></i>Xem ảnh
                                                     </a>
                                                 @else
@@ -588,10 +712,10 @@
                             <i class="fas fa-code me-2"></i>Nội dung giao dịch
                         </h6>
                         <div class="d-flex align-items-center justify-content-center">
-                            <span class="payment-content-text" id="confirmPaymentContent" 
-                                  tabindex="0" onclick="this.focus();this.select()" onfocus="this.select()">PP1195E9EA</span>
-                            <button type="button" class="copy-button" onclick="copyToClipboard('#confirmPaymentContent')" 
-                                    title="Sao chép nội dung giao dịch">
+                            <span class="payment-content-text" id="confirmPaymentContent" tabindex="0"
+                                onclick="this.focus();this.select()" onfocus="this.select()">PP1195E9EA</span>
+                            <button type="button" class="copy-button"
+                                onclick="copyToClipboard('#confirmPaymentContent')" title="Sao chép nội dung giao dịch">
                                 <i class="fas fa-copy"></i>
                             </button>
                         </div>
@@ -599,7 +723,7 @@
 
                     <div class="row text-start">
                         <div class="col-6">
-                            <small class="text-muted">Số tiền:</small>
+                            <small class="text-muted">Số tiền cần gửi:</small>
                             <div class="fw-bold text-primary" id="confirmAmount">$5.00</div>
                         </div>
                         <div class="col-6">
@@ -608,19 +732,33 @@
                         </div>
                     </div>
 
+                    <div class="row text-start mt-2">
+                        <div class="col-12">
+                            <small class="text-muted">Loại thanh toán:</small>
+                            <div id="confirmPaymentMethod">
+                                <span class="badge bg-success">Friends & Family</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="alert alert-info mt-3">
                         <i class="fas fa-info-circle me-2"></i>
                         <small>
                             <strong>Hướng dẫn:</strong><br>
                             1. Nhấn "Xác nhận thanh toán" để mở PayPal<br>
-                            2. Điền nội dung giao dịch vào phần Note<br>
-                            3. Hoàn tất thanh toán và chụp ảnh màn hình<br>
-                            4. Tải lên ảnh chứng minh để hoàn tất
+                            2. Chọn đúng loại thanh toán như đã chọn<br>
+                            3. Điền nội dung giao dịch vào phần Note<br>
+                            4. Hoàn tất thanh toán và chụp ảnh màn hình<br>
+                            5. Tải lên ảnh chứng minh để hoàn tất
                         </small>
                     </div>
 
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Quan trọng:</strong> Vui lòng chọn đúng loại thanh toán để tránh sai số tiền!
+                    </div>
+
                     <div class="row">
-                        
                         <div class="col-6">
                             <button type="button" class="btn btn-primary w-100" id="proceedPaymentBtn">
                                 <i class="fab fa-paypal me-2"></i>Xác nhận thanh toán
@@ -707,26 +845,54 @@
 
             let currentPaymentData = null;
 
-            // Update preview when amount changes
-            $('#usdAmount').on('input', function() {
+            // Update preview when amount or payment method changes
+            $('#usdAmount, input[name="payment_method"]').on('input change', function() {
                 updatePreview();
             });
 
             function updatePreview() {
-                const usdAmount = parseFloat($('#usdAmount').val()) || 0;
-                const vndAmount = usdAmount * coinPaypalRate;
+                const baseUsdAmount = parseFloat($('#usdAmount').val()) || 0;
+                const paymentMethod = $('input[name="payment_method"]:checked').val();
+
+                // Calculate method fee and total
+                let methodFee = 0;
+                let totalUsdAmount = baseUsdAmount;
+                let paymentMethodText = 'Friends & Family';
+
+                if (paymentMethod === 'goods_services') {
+                    methodFee = baseUsdAmount * 0.2; // 20% fee
+                    totalUsdAmount = baseUsdAmount * 1.2;
+                    paymentMethodText = 'Goods & Services';
+                    $('#paymentMethodFeeRow').addClass('show');
+                } else {
+                    $('#paymentMethodFeeRow').removeClass('show');
+                }
+
+                // Calculate coins based on base amount (not total)
+                const vndAmount = baseUsdAmount * coinPaypalRate;
                 const feeAmount = (vndAmount * coinPaypalPercent) / 100;
                 const amountAfterFee = vndAmount - feeAmount;
                 const coins = Math.floor(amountAfterFee / coinExchangeRate);
 
-                $('#previewUSD').text('$' + usdAmount.toFixed(2));
+                // Update preview
+                $('#previewBaseUSD').text('$' + baseUsdAmount.toFixed(2));
+                $('#previewMethodFee').text('$' + methodFee.toFixed(2));
+                $('#previewTotalUSD').text('$' + totalUsdAmount.toFixed(2));
                 $('#previewCoins').text(coins.toLocaleString('vi-VN') + ' xu');
+                $('#previewPaymentMethod').text(paymentMethodText);
+
+                // Highlight total amount if there's a method fee
+                if (methodFee > 0) {
+                    $('#previewTotalUSD').parent().addClass('highlight');
+                } else {
+                    $('#previewTotalUSD').parent().removeClass('highlight');
+                }
             }
 
             // Initialize preview
             updatePreview();
 
-            // Handle form submission - Step 1: Create request and show confirm modal
+            // Handle form submission - Updated to include payment method
             $('#paypalDepositForm').on('submit', function(e) {
                 e.preventDefault();
 
@@ -734,8 +900,13 @@
                     return;
                 }
 
-                const usdAmount = parseFloat($('#usdAmount').val());
+                const baseUsdAmount = parseFloat($('#usdAmount').val());
+                const paymentMethod = $('input[name="payment_method"]:checked').val();
                 const paypalEmail = $('#paypalEmail').val();
+
+                // Calculate total amount to send
+                const totalUsdAmount = paymentMethod === 'goods_services' ? baseUsdAmount * 1.2 :
+                    baseUsdAmount;
 
                 $('#submitBtn').prop('disabled', true).html(
                     '<i class="fas fa-spinner fa-spin me-2"></i>Đang tạo yêu cầu...');
@@ -744,7 +915,9 @@
                     url: '{{ route('user.paypal.deposit.store') }}',
                     type: 'POST',
                     data: {
-                        usd_amount: usdAmount,
+                        base_usd_amount: baseUsdAmount,
+                        usd_amount: totalUsdAmount,
+                        payment_method: paymentMethod,
                         paypal_email: paypalEmail,
                         _token: '{{ csrf_token() }}'
                     },
@@ -807,11 +980,18 @@
                 }, 1000);
             });
 
-            // Show confirm modal
+            // Show confirm modal - Updated to show payment method info
             function showConfirmModal(data) {
                 $('#confirmPaymentContent').text(data.payment_content);
                 $('#confirmAmount').text(data.usd_amount_formatted);
                 $('#confirmCoins').text(data.coins.toLocaleString() + ' xu');
+
+                // Add payment method info to modal
+                const paymentMethodBadge = data.payment_method === 'goods_services' ?
+                    '<span class="badge bg-warning text-dark ms-2">Goods & Services</span>' :
+                    '<span class="badge bg-success ms-2">Friends & Family</span>';
+
+                $('#confirmPaymentMethod').html(paymentMethodBadge);
 
                 $('#confirmPaymentModal').modal('show');
             }
@@ -852,9 +1032,11 @@
                 return valid;
             }
 
+            // Reset form - Updated to reset payment method
             function resetForm() {
                 $('#paypalDepositForm')[0].reset();
                 $('#usdAmount').val('5');
+                $('input[name="payment_method"][value="friends_family"]').prop('checked', true);
                 $('.is-invalid').removeClass('is-invalid');
                 $('.invalid-feedback').hide();
                 updatePreview();
@@ -940,7 +1122,7 @@
             // Show success
             function showCopySuccess($button, originalText, element) {
                 $button.html('<i class="fas fa-check"></i>');
-                
+
                 // Add success animation to the copied element
                 $(element).addClass('copy-success');
                 setTimeout(() => $(element).removeClass('copy-success'), 500);

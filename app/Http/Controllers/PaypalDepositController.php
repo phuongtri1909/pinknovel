@@ -75,15 +75,26 @@ class PaypalDepositController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'base_usd_amount' => 'required|numeric|min:5',
             'usd_amount' => 'required|numeric|min:5',
+            'payment_method' => 'required|in:friends_family,goods_services',
             'paypal_email' => 'required|email|max:255'
         ], [
+            'base_usd_amount.required' => 'Vui lòng nhập số tiền USD',
+            'base_usd_amount.numeric' => 'Số tiền phải là số',
+            'base_usd_amount.min' => 'Số tiền tối thiểu là $5',
             'usd_amount.required' => 'Vui lòng nhập số tiền USD',
             'usd_amount.numeric' => 'Số tiền phải là số',
             'usd_amount.min' => 'Số tiền tối thiểu là $5',
+            'payment_method.required' => 'Vui lòng chọn phương thức thanh toán',
+            'payment_method.in' => 'Phương thức thanh toán không hợp lệ',
             'paypal_email.required' => 'Vui lòng nhập email PayPal',
             'paypal_email.email' => 'Email PayPal không hợp lệ'
         ]);
+
+        $baseUsdAmount = $request->base_usd_amount;
+        $totalUsdAmount = $request->usd_amount;
+        $paymentMethod = $request->payment_method;
 
         // Rate limiting
         $recentAttempts = RequestPaymentPaypal::where('user_id', Auth::id())
@@ -98,11 +109,18 @@ class PaypalDepositController extends Controller
             ], 429);
         }
 
+        $expectedTotal = $paymentMethod === 'goods_services' ? $baseUsdAmount * 1.2 : $baseUsdAmount;
+        if (abs($totalUsdAmount - $expectedTotal) > 0.01) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Số tiền không khớp với số tiền dự kiến. Vui lòng kiểm tra lại.'
+            ], 400);
+        }
+
         try {
             DB::beginTransaction();
 
-            $usdAmount = $request->usd_amount;
-            $vndAmount = $usdAmount * $this->coinPaypalRate;
+            $vndAmount = $baseUsdAmount * $this->coinPaypalRate;
             $feeAmount = ($vndAmount * $this->coinPaypalPercent) / 100;
             $amountAfterFee = $vndAmount - $feeAmount;
             $coins = floor($amountAfterFee / $this->coinExchangeRate);
@@ -111,7 +129,7 @@ class PaypalDepositController extends Controller
             $transactionCode = RequestPaymentPaypal::generateTransactionCode('PP');
 
             // Generate PayPal.me URL
-            $paypalUrl = $this->paypalMeLink . '/' . $usdAmount . 'USD';
+            $paypalUrl = $this->paypalMeLink . '/' . $totalUsdAmount . 'USD';
 
             // Short payment content
             $paymentContent = $transactionCode;
@@ -120,7 +138,9 @@ class PaypalDepositController extends Controller
             $requestPayment = RequestPaymentPaypal::create([
                 'user_id' => Auth::id(),
                 'payment_type' => RequestPaymentPaypal::TYPE_PAYPAL,
-                'usd_amount' => $usdAmount,
+                'usd_amount' => $totalUsdAmount,
+                'base_usd_amount' => $baseUsdAmount,
+                'payment_method' => $paymentMethod,
                 'vnd_amount' => $vndAmount,
                 'coins' => $coins,
                 'exchange_rate' => $this->coinPaypalRate,
@@ -145,8 +165,11 @@ class PaypalDepositController extends Controller
                 'transaction_code' => $transactionCode,
                 'paypal_url' => $paypalUrl,
                 'payment_content' => $paymentContent,
-                'usd_amount' => $usdAmount,
-                'usd_amount_formatted' => '$' . number_format($usdAmount, 2),
+                'usd_amount' => $totalUsdAmount,
+                'usd_amount_formatted' => '$' . number_format($totalUsdAmount, 2),
+                'base_usd_amount' => $baseUsdAmount,
+                'base_usd_amount_formatted' => '$' . number_format($baseUsdAmount, 2),
+                'payment_method' => $paymentMethod,
                 'vnd_amount' => $vndAmount,
                 'coins' => $coins,
                 'fee_amount' => $feeAmount,
