@@ -10,26 +10,26 @@
         padding: 20px;
         margin-bottom: 20px;
     }
-    
+
     .story-info-item {
         margin-bottom: 15px;
         padding-bottom: 15px;
         border-bottom: 1px solid #e9ecef;
     }
-    
+
     .story-info-item:last-child {
         border-bottom: none;
     }
-    
+
     .label {
         font-weight: 600;
         color: #495057;
     }
-    
+
     .value {
         color: #212529;
     }
-    
+
     .author-info {
         background-color: white;
         border-radius: 8px;
@@ -37,7 +37,7 @@
         border-left: 5px solid #6c757d;
         margin-bottom: 20px;
     }
-    
+
     .status-badge {
         display: inline-block;
         padding: 5px 10px;
@@ -45,31 +45,31 @@
         font-size: 12px;
         font-weight: 500;
     }
-    
+
     .status-pending {
         background-color: #fff3cd;
         color: #856404;
         border: 1px solid #ffeeba;
     }
-    
+
     .status-published {
         background-color: #d4edda;
         color: #155724;
         border: 1px solid #c3e6cb;
     }
-    
+
     .status-rejected {
         background-color: #f8d7da;
         color: #721c24;
         border: 1px solid #f5c6cb;
     }
-    
+
     .status-draft {
         background-color: #e2e3e5;
         color: #383d41;
         border: 1px solid #d6d8db;
     }
-    
+
     .description-text {
         background-color: white;
         border-radius: 8px;
@@ -77,7 +77,7 @@
         margin-top: 10px;
         border-left: 3px solid #17a2b8;
     }
-    
+
     .actions-container {
         background-color: white;
         border-radius: 8px;
@@ -85,13 +85,13 @@
         margin-top: 20px;
         border: 1px solid #dee2e6;
     }
-    
+
     .cover-image {
         max-width: 100%;
         height: auto;
         border-radius: 8px;
     }
-    
+
     .chapter-list {
         max-height: 400px;
         overflow-y: auto;
@@ -114,7 +114,7 @@
                     <!-- Status information -->
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
-                            <h5>Trạng thái: 
+                            <h5>Trạng thái:
                                 @if ($story->status == 'pending')
                                     <span class="status-badge status-pending">Chờ duyệt</span>
                                 @elseif ($story->status == 'published')
@@ -133,14 +133,14 @@
                             </p>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-4">
                             <!-- Cover image -->
                             <div class="mb-4">
                                 <img src="{{ Storage::url($story->cover_medium) }}" alt="{{ $story->title }}" class="cover-image">
                             </div>
-                            
+
                             <!-- Author information -->
                             <div class="author-info mb-4">
                                 <h5 class="mb-3"><i class="fas fa-user me-2"></i> Thông tin tác giả</h5>
@@ -161,7 +161,7 @@
                                     <div class="value">{{ $story->user->created_at->format('d/m/Y') }}</div>
                                 </div>
                             </div>
-                            
+
                             <!-- Story information -->
                             <div class="story-detail">
                                 <h5 class="mb-3"><i class="fas fa-info-circle me-2"></i> Thông tin truyện</h5>
@@ -225,7 +225,7 @@
                                 @endif
                             </div>
                         </div>
-                        
+
                         <div class="col-md-8">
                             <!-- Description text -->
                             <div class="story-detail">
@@ -234,7 +234,7 @@
                                     {!! $story->description !!}
                                 </div>
                             </div>
-                            
+
                             <!-- Chapter list -->
                             <div class="story-detail">
                                 <h5 class="mb-3"><i class="fas fa-list-ol me-2"></i> Danh sách chương ({{ $chapterCount }})</h5>
@@ -253,7 +253,9 @@
                                             @foreach($story->chapters as $chapter)
                                             <tr>
                                                 <td>{{ $chapter->number }}</td>
-                                                <td>{{ $chapter->title }}</td>
+                                                <td>
+                                                    <a href="{{ route('stories.chapters.show', ['story' => $story, 'chapter' => $chapter]) }}">{{ $chapter->title }}</a>
+                                                </td>
                                                 <td>{{ $chapter->is_free ? 'Có' : 'Không' }}</td>
                                                 <td>
                                                     @if ($chapter->status == 'published')
@@ -271,12 +273,12 @@
                                 <div class="alert alert-warning">Truyện chưa có chương nào.</div>
                                 @endif
                             </div>
-                            
+
                             @if ($story->status == 'pending')
                                 <!-- Actions for pending stories -->
                                 <div class="actions-container">
                                     <h5 class="mb-3">Hành động</h5>
-                                    
+
                                     <div class="row">
                                         <!-- Approve form -->
                                         <div class="col-md-6">
@@ -291,7 +293,7 @@
                                                 </button>
                                             </form>
                                         </div>
-                                        
+
                                         <!-- Reject form -->
                                         <div class="col-md-6">
                                             <form action="{{ route('admin.story-reviews.reject', $story) }}" method="POST">
@@ -323,4 +325,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

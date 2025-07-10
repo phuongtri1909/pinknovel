@@ -16,7 +16,7 @@ class ChapterController extends Controller
 {
     public function index(Request $request, Story $story)
     {
-       
+
         $search = $request->search;
         $status = $request->status;
         $query = $story->chapters();
@@ -99,7 +99,7 @@ class ChapterController extends Controller
         try {
             // Set is_free based on checkbox
             $isFree = $request->has('is_free');
-            
+
             // If chapter is free, price is 0
             $price = $isFree ? 0 : $request->price;
 
@@ -167,7 +167,7 @@ class ChapterController extends Controller
         try {
             // Set is_free based on checkbox
             $isFree = $request->has('is_free');
-            
+
             // If chapter is free, price is 0
             $price = $isFree ? 0 : $request->price;
 
@@ -190,6 +190,11 @@ class ChapterController extends Controller
                 ->with('error', 'Có lỗi xảy ra, vui lòng thử lại')
                 ->withInput();
         }
+    }
+
+    public function show(Story $story, Chapter $chapter)
+    {
+        return view('admin.pages.chapters.show', compact('story', 'chapter'));
     }
 
     public function destroy(Story $story, Chapter $chapter)

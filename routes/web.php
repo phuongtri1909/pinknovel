@@ -179,6 +179,9 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 Route::get('/stories/{story}/chapters/bulk-price', [AuthorController::class, 'bulkPriceForm'])->name('stories.chapters.bulk-price');
                 Route::put('/stories/{story}/chapters/bulk-price/update', [AuthorController::class, 'bulkPriceUpdate'])->name('stories.chapters.bulk-price.update');
 
+                Route::delete('/stories/{story}/chapters/bulk-delete/delete', [AuthorController::class, 'bulkDeleteChapters'])
+                    ->name('stories.chapters.bulk-delete');
+
                 Route::group(['prefix' => '/stories/combo', 'as' => 'stories.combo.'], function () {
                     Route::get('/create/{story}', [StoryComboController::class, 'create'])->name('create');
                     Route::post('/{story}', [StoryComboController::class, 'store'])->name('store');

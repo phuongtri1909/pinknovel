@@ -541,7 +541,26 @@ class AuthorController extends Controller
                 ->with('error', 'Bạn không có quyền xem các chương của truyện này.');
         }
 
-        $chapters = $story->chapters()->orderBy('number', 'asc')->paginate(10);
+        // Chỉ select những trường cần thiết để tối ưu performance
+        $chapters = $story->chapters()
+            ->select([
+                'id',
+                'story_id',
+                'number',
+                'title',
+                'slug',
+                'status',
+                'is_free',
+                'price',
+                'password',
+                'views',
+                'created_at',
+                'updated_at',
+                'scheduled_publish_at'
+            ])
+            ->orderBy('number', 'asc')
+            ->paginate(20);
+
         return view('pages.information.author.author_chapters', compact('story', 'chapters'));
     }
 
@@ -962,24 +981,102 @@ class AuthorController extends Controller
         }
     }
 
-    // Xử lý xóa chương
-    public function destroyChapter(Story $story, $chapterId)
+    public function bulkDeleteChapters(Request $request, Story $story)
     {
-        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
+        if ($story->user_id != Auth::id()) {
+            return redirect()->route('user.author.stories.chapters', $story->id)
+                ->with('error', 'Bạn không có quyền truy cập truyện này.');
+        }
+
+        $request->validate([
+            'selected_chapters' => 'required|array|min:1',
+            'selected_chapters.*' => 'exists:chapters,id',
+            'current_page' => 'nullable|integer|min:1',
+        ], [
+            'selected_chapters.required' => 'Vui lòng chọn ít nhất một chương để xóa.',
+            'selected_chapters.min' => 'Vui lòng chọn ít nhất một chương để xóa.',
+        ]);
+
+        $selectedChapterIds = $request->selected_chapters;
+        $currentPage = $request->current_page ?? 1;
+
+        try {
+            DB::beginTransaction();
+
+            $chaptersToDelete = Chapter::whereIn('id', $selectedChapterIds)
+                ->where('story_id', $story->id)
+                ->select('id', 'number', 'title')
+                ->get();
+
+            if ($chaptersToDelete->isEmpty()) {
+                return redirect()->route('user.author.stories.chapters', ['story' => $story->id, 'page' => $currentPage])
+                    ->with('error', 'Không tìm thấy chương nào để xóa.');
+            }
+
+            $totalChaptersBeforeDelete = $story->chapters()->count();
+
+            $deletedCount = Chapter::whereIn('id', $selectedChapterIds)
+                ->where('story_id', $story->id)
+                ->delete();
+
+            $perPage = 2;
+            $totalChaptersAfterDelete = $totalChaptersBeforeDelete - $deletedCount;
+            $maxPage = max(1, (int) ceil($totalChaptersAfterDelete / $perPage));
+
+            $redirectPage = min($currentPage, $maxPage);
+
+            DB::commit();
+
+
+            return redirect()->route('user.author.stories.chapters', ['story' => $story->id, 'page' => $redirectPage])
+                ->with('success', "Đã xóa thành công {$deletedCount} chương.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Bulk chapters deletion failed', [
+                'story_id' => $story->id,
+                'chapter_ids' => $selectedChapterIds,
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+
+            return redirect()->route('user.author.stories.chapters', ['story' => $story->id, 'page' => $currentPage])
+                ->with('error', 'Có lỗi xảy ra khi xóa chương. Vui lòng thử lại.');
+        }
+    }
+
+    public function destroyChapter(Request $request, Story $story, $chapterId)
+    {
         if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền xóa chương của truyện này.');
         }
 
         $chapter = $story->chapters()->findOrFail($chapterId);
+        $currentPage = $request->input('page', 1);
 
         try {
+            $chapterNumber = $chapter->number;
+            $chapterTitle = $chapter->title;
+
+            $totalChaptersBeforeDelete = $story->chapters()->count();
+
             $chapter->delete();
-            return redirect()->route('user.author.stories.chapters', $story->id)
-                ->with('success', 'Xóa chương thành công');
+
+            $perPage = 2;
+            $totalChaptersAfterDelete = $totalChaptersBeforeDelete - 1;
+            $maxPage = max(1, (int) ceil($totalChaptersAfterDelete / $perPage));
+
+            $redirectPage = min($currentPage, $maxPage);
+
+
+
+            return redirect()->route('user.author.stories.chapters', ['story' => $story->id, 'page' => $redirectPage])
+                ->with('success', "Đã xóa chương {$chapterNumber}: {$chapterTitle} thành công.");
         } catch (\Exception $e) {
             Log::error('Error deleting chapter: ' . $e->getMessage());
-            return redirect()->route('user.author.stories.chapters', $story->id)
+
+            return redirect()->route('user.author.stories.chapters', ['story' => $story->id, 'page' => $currentPage])
                 ->with('error', 'Có lỗi xảy ra khi xóa chương. Vui lòng thử lại.');
         }
     }
@@ -1573,7 +1670,7 @@ class AuthorController extends Controller
 
         $chapters = $story->chapters()
             ->where('status', 'published')
-            ->select('id', 'title', 'number', 'is_free', 'price','password')
+            ->select('id', 'title', 'number', 'is_free', 'price', 'password')
             ->orderBy('number')
             ->get();
 

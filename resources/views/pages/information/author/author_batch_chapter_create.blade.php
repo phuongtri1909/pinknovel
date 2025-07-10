@@ -746,7 +746,7 @@
                 if (isPublished) {
                     html = `
                         <div class="alert alert-info mb-3">
-                            <i class="fas fa-info-circle me-2"></i> <strong>Lưu ý:</strong> Bạn đã chọn "Xuất bản ngay" cho tất cả chương. 
+                            <i class="fas fa-info-circle me-2"></i> <strong>Lưu ý:</strong> Bạn đã chọn "Xuất bản ngay" cho tất cả chương.
                             Nếu bạn đặt lịch riêng cho một chương, chương đó sẽ được lưu ở trạng thái nháp và sẽ được xuất bản theo lịch.
                         </div>
                     ` + html;
@@ -907,12 +907,12 @@
                             <td>${charDisplay}</td>
                             <td>${statusHtml}</td>
                             <td>
-                                ${isDuplicate ? 
-                                    '<span class="text-muted">N/A</span>' : 
+                                ${isDuplicate ?
+                                    '<span class="text-muted">N/A</span>' :
                                     `<div class="form-check mb-2">
-                                                            <input class="form-check-input chapter-schedule-toggle" 
-                                                                type="checkbox" 
-                                                                id="enableSchedule_${chapter.number}" 
+                                                            <input class="form-check-input chapter-schedule-toggle"
+                                                                type="checkbox"
+                                                                id="enableSchedule_${chapter.number}"
                                                                 data-chapter="${chapter.number}"
                                                                 onchange="toggleChapterSchedule(${chapter.number})">
                                                             <label class="form-check-label" for="enableSchedule_${chapter.number}">
@@ -920,9 +920,9 @@
                                                             </label>
                                                         </div>
                                                         <div class="schedule-input d-none" id="scheduleField_${chapter.number}">
-                                                            <input type="datetime-local" 
-                                                                class="form-control form-control-sm chapter-schedule-date" 
-                                                                id="schedule_${chapter.number}" 
+                                                            <input type="datetime-local"
+                                                                class="form-control form-control-sm chapter-schedule-date"
+                                                                id="schedule_${chapter.number}"
                                                                 name="chapter_schedules[${chapter.number}]">
                                                         </div>`
                                 }
@@ -1090,12 +1090,12 @@
             }
 
             // Check if chapters were previewed
-            if ($('#chaptersPreviewContainer').children().length === 0) {
-                e.preventDefault();
-                showToast('Vui lòng xem trước các chương trước khi lưu.', 'warning');
-                $('#btnPreviewChapters').focus();
-                return false;
-            }
+            // if ($('#chaptersPreviewContainer').children().length === 0) {
+            //     e.preventDefault();
+            //     showToast('Vui lòng xem trước các chương trước khi lưu.', 'warning');
+            //     $('#btnPreviewChapters').focus();
+            //     return false;
+            // }
 
             return true;
         });

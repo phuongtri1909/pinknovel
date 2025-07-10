@@ -182,7 +182,7 @@
             // Handle is_free toggle for price field
             const isFreeCheckbox = document.getElementById('is_free');
             const priceContainer = document.getElementById('price-container');
-            
+
             isFreeCheckbox.addEventListener('change', function() {
                 if (this.checked) {
                     priceContainer.style.display = 'none';
@@ -191,19 +191,6 @@
                     priceContainer.style.display = 'block';
                 }
             });
-        });
-    </script>
-
-    <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
-    <script>
-        CKEDITOR.replace('content', {
-            on: {
-                change: function(evt) {
-                    this.updateElement();
-                }
-            },
-            height: 200,
-            removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
         });
     </script>
 @endpush
