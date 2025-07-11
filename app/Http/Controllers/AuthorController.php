@@ -731,6 +731,7 @@ class AuthorController extends Controller
             'password' => 'nullable|required_if:has_password,1|string|max:50',
             'has_password' => 'required_if:is_free,1|boolean',
             'scheduled_publish_at' => 'nullable|date|after:now',
+            'hours_interval' => 'nullable|numeric|min:0|max:168', // Tối đa 1 tuần
             'status' => 'required|in:draft,published',
             'chapter_schedules' => 'nullable|array',
             'chapter_schedules.*' => 'nullable|date|after:now',
@@ -743,6 +744,9 @@ class AuthorController extends Controller
             'password.required_if' => 'Vui lòng nhập mật khẩu cho chương',
             'scheduled_publish_at.date' => 'Thời gian hẹn giờ không hợp lệ',
             'scheduled_publish_at.after' => 'Thời gian hẹn giờ phải sau thời điểm hiện tại',
+            'hours_interval.numeric' => 'Khoảng cách giờ phải là số',
+            'hours_interval.min' => 'Khoảng cách giờ phải lớn hơn hoặc bằng 0',
+            'hours_interval.max' => 'Khoảng cách giờ không được quá 168 giờ (1 tuần)',
             'status.required' => 'Vui lòng chọn trạng thái chương',
             'chapter_schedules.*.date' => 'Thời gian hẹn giờ không hợp lệ',
             'chapter_schedules.*.after' => 'Thời gian hẹn giờ phải sau thời điểm hiện tại',
@@ -783,6 +787,8 @@ class AuthorController extends Controller
 
         // Lấy dữ liệu lịch đăng cho từng chương
         $chapterSchedules = $request->input('chapter_schedules', []);
+        $baseScheduleTime = $request->scheduled_publish_at;
+        $hoursInterval = $request->hours_interval;
 
         DB::beginTransaction();
         try {
@@ -793,23 +799,48 @@ class AuthorController extends Controller
 
             $successCount = 0;
 
-            // Chỉ sử dụng scheduled_publish_at cho chung khi status là draft
-            $globalSchedule = ($request->status == 'draft') ? $request->scheduled_publish_at : null;
+            // Sắp xếp chapters theo số chương để tính toán thời gian đúng
+            usort($chapters, function($a, $b) {
+                return $a['number'] - $b['number'];
+            });
 
+            // Tính toán thời gian xuất bản cho các chương không có lịch riêng
+            $chaptersWithoutCustomSchedule = [];
             foreach ($chapters as $chapter) {
+                if (!isset($chapterSchedules[$chapter['number']]) || empty($chapterSchedules[$chapter['number']])) {
+                    $chaptersWithoutCustomSchedule[] = $chapter['number'];
+                }
+            }
+
+            foreach ($chapters as $index => $chapter) {
                 $slug = 'chuong-' . $chapter['number'] . '-' . Str::slug(Str::limit($chapter['title'], 100));
 
-                // Kiểm tra từng chương có lịch riêng không
                 $scheduleDate = null;
                 $chapterStatus = $request->status;
 
-                // Nếu có lịch riêng, chương sẽ tự động chuyển sang draft dù status chung là published
+                // Kiểm tra xem chương có lịch riêng không
                 if (isset($chapterSchedules[$chapter['number']]) && !empty($chapterSchedules[$chapter['number']])) {
+                    // Có lịch riêng
                     $scheduleDate = $chapterSchedules[$chapter['number']];
-                    $chapterStatus = 'draft'; // Bắt buộc phải là draft nếu có lịch
-                } elseif ($request->status == 'draft') {
-                    // Nếu không có lịch riêng và status chung là draft, dùng lịch chung
-                    $scheduleDate = $globalSchedule;
+                    $chapterStatus = 'draft';
+                } elseif ($request->status == 'draft' && $baseScheduleTime) {
+                    // Không có lịch riêng, tính toán dựa trên thời gian cơ sở và khoảng cách
+                    if ($hoursInterval && $hoursInterval > 0) {
+                        // Tìm vị trí của chương này trong danh sách các chương không có lịch riêng
+                        $positionInList = array_search($chapter['number'], $chaptersWithoutCustomSchedule);
+                        if ($positionInList !== false) {
+                            // Tính toán thời gian = thời gian cơ sở + (vị trí * khoảng cách giờ)
+                            $baseTime = new \DateTime($baseScheduleTime);
+                            $additionalHours = $positionInList * $hoursInterval;
+                            $baseTime->add(new \DateInterval('PT' . ($additionalHours * 60) . 'M'));
+                            $scheduleDate = $baseTime->format('Y-m-d H:i:s');
+                        } else {
+                            $scheduleDate = $baseScheduleTime;
+                        }
+                    } else {
+                        // Không có khoảng cách giờ, tất cả đều dùng thời gian cơ sở
+                        $scheduleDate = $baseScheduleTime;
+                    }
                 }
 
                 $story->chapters()->create([
@@ -832,8 +863,16 @@ class AuthorController extends Controller
             }
 
             DB::commit();
+
+            $message = "Đã tạo thành công {$successCount} chương mới.";
+
+            // Thêm thông tin về lịch xuất bản nếu có
+            if ($baseScheduleTime && $hoursInterval > 0) {
+                $message .= " Các chương sẽ được xuất bản tự động theo lịch đã thiết lập.";
+            }
+
             return redirect()->route('user.author.stories.chapters', $story->id)
-                ->with('success', "Đã tạo thành công {$successCount} chương mới.");
+                ->with('success', $message);
         } catch (\Throwable $e) {
             DB::rollBack();
             Log::error('Error creating batch chapters: ' . $e->getMessage());
@@ -879,7 +918,7 @@ class AuthorController extends Controller
         $chapter = $story->chapters()->findOrFail($chapterId);
 
         $request->validate([
-            'title' => 'nullable|max:255|unique:chapters,title,' . $chapter->id . ',id,story_id,' . $story->id,
+            'title' => 'nullable|max:255',
             'content' => 'required',
             'number' => [
                 'required',

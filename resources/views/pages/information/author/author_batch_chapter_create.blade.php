@@ -258,7 +258,7 @@
 
                                 <div class="form-check mt-2">
                                     <input class="form-check-input" type="radio" name="status" id="status_published"
-                                        value="published" {{ old('status') == 'published' ? 'checked' : '' }}
+                                        value="published" {{ old('status','published') == 'published' ? 'checked' : '' }}
                                         onchange="toggleScheduleOptions()">
                                     <label class="form-check-label" for="status_published">
                                         <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
@@ -268,7 +268,7 @@
 
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="status" id="status_draft"
-                                        value="draft" {{ old('status', 'draft') == 'draft' ? 'checked' : '' }}
+                                        value="draft" {{ old('status') == 'draft' ? 'checked' : '' }}
                                         onchange="toggleScheduleOptions()">
                                     <label class="form-check-label" for="status_draft">
                                         <i class="fas fa-edit text-secondary me-1"></i> Lưu nháp
@@ -294,6 +294,23 @@
                                         value="{{ old('scheduled_publish_at') }}">
                                     <div class="form-text text-muted">Tất cả chương sẽ tự động xuất bản vào thời gian
                                         đã chọn (trừ khi có lịch riêng).</div>
+
+                                    <!-- Thêm input cho khoảng cách giờ -->
+                                    <div class="mt-2">
+                                        <label for="hours_interval" class="form-label">
+                                            Khoảng cách giờ giữa các chương
+                                            <small class="text-muted">(tùy chọn)</small>
+                                        </label>
+                                        <input type="number"
+                                            class="form-control @error('hours_interval') is-invalid @enderror"
+                                            id="hours_interval" name="hours_interval"
+                                            value="{{ old('hours_interval') }}" min="0" step="0.5"
+                                            placeholder="Ví dụ: 2">
+
+                                        @error('hours_interval')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
                                 </div>
                                 @error('scheduled_publish_at')
                                     <div class="text-danger small mt-1">{{ $message }}</div>
@@ -910,21 +927,26 @@
                                 ${isDuplicate ?
                                     '<span class="text-muted">N/A</span>' :
                                     `<div class="form-check mb-2">
-                                                            <input class="form-check-input chapter-schedule-toggle"
-                                                                type="checkbox"
-                                                                id="enableSchedule_${chapter.number}"
-                                                                data-chapter="${chapter.number}"
-                                                                onchange="toggleChapterSchedule(${chapter.number})">
-                                                            <label class="form-check-label" for="enableSchedule_${chapter.number}">
-                                                                Hẹn giờ riêng ${isPublished ? '<small class="text-info">(sẽ lưu nháp)</small>' : ''}
-                                                            </label>
-                                                        </div>
-                                                        <div class="schedule-input d-none" id="scheduleField_${chapter.number}">
-                                                            <input type="datetime-local"
-                                                                class="form-control form-control-sm chapter-schedule-date"
-                                                                id="schedule_${chapter.number}"
-                                                                name="chapter_schedules[${chapter.number}]">
-                                                        </div>`
+                                                                            <input class="form-check-input chapter-schedule-toggle"
+                                                                                type="checkbox"
+                                                                                id="enableSchedule_${chapter.number}"
+                                                                                data-chapter="${chapter.number}"
+                                                                                onchange="toggleChapterSchedule(${chapter.number})">
+                                                                            <label class="form-check-label" for="enableSchedule_${chapter.number}">
+                                                                                Hẹn giờ riêng ${isPublished ? '<small class="text-info">(sẽ lưu nháp)</small>' : ''}
+                                                                            </label>
+                                                                        </div>
+                                                                        <div class="schedule-input d-none" id="scheduleField_${chapter.number}">
+                                                                            <input type="datetime-local"
+                                                                                class="form-control form-control-sm chapter-schedule-date"
+                                                                                id="schedule_${chapter.number}"
+                                                                                name="chapter_schedules[${chapter.number}]">
+                                                                        </div>
+                                                                        <div class="mt-2">
+                                                                            <small class="text-muted calculated-time" id="calculatedTime_${chapter.number}">
+                                                                                <!-- Thời gian tính toán sẽ hiển thị ở đây -->
+                                                                            </small>
+                                                                        </div>`
                                 }
                             </td>
                         </tr>
@@ -983,7 +1005,61 @@
                     previewContent.slideDown(200);
                     previewIcon.removeClass('fa-chevron-down').addClass('fa-chevron-up');
                 }
+
+                setTimeout(() => {
+                    calculateScheduleTimes();
+                }, 100);
             }
+        });
+
+        function calculateScheduleTimes() {
+            const baseTime = $('#scheduled_publish_at').val();
+            const hoursInterval = parseFloat($('#hours_interval').val()) || 0;
+
+            if (!baseTime || hoursInterval <= 0) {
+                $('.calculated-time').text('');
+                return;
+            }
+
+            const chapters = [];
+            // Lấy danh sách các chương từ preview table
+            $('#chaptersPreviewContainer tbody tr').each(function() {
+                const chapterNumber = $(this).find('td:eq(1) strong').text().replace('Chương ', '');
+                const hasCustomSchedule = $(`#enableSchedule_${chapterNumber}`).is(':checked') &&
+                    $(`#schedule_${chapterNumber}`).val();
+
+                if (!hasCustomSchedule) {
+                    chapters.push(parseInt(chapterNumber));
+                }
+            });
+
+            // Sắp xếp theo số chương
+            chapters.sort((a, b) => a - b);
+
+            // Tính toán thời gian cho từng chương
+            const baseDate = new Date(baseTime);
+            chapters.forEach((chapterNumber, index) => {
+                const scheduleTime = new Date(baseDate.getTime() + (index * hoursInterval * 60 * 60 * 1000));
+                const formattedTime = scheduleTime.toLocaleString('vi-VN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                $(`#calculatedTime_${chapterNumber}`).html(
+                    `<i class="fas fa-clock text-info"></i> Dự kiến: ${formattedTime}`
+                );
+            });
+        }
+
+        $('#scheduled_publish_at, #hours_interval').on('change input', function() {
+            calculateScheduleTimes();
+        });
+
+        $(document).on('change', '.chapter-schedule-toggle', function() {
+            calculateScheduleTimes();
         });
 
         // Function to toggle individual chapter schedule
@@ -993,9 +1069,11 @@
 
             if (checkbox.is(':checked')) {
                 scheduleField.removeClass('d-none');
+                $(`#calculatedTime_${chapterNumber}`).text(''); // Xóa thời gian tính toán
             } else {
                 scheduleField.addClass('d-none');
                 $(`#schedule_${chapterNumber}`).val('');
+                calculateScheduleTimes(); // Tính lại thời gian
             }
         }
 
