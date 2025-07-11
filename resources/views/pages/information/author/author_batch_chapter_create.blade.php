@@ -422,31 +422,24 @@
         }
 
         $(document).ready(function() {
-            // Khởi tạo các hiển thị tùy thuộc vào trạng thái ban đầu
             togglePricingOptions();
             togglePasswordField();
             toggleScheduleOptions();
 
-            // Kiểm tra trạng thái ban đầu của các trường mật khẩu
             if ($('#has_password_yes').is(':checked')) {
                 $('#passwordField').show();
             }
 
-            // Restore preview if validation errors occurred
             @if (old('chapters_count'))
-                // Trigger preview generation as soon as the page loads if we had previous chapters
                 setTimeout(function() {
                     $('#btnPreviewChapters').click();
                 }, 500);
 
-                // Restore individual chapter schedules
                 @foreach (old('chapter_schedules', []) as $chapterNum => $schedule)
                     @if (!empty($schedule))
                         setTimeout(function() {
-                            // Make sure chapter checkbox is checked and field is visible
                             $('#enableSchedule_{{ $chapterNum }}').prop('checked', true);
                             $('#scheduleField_{{ $chapterNum }}').removeClass('d-none');
-                            // Set the value
                             $('#schedule_{{ $chapterNum }}').val('{{ $schedule }}');
                         }, 1000);
                     @endif
@@ -483,12 +476,10 @@
                     displayParsedChapters(chapters, result.duplicates, result.duplicateTitles,
                         result);
 
-                    // Restore button state
                     $('#btnPreviewChapters').html('Cập nhật xem trước');
                     $('#btnPreviewChapters').prop('disabled', false);
                 }).catch(function(error) {
                     console.error('Error checking duplicates:', error);
-                    // Vẫn hiển thị chapters nhưng không có thông tin duplicate
                     displayParsedChapters(chapters, [], [], {});
 
                     $('#btnPreviewChapters').html('Cập nhật xem trước');
@@ -500,29 +491,22 @@
             function parseChaptersFromContent(content) {
                 const chapters = [];
 
-                // First, normalize line endings
                 const normalizedContent = content.replace(/\r\n/g, '\n');
 
-                // Split content by chapter headings
-                // This regex looks for "Chương X" at the start of a line
                 const chapterBlocks = normalizedContent.split(/\n(?=Chương\s+\d+)/);
 
-                // Process each chapter block
                 chapterBlocks.forEach(block => {
-                    if (!block.trim()) return; // Skip empty blocks
+                    if (!block.trim()) return;
 
-                    // Extract the first line (chapter heading) and the rest (content)
                     const lines = block.trim().split('\n');
                     const headingLine = lines[0];
 
-                    // Match chapter number and optional title
                     const headingMatch = headingLine.match(/^Chương\s+(\d+)(?:\s*:\s*(.*))?$/);
 
                     if (headingMatch) {
                         const chapterNumber = parseInt(headingMatch[1]);
                         const title = headingMatch[2] ? headingMatch[2].trim() : `Chương ${chapterNumber}`;
 
-                        // Content is everything after the first line
                         const content = lines.slice(1).join('\n').trim();
 
                         chapters.push({
@@ -541,25 +525,20 @@
                 return text
                     .toLowerCase()
                     .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
-                    .replace(/[đĐ]/g, 'd') // Handle Vietnamese đ
-                    .replace(/[^a-z0-9\s-]/g, '') // Remove special chars
+                    .replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[đĐ]/g, 'd')
+                    .replace(/[^a-z0-9\s-]/g, '')
                     .trim()
-                    .replace(/\s+/g, '-') // Replace spaces with hyphens
-                    .replace(/-+/g, '-') // Remove multiple hyphens
-                    .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+                    .replace(/\s+/g, '-')
+                    .replace(/-+/g, '-')
+                    .replace(/^-|-$/g, '');
             }
 
             // Function to count words in Vietnamese text
             function countWords(text) {
                 if (!text || typeof text !== 'string') return 0;
-
-                // Remove extra whitespace and normalize
                 const normalizedText = text.replace(/\s+/g, ' ').trim();
-
                 if (normalizedText === '') return 0;
-
-                // Count words by splitting on whitespace
                 const words = normalizedText.split(' ').filter(word => word.length > 0);
 
                 return words.length;
@@ -573,7 +552,6 @@
                 const seenSlugs = new Set();
 
                 chapters.forEach(chapter => {
-                    // Check duplicate numbers
                     if (seenNumbers.has(chapter.number)) {
                         if (!duplicateNumbers.includes(chapter.number)) {
                             duplicateNumbers.push(chapter.number);
@@ -582,7 +560,6 @@
                         seenNumbers.add(chapter.number);
                     }
 
-                    // Check duplicate titles (by slug) - CHỈ với những chương có tiêu đề tùy chỉnh
                     const isDefaultTitle = chapter.title === `Chương ${chapter.number}`;
 
                     if (!isDefaultTitle) {
@@ -606,13 +583,8 @@
             // Function to check duplicate chapters via AJAX
             function checkDuplicateChapters(chapters) {
                 return new Promise(function(resolve, reject) {
-                    // Trước tiên, tìm tất cả trùng lặp internal
                     const internalDuplicates = findInternalDuplicates(chapters);
-
-                    // Luôn luôn check với database, bất kể có internal duplicates hay không
                     const chapterNumbers = chapters.map(ch => ch.number);
-
-                    // CHỈ gửi những tiêu đề tùy chỉnh lên server để check
                     const customTitles = chapters
                         .filter(ch => ch.title !== `Chương ${ch.number}`)
                         .map(ch => ch.title);
@@ -623,10 +595,9 @@
                         data: {
                             _token: '{{ csrf_token() }}',
                             chapter_numbers: chapterNumbers,
-                            chapter_titles: customTitles // Chỉ gửi custom titles
+                            chapter_titles: customTitles
                         },
                         success: function(response) {
-                            // Merge internal và database duplicates
                             const allDuplicateNumbers = [
                                 ...internalDuplicates.numbers,
                                 ...(response.duplicate_numbers || [])
@@ -637,7 +608,6 @@
                                 ...(response.duplicate_titles || [])
                             ];
 
-                            // Remove duplicates from merged arrays
                             const uniqueDuplicateNumbers = [...new Set(allDuplicateNumbers)];
                             const uniqueDuplicateTitles = [...new Set(allDuplicateTitles)];
 
@@ -652,7 +622,6 @@
                             });
                         },
                         error: function(xhr, status, error) {
-                            // Nếu AJAX lỗi, chỉ trả về internal duplicates
                             resolve({
                                 duplicates: internalDuplicates.numbers,
                                 duplicateTitles: internalDuplicates.titles,
@@ -675,13 +644,11 @@
 
                 let html = '';
 
-                // Show warnings if there are duplicates
                 if (duplicateNumbers.length > 0 || duplicateTitles.length > 0) {
                     html += '<div class="alert alert-danger mb-3">';
                     html +=
                         '<h6 class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>Phát hiện trùng lặp:</h6>';
 
-                    // Show internal duplicates
                     if (duplicateInfo.internalDuplicates &&
                         (duplicateInfo.internalDuplicates.numbers.length > 0 || duplicateInfo.internalDuplicates
                             .titles.length > 0)) {
@@ -777,10 +744,8 @@
                 chapters.forEach(chapter => {
                     const chapterNumberCount = chapters.filter(ch => ch.number === chapter.number).length;
 
-                    // CHỈ check trùng tiêu đề với những chương có tiêu đề tùy chỉnh
                     const isDefaultTitle = chapter.title === `Chương ${chapter.number}`;
-                    let chapterTitleCount = 1; // Default là không trùng
-
+                    let chapterTitleCount = 1;
                     if (!isDefaultTitle) {
                         const chapterTitleSlug = createSlug(chapter.title);
                         chapterTitleCount = chapters.filter(ch => {
@@ -1069,11 +1034,11 @@
 
             if (checkbox.is(':checked')) {
                 scheduleField.removeClass('d-none');
-                $(`#calculatedTime_${chapterNumber}`).text(''); // Xóa thời gian tính toán
+                $(`#calculatedTime_${chapterNumber}`).text('');
             } else {
                 scheduleField.addClass('d-none');
                 $(`#schedule_${chapterNumber}`).val('');
-                calculateScheduleTimes(); // Tính lại thời gian
+                calculateScheduleTimes();
             }
         }
 
@@ -1095,15 +1060,12 @@
                 $('#scheduleOptionsContainer').show();
             } else {
                 $('#scheduleOptionsContainer').hide();
-                // Uncheck and reset global schedule field when publishing immediately
                 $('#enableSchedule').prop('checked', false);
                 $('#scheduleField').hide();
                 $('#scheduled_publish_at').val('');
             }
 
-            // If preview is already visible, update it to reflect the new status
             if (!$('#previewChapters').hasClass('d-none') && $('#chaptersPreviewContainer').children().length > 0) {
-                // Re-trigger the preview generation to update the UI
                 $('#btnPreviewChapters').click();
             }
         }
@@ -1141,9 +1103,7 @@
             }
         }
 
-        // Validation before form submission
         $('#batchChapterForm').on('submit', function(e) {
-            // Check duplicate chapters before submission
             const batchContent = $('#batch_content').val();
             if (!batchContent.trim()) {
                 e.preventDefault();
@@ -1152,7 +1112,6 @@
                 return false;
             }
 
-            // Check if there are any duplicate chapters in preview
             const duplicateRows = $('#chaptersPreviewContainer .table-danger');
             if (duplicateRows.length > 0) {
                 e.preventDefault();
