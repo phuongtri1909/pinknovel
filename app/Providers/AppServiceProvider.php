@@ -50,33 +50,6 @@ class AppServiceProvider extends ServiceProvider
             $allCategories = Category::withCount('stories')->orderBy('name')->get();
             $view->with('categories', $allCategories);
 
-            // Get top 20 categories with the hottest stories (based on total chapter views and rating)
-            $topCategories = Category::select([
-                'categories.id',
-                'categories.name',
-                'categories.slug',
-                'categories.description'
-            ])
-                ->leftJoin('category_story', 'categories.id', '=', 'category_story.category_id')
-                ->leftJoin('stories', 'category_story.story_id', '=', 'stories.id')
-                ->leftJoin('chapters', 'stories.id', '=', 'chapters.story_id')
-                ->leftJoin('ratings', 'stories.id', '=', 'ratings.story_id')
-                ->where('stories.status', '=', 'published')
-                ->groupBy([
-                    'categories.id',
-                    'categories.name',
-                    'categories.slug',
-                    'categories.description'
-                ])
-                ->selectRaw('COUNT(DISTINCT stories.id) as stories_count')
-                ->selectRaw('SUM(COALESCE(chapters.views, 0)) as total_views')
-                ->selectRaw('AVG(COALESCE(ratings.rating, 3)) as avg_rating')
-                ->selectRaw('SUM(COALESCE(chapters.views, 0)) * AVG(COALESCE(ratings.rating, 3)) as hotness_score')
-                ->orderByDesc('hotness_score')
-                ->take(20)
-                ->get();
-
-            $view->with('topCategories', $topCategories);
 
             $dailyTopPurchased = $this->getTopStoriesPurchased(Carbon::today());
 
