@@ -19,7 +19,7 @@
             </button>
         </li>
     </ul>
-    
+
     <div class="tab-content" id="purchaseTabContent">
         <!-- Purchased Chapters Tab -->
         <div class="tab-pane fade show active" id="chapters-content" role="tabpanel" aria-labelledby="chapters-tab">
@@ -46,13 +46,13 @@
                                             Chương {{ $purchase->chapter->number }}: {{ $purchase->chapter->title }}
                                         </a>
                                     </div>
-                                    
+
                                     <div class="d-flex justify-content-between align-items-center mt-2">
                                         <span class="purchase-details">
-                                            <i class="fas fa-coins text-warning"></i> 
+                                            <i class="fas fa-coins text-warning"></i>
                                             <span>{{ number_format($purchase->price) }} xu</span>
                                         </span>
-                                        <a href="{{ route('chapter', [$purchase->chapter->story->slug, $purchase->chapter->slug]) }}" 
+                                        <a href="{{ route('chapter', [$purchase->chapter->story->slug, $purchase->chapter->slug]) }}"
                                            class="btn btn-sm action-btn-primary">
                                             <i class="fas fa-book-open me-1"></i> Đọc ngay
                                         </a>
@@ -71,7 +71,7 @@
                 </div>
             @endif
         </div>
-        
+
         <!-- Purchased Stories Tab -->
         <div class="tab-pane fade" id="stories-content" role="tabpanel" aria-labelledby="stories-tab">
             @if(count($purchasedStories) > 0)
@@ -96,17 +96,17 @@
                                             <i class="fas fa-check-circle me-1"></i> Combo Truyện
                                         </span>
                                         <span class="text-muted">
-                                            <i class="fas fa-book me-1"></i> 
+                                            <i class="fas fa-book me-1"></i>
                                             {{ $purchase->story->chapters()->where('is_free', 0)->count() }} chương VIP
                                         </span>
                                     </div>
-                                    
+
                                     <div class="d-flex justify-content-between align-items-center">
                                         <span class="purchase-details">
-                                            <i class="fas fa-coins text-warning"></i> 
+                                            <i class="fas fa-coins text-warning"></i>
                                             <span>{{ number_format($purchase->price) }} xu</span>
                                         </span>
-                                        <a href="{{ route('show.page.story', $purchase->story->slug) }}" 
+                                        <a href="{{ route('show.page.story', $purchase->story->slug) }}"
                                            class="btn btn-sm action-btn-primary">
                                             <i class="fas fa-book me-1"></i> Xem truyện
                                         </a>
@@ -154,11 +154,11 @@
             transition: all 0.3s ease;
             margin-bottom: 10px;
         }
-        
+
         .purchase-item:hover {
             background-color: rgba(0, 0, 0, 0.02);
         }
-        
+
         .story-thumb {
             width: 60px;
             height: 90px;
@@ -166,54 +166,50 @@
             border-radius: 6px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
-        
+
         .story-title {
             font-size: 1.1rem;
             margin-bottom: 5px;
         }
-        
+
         .story-title a {
             color: var(--primary-color);
             text-decoration: none;
         }
-        
-        .story-title a:hover {
-            text-decoration: underline;
-        }
-        
+
         .story-chapter a {
             color: #666;
             text-decoration: none;
         }
-        
+
         .story-chapter a:hover {
             color: var(--primary-color);
         }
-        
+
         .purchase-details {
             font-size: 0.9rem;
             color: #666;
         }
-        
+
         .empty-state {
             text-align: center;
             padding: 40px 20px;
             background-color: rgba(0, 0, 0, 0.02);
             border-radius: 10px;
         }
-        
+
         .empty-icon {
             font-size: 3rem;
             color: #ccc;
             margin-bottom: 15px;
         }
-        
+
         .empty-text {
             font-size: 1.1rem;
             color: #888;
             margin-bottom: 20px;
         }
-        
+
         .discover-btn {
             background-color: var(--primary-color);
             color: white;
@@ -222,13 +218,13 @@
             border-radius: 50px;
             transition: all 0.3s ease;
         }
-        
+
         .discover-btn:hover {
             background-color: var(--primary-color-dark);
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        
+
         /* Tab styling */
         .nav-tabs .nav-link {
             color: #666;
@@ -237,13 +233,13 @@
             font-weight: 500;
             position: relative;
         }
-        
+
         .nav-tabs .nav-link.active {
             color: var(--primary-color);
             background: transparent;
             border: none;
         }
-        
+
         .nav-tabs .nav-link.active::after {
             content: '';
             position: absolute;
@@ -254,11 +250,11 @@
             background-color: var(--primary-color);
             border-radius: 3px 3px 0 0;
         }
-        
+
         .nav-tabs {
             border-bottom: 1px solid #eee;
         }
-        
+
         /* Action button */
         .action-btn-primary {
             background-color: var(--primary-color);
@@ -268,22 +264,22 @@
             border-radius: 4px;
             transition: all 0.3s ease;
         }
-        
+
         .action-btn-primary:hover {
             background-color: var(--primary-color-dark);
             color: white;
         }
-        
+
         /* Responsive */
         @media (max-width: 767px) {
             .story-thumb {
                 width: 50px;
                 height: 75px;
             }
-            
+
             .story-title {
                 font-size: 1rem;
             }
         }
     </style>
-@endpush 
+@endpush

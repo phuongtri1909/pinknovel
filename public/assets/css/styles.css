@@ -19,6 +19,14 @@ body {
     font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
+.color-hover{
+    color: var(--color-text);
+}
+
+.color-hover:hover {
+    color: var(--primary-color-3) !important;
+}
+
 .bg-primary-bg-2 {
     background: var(--primary-bg-2) !important;
 }
@@ -1438,4 +1446,4 @@ body {
 
 .social-icon .custom-zalo {
     font-size: 1.2em;
-} 
+}

@@ -1,7 +1,4 @@
-<!-- filepath: d:\truyen\pinknovel\resources\views\components\hot_stories.blade.php -->
-<!-- Hot Stories Widget -->
-
-<div class="sidebar-widget recent-reads rounded shadow-sm">
+<div class="sidebar-widget recent-reads rounded-4 shadow-sm">
     <div class="widget-header bg-2">
         <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-fire fa-lg" style="color: #ef4444;"></i> Truyện Hot
         </h2>
@@ -47,7 +44,7 @@
                                         class="hot-story-thumb">
                                 </a>
                             </div>
-                            <div class="story-info w-100">
+                            <div class="story-info w-100 d-flex flex-column justify-content-center">
                                 <h4 class="hot-story-title">
                                     <a class="text-decoration-none text-dark"
                                         href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
@@ -56,13 +53,11 @@
                                     @php
                                         $mainCategories = $story->categories->where('is_main', true);
                                         $displayCategories = collect();
-                                        
-                                        // Thêm các danh mục chính (tối đa 2)
+
                                         foreach($mainCategories->take(2) as $category) {
                                             $displayCategories->push($category);
                                         }
-                                        
-                                        // Nếu không đủ 2 danh mục chính, thêm danh mục phụ
+
                                         if($displayCategories->count() < 2) {
                                             $subCategories = $story->categories->where('is_main', false);
                                             foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
@@ -70,7 +65,7 @@
                                             }
                                         }
                                     @endphp
-                                    
+
                                     @foreach ($displayCategories as $category)
                                         <span
                                             class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
@@ -109,7 +104,7 @@
                                         class="hot-story-thumb">
                                 </a>
                             </div>
-                            <div class="story-info w-100">
+                            <div class="story-info w-100 d-flex flex-column justify-content-center">
                                 <h4 class="hot-story-title">
                                     <a class="text-decoration-none text-dark"
                                         href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
@@ -118,13 +113,11 @@
                                     @php
                                         $mainCategories = $story->categories->where('is_main', true);
                                         $displayCategories = collect();
-                                        
-                                        // Thêm các danh mục chính (tối đa 2)
+
                                         foreach($mainCategories->take(2) as $category) {
                                             $displayCategories->push($category);
                                         }
-                                        
-                                        // Nếu không đủ 2 danh mục chính, thêm danh mục phụ
+
                                         if($displayCategories->count() < 2) {
                                             $subCategories = $story->categories->where('is_main', false);
                                             foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
@@ -132,7 +125,7 @@
                                             }
                                         }
                                     @endphp
-                                    
+
                                     @foreach ($displayCategories as $category)
                                         <span
                                             class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
@@ -171,7 +164,7 @@
                                         class="hot-story-thumb">
                                 </a>
                             </div>
-                            <div class="story-info w-100">
+                            <div class="story-info w-100 d-flex flex-column justify-content-center">
                                 <h4 class="hot-story-title">
                                     <a class="text-decoration-none text-dark"
                                         href="{{ route('show.page.story', $story->slug) }}">{{ $story->title }}</a>
@@ -180,13 +173,11 @@
                                     @php
                                         $mainCategories = $story->categories->where('is_main', true);
                                         $displayCategories = collect();
-                                        
-                                        // Thêm các danh mục chính (tối đa 2)
+
                                         foreach($mainCategories->take(2) as $category) {
                                             $displayCategories->push($category);
                                         }
-                                        
-                                        // Nếu không đủ 2 danh mục chính, thêm danh mục phụ
+
                                         if($displayCategories->count() < 2) {
                                             $subCategories = $story->categories->where('is_main', false);
                                             foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
@@ -194,7 +185,7 @@
                                             }
                                         }
                                     @endphp
-                                    
+
                                     @foreach ($displayCategories as $category)
                                         <span
                                             class="badge bg-1 text-white small rounded-pill d-flex align-items-center me-2">{{ $category->name }}</span>
@@ -258,7 +249,7 @@
             }
 
             .hot-story-thumb {
-                width: 85px;
+                width: 100px;
                 height: 140px;
                 object-fit: cover;
                 border-radius: 4px;

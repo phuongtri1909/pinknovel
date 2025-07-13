@@ -1,5 +1,5 @@
-<section>
-    <div class="mt-4 bg-list rounded px-0 p-md-4 pb-4">
+<section class="container">
+    <div class="mt-4 bg-list rounded-4 px-0 p-md-4 pb-4">
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center pt-1 pb-3 rounded-top-custom">
             <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-check-circle" style="color: #57f17d"></i> Đề xuất</h2>
@@ -12,7 +12,7 @@
         <div id="storiesContainerNewSlide" class="rounded-bottom-custom">
             <div class="swiper storyFullSwiper">
                 <div class="swiper-wrapper">
-                    @forelse ($newStories as $story)
+                    @forelse ($featuredStories as $story)
                         <div class="swiper-slide">
                             <div class="story-item">
                                 @include('components.item-story-full', ['story' => $story])
@@ -109,7 +109,7 @@
                         slidesPerView: 2,
                         spaceBetween: 10,
                     },
-                    
+
                     768: {
                         slidesPerView: 3,
                         spaceBetween: 20,

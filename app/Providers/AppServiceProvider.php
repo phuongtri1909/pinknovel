@@ -46,7 +46,6 @@ class AppServiceProvider extends ServiceProvider
             'pages.information.author.author_create',
             'pages.information.author.author_edit',
         ], function ($view) {
-            // Get all categories for standard navigation
             $allCategories = Category::withCount('stories')->orderBy('name')->get();
             $view->with('categories', $allCategories);
 

@@ -119,9 +119,9 @@
 
             {{-- @include('components.list_story_full', ['completedStories' => $completedStories]) --}}
 
-            {{-- @include('components.list_story_de_xuat', ['newStories' => $newStories]) --}}
+            @include('components.list_story_de_xuat', ['featuredStories' => $featuredStories])
 
-            @include('components.stories_same_author_translator', ['story' => $story])
+            @include('components.stories_same_author_translator', ['authorStories' => $authorStories, 'translatorStories' => $translatorStories, 'story' => $story])
         </div>
     </section>
 
@@ -134,13 +134,13 @@
 @push('scripts')
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // @if($story->is_18_plus)
             //     // Tạo key duy nhất cho mỗi truyện
             //     const storyWarningKey = 'story_18_warning_{{ $story->id }}';
-                
+
             //     // Kiểm tra xem đã hiển thị cảnh báo cho truyện này chưa
             //     if (!localStorage.getItem(storyWarningKey)) {
             //         Swal.fire({
@@ -178,7 +178,7 @@
             //             if (result.isConfirmed) {
             //                 // Lưu vào localStorage để không hiển thị lại
             //                 localStorage.setItem(storyWarningKey, 'confirmed');
-                            
+
             //                 // Hiển thị thông báo xác nhận
             //                 Swal.fire({
             //                     icon: 'success',

@@ -1,5 +1,5 @@
 <section>
-    <div class="mt-4 bg-list rounded px-0 p-md-4 pb-4">
+    <div class="mt-4 bg-list rounded-4 px-0 p-md-4 pb-4">
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center pt-1 pb-3 rounded-top-custom">
             <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-check-circle" style="color: #57f17d"></i> Hoàn Thành</h2>
@@ -31,7 +31,7 @@
                 </div>
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
-               
+
             </div>
         </div>
     </div>
@@ -39,7 +39,7 @@
 
 @once
     @push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
         <style>
             .storyFullSwiper .swiper-button-next,
             .storyFullSwiper .swiper-button-prev {
@@ -86,7 +86,7 @@
     @endpush
 
     @push('scripts')
-    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
         <script>
             new Swiper('.storyFullSwiper', {
                 slidesPerView: 1,
@@ -110,7 +110,7 @@
                         slidesPerView: 2,
                         spaceBetween: 10,
                     },
-                    
+
                     768: {
                         slidesPerView: 3,
                         spaceBetween: 20,

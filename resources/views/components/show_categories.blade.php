@@ -1,5 +1,5 @@
 <!-- filepath: /d:/full_truyen/resources/views/components/categories-widget.blade.php -->
-<div class="sidebar-widget categories-widget rounded-3 shadow-sm mt-4">
+<div class="sidebar-widget categories-widget rounded-4 shadow-sm mt-4">
     <div class="widget-header mb-3">
         <h3 class="fs-5 m-0 text-dark">
             <i class="fas fa-tags text-primary me-2"></i>
@@ -15,7 +15,7 @@
                 <a href="{{ route('categories.story.show', $category->slug) }}"
                     class="category-item rounded-4 {{ isset($currentCategory) && $currentCategory->id == $category->id ? 'active' : '' }}">
                     <span class="category-name">{{ $category->name }}</span>
-                   
+
                 </a>
             @endforeach
         </div>
@@ -80,19 +80,19 @@
                     grid-template-columns: repeat(2, 1fr);
                 }
             }
-            
+
             @media (min-width: 576px) and (max-width: 767px) {
                 .category-grid {
                     grid-template-columns: repeat(3, 1fr);
                 }
             }
-            
+
             @media (min-width: 768px) and (max-width: 991px) {
                 .category-grid {
                     grid-template-columns: repeat(4, 1fr);
                 }
             }
-            
+
             @media (min-width: 992px) {
                 .category-grid {
                     grid-template-columns: repeat(5, 1fr);

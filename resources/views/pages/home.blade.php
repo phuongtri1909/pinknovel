@@ -3,20 +3,31 @@
     @include('components.banner_home')
     <section class="container-xl">
         @include('components.list_story_home', ['list_story' => $hotStories])
-        @include('components.list_story_new_and_rating', [
-            'latestUpdatedStories' => $latestUpdatedStories,
-            'ratingStories' => $ratingStories,
-        ])
 
         @if ($newStories->count() > 0)
             @include('components.list_story_new_slide', ['newStories' => $newStories])
         @endif
 
-
-        @include('components.list_story_view_fl', [
-            'topViewedStories' => $topViewedStories,
-            'topFollowedStories' => $topFollowedStories,
+        @include('components.list_story_new_chapter', [
+            'latestUpdatedStories' => $latestUpdatedStories,
         ])
+
+        <div class="row mt-4">
+            <div class="col-12 col-md-6">
+                @include('components.list_story_view_rating_fl', [
+                    'topViewedStories' => $topViewedStories,
+                    'ratingStories' => $ratingStories,
+                    'topFollowedStories' => $topFollowedStories,
+                ])
+
+            </div>
+            <div class="col-12 col-md-6">
+                @include('components.hot_stories')
+            </div>
+        </div>
+
+
+
 
         @if ($completedStories->count() > 0)
             @include('components.list_story_full', ['completedStories' => $completedStories])

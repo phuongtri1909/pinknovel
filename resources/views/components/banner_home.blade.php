@@ -33,6 +33,7 @@
 
     @once
         @push('styles')
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
             <style>
                 .banner-carousel-section {
                     font-size: 3rem;
@@ -112,6 +113,7 @@
         @endpush
 
         @push('scripts')
+            <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const bannerSwiper = new Swiper('.banner-home-swiper', {

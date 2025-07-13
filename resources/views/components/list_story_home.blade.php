@@ -1,5 +1,5 @@
 <section>
-    <div class="mt-4 bg-list rounded px-0 p-md-4 pb-4">
+    <div class="mt-4 bg-list rounded-4 px-0 p-md-4 pb-4">
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
             <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-fire fa-xl" style="color: #ef4444;"></i> Truyện Đề
