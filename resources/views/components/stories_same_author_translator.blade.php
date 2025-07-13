@@ -1,7 +1,7 @@
 <section id="comments" class="my-3 my-md-5">
     <div class="container px-2 px-md-3">
         <div class="row">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div
                     class="section-title d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
                     <div class="title-container mb-2">
@@ -27,7 +27,7 @@
 
 
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div
                     class="section-title d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
                     <div class="title-container mb-2">
