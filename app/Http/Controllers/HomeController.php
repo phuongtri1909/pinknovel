@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Story;
 use App\Models\Banner;
@@ -12,11 +13,13 @@ use App\Models\Comment;
 use App\Models\Socials;
 use App\Models\Category;
 use App\Models\UserReading;
+use App\Constants\CacheKeys;
 use Illuminate\Http\Request;
 use App\Models\StoryPurchase;
 use App\Models\ChapterPurchase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use App\Services\ReadingHistoryService;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -112,7 +115,7 @@ class HomeController extends Controller
     {
         // Trước tiên, thử lấy truyện đề cử
         $featuredStories = $this->getFeaturedStoriesForPage();
-        
+
         if ($featuredStories->isNotEmpty()) {
             // Có truyện đề cử - sử dụng truyện đề cử
             $stories = $featuredStories;
@@ -139,109 +142,109 @@ class HomeController extends Controller
         ]);
     }
 
-/**
- * Lấy truyện đề cử cho trang hot (không giới hạn số lượng)
- */
-private function getFeaturedStoriesForPage()
-{
-    $query = Story::with(['chapters' => function ($query) {
-        $query->select('id', 'story_id', 'views', 'created_at')
-            ->where('status', 'published');
-    }])
-        ->published()
-        ->where('is_featured', true)
-        ->whereHas('chapters', function ($query) {
-            $query->where('status', 'published');
-        })
-        ->select([
-            'id',
-            'title',
-            'slug',
-            'cover',
-            'completed',
-            'description',
-            'created_at',
-            'updated_at',
-            'cover_medium',
-            'author_name',
-            'is_featured',
-            'featured_order'
-        ])
-        ->withCount([
-            'chapters' => fn($q) => $q->where('status', 'published'),
-            'storyPurchases',
-            'chapterPurchases',
-            'ratings',
-            'bookmarks'
-        ])
-        ->selectSub(function ($q) {
-            $q->from('ratings')
-                ->selectRaw('AVG(rating)')
-                ->whereColumn('ratings.story_id', 'stories.id');
-        }, 'average_rating')
-        ->orderBy('featured_order', 'asc')
-        ->orderBy('created_at', 'desc');
+    /**
+     * Lấy truyện đề cử cho trang hot (không giới hạn số lượng)
+     */
+    private function getFeaturedStoriesForPage()
+    {
+        $query = Story::with(['chapters' => function ($query) {
+            $query->select('id', 'story_id', 'views', 'created_at')
+                ->where('status', 'published');
+        }])
+            ->published()
+            ->where('is_featured', true)
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'cover',
+                'completed',
+                'description',
+                'created_at',
+                'updated_at',
+                'cover_medium',
+                'author_name',
+                'is_featured',
+                'featured_order'
+            ])
+            ->withCount([
+                'chapters' => fn($q) => $q->where('status', 'published'),
+                'storyPurchases',
+                'chapterPurchases',
+                'ratings',
+                'bookmarks'
+            ])
+            ->selectSub(function ($q) {
+                $q->from('ratings')
+                    ->selectRaw('AVG(rating)')
+                    ->whereColumn('ratings.story_id', 'stories.id');
+            }, 'average_rating')
+            ->orderBy('featured_order', 'asc')
+            ->orderBy('created_at', 'desc');
 
-    $stories = $query->get();
+        $stories = $query->get();
 
-    // Thêm hot_score
-    $stories = $stories->map(function ($story) {
-        $story->hot_score = $this->calculateHotScore($story);
-        return $story;
-    });
-
-    return $stories;
-}
-
-/**
- * Lấy truyện hot theo thuật toán cho trang hot (fallback)
- */
-private function getHotStoriesForPage()
-{
-    $query = Story::with(['chapters' => function ($query) {
-        $query->select('id', 'story_id', 'views', 'created_at')
-            ->where('status', 'published');
-    }])
-        ->published()
-        ->whereHas('chapters', function ($query) {
-            $query->where('status', 'published');
-        })
-        ->select([
-            'id',
-            'title',
-            'slug',
-            'cover',
-            'completed',
-            'description',
-            'created_at',
-            'updated_at',
-            'cover_medium',
-            'author_name'
-        ])
-        ->withCount([
-            'chapters' => fn($q) => $q->where('status', 'published'),
-            'storyPurchases',
-            'chapterPurchases',
-            'ratings',
-            'bookmarks'
-        ])
-        ->selectSub(function ($q) {
-            $q->from('ratings')
-                ->selectRaw('AVG(rating)')
-                ->whereColumn('ratings.story_id', 'stories.id');
-        }, 'average_rating')
-        ->where('updated_at', '>=', now()->subDays(30));
-
-    $stories = $query->get()
-        ->map(function ($story) {
+        // Thêm hot_score
+        $stories = $stories->map(function ($story) {
             $story->hot_score = $this->calculateHotScore($story);
             return $story;
-        })
-        ->sortByDesc('hot_score')
-        ->values(); // reset index
+        });
 
-    return $stories;
-}
+        return $stories;
+    }
+
+    /**
+     * Lấy truyện hot theo thuật toán cho trang hot (fallback)
+     */
+    private function getHotStoriesForPage()
+    {
+        $query = Story::with(['chapters' => function ($query) {
+            $query->select('id', 'story_id', 'views', 'created_at')
+                ->where('status', 'published');
+        }])
+            ->published()
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'cover',
+                'completed',
+                'description',
+                'created_at',
+                'updated_at',
+                'cover_medium',
+                'author_name'
+            ])
+            ->withCount([
+                'chapters' => fn($q) => $q->where('status', 'published'),
+                'storyPurchases',
+                'chapterPurchases',
+                'ratings',
+                'bookmarks'
+            ])
+            ->selectSub(function ($q) {
+                $q->from('ratings')
+                    ->selectRaw('AVG(rating)')
+                    ->whereColumn('ratings.story_id', 'stories.id');
+            }, 'average_rating')
+            ->where('updated_at', '>=', now()->subDays(30));
+
+        $stories = $query->get()
+            ->map(function ($story) {
+                $story->hot_score = $this->calculateHotScore($story);
+                return $story;
+            })
+            ->sortByDesc('hot_score')
+            ->values();
+
+        return $stories;
+    }
 
     public function showRatingStories()
     {
@@ -398,32 +401,125 @@ private function getHotStoriesForPage()
         ]);
     }
 
+    public static function clearAllCaches()
+    {
+        Cache::forget(CacheKeys::HOME_HOT_STORIES);
+        Cache::forget(CacheKeys::HOME_NEW_STORIES);
+        Cache::forget(CacheKeys::HOME_RATING_STORIES);
+        Cache::forget(CacheKeys::HOME_LATEST_UPDATED_STORIES);
+        Cache::forget(CacheKeys::HOME_TOP_VIEWED_STORIES);
+        Cache::forget(CacheKeys::HOME_TOP_FOLLOWED_STORIES);
+        Cache::forget(CacheKeys::HOME_COMPLETED_STORIES);
+    }
 
+    public static function clearCachesByType(array $types)
+    {
+        $cacheMap = [
+            'hot' => CacheKeys::HOME_HOT_STORIES,
+            'new' => CacheKeys::HOME_NEW_STORIES,
+            'rating' => CacheKeys::HOME_RATING_STORIES,
+            'latest' => CacheKeys::HOME_LATEST_UPDATED_STORIES,
+            'viewed' => CacheKeys::HOME_TOP_VIEWED_STORIES,
+            'followed' => CacheKeys::HOME_TOP_FOLLOWED_STORIES,
+            'completed' => CacheKeys::HOME_COMPLETED_STORIES,
+        ];
+
+        foreach ($types as $type) {
+            if (isset($cacheMap[$type])) {
+                Cache::forget($cacheMap[$type]);
+            }
+        }
+    }
+
+    private function getTopStoriesPurchased(Carbon $fromDate)
+    {
+        $storyPurchases = DB::table('story_purchases')
+            ->select('story_id', DB::raw('COUNT(*) as purchase_count'), DB::raw('MAX(created_at) as latest'))
+            ->where('created_at', '>=', $fromDate)
+            ->groupBy('story_id');
+
+        $chapterPurchases = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->select('chapters.story_id', DB::raw('COUNT(*) as purchase_count'), DB::raw('MAX(chapter_purchases.created_at) as latest'))
+            ->where('chapter_purchases.created_at', '>=', $fromDate)
+            ->groupBy('chapters.story_id');
+
+        $merged = $storyPurchases->unionAll($chapterPurchases);
+
+        $totals = DB::table(DB::raw("({$merged->toSql()}) as purchases"))
+            ->mergeBindings($merged)
+            ->select('story_id', DB::raw('SUM(purchase_count) as total_purchases'), DB::raw('MAX(latest) as latest_purchase_at'))
+            ->groupBy('story_id')
+            ->orderByDesc('total_purchases')
+            ->limit(10)
+            ->get();
+
+        $storyIds = $totals->pluck('story_id')->toArray();
+        $stories = Story::whereIn('id', $storyIds)->where('status', 'published')->get()->keyBy('id');
+
+        return $totals->map(function ($row) use ($stories) {
+            $story = $stories[$row->story_id] ?? null;
+            if (!$story) return null;
+
+            $story->total_purchases = $row->total_purchases;
+            $story->latest_purchase_at = $row->latest_purchase_at;
+            $story->latest_purchase_diff = $row->latest_purchase_at
+                ? Carbon::parse($row->latest_purchase_at)->diffForHumans()
+                : 'Chưa có ai mua';
+
+            return $story;
+        })->filter();
+    }
 
     public function index(Request $request)
     {
         // Get hot stories
-        $hotStories = $this->getHotStories($request);
+        $hotStories = Cache::remember(CacheKeys::HOME_HOT_STORIES, CacheKeys::DURATION, function () use ($request) {
+            return $this->getHotStories($request);
+        });
 
         // Get new stories
-        $newStories = $this->getNewStories($request);
-
+        $newStories = Cache::remember(CacheKeys::HOME_NEW_STORIES, CacheKeys::DURATION, function () {
+            return $this->getNewStories();
+        });
         // Get rating stories
-        $ratingStories = $this->getRatingStories();
+        $ratingStories = Cache::remember(CacheKeys::HOME_RATING_STORIES, CacheKeys::DURATION, function () {
+            return $this->getRatingStories();
+        });
 
         // Get latest updated stories
-        $latestUpdatedStories = $this->latestUpdatedStories();
+        $latestUpdatedStories = Cache::remember(CacheKeys::HOME_LATEST_UPDATED_STORIES, CacheKeys::DURATION, function () {
+            return $this->latestUpdatedStories();
+        });
 
         // Get top viewed stories
-        $topViewedStories = $this->topViewedStories();
+        $topViewedStories = Cache::remember(CacheKeys::HOME_TOP_VIEWED_STORIES, CacheKeys::DURATION, function () {
+            return $this->topViewedStories();
+        });
 
         // Get top followed stories
-        $topFollowedStories = $this->topFollowedStories();
+        $topFollowedStories = Cache::remember(CacheKeys::HOME_TOP_FOLLOWED_STORIES, CacheKeys::DURATION, function () {
+            return $this->topFollowedStories();
+        });
 
         // Get completed stories
-        $completedStories = $this->getCompletedStories($request);
+        $completedStories = Cache::remember(CacheKeys::HOME_COMPLETED_STORIES, CacheKeys::DURATION, function () {
+            return $this->getCompletedStories();
+        });
 
-        // Handle AJAX requests
+
+        $dailyTopPurchased = Cache::remember(CacheKeys::HOME_DAILY_TOP_PURCHASED, CacheKeys::DURATION, function () {
+            return $this->getTopStoriesPurchased(Carbon::today());
+        });
+
+        $weeklyTopPurchased = Cache::remember(CacheKeys::HOME_WEEKLY_TOP_PURCHASED, CacheKeys::DURATION, function () {
+            return $this->getTopStoriesPurchased(Carbon::today()->subDays(7));
+        });
+
+        $monthlyTopPurchased = Cache::remember(CacheKeys::HOME_MONTHLY_TOP_PURCHASED, CacheKeys::DURATION, function () {
+            return $this->getTopStoriesPurchased(Carbon::today()->subDays(30));
+        });
+
         if ($request->ajax()) {
             if ($request->type === 'hot') {
                 return response()->json([
@@ -436,7 +532,8 @@ private function getHotStoriesForPage()
             }
         }
 
-        return view('pages.home', compact('hotStories', 'newStories', 'completedStories', 'ratingStories', 'latestUpdatedStories', 'topViewedStories', 'topFollowedStories'));
+        return view('pages.home', compact('hotStories', 'newStories', 'completedStories', 'ratingStories', 'latestUpdatedStories', 'topViewedStories', 'topFollowedStories',
+            'dailyTopPurchased', 'weeklyTopPurchased', 'monthlyTopPurchased'));
     }
 
     private function getCompletedStories()
@@ -469,136 +566,136 @@ private function getHotStoriesForPage()
     {
         // Trước tiên, thử lấy các truyện đề cử
         $featuredStories = $this->getFeaturedStories($request);
-        
+
         // Nếu có truyện đề cử, trả về truyện đề cử
         if ($featuredStories->isNotEmpty()) {
             return $featuredStories;
         }
-        
+
         // Nếu không có truyện đề cử, fallback về thuật toán hot score cũ
         return $this->getHotStoriesByScore($request);
     }
 
-/**
- * Lấy truyện đề cử theo featured_order
- */
-private function getFeaturedStories($request)
-{
-    $query = Story::with(['chapters' => function ($query) {
-        $query->select('id', 'story_id', 'views', 'created_at')
-            ->where('status', 'published');
-    }])
-        ->published()
-        ->where('is_featured', true) // Chỉ lấy truyện đề cử
-        ->whereHas('chapters', function ($query) {
-            $query->where('status', 'published');
-        })
-        ->select([
-            'id',
-            'title',
-            'slug',
-            'cover',
-            'completed',
-            'is_18_plus',
-            'description',
-            'created_at',
-            'updated_at',
-            'author_name',
-            'is_featured',
-            'featured_order'
-        ])
-        ->withCount([
-            'chapters' => fn($q) => $q->where('status', 'published'),
-            'storyPurchases',
-            'chapterPurchases',
-            'ratings',
-            'bookmarks'
-        ])
-        ->selectSub(function ($q) {
-            $q->from('ratings')
-                ->selectRaw('AVG(rating)')
-                ->whereColumn('ratings.story_id', 'stories.id');
-        }, 'average_rating');
+    /**
+     * Lấy truyện đề cử theo featured_order
+     */
+    private function getFeaturedStories($request)
+    {
+        $query = Story::with(['chapters' => function ($query) {
+            $query->select('id', 'story_id', 'views', 'created_at')
+                ->where('status', 'published');
+        }])
+            ->published()
+            ->where('is_featured', true) // Chỉ lấy truyện đề cử
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'cover',
+                'completed',
+                'is_18_plus',
+                'description',
+                'created_at',
+                'updated_at',
+                'author_name',
+                'is_featured',
+                'featured_order'
+            ])
+            ->withCount([
+                'chapters' => fn($q) => $q->where('status', 'published'),
+                'storyPurchases',
+                'chapterPurchases',
+                'ratings',
+                'bookmarks'
+            ])
+            ->selectSub(function ($q) {
+                $q->from('ratings')
+                    ->selectRaw('AVG(rating)')
+                    ->whereColumn('ratings.story_id', 'stories.id');
+            }, 'average_rating');
 
-    // Filter by category if requested
-    if ($request && $request->category_id) {
-        $query->whereHas('categories', function ($q) use ($request) {
-            $q->where('categories.id', $request->category_id);
-        });
-    }
+        // Filter by category if requested
+        if ($request && $request->category_id) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('categories.id', $request->category_id);
+            });
+        }
 
-    // Sắp xếp theo thứ tự đề cử
-    $featuredStories = $query
-        ->orderBy('featured_order', 'asc') // Thứ tự đề cử
-        ->orderBy('created_at', 'desc') // Thứ tự phụ
-        ->take(12)
-        ->get();
+        // Sắp xếp theo thứ tự đề cử
+        $featuredStories = $query
+            ->orderBy('featured_order', 'asc') // Thứ tự đề cử
+            ->orderBy('created_at', 'desc') // Thứ tự phụ
+            ->take(12)
+            ->get();
 
-    // Thêm hot_score cho backward compatibility
-    $featuredStories->each(function ($story) {
-        $story->hot_score = $this->calculateHotScore($story);
-    });
-
-    return $featuredStories;
-}
-
-/**
- * Lấy truyện hot theo thuật toán tính điểm (fallback khi không có featured)
- */
-private function getHotStoriesByScore($request)
-{
-    $query = Story::with(['chapters' => function ($query) {
-        $query->select('id', 'story_id', 'views', 'created_at')
-            ->where('status', 'published');
-    }])
-        ->published()
-        ->whereHas('chapters', function ($query) {
-            $query->where('status', 'published');
-        })
-        ->select([
-            'id',
-            'title',
-            'slug',
-            'cover',
-            'completed',
-            'is_18_plus',
-            'description',
-            'created_at',
-            'updated_at',
-            'author_name'
-        ])
-        ->withCount([
-            'chapters' => fn($q) => $q->where('status', 'published'),
-            'storyPurchases',
-            'chapterPurchases',
-            'ratings',
-            'bookmarks'
-        ])
-        ->selectSub(function ($q) {
-            $q->from('ratings')
-                ->selectRaw('AVG(rating)')
-                ->whereColumn('ratings.story_id', 'stories.id');
-        }, 'average_rating')
-        ->where('updated_at', '>=', now()->subDays(30));
-
-    // Filter by category if requested
-    if ($request && $request->category_id) {
-        $query->whereHas('categories', function ($q) use ($request) {
-            $q->where('categories.id', $request->category_id);
-        });
-    }
-
-    // Tính hot score và sắp xếp
-    $hotStories = $query->get()
-        ->map(function ($story) {
+        // Thêm hot_score cho backward compatibility
+        $featuredStories->each(function ($story) {
             $story->hot_score = $this->calculateHotScore($story);
-            return $story;
-        })
-        ->sortByDesc('hot_score')
-        ->take(12);
+        });
 
-    return $hotStories;
-}
+        return $featuredStories;
+    }
+
+    /**
+     * Lấy truyện hot theo thuật toán tính điểm (fallback khi không có featured)
+     */
+    private function getHotStoriesByScore($request)
+    {
+        $query = Story::with(['chapters' => function ($query) {
+            $query->select('id', 'story_id', 'views', 'created_at')
+                ->where('status', 'published');
+        }])
+            ->published()
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
+            ->select([
+                'id',
+                'title',
+                'slug',
+                'cover',
+                'completed',
+                'is_18_plus',
+                'description',
+                'created_at',
+                'updated_at',
+                'author_name'
+            ])
+            ->withCount([
+                'chapters' => fn($q) => $q->where('status', 'published'),
+                'storyPurchases',
+                'chapterPurchases',
+                'ratings',
+                'bookmarks'
+            ])
+            ->selectSub(function ($q) {
+                $q->from('ratings')
+                    ->selectRaw('AVG(rating)')
+                    ->whereColumn('ratings.story_id', 'stories.id');
+            }, 'average_rating')
+            ->where('updated_at', '>=', now()->subDays(30));
+
+        // Filter by category if requested
+        if ($request && $request->category_id) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('categories.id', $request->category_id);
+            });
+        }
+
+        // Tính hot score và sắp xếp
+        $hotStories = $query->get()
+            ->map(function ($story) {
+                $story->hot_score = $this->calculateHotScore($story);
+                return $story;
+            })
+            ->sortByDesc('hot_score')
+            ->take(12);
+
+        return $hotStories;
+    }
 
     private function calculateHotScore($story)
     {
@@ -626,7 +723,8 @@ private function getHotStoriesByScore($request)
                 'is_18_plus',
                 'reviewed_at',
                 'cover_medium',
-                'author_name'
+                'author_name',
+                'description'
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
@@ -924,7 +1022,7 @@ private function getHotStoriesByScore($request)
             ->where('number', '<', $chapter->number)
             ->orderBy('number', 'desc');
 
-        // Apply published filter for non-admin/mod users    
+        // Apply published filter for non-admin/mod users
         if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'mod', 'author'])) {
             $nextChapterQuery->where('status', 'published');
             $prevChapterQuery->where('status', 'published');
