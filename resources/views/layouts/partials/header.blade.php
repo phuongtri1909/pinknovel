@@ -65,7 +65,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}">
+    @php
+        $cssPath = public_path('assets/css/styles.css');
+        $version = file_exists($cssPath) ? filemtime($cssPath) : '';
+    @endphp
+    <link rel="stylesheet" href="{{ asset('assets/css/styles.css') }}?v={{ $version }}">
 
     @stack('styles')
 
@@ -434,7 +438,8 @@
             if (mobileSearchToggle && mobileSearchContainer) {
                 mobileSearchToggle.addEventListener("click", function() {
                     // Toggle visibility
-                    if (mobileSearchContainer.style.display === "none" || mobileSearchContainer.style.display === "") {
+                    if (mobileSearchContainer.style.display === "none" || mobileSearchContainer.style
+                        .display === "") {
                         mobileSearchContainer.style.display = "block";
 
                         // Scroll to top of page first
