@@ -230,7 +230,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 // Sử dụng middleware 'role' thay vì 'role.admin.mod'
                 Route::group(['middleware' => 'role:admin,mod'], function () {
                     Route::get('/dashboard', function () {
-                        return view('admin.pages.dashboard');
+                        return redirect()->route('stories.index');
                     })->name('admin.dashboard');
 
                     Route::get('users', [UserController::class, 'index'])->name('users.index');

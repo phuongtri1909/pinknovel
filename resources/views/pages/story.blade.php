@@ -18,6 +18,37 @@
     'web đọc truyện',
     ]))
 
+    @push('meta')
+        <meta property="og:title" content="{{ $story->title }} - {{ config('app.name') }}">
+        <meta property="og:description" content="{{ Str::limit(strip_tags($story->description), 160) }}">
+        <meta property="og:image"
+            content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
+        <meta property="og:image:secure_url"
+            content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
+        <meta property="og:image:width" content="600">
+        <meta property="og:image:height" content="800">
+        <meta property="og:image:alt" content="Ảnh bìa truyện {{ $story->title }}">
+        <meta property="og:type" content="book">
+        <meta property="og:url" content="{{ url()->current() }}">
+        <meta property="og:site_name" content="{{ config('app.name') }}">
+
+        {{-- Twitter Card Meta Tags --}}
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" content="{{ $story->title }} - {{ config('app.name') }}">
+        <meta name="twitter:description" content="{{ Str::limit(strip_tags($story->description), 160) }}">
+        <meta name="twitter:image"
+            content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
+        <meta name="twitter:image:alt" content="Ảnh bìa truyện {{ $story->title }}">
+
+        {{-- Additional Book Meta Tags --}}
+        <meta property="book:author" content="{{ $story->author_name ?? ($story->user->name ?? 'Unknown') }}">
+        <meta property="book:isbn" content="">
+        <meta property="book:release_date" content="{{ $story->created_at->format('Y-m-d') }}">
+        @foreach ($story->categories as $category)
+            <meta property="book:tag" content="{{ $category->name }}">
+        @endforeach
+    @endpush
+
     @push('styles')
         <style>
             .card-search {
@@ -91,7 +122,12 @@
 
             <div class="" id="chapters">
                 @if (!Auth()->check() || (Auth()->check() && Auth()->user()->ban_read == false))
-                    @include('components.all_chapter', ['chapters' => $chapters, 'isAdmin' => Auth::check() && in_array(Auth::user()->role, ['admin', 'mod']), 'isAuthor' => Auth::check() && Auth::user()->role == 'author' && Auth::user()->id == $story->user_id])
+                    @include('components.all_chapter', [
+                        'chapters' => $chapters,
+                        'isAdmin' => Auth::check() && in_array(Auth::user()->role, ['admin', 'mod']),
+                        'isAuthor' =>
+                            Auth::check() && Auth::user()->role == 'author' && Auth::user()->id == $story->user_id,
+                    ])
                 @else
                     <div class="text-center py-5">
                         <i class="fas fa-sad-tear fa-4x text-muted mb-3 animate__animated animate__shakeX"></i>
@@ -119,7 +155,11 @@
 
             @include('components.list_story_de_xuat', ['featuredStories' => $featuredStories])
 
-            @include('components.stories_same_author_translator', ['authorStories' => $authorStories, 'translatorStories' => $translatorStories, 'story' => $story])
+            @include('components.stories_same_author_translator', [
+                'authorStories' => $authorStories,
+                'translatorStories' => $translatorStories,
+                'story' => $story,
+            ])
         </div>
     </section>
 
@@ -135,7 +175,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // @if($story->is_18_plus)
+            // @if ($story->is_18_plus)
             //     // Tạo key duy nhất cho mỗi truyện
             //     const storyWarningKey = 'story_18_warning_{{ $story->id }}';
 
@@ -145,16 +185,16 @@
             //             icon: 'warning',
             //             title: '⚠️ Cảnh báo nội dung 18+',
             //             html: `
-            //                 <div class="text-start">
-            //                     <p><strong>Truyện này chứa nội dung dành cho người từ 18 tuổi trở lên:</strong></p>
-            //                     <ul class="text-start" style="margin-left: 20px;">
-            //                         <li>Nội dung bạo lực, tình dục</li>
-            //                         <li>Ngôn từ không phù hợp với trẻ em</li>
-            //                         <li>Tình tiết người lớn</li>
-            //                     </ul>
-            //                     <p class="text-danger"><strong>Bạn có đủ 18 tuổi và muốn tiếp tục đọc?</strong></p>
-            //                 </div>
-            //             `,
+        //                 <div class="text-start">
+        //                     <p><strong>Truyện này chứa nội dung dành cho người từ 18 tuổi trở lên:</strong></p>
+        //                     <ul class="text-start" style="margin-left: 20px;">
+        //                         <li>Nội dung bạo lực, tình dục</li>
+        //                         <li>Ngôn từ không phù hợp với trẻ em</li>
+        //                         <li>Tình tiết người lớn</li>
+        //                     </ul>
+        //                     <p class="text-danger"><strong>Bạn có đủ 18 tuổi và muốn tiếp tục đọc?</strong></p>
+        //                 </div>
+        //             `,
             //             showCancelButton: true,
             //             confirmButtonText: '✅ Tôi đủ 18 tuổi',
             //             cancelButtonText: '❌ Quay lại',
@@ -168,10 +208,10 @@
             //                 cancelButton: 'btn btn-secondary fw-bold'
             //             },
             //             backdrop: `
-            //                 rgba(0,0,0,0.8)
-            //                 left top
-            //                 no-repeat
-            //             `
+        //                 rgba(0,0,0,0.8)
+        //                 left top
+        //                 no-repeat
+        //             `
             //         }).then((result) => {
             //             if (result.isConfirmed) {
             //                 // Lưu vào localStorage để không hiển thị lại
@@ -200,7 +240,7 @@
             //                         popup: 'animate__animated animate__fadeOut'
             //                     }
             //                 }).then(() => {
-            //                     window.location.href = '{{ route("home") }}';
+            //                     window.location.href = '{{ route('home') }}';
             //                 });
             //             }
             //         });

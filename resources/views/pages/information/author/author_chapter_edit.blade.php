@@ -55,9 +55,15 @@
 
 @section('info_content')
     <div class="mb-4 d-flex align-items-center justify-content-between">
-        <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-arrow-left me-1"></i> Quay lại
-        </a>
+        <div>
+            <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i> Quay lại
+            </a>
+            <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}"
+                class="btn btn-sm btn-outline-primary ms-2">
+               Xem Chương
+            </a>
+        </div>
 
         <div class="d-flex gap-2">
             @if ($prevChapter)
@@ -107,11 +113,12 @@
 
         <div class="mb-3">
             <label for="content" class="form-label">Nội dung chương <span class="text-danger">*</span></label>
-            <textarea class="form-control rounded-4 @error('content') is-invalid @enderror" id="content" name="content" rows="25">{{ old('content', $chapter->content) }}</textarea>
+            <textarea class="form-control rounded-4 @error('content') is-invalid @enderror" id="content" name="content"
+                rows="25">{{ old('content', $chapter->content) }}</textarea>
             @error('content')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
-            
+
             <!-- Thêm thống kê từ và ký tự -->
             <div class="mt-2 d-flex justify-content-between">
                 <div class="text-muted small">
@@ -175,7 +182,8 @@
                             <label class="form-label">Xuất bản chương <span class="text-danger">*</span></label>
                             <div class="form-check mt-2">
                                 <input class="form-check-input" type="radio" name="status" id="status_published"
-                                    value="published" {{ old('status', $chapter->status) == 'published' ? 'checked' : '' }}
+                                    value="published"
+                                    {{ old('status', $chapter->status) == 'published' ? 'checked' : '' }}
                                     onchange="toggleScheduleOptions()">
                                 <label class="form-check-label" for="status_published">
                                     <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
@@ -276,7 +284,7 @@
         <div class="d-flex justify-content-end mt-4">
             <a href="{{ route('user.author.stories.chapters', $story->id) }}" class="btn btn-outline-danger me-2">Hủy</a>
             <button type="submit" class="btn btn-outline-dark">
-               Cập nhật 
+                Cập nhật
             </button>
         </div>
     </form>
@@ -290,10 +298,10 @@
             togglePricingOptions();
             togglePasswordField();
             toggleScheduleOptions();
-            
+
             // Khởi tạo đếm từ và ký tự
             updateContentStats();
-            
+
             // Bind event listeners cho content textarea
             $('#content').on('input paste keyup', function() {
                 updateContentStats();
@@ -303,15 +311,15 @@
         // Function to count words in Vietnamese text
         function countWords(text) {
             if (!text || typeof text !== 'string') return 0;
-            
+
             // Remove extra whitespace and normalize
             const normalizedText = text.replace(/\s+/g, ' ').trim();
-            
+
             if (normalizedText === '') return 0;
-            
+
             // Count words by splitting on whitespace
             const words = normalizedText.split(' ').filter(word => word.length > 0);
-            
+
             return words.length;
         }
 
@@ -320,19 +328,19 @@
             const content = $('#content').val();
             const wordCount = countWords(content);
             const charCount = content.length;
-            
+
             // Update display with number formatting
             $('#wordCount').text(wordCount.toLocaleString());
             $('#charCount').text(charCount.toLocaleString());
-            
+
             // Add color coding based on content length
             const wordCountElement = $('#wordCount');
             const charCountElement = $('#charCount');
-            
+
             // Reset classes
             wordCountElement.removeClass('text-danger text-warning text-success');
             charCountElement.removeClass('text-danger text-warning text-success');
-            
+
             // Word count color coding
             if (wordCount === 0) {
                 wordCountElement.addClass('text-danger');
@@ -341,7 +349,7 @@
             } else {
                 wordCountElement.addClass('text-success');
             }
-            
+
             // Character count color coding
             if (charCount === 0) {
                 charCountElement.addClass('text-danger');

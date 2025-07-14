@@ -4,6 +4,35 @@
 @section('description', Str::limit(strip_tags($chapter->content), 160))
 @section('keyword', "chương {$chapter->number}, {$chapter->title}")
 
+@push('meta')
+    <meta property="og:title" content="Chương {{ $chapter->number }}: {{ $chapter->title }} - {{ $story->title }}">
+    <meta property="og:description" content="{{ Str::limit(strip_tags($chapter->content), 100) }}">
+    <meta property="og:image" content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
+    <meta property="og:image:secure_url" content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
+    <meta property="og:image:width" content="600">
+    <meta property="og:image:height" content="800">
+    <meta property="og:image:alt" content="Ảnh bìa truyện {{ $story->title }} - Chương {{ $chapter->number }}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+
+    {{-- Article specific meta tags --}}
+    <meta property="article:author" content="{{ $story->author_name ?? ($story->user->name ?? 'Unknown') }}">
+    <meta property="article:published_time" content="{{ $chapter->created_at->format('c') }}">
+    <meta property="article:modified_time" content="{{ $chapter->updated_at->format('c') }}">
+    <meta property="article:section" content="{{ $story->categories->first()->name ?? 'Truyện' }}">
+    @foreach($story->categories as $category)
+        <meta property="article:tag" content="{{ $category->name }}">
+    @endforeach
+
+    {{-- Twitter Card Meta Tags --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Chương {{ $chapter->number }}: {{ $chapter->title }} - {{ $story->title }}">
+    <meta name="twitter:description" content="{{ Str::limit(strip_tags($chapter->content), 160) }}">
+    <meta name="twitter:image" content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
+    <meta name="twitter:image:alt" content="Ảnh bìa truyện {{ $story->title }} - Chương {{ $chapter->number }}">
+@endpush
+
 @section('content')
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
@@ -39,9 +68,13 @@
                 </div>
 
                 <div class="chapter-header text-center mb-4 animate__animated animate__fadeIn">
-                    <h1 class="chapter-title h3 fw-bold">
-                        Chương {{ $chapter->number }}: {{ $chapter->title }}
-                    </h1>
+                    <h2 class="chapter-title h3 fw-bold">
+
+                        {{ $chapter->title && trim($chapter->title) !== 'Chương ' . $chapter->number
+                            ? 'Chương ' . $chapter->number . ': ' . $chapter->title
+                            : 'Chương ' . $chapter->number }}
+
+                    </h2>
                     <div class="chapter-meta d-flex justify-content-center align-items-center flex-wrap gap-2 mt-2">
 
                         <span class="badge text-dark p-2">
