@@ -33,11 +33,7 @@
                 <div class="hot-stories-list">
                     @foreach ($dailyTopPurchased as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="d-flex align-items-center">
-                                <span class="story-rank">
-                                    {{ $index + 1 }}
-                                </span>
-                            </div>
+
                             <div class="story-cover me-2">
                                 <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
                                     <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
@@ -54,13 +50,16 @@
                                         $mainCategories = $story->categories->where('is_main', true);
                                         $displayCategories = collect();
 
-                                        foreach($mainCategories->take(2) as $category) {
+                                        foreach ($mainCategories->take(2) as $category) {
                                             $displayCategories->push($category);
                                         }
 
-                                        if($displayCategories->count() < 2) {
+                                        if ($displayCategories->count() < 2) {
                                             $subCategories = $story->categories->where('is_main', false);
-                                            foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
+                                            foreach (
+                                                $subCategories->take(2 - $displayCategories->count())
+                                                as $category
+                                            ) {
                                                 $displayCategories->push($category);
                                             }
                                         }
@@ -81,6 +80,12 @@
                                             Chưa cập nhật
                                         @endif
                                     </div>
+                                </div>
+
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="story-rank">
+                                        {{ $index + 1 }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -93,11 +98,7 @@
                 <div class="hot-stories-list">
                     @foreach ($weeklyTopPurchased as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="d-flex align-items-center">
-                                <span class="story-rank">
-                                    {{ $index + 1 }}
-                                </span>
-                            </div>
+
                             <div class="story-cover me-2">
                                 <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
                                     <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
@@ -114,13 +115,16 @@
                                         $mainCategories = $story->categories->where('is_main', true);
                                         $displayCategories = collect();
 
-                                        foreach($mainCategories->take(2) as $category) {
+                                        foreach ($mainCategories->take(2) as $category) {
                                             $displayCategories->push($category);
                                         }
 
-                                        if($displayCategories->count() < 2) {
+                                        if ($displayCategories->count() < 2) {
                                             $subCategories = $story->categories->where('is_main', false);
-                                            foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
+                                            foreach (
+                                                $subCategories->take(2 - $displayCategories->count())
+                                                as $category
+                                            ) {
                                                 $displayCategories->push($category);
                                             }
                                         }
@@ -141,6 +145,12 @@
                                             Chưa cập nhật
                                         @endif
                                     </div>
+                                </div>
+
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="story-rank">
+                                        {{ $index + 1 }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -153,11 +163,7 @@
                 <div class="hot-stories-list">
                     @foreach ($monthlyTopPurchased as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="d-flex align-items-center">
-                                <span class="story-rank">
-                                    {{ $index + 1 }}
-                                </span>
-                            </div>
+
                             <div class="story-cover me-2">
                                 <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
                                     <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
@@ -174,13 +180,16 @@
                                         $mainCategories = $story->categories->where('is_main', true);
                                         $displayCategories = collect();
 
-                                        foreach($mainCategories->take(2) as $category) {
+                                        foreach ($mainCategories->take(2) as $category) {
                                             $displayCategories->push($category);
                                         }
 
-                                        if($displayCategories->count() < 2) {
+                                        if ($displayCategories->count() < 2) {
                                             $subCategories = $story->categories->where('is_main', false);
-                                            foreach($subCategories->take(2 - $displayCategories->count()) as $category) {
+                                            foreach (
+                                                $subCategories->take(2 - $displayCategories->count())
+                                                as $category
+                                            ) {
                                                 $displayCategories->push($category);
                                             }
                                         }
@@ -201,6 +210,11 @@
                                             Chưa cập nhật
                                         @endif
                                     </div>
+                                </div>
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="story-rank">
+                                        {{ $index + 1 }}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -216,10 +230,7 @@
     @push('styles')
         <style>
             /* Hot Stories Styles */
-            .hot-stories-list {
-                max-height: 812px;
-                overflow-y: auto;
-            }
+
 
             .hot-story-item {
                 transition: background-color 0.2s;
@@ -229,14 +240,12 @@
                 background-color: rgba(0, 0, 0, 0.03);
             }
 
-            /* Fixed story rank styles */
             .story-rank {
                 min-width: 30px;
                 min-height: 30px;
                 width: 30px;
                 height: 30px;
                 flex: 0 0 30px;
-                /* Prevents shrinking */
                 display: flex;
                 align-items: center;
                 justify-content: center;
@@ -301,8 +310,6 @@
                 height: 2px;
                 background-color: var(--primary-color-3);
             }
-
-            /* Existing responsive adjustments... */
         </style>
     @endpush
 @endonce

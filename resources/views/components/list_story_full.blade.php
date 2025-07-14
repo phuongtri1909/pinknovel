@@ -121,7 +121,7 @@
                     },
                 },
                 autoplay: {{ count($completedStories) > 1 ? 'true' : 'false' }} ? {
-                    delay: 3000,
+                    delay: 300000,
                     disableOnInteraction: false,
                 } : false,
                 speed: 800,

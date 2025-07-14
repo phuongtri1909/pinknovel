@@ -81,8 +81,6 @@
 
         @include('components.info_book_home')
 
-
-
         <div class=" mt-4">
 
             <div class="container">

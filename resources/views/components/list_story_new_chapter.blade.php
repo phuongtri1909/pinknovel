@@ -3,7 +3,7 @@
         <div class="col-12">
 
             <div class="d-flex justify-content-between align-items-center p-3 px-md-0 rounded-top-custom">
-                <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-gear" style="color: #22c55e;"></i>Mới Cập Nhật
+                <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-gear me-1" style="color: #22c55e;"></i> Mới Cập Nhật
                 </h2>
                 <div>
                     <a class="color-3 text-decoration-none" href="{{ route('story.new.chapter') }}">Xem tất cả <i
@@ -67,14 +67,6 @@
             margin-bottom: 0 !important;
         }
 
-        .story-content .story-content-wrapper {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 10px;
-            height: 100%;
-        }
-
         .story-content .story-info-section {
             flex: 1;
             min-width: 0;
@@ -88,10 +80,6 @@
 
         /* Responsive */
         @media (max-width: 767.98px) {
-            .story-content .story-content-wrapper {
-                flex-direction: column;
-                gap: 8px;
-            }
 
             .story-content .time-info {
                 text-align: left;

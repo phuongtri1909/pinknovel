@@ -1,24 +1,30 @@
 <div class="mb-2 text-gray-600">
     <div class="story-content-wrapper">
-        <span class="new-tag">NEW</span>
+        <div class="story-image-wrapper position-relative d-inline-block">
+            <img src="{{ Storage::url($story->cover) }}" class="story-image-new" alt="{{ $story->title }}">
+            <span class="new-tag">NEW</span>
+            @if ($story->is_18_plus === 1)
+                @include('components.tag18plus')
+            @endif
+        </div>
         <div class="story-info-section">
             <div class="story-chapter-inline">
                 <span class="fw-semibold">
                     <a href="{{ route('show.page.story', $story->slug) }}" class="text-decoration-none color-hover">
                         {{ $story->title }}
                     </a>
-
-
-
                     <span class="chapter-separator">:</span>
-                    @if ($story->latestChapter)
-                        <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $story->latestChapter->slug]) }}"
-                            class="text-decoration-none text-muted chapter-link">
-                            {{ $story->latestChapter->title }}
-                        </a>
-                    @else
-                        <span class="text-muted">Chưa cập nhật</span>
-                    @endif
+
+                    <span class="chapter-wrapper">
+                        @if ($story->latestChapter)
+                            <a href="{{ route('chapter', ['storySlug' => $story->slug, 'chapterSlug' => $story->latestChapter->slug]) }}"
+                                class="text-decoration-none chapter-link chapter-number">
+                                Chương {{ $story->latestChapter->number }}
+                            </a>
+                        @else
+                            <span class="text-muted">Chưa cập nhật</span>
+                        @endif
+                    </span>
                 </span>
             </div>
         </div>
@@ -38,15 +44,19 @@
 @once
     @push('styles')
         <style>
-            .story-image {
-                width: 90px;
-                height: 130px;
+            .chapter-number {
+                color: #5e44ef;
+            }
+
+            .story-image-new {
+                width: 70px;
+                height: 100px;
                 object-fit: cover;
                 display: block;
                 flex-shrink: 0;
             }
 
-            .story-image:hover {
+            .story-image-new:hover {
                 transform: scale(1.05);
                 transition: transform 0.3s ease;
             }
@@ -54,7 +64,7 @@
             .story-content-wrapper {
                 display: flex;
                 justify-content: space-between;
-                align-items: flex-start;
+                align-items: center;
                 gap: 10px;
             }
 
@@ -87,6 +97,10 @@
                 display: inline;
             }
 
+            .chapter-wrapper {
+                display: inline;
+            }
+
             .chapter-link {
                 word-wrap: break-word;
                 hyphens: auto;
@@ -100,26 +114,30 @@
                 min-width: 80px;
             }
 
-            /* NEW Tag với màu đỏ và animation lấp lánh */
-            .new-tag {
+            .story-image-wrapper {
+                position: relative;
                 display: inline-block;
-                background: linear-gradient(45deg, #dc2626, #ef4444, #f87171, #dc2626);
+            }
+
+            /* NEW Tag dính lên góc trên phải ảnh */
+            .new-tag {
+                position: absolute;
+                top: -3px;
+                right: -3px;
+                background: linear-gradient(45deg, #263bdc, #5e44ef, #7c71f8, #2f26dc);
                 background-size: 300% 300%;
                 color: white;
-                padding: 1px 6px;
+                padding: 2px 6px;
                 border-radius: 8px;
-                font-size: 0.65rem;
+                font-size: 0.6rem;
                 font-weight: bold;
                 text-transform: uppercase;
                 letter-spacing: 0.3px;
-                margin-left: 4px;
-                margin-right: 2px;
-                position: relative;
                 overflow: hidden;
                 animation: redShimmer 2s infinite, redPulse 1.5s infinite alternate;
-                box-shadow: 0 1px 6px rgba(220, 38, 38, 0.4);
+                box-shadow: 0 2px 8px rgba(38, 50, 220, 0.5);
                 border: 1px solid rgba(255, 255, 255, 0.3);
-                vertical-align: middle;
+                z-index: 10;
             }
 
             .new-tag::before {
@@ -133,7 +151,7 @@
                 animation: shine 3s infinite;
             }
 
-            /* Animation keyframes cho màu đỏ */
+            /* Animation keyframes */
             @keyframes redShimmer {
                 0% {
                     background-position: 0% 50%;
@@ -151,12 +169,12 @@
             @keyframes redPulse {
                 0% {
                     transform: scale(1);
-                    box-shadow: 0 1px 6px rgba(220, 38, 38, 0.4);
+                    box-shadow: 0 2px 8px rgba(38, 50, 220, 0.5);
                 }
 
                 100% {
                     transform: scale(1.05);
-                    box-shadow: 0 2px 12px rgba(220, 38, 38, 0.6);
+                    box-shadow: 0 3px 12px rgba(38, 50, 220, 0.7);
                 }
             }
 
@@ -174,12 +192,28 @@
                 }
             }
 
+            /* Responsive cho NEW tag */
+            @media (max-width: 767.98px) {
+                .new-tag {
+                    font-size: 0.5rem;
+                    padding: 1px 4px;
+                    top: -2px;
+                    right: -2px;
+                }
+            }
+
+            @media (max-width: 575.98px) {
+                .new-tag {
+                    font-size: 0.45rem;
+                    padding: 1px 3px;
+                    top: -1px;
+                    right: -1px;
+                }
+            }
+
             /* Responsive */
             @media (max-width: 767.98px) {
-                .story-content-wrapper {
-                    flex-direction: column;
-                    gap: 8px;
-                }
+              
 
                 .time-info {
                     text-align: left;
@@ -190,8 +224,9 @@
                     font-size: 0.9rem;
                 }
 
+                /* Mobile: Ẩn dấu : */
                 .chapter-separator {
-                    margin: 0 2px;
+                    display: none;
                 }
 
                 .new-tag {
@@ -200,17 +235,37 @@
                     margin-left: 3px;
                     margin-right: 1px;
                 }
+
+                /* Mobile: Chapter number xuống hàng */
+                .chapter-wrapper {
+                    display: block;
+                    margin-left: 0;
+                    margin-top: 2px;
+                }
+
+                .chapter-link {
+                    display: block;
+                    margin-left: 0;
+                }
             }
 
             @media (max-width: 575.98px) {
+
+                /* Mobile nhỏ: Tiếp tục ẩn dấu : */
                 .chapter-separator {
-                    margin: 0 1px;
+                    display: none;
                 }
 
                 .new-tag {
                     font-size: 0.55rem;
                     padding: 0px 3px;
                     margin-left: 2px;
+                }
+
+                /* Mobile nhỏ: Chapter number xuống hàng */
+                .chapter-wrapper {
+                    display: block;
+                    margin-top: 3px;
                 }
             }
         </style>

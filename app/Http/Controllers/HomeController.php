@@ -456,7 +456,10 @@ class HomeController extends Controller
                 'is_18_plus',
                 'completed',
                 'updated_at',
-                'author_name'
+                'author_name',
+                'has_combo',
+                'description',
+                'combo_price'
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');

@@ -30,19 +30,12 @@
         <div class="tab-content" id="hotStoriesContent">
             <!-- Top Viewed Stories -->
             <div class="tab-pane fade show active" id="viewed" role="tabpanel">
-                <a class="color-3 text-decoration-none d-flex justify-content-center align-items-baseline" href="{{ route('story.view') }}">Xem tất cả</a>
+                <a class="color-3 text-decoration-none d-flex justify-content-center align-items-baseline"
+                    href="{{ route('story.view') }}">Xem tất cả</a>
                 <div class="hot-stories-list">
                     @foreach ($topViewedStories as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="d-flex align-items-center">
-                                <span class="story-rank rank-{{ $index < 3 ? 'top' : 'normal' }}">
-                                    @if ($index < 3)
-                                        <i class="fa-solid fa-crown"></i>
-                                    @else
-                                        {{ $index + 1 }}
-                                    @endif
-                                </span>
-                            </div>
+
                             <div class="story-cover me-2">
                                 <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
                                     <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
@@ -90,7 +83,17 @@
                                         </span>
                                     </div>
                                 </div>
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="story-rank rank-{{ $index < 3 ? 'top' : 'normal' }}">
+                                        @if ($index < 3)
+                                            <i class="fa-solid fa-crown"></i>
+                                        @else
+                                            {{ $index + 1 }}
+                                        @endif
+                                    </span>
+                                </div>
                             </div>
+
                         </div>
                     @endforeach
                 </div>
@@ -98,19 +101,12 @@
 
             <!-- Top Rated Stories -->
             <div class="tab-pane fade" id="rating" role="tabpanel">
-                <a class="color-3 text-decoration-none d-flex justify-content-center align-items-baseline" href="{{ route('story.rating') }}">Xem tất cả </a>
+                <a class="color-3 text-decoration-none d-flex justify-content-center align-items-baseline"
+                    href="{{ route('story.rating') }}">Xem tất cả </a>
                 <div class="hot-stories-list">
                     @foreach ($ratingStories as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="d-flex align-items-center">
-                                <span class="story-rank rank-{{ $index < 3 ? 'top' : 'normal' }}">
-                                    @if ($index < 3)
-                                        <i class="fa-solid fa-trophy"></i>
-                                    @else
-                                        {{ $index + 1 }}
-                                    @endif
-                                </span>
-                            </div>
+
                             <div class="story-cover me-2">
                                 <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
                                     <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
@@ -159,6 +155,15 @@
                                         </span>
                                     </div>
                                 </div>
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="story-rank rank-{{ $index < 3 ? 'top' : 'normal' }}">
+                                        @if ($index < 3)
+                                            <i class="fa-solid fa-trophy"></i>
+                                        @else
+                                            {{ $index + 1 }}
+                                        @endif
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -167,19 +172,12 @@
 
             <!-- Top Followed Stories -->
             <div class="tab-pane fade" id="followed" role="tabpanel">
-                <a class="color-3 text-decoration-none d-flex justify-content-center align-items-baseline" href="{{ route('story.follow') }}">Xem tất cả </a>
+                <a class="color-3 text-decoration-none d-flex justify-content-center align-items-baseline"
+                    href="{{ route('story.follow') }}">Xem tất cả </a>
                 <div class="hot-stories-list">
                     @foreach ($topFollowedStories as $index => $story)
                         <div class="hot-story-item d-flex p-2 {{ $index < 9 ? 'border-bottom' : '' }}">
-                            <div class="d-flex align-items-center">
-                                <span class="story-rank rank-{{ $index < 3 ? 'top' : 'normal' }}">
-                                    @if ($index < 3)
-                                        <i class="fa-solid fa-fire"></i>
-                                    @else
-                                        {{ $index + 1 }}
-                                    @endif
-                                </span>
-                            </div>
+
                             <div class="story-cover me-2">
                                 <a class="text-decoration-none" href="{{ route('show.page.story', $story->slug) }}">
                                     <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
@@ -228,6 +226,15 @@
                                         </span>
                                     </div>
                                 </div>
+                                <div class="d-flex align-items-center mt-2">
+                                    <span class="story-rank rank-{{ $index < 3 ? 'top' : 'normal' }}">
+                                        @if ($index < 3)
+                                            <i class="fa-solid fa-fire"></i>
+                                        @else
+                                            {{ $index + 1 }}
+                                        @endif
+                                    </span>
+                                </div>
                             </div>
                         </div>
                     @endforeach
@@ -258,12 +265,6 @@
                 animation: shimmer 2s infinite, pulse 1.5s infinite alternate;
                 box-shadow: 0 2px 10px rgba(255, 107, 107, 0.3);
                 border: 1px solid rgba(255, 255, 255, 0.3);
-            }
-
-            /* Hot Stories Styles */
-            .hot-stories-list {
-                max-height: 812px;
-                overflow-y: auto;
             }
 
             .hot-story-item {

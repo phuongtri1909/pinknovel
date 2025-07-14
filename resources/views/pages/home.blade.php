@@ -26,16 +26,11 @@
             </div>
         </div>
 
-
-
-
         @if ($completedStories->count() > 0)
             @include('components.list_story_full', ['completedStories' => $completedStories])
         @endif
 
         @include('components.show_categories')
-
-
 
     </section>
 @endsection
