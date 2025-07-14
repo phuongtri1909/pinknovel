@@ -8,9 +8,9 @@
                     <div class="d-flex flex-row justify-content-between">
                         <div>
                             <h5 class="mb-0">
-                               
+
                                 Danh sách chương truyện: {{ $story->title }}
-                                
+
                             </h5>
                             <p class="text-sm mb-0">
                                 Tổng số: {{ $totalChapters }} chương
@@ -28,7 +28,7 @@
                             </select>
 
                             <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" name="search" 
+                                <input type="text" class="form-control" name="search"
                                        value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                 <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                     <i class="fas fa-search"></i>
@@ -56,39 +56,39 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         STT
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">
                                         Tên chương
                                     </th>
 
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Nội dung
                                     </th>
 
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Số xu
                                     </th>
 
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Views
                                     </th>
 
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Link aff
                                     </th>
 
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Trạng thái
                                     </th>
 
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Ngày tạo
                                     </th>
 
                                     <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         Hành động
                                     </th>
                                 </tr>
@@ -138,7 +138,7 @@
                                             </p>
                                         </td>
                                         <td class="text-center d-flex flex-column">
-                                            <a href="{{ route('stories.chapters.edit', ['story' => $story, 'chapter' => $chapter]) }}" 
+                                            <a href="{{ route('stories.chapters.edit', ['story' => $story, 'chapter' => $chapter]) }}"
                                                class="btn btn-link text-dark px-3 mb-0">
                                                 <i class="fas fa-pencil-alt text-dark me-2"></i>Sửa
                                             </a>

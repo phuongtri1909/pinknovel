@@ -20,14 +20,14 @@
                     <table class="table align-items-center mb-0">
                         <thead>
                             <tr>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ảnh bìa</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-start">Tiêu đề</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-start">Tác giả</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ">Giá truyện</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Số chương</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thao tác</th>
+                                <th class="text-center text-uppercase  text-xxs font-weight-bolder ">ID</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Ảnh bìa</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder  text-start">Tiêu đề</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder  text-start">Tác giả</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder  ">Giá truyện</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Số chương</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Trạng thái</th>
+                                <th class="text-center text-uppercase  text-xxs font-weight-bolder ">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -56,7 +56,7 @@
                                     <a href="{{ route('stories.chapters.index', $story) }}" class="btn btn-link text-info p-1 mb-0">
                                         <i class="fas fa-book-open text-info me-2"></i>Xem chương
                                     </a>
-                                  
+
                                     <a href="{{ route('stories.edit', $story) }}" class="btn btn-link text-dark px-3 mb-0">
                                         <i class="fas fa-pencil-alt text-dark me-2"></i>Sửa
                                     </a>

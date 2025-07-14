@@ -31,11 +31,11 @@
                                 <option value="expired" {{ request('status') == 'expired' ? 'selected' : '' }}>Đã hết hạn</option>
                             </select>
 
-                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;" 
+                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;"
                                    value="{{ request('date') }}" onchange="this.form.submit()">
 
                             <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" name="search" 
+                                <input type="text" class="form-control" name="search"
                                        value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                 <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                     <i class="fas fa-search"></i>
@@ -52,31 +52,31 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         ID
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">
                                         Người dùng
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Ngân hàng
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Mã giao dịch
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Số tiền
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Xu
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Trạng thái
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Hết hạn
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Ngày tạo
                                     </th>
                                 </tr>
@@ -90,18 +90,18 @@
                                         <td>
                                             <div class="d-flex">
                                                 <div>
-                                                    <img src="{{ $payment->user->avatar ? asset('storage/' . $payment->user->avatar) : asset('assets/img/default-avatar.png') }}" 
+                                                    <img src="{{ $payment->user->avatar ? asset('storage/' . $payment->user->avatar) : asset('assets/img/default-avatar.png') }}"
                                                          class="avatar avatar-sm me-2" alt="user image">
                                                 </div>
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-xs">{{ $payment->user->name }}</h6>
-                                                    <p class="text-xs text-secondary mb-0">{{ $payment->user->email }}</p>
+                                                    <p class="text-xs  mb-0">{{ $payment->user->email }}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $payment->bank->name }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $payment->bank->account_number }}</p>
+                                            <p class="text-xs  mb-0">{{ $payment->bank->account_number }}</p>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $payment->transaction_code }}</p>
@@ -145,7 +145,7 @@
                                                     @endif
                                                 </p>
                                             @else
-                                                <p class="text-xs text-secondary mb-0">-</p>
+                                                <p class="text-xs  mb-0">-</p>
                                             @endif
                                         </td>
                                         <td>
@@ -177,7 +177,7 @@
             // Xử lý xóa các yêu cầu hết hạn
             $('#deleteExpiredBtn').click(function() {
                 const url = $(this).data('url');
-                
+
                 if (confirm('Bạn có chắc chắn muốn xóa tất cả các yêu cầu thanh toán đã hết hạn?')) {
                     $.ajax({
                         url: url,

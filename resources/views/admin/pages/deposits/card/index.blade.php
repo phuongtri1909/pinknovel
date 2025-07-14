@@ -37,11 +37,11 @@
                                 @endforeach
                             </select>
 
-                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;" 
+                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;"
                                    value="{{ request('date') }}" onchange="this.form.submit()">
 
                             <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" name="search" 
+                                <input type="text" class="form-control" name="search"
                                        value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                 <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                     <i class="fas fa-search"></i>
@@ -58,14 +58,14 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Người dùng</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Loại thẻ</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Serial</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mệnh giá</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Xu nhận</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thời gian</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">ID</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Người dùng</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Loại thẻ</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Serial</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Mệnh giá</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Xu nhận</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Trạng thái</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Thời gian</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -77,12 +77,12 @@
                                         <td>
                                             <div class="d-flex">
                                                 <div>
-                                                    <img src="{{ $deposit->user->avatar ? asset('storage/' . $deposit->user->avatar) : asset('assets/img/default-avatar.png') }}" 
+                                                    <img src="{{ $deposit->user->avatar ? asset('storage/' . $deposit->user->avatar) : asset('assets/img/default-avatar.png') }}"
                                                          class="avatar avatar-sm me-2" alt="user image">
                                                 </div>
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-xs">{{ $deposit->user->name }}</h6>
-                                                    <p class="text-xs text-secondary mb-0">{{ $deposit->user->email }}</p>
+                                                    <p class="text-xs  mb-0">{{ $deposit->user->email }}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -92,7 +92,7 @@
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->serial }}</p>
                                             @if($deposit->request_id)
-                                                <p class="text-xs text-secondary mb-0">ID: {{ $deposit->request_id }}</p>
+                                                <p class="text-xs  mb-0">ID: {{ $deposit->request_id }}</p>
                                             @endif
                                         </td>
                                         <td>
@@ -106,13 +106,13 @@
                                                 {{ $deposit->status_text }}
                                             </span>
                                             @if($deposit->note)
-                                                <p class="text-xs text-secondary mb-0 mt-1">{{ Str::limit($deposit->note, 30) }}</p>
+                                                <p class="text-xs  mb-0 mt-1">{{ Str::limit($deposit->note, 30) }}</p>
                                             @endif
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->created_at->format('d/m/Y H:i') }}</p>
                                             @if($deposit->processed_at)
-                                                <p class="text-xs text-secondary mb-0">Xử lý: {{ $deposit->processed_at->format('d/m/Y H:i') }}</p>
+                                                <p class="text-xs  mb-0">Xử lý: {{ $deposit->processed_at->format('d/m/Y H:i') }}</p>
                                             @endif
                                         </td>
                                     </tr>

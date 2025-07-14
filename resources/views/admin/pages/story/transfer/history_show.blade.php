@@ -65,7 +65,7 @@
                                                     <td class="text-sm">
                                                         {{ $history->transferred_by_name }}
                                                         @if($history->transferredBy)
-                                                            <br><small class="text-secondary">{{ $history->transferredBy->email }}</small>
+                                                            <br><small class="">{{ $history->transferredBy->email }}</small>
                                                         @endif
                                                     </td>
                                                 </tr>
@@ -96,7 +96,7 @@
                                     @if($history->story)
                                         <div class="d-flex">
                                             <div class="me-3">
-                                                <img src="{{ $history->story->cover ? asset('storage/' . $history->story->cover) : asset('assets/img/default-story.png') }}" 
+                                                <img src="{{ $history->story->cover ? asset('storage/' . $history->story->cover) : asset('assets/img/default-story.png') }}"
                                                      class="img-fluid border-radius-lg" style="width: 80px; height: 120px; object-fit: cover;" alt="Story Cover">
                                             </div>
                                             <div class="flex-grow-1">
@@ -108,12 +108,12 @@
                                                     <strong>Slug:</strong> {{ $history->story_slug ?? 'N/A' }}
                                                 </p>
                                                 <p class="text-sm mb-1">
-                                                    <strong>Trạng thái hiện tại:</strong> 
+                                                    <strong>Trạng thái hiện tại:</strong>
                                                     <span class="badge {{ $history->story->status_badge }}">
                                                         {{ $history->story->status_text }}
                                                     </span>
                                                 </p>
-                                                <a href="{{ route('stories.show', $history->story) }}" 
+                                                <a href="{{ route('stories.show', $history->story) }}"
                                                    class="btn btn-sm bg-gradient-info mt-2">
                                                     <i class="fas fa-eye me-1"></i>Xem truyện
                                                 </a>
@@ -142,7 +142,7 @@
                                 </div>
                                 <div class="card-body">
                                     <p class="text-sm mb-0">{{ $history->reason }}</p>
-                                    
+
                                     @if($history->notes)
                                         <hr>
                                         <h6 class="text-sm font-weight-bold">Ghi chú:</h6>
@@ -165,7 +165,7 @@
                                     <div class="d-flex">
                                         @if($history->oldAuthor)
                                             <div class="me-3">
-                                                <img src="{{ $history->oldAuthor->avatar ? asset('storage/' . $history->oldAuthor->avatar) : asset('assets/img/default-avatar.png') }}" 
+                                                <img src="{{ $history->oldAuthor->avatar ? asset('storage/' . $history->oldAuthor->avatar) : asset('assets/img/default-avatar.png') }}"
                                                      class="avatar avatar-lg" alt="Old Author Avatar">
                                             </div>
                                             <div>
@@ -175,7 +175,7 @@
                                                 <p class="text-xs mt-2 mb-0">
                                                     <strong>Tổng truyện hiện tại:</strong> {{ $history->oldAuthor->stories()->count() }}
                                                 </p>
-                                                <a href="{{ route('users.show', $history->oldAuthor) }}" 
+                                                <a href="{{ route('users.show', $history->oldAuthor) }}"
                                                    class="btn btn-sm bg-gradient-secondary mt-2">
                                                     <i class="fas fa-user me-1"></i>Xem profile
                                                 </a>
@@ -206,7 +206,7 @@
                                     <div class="d-flex">
                                         @if($history->newAuthor)
                                             <div class="me-3">
-                                                <img src="{{ $history->newAuthor->avatar ? asset('storage/' . $history->newAuthor->avatar) : asset('assets/img/default-avatar.png') }}" 
+                                                <img src="{{ $history->newAuthor->avatar ? asset('storage/' . $history->newAuthor->avatar) : asset('assets/img/default-avatar.png') }}"
                                                      class="avatar avatar-lg" alt="New Author Avatar">
                                             </div>
                                             <div>
@@ -216,7 +216,7 @@
                                                 <p class="text-xs mt-2 mb-0">
                                                     <strong>Tổng truyện hiện tại:</strong> {{ $history->newAuthor->stories()->count() }}
                                                 </p>
-                                                <a href="{{ route('users.show', $history->newAuthor) }}" 
+                                                <a href="{{ route('users.show', $history->newAuthor) }}"
                                                    class="btn btn-sm bg-gradient-secondary mt-2">
                                                     <i class="fas fa-user me-1"></i>Xem profile
                                                 </a>
@@ -250,7 +250,7 @@
                                         @php
                                             $metadata = $history->transfer_metadata;
                                         @endphp
-                                        
+
                                         <!-- Basic Statistics -->
                                         <div class="row">
                                             @if(isset($metadata['chapters_count']))
@@ -298,7 +298,7 @@
                                                         <i class="fas fa-dollar-sign me-2"></i>Thông tin doanh thu
                                                     </h6>
                                                 </div>
-                                                
+
                                                 <div class="col-md-4">
                                                     <div class="card bg-gradient-success">
                                                         <div class="card-body text-center text-white">
@@ -307,7 +307,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="col-md-4">
                                                     <div class="card bg-gradient-info">
                                                         <div class="card-body text-center text-white">
@@ -317,7 +317,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="col-md-4">
                                                     <div class="card bg-gradient-warning">
                                                         <div class="card-body text-center text-white">
@@ -338,7 +338,7 @@
                                                         <i class="fas fa-chart-line me-2"></i>Chỉ số hiệu suất
                                                     </h6>
                                                 </div>
-                                                
+
                                                 <div class="col-md-4">
                                                     <div class="card">
                                                         <div class="card-body text-center">
@@ -350,7 +350,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="col-md-4">
                                                     <div class="card">
                                                         <div class="card-body text-center">
@@ -362,7 +362,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="col-md-4">
                                                     <div class="card">
                                                         <div class="card-body text-center">
@@ -495,12 +495,12 @@
                                                     ->limit(5)
                                                     ->get();
                                             @endphp
-                                            
+
                                             @if($relatedTransfers->count() > 0)
                                                 <h6 class="text-sm font-weight-bold">Các lần chuyển nhượng khác của truyện này:</h6>
                                                 <div class="list-group">
                                                     @foreach($relatedTransfers as $related)
-                                                        <a href="{{ route('admin.story-transfer.history.show', $related) }}" 
+                                                        <a href="{{ route('admin.story-transfer.history.show', $related) }}"
                                                            class="list-group-item list-group-item-action p-2">
                                                             <div class="d-flex justify-content-between align-items-center">
                                                                 <small>
@@ -524,7 +524,7 @@
                                 <a href="{{ route('admin.story-transfer.history') }}" class="btn bg-gradient-secondary">
                                     <i class="fas fa-list me-2"></i>Danh sách lịch sử
                                 </a>
-                                
+
                                 @if($history->story)
                                     <a href="{{ route('admin.story-transfer.show', $history->story) }}" class="btn bg-gradient-warning">
                                         <i class="fas fa-exchange-alt me-2"></i>Chuyển nhượng lại
@@ -554,11 +554,11 @@
                 box-shadow: none !important;
             }
         }
-        
+
         .avatar {
             object-fit: cover;
         }
-        
+
         .list-group-item:hover {
             background-color: #f8f9fa;
         }

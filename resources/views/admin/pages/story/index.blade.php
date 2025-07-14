@@ -27,7 +27,7 @@
                             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ duyệt</option>
                             <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ chối</option>
                         </select>
-                
+
                         <!-- Featured filter - NEW -->
                         <select name="featured" class="form-select form-select-sm" style="width: auto;">
                             <option value="">- Đề cử -</option>
@@ -44,22 +44,22 @@
                                 </option>
                             @endforeach
                         </select>
-                
+
                         <!-- Search input -->
                         <div class="input-group input-group-sm">
-                            <input type="text" class="form-control" name="search" 
+                            <input type="text" class="form-control" name="search"
                                    value="{{ request('search') }}" placeholder="Tìm kiếm...">
                             <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
                     </form>
-                
+
                     <div>
                         <a href="{{ route('stories.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
                             <i class="fas fa-plus me-2"></i>Thêm truyện mới
                         </a>
-                        
+
                         <!-- Bulk actions button - NEW -->
                         <button type="button" class="btn bg-gradient-warning btn-sm mb-0" data-bs-toggle="modal" data-bs-target="#bulkActionsModal">
                             <i class="fas fa-star me-2"></i>Đề cử hàng loạt
@@ -70,24 +70,24 @@
 
             <div class="card-body px-0 pt-0 pb-2">
                 @include('admin.pages.components.success-error')
-                
+
                 <div class="table-responsive p-0">
                     <table class="table align-items-center mb-0">
                         <thead>
                             <tr>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                <th class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                     <input type="checkbox" id="selectAll">
                                 </th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ảnh bìa</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-start">Tiêu đề</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 text-start">Tác giả</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Số chương</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Giá truyện</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Đề cử</th> {{-- NEW --}}
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Link aff</th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thao tác</th>
+                                <th class="text-center text-uppercase  text-xxs font-weight-bolder ">ID</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Ảnh bìa</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder  text-start">Tiêu đề</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder  text-start">Tác giả</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Số chương</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Giá truyện</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Đề cử</th> {{-- NEW --}}
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Link aff</th>
+                                <th class="text-uppercase  text-xxs font-weight-bolder ">Trạng thái</th>
+                                <th class="text-center text-uppercase  text-xxs font-weight-bolder ">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -149,11 +149,11 @@
                                     <a href="{{ route('stories.chapters.index', $story) }}" class="btn btn-link text-info p-1 mb-0">
                                         <i class="fas fa-book-open text-info me-2"></i>Xem chương
                                     </a>
-                                    
+
                                     <a href="{{ route('stories.show', $story) }}" class="btn btn-link text-primary p-1 mb-0">
                                         <i class="fas fa-eye text-primary me-2"></i>Chi tiết
                                     </a>
-                                   
+
                                     <a href="{{ route('stories.edit', $story) }}" class="btn btn-link text-dark p-1 mb-0">
                                         <i class="fas fa-pencil-alt text-dark me-2"></i>Sửa
                                     </a>
@@ -162,7 +162,7 @@
                                     <form action="{{ route('stories.toggle-featured', $story) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="btn btn-link p-1 mb-0 {{ $story->is_featured ? 'text-warning' : 'text-secondary' }}" 
+                                        <button type="submit" class="btn btn-link p-1 mb-0 {{ $story->is_featured ? 'text-warning' : '' }}"
                                                 title="{{ $story->is_featured ? 'Bỏ đề cử' : 'Đặt làm đề cử' }}">
                                             <i class="fas fa-star me-2"></i>{{ $story->is_featured ? 'Bỏ đề cử' : 'Đề cử' }}
                                         </button>
@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSelectAllState() {
         const checkedBoxes = document.querySelectorAll('.story-checkbox:checked');
         const totalBoxes = storyCheckboxes.length;
-        
+
         if (checkedBoxes.length === 0) {
             selectAllCheckbox.indeterminate = false;
             selectAllCheckbox.checked = false;
@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSelectedStories() {
         const checkedBoxes = document.querySelectorAll('.story-checkbox:checked');
         const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
-        
+
         // Update count
         if (selectedIds.length === 0) {
             selectedStoriesCount.textContent = 'Chưa chọn truyện nào';
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Convert comma-separated string to array for form submission
         const storyIdsArray = selectedIds.split(',');
         hiddenStoryIds.removeAttribute('name'); // Remove to avoid duplicate
-        
+
         // Add individual inputs for each story ID
         storyIdsArray.forEach(id => {
             const input = document.createElement('input');

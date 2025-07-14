@@ -243,6 +243,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::get('coins/{user}/create', [CoinController::class, 'create'])->name('coins.create');
                     Route::post('coins/{user}', [CoinController::class, 'store'])->name('coins.store');
 
+                    Route::get('coin-transactions', [CoinController::class, 'transactions'])->name('coin.transactions');
+
                     Route::resource('categories', CategoryController::class);
                     Route::resource('stories', StoryController::class);
                     Route::patch('/stories/{story}/toggle-featured', [StoryController::class, 'toggleFeatured'])->name('stories.toggle-featured'); // NEW

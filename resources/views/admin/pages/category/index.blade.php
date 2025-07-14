@@ -16,17 +16,17 @@
                 </div>
                 <div class="card-body px-0 pt-0 pb-2">
                     @include('admin.pages.components.success-error')
-                    
+
                     <div class="table-responsive p-0">
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tên thể loại</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Slug</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mô tả</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thể loại chính</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">ID</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Tên thể loại</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Slug</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Mô tả</th>
+                                    <th class="text-center text-uppercase  text-xxs font-weight-bolder ">Thể loại chính</th>
+                                    <th class="text-center text-uppercase  text-xxs font-weight-bolder ">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>

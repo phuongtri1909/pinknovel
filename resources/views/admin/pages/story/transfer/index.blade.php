@@ -83,22 +83,22 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         <input type="checkbox" id="selectAll">
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Truyện
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Truyện
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Tác
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Tác
                                         giả hiện tại</th>
 
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Chương
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Chương
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Trạng
                                         thái</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Ngày tạo
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Ngày tạo
                                     </th>
                                     <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         Thao tác</th>
                                 </tr>
                             </thead>
@@ -128,7 +128,7 @@
                                                 </div>
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-xs">{{ $story->user->name }}</h6>
-                                                    <p class="text-xs text-secondary mb-0">{{ $story->user->email }}</p>
+                                                    <p class="text-xs  mb-0">{{ $story->user->email }}</p>
                                                     <span
                                                         class="badge badge-xs bg-gradient-info">{{ $story->user->role }}</span>
                                                 </div>
@@ -139,7 +139,7 @@
 
                                             <p class="text-xs font-weight-bold mb-0">{{ $story->chapters_count ?? 0 }}
                                                 chương</p>
-                                            <p class="text-xs text-secondary mb-0">{{ number_format($story->total_views) }}
+                                            <p class="text-xs  mb-0">{{ number_format($story->total_views) }}
                                                 lượt xem</p>
                                         </td>
                                         <td>
@@ -156,7 +156,7 @@
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">
                                                 {{ $story->created_at->format('d/m/Y') }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $story->created_at->format('H:i') }}
+                                            <p class="text-xs  mb-0">{{ $story->created_at->format('H:i') }}
                                             </p>
                                         </td>
                                         <td class="align-middle text-center">

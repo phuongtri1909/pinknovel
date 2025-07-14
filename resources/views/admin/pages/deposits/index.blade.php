@@ -28,11 +28,11 @@
                                 <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Đã từ chối</option>
                             </select>
 
-                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;" 
+                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;"
                                    value="{{ request('date') }}" onchange="this.form.submit()">
 
                             <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" name="search" 
+                                <input type="text" class="form-control" name="search"
                                        value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                 <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                     <i class="fas fa-search"></i>
@@ -49,34 +49,34 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         ID
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">
                                         Người dùng
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Ngân hàng
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Mã giao dịch
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Số tiền
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Xu
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Trạng thái
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Người duyệt
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
                                         Ngày tạo
                                     </th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         Hành động
                                     </th>
                                 </tr>
@@ -90,18 +90,18 @@
                                         <td>
                                             <div class="d-flex">
                                                 <div>
-                                                    <img src="{{ $deposit->user->avatar ? asset('storage/' . $deposit->user->avatar) : asset('assets/img/default-avatar.png') }}" 
+                                                    <img src="{{ $deposit->user->avatar ? asset('storage/' . $deposit->user->avatar) : asset('assets/img/default-avatar.png') }}"
                                                          class="avatar avatar-sm me-2" alt="user image">
                                                 </div>
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-xs">{{ $deposit->user->name }}</h6>
-                                                    <p class="text-xs text-secondary mb-0">{{ $deposit->user->email }}</p>
+                                                    <p class="text-xs  mb-0">{{ $deposit->user->email }}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->bank->name }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $deposit->bank->account_number }}</p>
+                                            <p class="text-xs  mb-0">{{ $deposit->bank->account_number }}</p>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->transaction_code }}</p>
@@ -119,20 +119,20 @@
                                                     'approved' => 'success',
                                                     'rejected' => 'danger'
                                                 ][$deposit->status] ?? 'secondary';
-                                                
+
                                                 $statusText = [
                                                     'pending' => 'Chờ duyệt',
                                                     'approved' => 'Đã duyệt',
                                                     'rejected' => 'Đã từ chối'
                                                 ][$deposit->status] ?? 'Không xác định';
                                             @endphp
-                                            
+
                                             <span class="badge badge-sm bg-gradient-{{ $statusClass }}">
                                                 {{ $statusText }}
                                             </span>
-                                            
+
                                             @if($deposit->status === 'rejected' && $deposit->note)
-                                                <button type="button" class="btn btn-link text-danger text-xs p-0 ms-1" 
+                                                <button type="button" class="btn btn-link text-danger text-xs p-0 ms-1"
                                                         data-bs-toggle="modal" data-bs-target="#noteModal{{ $deposit->id }}">
                                                     <i class="fas fa-info-circle"></i>
                                                 </button>
@@ -141,9 +141,9 @@
                                         <td>
                                             @if($deposit->status !== 'pending' && $deposit->approver)
                                                 <p class="text-xs font-weight-bold mb-0">{{ $deposit->approver->name }}</p>
-                                                <p class="text-xs text-secondary mb-0">{{ $deposit->approved_at->format('d/m/Y H:i') }}</p>
+                                                <p class="text-xs  mb-0">{{ $deposit->approved_at->format('d/m/Y H:i') }}</p>
                                             @else
-                                                <p class="text-xs text-secondary mb-0">-</p>
+                                                <p class="text-xs  mb-0">-</p>
                                             @endif
                                         </td>
                                         <td>
@@ -153,17 +153,17 @@
                                         </td>
                                         <td class="align-middle">
                                             <div class="d-flex justify-content-center gap-2">
-                                                <a href="#" data-bs-toggle="modal" data-bs-target="#viewImageModal{{ $deposit->id }}" 
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#viewImageModal{{ $deposit->id }}"
                                                    class="btn btn-link text-info text-gradient px-3 mb-0">
                                                     <i class="far fa-eye me-2"></i>Xem ảnh
                                                 </a>
-                                                
+
                                                 @if($deposit->status === 'pending')
                                                     <button type="button" class="btn btn-link text-success text-gradient px-3 mb-0"
                                                             data-bs-toggle="modal" data-bs-target="#approveModal{{ $deposit->id }}">
                                                         <i class="fas fa-check me-2"></i>Duyệt
                                                     </button>
-                                                    
+
                                                     <button type="button" class="btn btn-link text-danger text-gradient px-3 mb-0"
                                                             data-bs-toggle="modal" data-bs-target="#rejectModal{{ $deposit->id }}">
                                                         <i class="fas fa-times me-2"></i>Từ chối
@@ -187,7 +187,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modals -->
     @foreach($deposits as $deposit)
         <!-- Image Modal -->
@@ -209,7 +209,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Approve Modal -->
         @if($deposit->status === 'pending')
             <div class="modal fade" id="approveModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel{{ $deposit->id }}" aria-hidden="true">
@@ -245,7 +245,7 @@
                 </div>
             </div>
         @endif
-        
+
         <!-- Reject Modal -->
         @if($deposit->status === 'pending')
             <div class="modal fade" id="rejectModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel{{ $deposit->id }}" aria-hidden="true">
@@ -275,7 +275,7 @@
                 </div>
             </div>
         @endif
-        
+
         <!-- Note Modal (for viewing rejection reason) -->
         @if($deposit->status === 'rejected' && $deposit->note)
             <div class="modal fade" id="noteModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="noteModalLabel{{ $deposit->id }}" aria-hidden="true">

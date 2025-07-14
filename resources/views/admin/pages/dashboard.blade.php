@@ -5,7 +5,7 @@
 @endpush
 @section('content-auth')
 <h2 class="fw-bold">Trang dashboard</h2>
-{{-- 
+{{--
   <div class="row">
     <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
       <div class="card">
@@ -305,10 +305,10 @@
             <table class="table align-items-center mb-0">
               <thead>
                 <tr>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Companies</th>
-                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Members</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Budget</th>
-                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Completion</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder ">Companies</th>
+                  <th class="text-uppercase text-secondary text-xxs font-weight-bolder  ps-2">Members</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder ">Budget</th>
+                  <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder ">Completion</th>
                 </tr>
               </thead>
               <tbody>
@@ -623,7 +623,7 @@
 @endsection
 @push('scripts-admin')
   <script>
-   
+
   </script>
 @endpush
 

@@ -66,20 +66,20 @@
 
                                 <div class="form-group">
                                     <label class="form-control-label text-xs">Từ ngày</label>
-                                    <input type="date" name="date_from" class="form-control form-control-sm" 
+                                    <input type="date" name="date_from" class="form-control form-control-sm"
                                            value="{{ request('date_from') }}" onchange="this.form.submit()">
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-control-label text-xs">Đến ngày</label>
-                                    <input type="date" name="date_to" class="form-control form-control-sm" 
+                                    <input type="date" name="date_to" class="form-control form-control-sm"
                                            value="{{ request('date_to') }}" onchange="this.form.submit()">
                                 </div>
 
                                 <div class="form-group">
                                     <label class="form-control-label text-xs">Tìm kiếm</label>
                                     <div class="input-group input-group-sm">
-                                        <input type="text" class="form-control" name="search" 
+                                        <input type="text" class="form-control" name="search"
                                                value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                         <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                             <i class="fas fa-search"></i>
@@ -186,15 +186,15 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Truyện</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Chuyển từ</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Chuyển đến</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Loại</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thực hiện bởi</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thời gian</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thao tác</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">ID</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Truyện</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Chuyển từ</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Chuyển đến</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Loại</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Trạng thái</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Thực hiện bởi</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Thời gian</th>
+                                    <th class="text-center text-uppercase  text-xxs font-weight-bolder ">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -208,7 +208,7 @@
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-xs">{{ Str::limit($history->story_title, 30) }}</h6>
                                                     @if($history->story)
-                                                        <p class="text-xs text-secondary mb-0">ID: {{ $history->story->id }}</p>
+                                                        <p class="text-xs  mb-0">ID: {{ $history->story->id }}</p>
                                                     @else
                                                         <p class="text-xs text-danger mb-0">Truyện đã bị xóa</p>
                                                     @endif
@@ -218,13 +218,13 @@
                                         <td>
                                             <div class="d-flex flex-column justify-content-center">
                                                 <h6 class="mb-0 text-xs">{{ $history->old_author_name }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ $history->old_author_email }}</p>
+                                                <p class="text-xs  mb-0">{{ $history->old_author_email }}</p>
                                             </div>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-column justify-content-center">
                                                 <h6 class="mb-0 text-xs">{{ $history->new_author_name }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ $history->new_author_email }}</p>
+                                                <p class="text-xs  mb-0">{{ $history->new_author_email }}</p>
                                             </div>
                                         </td>
                                         <td>
@@ -240,15 +240,15 @@
                                         <td>
                                             <div class="d-flex flex-column justify-content-center">
                                                 <h6 class="mb-0 text-xs">{{ $history->transferred_by_name }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ $history->time_ago }}</p>
+                                                <p class="text-xs  mb-0">{{ $history->time_ago }}</p>
                                             </div>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $history->transferred_at->format('d/m/Y') }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $history->transferred_at->format('H:i:s') }}</p>
+                                            <p class="text-xs  mb-0">{{ $history->transferred_at->format('H:i:s') }}</p>
                                         </td>
                                         <td class="align-middle text-center">
-                                            <a href="{{ route('admin.story-transfer.history.show', $history) }}" 
+                                            <a href="{{ route('admin.story-transfer.history.show', $history) }}"
                                                class="btn btn-link text-info text-gradient px-3 mb-0">
                                                 <i class="fas fa-eye me-2"></i>Chi tiết
                                             </a>

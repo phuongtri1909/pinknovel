@@ -13,7 +13,7 @@ class CoinTransaction extends Model
         'user_id',
         'admin_id',
         'amount',
-        'type', // 'add' or 'subtract'
+        'type',
         'note',
     ];
 
@@ -32,4 +32,14 @@ class CoinTransaction extends Model
     {
         return $this->belongsTo(User::class, 'admin_id');
     }
-} 
+
+    public function scopeAdd($query)
+    {
+        return $query->where('type', 'add');
+    }
+
+    public function scopeSubtract($query)
+    {
+        return $query->where('type', 'subtract');
+    }
+}

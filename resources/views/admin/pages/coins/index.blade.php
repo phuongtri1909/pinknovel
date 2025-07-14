@@ -23,11 +23,11 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Người dùng</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Email</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Số xu hiện tại</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Vai trò</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Thao tác</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Người dùng</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Email</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Số xu hiện tại</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Vai trò</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -81,4 +81,4 @@
         </div>
     </div>
 </div>
-@endsection 
+@endsection

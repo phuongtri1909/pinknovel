@@ -22,7 +22,7 @@
                                 ({{ $stats['admin'] }} Admin / {{ $stats['author'] }} Tác giả / {{ $stats['user'] }} User)
                             </p>
                         </div>
-                        
+
                     </div>
                     <form action="{{ route('users.index') }}" method="GET" class="mt-3 d-flex flex-column flex-md-row gap-2">
                         <div class="d-flex flex-column flex-md-row gap-2 mb-2 mb-md-0">
@@ -32,16 +32,16 @@
                                 <option value="author" {{ request('role') == 'author' ? 'selected' : '' }}>Tác giả</option>
                                 <option value="user" {{ request('role') == 'user' ? 'selected' : '' }}>User</option>
                             </select>
-                    
-                            <input type="text" name="ip" class="form-control form-control-sm w-100 w-md-auto" 
+
+                            <input type="text" name="ip" class="form-control form-control-sm w-100 w-md-auto"
                                    placeholder="Địa chỉ IP" value="{{ request('ip') }}">
-                            
-                            <input type="date" name="date" class="form-control form-control-sm w-100 w-md-auto" 
+
+                            <input type="date" name="date" class="form-control form-control-sm w-100 w-md-auto"
                                    value="{{ request('date') }}">
                         </div>
-                    
+
                         <div class="input-group input-group-sm">
-                            <input type="text" class="form-control" name="search" 
+                            <input type="text" class="form-control" name="search"
                                    placeholder="Tìm kiếm..." value="{{ request('search') }}">
                             <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                 <i class="fa-solid fa-search"></i>
@@ -57,36 +57,36 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">
                                         Avatar
                                     </th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">
                                         Full name
                                     </th>
-                                   
+
                                     <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         Email
                                     </th>
                                     <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         Quyền
                                     </th>
                                     <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         IP
                                     </th>
-                                    <th 
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                    <th
+                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         Số xu
                                     </th>
                                     <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         Ngày tạo
                                     </th>
                                     <th
-                                        class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
                                         Hành động
                                     </th>
                                 </tr>
@@ -94,7 +94,7 @@
                             <tbody>
                                 @foreach ($users as $user)
                                 <tr>
-                                    
+
                                     <td>
                                         <div class="d-flex px-2 py-1">
                                             @if ($user->avatar == null)
@@ -107,7 +107,7 @@
                                     <td>
                                         <p class="text-xs font-weight-bold mb-0">{{ $user->name }}</p>
                                     </td>
-                                
+
                                     <td class="text-center">
                                         <p class="text-xs font-weight-bold mb-0">{{ $user->email }}</p>
                                     </td>
@@ -167,8 +167,8 @@
             </div>
         </div>
     </div>
-    
-  
+
+
     <form id="actionForm" method="post" style="display: none;">
         @csrf
         <input type="hidden" name="item_id" id="formItemId">
@@ -176,6 +176,6 @@
 @endsection
 @push('scripts-admin')
 <script>
-    
+
 </script>
 @endpush

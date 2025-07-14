@@ -33,11 +33,11 @@
                                 <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ chối</option>
                             </select>
 
-                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;" 
+                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;"
                                    value="{{ request('date') }}" onchange="this.form.submit()">
 
                             <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" name="search" 
+                                <input type="text" class="form-control" name="search"
                                        value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                 <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                     <i class="fas fa-search"></i>
@@ -54,15 +54,15 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">ID</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Người dùng</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Mã GD</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Email PayPal</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Số tiền</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Xu</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Trạng thái</th>
-                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Thời gian</th>
-                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Hành động</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">ID</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Người dùng</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Mã GD</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Email PayPal</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Số tiền</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Xu</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Trạng thái</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Thời gian</th>
+                                    <th class="text-center text-uppercase  text-xxs font-weight-bolder ">Hành động</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -74,12 +74,12 @@
                                         <td>
                                             <div class="d-flex">
                                                 <div>
-                                                    <img src="{{ $deposit->user->avatar ? asset('storage/' . $deposit->user->avatar) : asset('assets/img/default-avatar.png') }}" 
+                                                    <img src="{{ $deposit->user->avatar ? asset('storage/' . $deposit->user->avatar) : asset('assets/img/default-avatar.png') }}"
                                                          class="avatar avatar-sm me-2" alt="user image">
                                                 </div>
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-xs">{{ $deposit->user->name }}</h6>
-                                                    <p class="text-xs text-secondary mb-0">{{ $deposit->user->email }}</p>
+                                                    <p class="text-xs  mb-0">{{ $deposit->user->email }}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -91,7 +91,7 @@
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->usd_amount_formatted }}</p>
-                                            <p class="text-xs text-secondary mb-0">{{ $deposit->vnd_amount_formatted }}</p>
+                                            <p class="text-xs  mb-0">{{ $deposit->vnd_amount_formatted }}</p>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->coins_formatted }} xu</p>
@@ -101,7 +101,7 @@
                                                 {{ $deposit->status_text }}
                                             </span>
                                             @if($deposit->note)
-                                                <button type="button" class="btn btn-link text-danger text-xs p-0 ms-1" 
+                                                <button type="button" class="btn btn-link text-danger text-xs p-0 ms-1"
                                                         data-bs-toggle="modal" data-bs-target="#noteModal{{ $deposit->id }}">
                                                     <i class="fas fa-info-circle"></i>
                                                 </button>
@@ -110,24 +110,24 @@
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->created_at->format('d/m/Y H:i') }}</p>
                                             @if($deposit->processed_at)
-                                                <p class="text-xs text-secondary mb-0">{{ $deposit->processed_at->format('d/m/Y H:i') }}</p>
+                                                <p class="text-xs  mb-0">{{ $deposit->processed_at->format('d/m/Y H:i') }}</p>
                                             @endif
                                         </td>
                                         <td class="align-middle">
                                             <div class="d-flex justify-content-center gap-2">
                                                 @if($deposit->image)
-                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#viewImageModal{{ $deposit->id }}" 
+                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#viewImageModal{{ $deposit->id }}"
                                                        class="btn btn-link text-info text-gradient px-3 mb-0">
                                                         <i class="far fa-eye me-2"></i>Xem ảnh
                                                     </a>
                                                 @endif
-                                                
+
                                                 @if($deposit->status === 'processing')
                                                     <button type="button" class="btn btn-link text-success text-gradient px-3 mb-0"
                                                             data-bs-toggle="modal" data-bs-target="#approveModal{{ $deposit->id }}">
                                                         <i class="fas fa-check me-2"></i>Duyệt
                                                     </button>
-                                                    
+
                                                     <button type="button" class="btn btn-link text-danger text-gradient px-3 mb-0"
                                                             data-bs-toggle="modal" data-bs-target="#rejectModal{{ $deposit->id }}">
                                                         <i class="fas fa-times me-2"></i>Từ chối
@@ -151,7 +151,7 @@
             </div>
         </div>
     </div>
-    
+
     <!-- Modals -->
     @foreach($paypalDeposits as $deposit)
         <!-- Image Modal -->
@@ -175,7 +175,7 @@
                 </div>
             </div>
         @endif
-        
+
         <!-- Approve Modal -->
         @if($deposit->status === 'processing')
             <div class="modal fade" id="approveModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel{{ $deposit->id }}" aria-hidden="true">
@@ -212,7 +212,7 @@
                 </div>
             </div>
         @endif
-        
+
         <!-- Reject Modal -->
         @if($deposit->status === 'processing')
             <div class="modal fade" id="rejectModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel{{ $deposit->id }}" aria-hidden="true">
@@ -242,7 +242,7 @@
                 </div>
             </div>
         @endif
-        
+
         <!-- Note Modal -->
         @if($deposit->note)
             <div class="modal fade" id="noteModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="noteModalLabel{{ $deposit->id }}" aria-hidden="true">

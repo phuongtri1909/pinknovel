@@ -87,7 +87,7 @@
                                                 VND</p>
                                         </div>
 
-                                       
+
                                     </div>
                                 </div>
                             </div>
@@ -103,8 +103,8 @@
                                                 class="avatar avatar-xl me-3" alt="user avatar">
                                             <div>
                                                 <h6 class="mb-0">{{ $withdrawal->user->name }}</h6>
-                                                <p class="text-sm text-secondary mb-0">{{ $withdrawal->user->email }}</p>
-                                                <p class="text-sm text-secondary mb-0">Số dư:
+                                                <p class="text-sm  mb-0">{{ $withdrawal->user->email }}</p>
+                                                <p class="text-sm  mb-0">Số dư:
                                                     {{ number_format($withdrawal->user->coins) }} xu</p>
                                             </div>
                                         </a>

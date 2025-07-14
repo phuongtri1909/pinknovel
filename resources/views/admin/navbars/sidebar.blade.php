@@ -1,7 +1,7 @@
 <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 "
     id="sidenav-main">
     <div class="sidenav-header">
-        <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
+        <i class="fas fa-times p-3 cursor-pointer opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
             aria-hidden="true" id="iconSidenav"></i>
         @php
             // Get the logo from LogoSite model
@@ -206,6 +206,12 @@
                         <i class="fa-solid fa-university text-dark icon-sidebar"></i>
                     </div>
                     <span class="nav-link-text ms-1">Nạp xu - Bank</span>
+                    @php
+                        $pendingDepositsCount = \App\Models\Deposit::where('status', 'pending')->count();
+                    @endphp
+                    @if ($pendingDepositsCount > 0)
+                        <span class="badge bg-danger ms-2">{{ $pendingDepositsCount }}</span>
+                    @endif
                 </a>
             </li>
 
@@ -270,6 +276,17 @@
                         <i class="fa-solid fa-coins text-dark icon-sidebar"></i>
                     </div>
                     <span class="nav-link-text ms-1">Quản lý xu</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('coin.transactions') ? 'active' : '' }}"
+                    href="{{ route('coin.transactions') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-history text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Kiểm soát xu thủ công</span>
                 </a>
             </li>
 
