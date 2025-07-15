@@ -194,7 +194,7 @@
                                         </div>
                                     </div> --}}
                                     <div class="story-description mt-2 small text-muted d-none d-md-block">
-                                        {!! strip_tags(Str::limit($story->description, 150), '<p><br><strong><b><i><u>') !!}
+                                        {{ cleanDescription($story->description, 200) }}
                                     </div>
                                 </div>
                             </div>

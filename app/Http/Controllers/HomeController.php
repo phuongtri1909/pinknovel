@@ -113,18 +113,8 @@ class HomeController extends Controller
 
     public function showStoryHot()
     {
-        // Trước tiên, thử lấy truyện đề cử
-        $featuredStories = $this->getFeaturedStoriesForPage();
+        $stories = $this->getFeaturedStoriesForPage();
 
-        if ($featuredStories->isNotEmpty()) {
-            // Có truyện đề cử - sử dụng truyện đề cử
-            $stories = $featuredStories;
-        } else {
-            // Không có truyện đề cử - sử dụng thuật toán hot score
-            $stories = $this->getHotStoriesForPage();
-        }
-
-        // Manual pagination
         $perPage = 20;
         $currentPage = LengthAwarePaginator::resolveCurrentPage();
         $pagedStories = new LengthAwarePaginator(
@@ -313,7 +303,8 @@ class HomeController extends Controller
                 'completed',
                 'reviewed_at',
                 'cover_medium',
-                'author_name'
+                'author_name',
+                'description'
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
@@ -387,7 +378,8 @@ class HomeController extends Controller
                 'completed',
                 'updated_at',
                 'cover_medium',
-                'author_name'
+                'author_name',
+                'description',
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
