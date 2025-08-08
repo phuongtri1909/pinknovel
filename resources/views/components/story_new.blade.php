@@ -13,7 +13,7 @@
                     <a href="{{ route('show.page.story', $story->slug) }}" class="text-decoration-none color-hover">
                         {{ $story->title }}
                     </a>
-                    <span class="chapter-separator">:</span>
+                    <span class="chapter-separator">-</span>
 
                     <span class="chapter-wrapper">
                         @if ($story->latestChapter)
@@ -213,7 +213,7 @@
 
             /* Responsive */
             @media (max-width: 767.98px) {
-              
+
 
                 .time-info {
                     text-align: left;

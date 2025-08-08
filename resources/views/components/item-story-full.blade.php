@@ -34,7 +34,8 @@
         <div class="story-header">
             <h5 class="story-title mb-1 text-sm fw-semibold lh-base">
                 <a href="{{ route('show.page.story', $story->slug) }}" class="text-decoration-none color-3">
-                    {{ $story->title }}
+
+                    {{ Str::limit($story->title, 25, '...') }}
                 </a>
             </h5>
             <p class="text-ssm text-gray-600 mb-2">{{ $story->latestChapter->created_at->format('d/m/Y') }}</p>
@@ -63,8 +64,8 @@
             }
 
             .image-story-full-item {
-                width: 90px;
-                height: 130px;
+                width: 135px;
+                height: 185px;
                 object-fit: cover;
             }
 
@@ -239,11 +240,6 @@
                     margin-right: 8px !important;
                 }
 
-                .image-story-full-item {
-                    width: 80px;
-                    height: 130px;
-                }
-
                 .story-description {
                     -webkit-line-clamp: 2;
                     font-size: 0.7rem;
@@ -278,11 +274,6 @@
                     margin-right: 15px !important;
                 }
 
-                .image-story-full-item {
-                    width: 100px;
-                    height: 140px;
-                }
-
                 .story-description {
                     -webkit-line-clamp: 3;
                     font-size: 0.8rem;
@@ -291,10 +282,6 @@
 
             /* Large desktop */
             @media (min-width: 1200px) {
-                .image-story-full-item {
-                    width: 110px;
-                    height: 150px;
-                }
 
                 .story-description {
 

@@ -18,8 +18,8 @@
             </h5>
 
             <div class="flex-grow-1">
-                <div class="text-muted text-ssm story-description">
-                    {!! Str::limit($story->description, 300) !!}
+                <div class="text-muted text-ssm story-description-new">
+                    {{ cleanDescription($story->description, 800) }}
                 </div>
             </div>
 
@@ -80,9 +80,9 @@
                 text-decoration: none;
             }
 
-            .story-description {
+            .story-description-new {
                 display: -webkit-box;
-                -webkit-line-clamp: 3;
+                -webkit-line-clamp: 7;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
                 line-height: 1.4;
@@ -101,7 +101,7 @@
                     font-size: 0.85rem;
                 }
 
-                .story-description {
+                .story-description-new {
                     -webkit-line-clamp: 2;
                 }
 

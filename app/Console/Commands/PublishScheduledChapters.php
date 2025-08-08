@@ -55,6 +55,7 @@ class PublishScheduledChapters extends Command
                         try {
                             $scheduledTime = $chapter->scheduled_publish_at->format('Y-m-d H:i:s');
 
+                            $chapter->created_at = $chapter->scheduled_publish_at;
                             $chapter->status = 'published';
                             $chapter->save();
 

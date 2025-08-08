@@ -22,14 +22,18 @@
                             @php
                                 $totalCount = $latestUpdatedStories->count();
                                 $isLastInColumn = false;
+                                $isLastItem = ($index === $totalCount - 1);
 
+                                // Desktop logic: Ẩn HR cho 2 item cuối
                                 if ($index >= $totalCount - 2) {
                                     $isLastInColumn = true;
                                 }
                             @endphp
 
-                            @if(!$isLastInColumn)
-                                <hr class="my-3">
+                            {{-- HR logic: Desktop dùng $isLastInColumn, Mobile dùng $isLastItem --}}
+                            <hr class="my-3 hr-desktop {{ $isLastInColumn ? 'd-none' : '' }}">
+                            @if(!$isLastItem)
+                                <hr class="my-3 hr-mobile d-block d-md-none">
                             @endif
                         </div>
                     </div>
@@ -78,8 +82,35 @@
             min-width: 80px;
         }
 
-        /* Responsive */
+        /* HR Management */
+        .hr-desktop {
+            display: none;
+        }
+
+        .hr-mobile {
+            display: none;
+        }
+
+        /* Desktop: Show desktop HR logic */
+        @media (min-width: 768px) {
+            .hr-desktop {
+                display: block;
+            }
+
+            .hr-mobile {
+                display: none !important;
+            }
+        }
+
+        /* Mobile: Show mobile HR logic */
         @media (max-width: 767.98px) {
+            .hr-desktop {
+                display: none !important;
+            }
+
+            .hr-mobile {
+                display: block;
+            }
 
             .story-content .time-info {
                 text-align: left;
