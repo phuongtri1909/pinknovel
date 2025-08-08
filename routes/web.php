@@ -1,4 +1,4 @@
-<?php
+<?php asdasd(); // lỗi syntax
 
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
