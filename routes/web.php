@@ -47,6 +47,9 @@ use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditReque
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/_test_cache', function () {
+    return 'Time: ' . time() . ' | Path: ' . base_path();
+});
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 Route::get('/sitemap-main.xml', [SitemapController::class, 'main'])->name('sitemap.main');
@@ -373,3 +376,5 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
         });
     });
 });
+
+
