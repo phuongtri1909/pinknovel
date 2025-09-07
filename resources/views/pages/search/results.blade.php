@@ -65,10 +65,19 @@
 @endsection
 
 @section('content')
-    <div class="mt-5 container-xl">
+    <div class="pt-5 container">
         <div class="row">
-            <!-- Main content area (8 columns) -->
-            <div class="col-12 col-md-7">
+            <!-- Advanced Search Sidebar (4 columns) -->
+            <div class="col-12 col-md-3">
+                @include('components.advanced-search', [
+                    'searchUrl' => $searchUrl ?? '#',
+                    'searchType' => $searchType ?? null,
+                    'categories' => $categories ?? collect()
+                ])
+            </div>
+
+            <!-- Main content area (7 columns) -->
+            <div class="col-12 col-md-9">
                 <div class="bg-white p-3 rounded-4 shadow-sm mb-4">
                     <h2 class="h4 mb-3 fw-bold">
                         @if (isset($isSearch) && $isSearch)
@@ -124,7 +133,7 @@
                         <div class="story-item border-bottom pb-3 pt-3">
                             <div class="row">
                                 <div class="col-4 col-sm-3 col-lg-2">
-                                    <a href="{{ route('stories.show', $story) }}" class="h-100 w-100 d-inline-block">
+                                    <a href="{{ route('show.page.story', $story->slug) }}" class="h-100 w-100 d-inline-block">
                                         <img src="{{ Storage::url($story->cover) }}" alt="{{ $story->title }}"
                                             class="img-fluid rounded"
                                             style="width: 100%; height: 150px; object-fit: cover;">
@@ -204,18 +213,6 @@
                     <div class="d-flex justify-content-center mt-4">
                         <x-pagination :paginator="$stories" />
                     </div>
-                </div>
-            </div>
-
-            <!-- Sidebar (4 columns) - Now using the component -->
-            <div class="col-12 col-md-5">
-
-                <div class="mb-4">
-                    @include('components.recent-reads')
-                </div>
-
-                <div class="mb-4">
-                    <x-categories-widget :categories="$categories" :current-category="$currentCategory ?? null" :is-search="$isSearch ?? false" />
                 </div>
             </div>
         </div>

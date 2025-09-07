@@ -28,28 +28,45 @@ class HomeController extends Controller
 
     public function searchHeader(Request $request)
     {
-        $query = $request->input('query');
+        $query = trim((string) $request->input('query'));
 
         // Search in stories and chapters
-        $stories = Story::query()
+        $storiesQuery = Story::query()
             ->published()
-            ->where('title', 'LIKE', "%{$query}%")
-            ->orWhereHas('chapters', function ($q) use ($query) {
-                $q->where('status', 'published')
-                    ->where('title', 'LIKE', "%{$query}%")
-                    ->orWhere('content', 'LIKE', "%{$query}%");
+            ->where(function ($outer) use ($query) {
+                $outer->where('title', 'LIKE', "%{$query}%")
+                    ->orWhereHas('chapters', function ($q) use ($query) {
+                        $q->where('status', 'published')
+                            ->where(function ($c) use ($query) {
+                                $c->where('title', 'LIKE', "%{$query}%")
+                                    ->orWhere('content', 'LIKE', "%{$query}%");
+                            });
+                    })
+                    ->orWhereHas('categories', function ($q) use ($query) {
+                        $q->where('name', 'LIKE', "%{$query}%");
+                    });
             })
-            ->orWhereHas('categories', function ($q) use ($query) {
-                $q->where('name', 'LIKE', "%{$query}%");
-            })
-            ->with(['categories', 'chapters'])
-            ->paginate(20);
+            ->with([
+                'categories:id,name,slug,is_main',
+            ])
+            ->select([
+                'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
+                'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at'
+            ])
+            ->distinct('stories.id');
+
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
             'isSearch' => true,
-            'searchType' => 'general'
+            'searchType' => 'general',
+            'searchUrl' => route('searchHeader'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
@@ -58,17 +75,28 @@ class HomeController extends Controller
         $query = $request->input('query');
 
         // Search in stories by author name
-        $stories = Story::query()
+        $storiesQuery = Story::query()
             ->published()
             ->where('author_name', 'LIKE', "%{$query}%")
-            ->with(['categories', 'chapters'])
-            ->paginate(20);
+            ->with(['categories:id,name,slug,is_main'])
+            ->select([
+                'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
+                'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at'
+            ])
+            ->distinct('stories.id');
+
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
             'isSearch' => true,
-            'searchType' => 'author'
+            'searchType' => 'author',
+            'searchUrl' => route('search.author'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
@@ -77,59 +105,95 @@ class HomeController extends Controller
         $query = $request->input('query');
 
         // Search in stories by translator name
-        $stories = Story::query()
+        $storiesQuery = Story::query()
             ->published()
-            ->whereHas('user', function ($q) use ($query) {
-                $q->where('name', 'LIKE', "%{$query}%");
+            ->where(function ($outer) use ($query) {
+                $outer->whereHas('user', function ($q) use ($query) {
+                    $q->where('name', 'LIKE', "%{$query}%");
+                })
+                ->orWhere('translator_name', 'LIKE', "%{$query}%");
             })
-            ->orWhere('translator_name', 'LIKE', "%{$query}%")
-            ->with(['categories', 'chapters', 'user'])
-            ->paginate(20);
+            ->with(['categories:id,name,slug,is_main'])
+            ->select([
+                'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
+                'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.user_id', 'stories.translator_name'
+            ])
+            ->distinct('stories.id');
+
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
             'isSearch' => true,
-            'searchType' => 'translator'
+            'searchType' => 'translator',
+            'searchUrl' => route('search.translator'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
-    public function showStoryCategories($slug)
+    public function showStoryCategories(Request $request, $slug)
     {
-
         $category = Category::where('slug', $slug)->firstOrFail();
 
-        $stories = $category->stories()
+        $storiesQuery = $category->stories()
             ->published()
-            ->with(['categories', 'chapters'])
-            ->paginate(20);
+            ->with(['categories', 'chapters']);
+
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'currentCategory' => $category,
-            'isSearch' => false
+            'isSearch' => false,
+            'searchUrl' => route('categories.story.show', $slug),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
-    public function showStoryHot()
+    public function showStoryHot(Request $request)
     {
-        $stories = $this->getFeaturedStoriesForPage();
+        // If advanced search filters are applied, use regular query
+        if ($request->hasAny(['category', 'sort', 'chapters', 'status'])) {
+            $storiesQuery = Story::query()
+                ->published()
+                ->where('is_featured', true)
+                ->whereHas('chapters', function ($query) {
+                    $query->where('status', 'published');
+                })
+                ->with(['categories', 'chapters']);
 
-        $perPage = 20;
-        $currentPage = LengthAwarePaginator::resolveCurrentPage();
-        $pagedStories = new LengthAwarePaginator(
-            $stories->forPage($currentPage, $perPage),
-            $stories->count(),
-            $perPage,
-            $currentPage,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
+            // Apply advanced search filters
+            $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
 
+            $stories = $storiesQuery->paginate(20);
+        } else {
+            // Use original featured stories logic
+            $stories = $this->getFeaturedStoriesForPage();
+
+            $perPage = 20;
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $stories = new LengthAwarePaginator(
+                $stories->forPage($currentPage, $perPage),
+                $stories->count(),
+                $perPage,
+                $currentPage,
+                ['path' => request()->url(), 'query' => request()->query()]
+            );
+        }
 
         return view('pages.search.results', [
-            'stories' => $pagedStories,
+            'stories' => $stories,
             'query' => 'hot',
-            'isSearch' => false
+            'isSearch' => false,
+            'searchUrl' => route('story.hot'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
@@ -237,9 +301,9 @@ class HomeController extends Controller
         return $stories;
     }
 
-    public function showRatingStories()
+    public function showRatingStories(Request $request)
     {
-        $stories = Story::select('stories.*')
+        $storiesQuery = Story::select('stories.*')
             ->where('status', 'published')
             ->withAvg('ratings as average_rating', 'rating')
             ->whereExists(function ($query) {
@@ -248,17 +312,23 @@ class HomeController extends Controller
                     ->whereColumn('ratings.story_id', 'stories.id');
             })
             ->orderByDesc('average_rating')
-            ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
-            ->paginate(20);
+            ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC');
+
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => 'rating',
-            'isSearch' => false
+            'isSearch' => false,
+            'searchUrl' => route('story.rating'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
-    public function showStoryNewChapter()
+    public function showStoryNewChapter(Request $request)
     {
         // Get latest chapter information using a subquery
         $latestChapters = DB::table('chapters')
@@ -270,24 +340,30 @@ class HomeController extends Controller
             ->groupBy('story_id');
 
         // Use withSubquery to avoid GROUP BY issues
-        $stories = Story::select('stories.*')
+        $storiesQuery = Story::select('stories.*')
             ->where('stories.status', 'published')
             ->withAvg('ratings as average_rating', 'rating')
             ->joinSub($latestChapters, 'latest_chapters', function ($join) {
                 $join->on('stories.id', '=', 'latest_chapters.story_id');
             })
             ->orderByDesc('average_rating')
-            ->orderByDesc('latest_chapters.latest_chapter_time')
-            ->paginate(20);
+            ->orderByDesc('latest_chapters.latest_chapter_time');
+
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => 'new-chapter',
-            'isSearch' => false
+            'isSearch' => false,
+            'searchUrl' => route('story.new.chapter'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
-    public function showStoryNew()
+    public function showStoryNew(Request $request)
     {
         $query = Story::with(['latestChapter' => function ($query) {
             $query->select('id', 'story_id', 'title', 'slug', 'number', 'views', 'created_at', 'status')
@@ -316,55 +392,70 @@ class HomeController extends Controller
             ->whereYear('reviewed_at', now()->year)
             ->orderByDesc('reviewed_at');
 
-        $stories = $query->paginate(20);
+        // Apply advanced search filters
+        $query = $this->applyAdvancedFilters($query, $request);
 
+        $stories = $query->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => 'new',
-            'isSearch' => false
+            'isSearch' => false,
+            'searchUrl' => route('story.new'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
-    public function showStoryView()
+    public function showStoryView(Request $request)
     {
         $storyViews = DB::table('chapters')
             ->select('story_id', DB::raw('SUM(views) as total_views'))
             ->where('status', 'published')
             ->groupBy('story_id');
 
-        $stories = Story::select('stories.*')
+        $storiesQuery = Story::select('stories.*')
             ->joinSub($storyViews, 'story_views', function ($join) {
                 $join->on('stories.id', '=', 'story_views.story_id');
             })
             ->addSelect('story_views.total_views')
-            ->orderByDesc('story_views.total_views')
-            ->paginate(20);
+            ->orderByDesc('story_views.total_views');
+
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => 'view',
-            'isSearch' => false
+            'isSearch' => false,
+            'searchUrl' => route('story.view'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
-    public function showStoryFollow()
+    public function showStoryFollow(Request $request)
     {
-        $stories = Story::withCount('bookmarks')
-            ->orderByDesc('bookmarks_count')
-            ->paginate(20);
+        $storiesQuery = Story::withCount('bookmarks')
+            ->orderByDesc('bookmarks_count');
 
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => 'follow',
-            'isSearch' => false
+            'isSearch' => false,
+            'searchUrl' => route('story.follow'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
-    public function showCompletedStories()
+    public function showCompletedStories(Request $request)
     {
-        $stories = Story::with('categories')
+        $storiesQuery = Story::with('categories')
             ->published()
             ->where('completed', true)
             ->whereHas('chapters', function ($query) {
@@ -384,13 +475,19 @@ class HomeController extends Controller
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
             }])
-            ->latest('updated_at')
-            ->paginate(20);
+            ->latest('updated_at');
+
+        // Apply advanced search filters
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+
+        $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => 'completed',
-            'isSearch' => false
+            'isSearch' => false,
+            'searchUrl' => route('story.completed'),
+            'categories' => Category::orderBy('name')->get()
         ]);
     }
 
@@ -1094,5 +1191,86 @@ class HomeController extends Controller
         return response()->json([
             'html' => view('components.search-results', compact('chapters'))->render()
         ]);
+    }
+
+    /**
+     * Apply advanced search filters to the query
+     */
+    private function applyAdvancedFilters($query, Request $request)
+    {
+        // Filter by category
+        if ($request->filled('category')) {
+            $query->whereHas('categories', function ($q) use ($request) {
+                $q->where('categories.id', $request->category);
+            });
+        }
+
+        // Filter by completion status
+        if ($request->filled('status')) {
+            if ($request->status === 'completed') {
+                $query->where('completed', true);
+            } elseif ($request->status === 'ongoing') {
+                $query->where('completed', false);
+            }
+        }
+
+        // Filter by number of chapters
+        if ($request->filled('chapters')) {
+            $chaptersFilter = $request->chapters;
+            
+            // Add chapters count if not already added
+            if (!$query->getQuery()->columns || !in_array('chapters_count', $query->getQuery()->columns)) {
+                $query->withCount(['chapters' => function ($q) {
+                    $q->where('status', 'published');
+                }]);
+            }
+
+            switch ($chaptersFilter) {
+                case '1-10':
+                    $query->having('chapters_count', '>=', 1)->having('chapters_count', '<=', 10);
+                    break;
+                case '11-50':
+                    $query->having('chapters_count', '>=', 11)->having('chapters_count', '<=', 50);
+                    break;
+                case '51-100':
+                    $query->having('chapters_count', '>=', 51)->having('chapters_count', '<=', 100);
+                    break;
+                case '100+':
+                    $query->having('chapters_count', '>', 100);
+                    break;
+            }
+        }
+
+        // Apply sorting
+        if ($request->filled('sort')) {
+            switch ($request->sort) {
+                case 'newest':
+                    $query->orderBy('created_at', 'desc');
+                    break;
+                case 'oldest':
+                    $query->orderBy('created_at', 'asc');
+                    break;
+                case 'most_chapters':
+                    $query->withCount(['chapters' => function ($q) {
+                        $q->where('status', 'published');
+                    }])->orderBy('chapters_count', 'desc');
+                    break;
+                case 'least_chapters':
+                    $query->withCount(['chapters' => function ($q) {
+                        $q->where('status', 'published');
+                    }])->orderBy('chapters_count', 'asc');
+                    break;
+                case 'most_views':
+                    $query->withCount(['chapters' => function ($q) {
+                        $q->where('status', 'published');
+                    }])->withSum('chapters', 'views')->orderBy('chapters_sum_views', 'desc');
+                    break;
+                case 'highest_rating':
+                    $query->withAvg('ratings', 'rating')->orderBy('ratings_avg_rating', 'desc');
+                    break;
+            }
+        }
+
+        return $query;
     }
 }
