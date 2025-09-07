@@ -63,6 +63,7 @@ class HomeController extends Controller
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
+            'searchQuery' => $query,
             'displayQuery' => $query,
             'isSearch' => true,
             'searchType' => 'general',
@@ -104,6 +105,7 @@ class HomeController extends Controller
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
+            'searchQuery' => $query,
             'displayQuery' => $query,
             'isSearch' => true,
             'searchType' => 'author',
@@ -150,6 +152,7 @@ class HomeController extends Controller
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
+            'searchQuery' => $query,
             'displayQuery' => $query,
             'isSearch' => true,
             'searchType' => 'translator',
@@ -184,7 +187,8 @@ class HomeController extends Controller
         return view('pages.search.results', [
             'stories' => $stories,
             'currentCategory' => $category,
-            'query' => $request->input('query', ''),
+            'query' => 'category', 
+            'searchQuery' => $request->input('query', ''),
             'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('categories.story.show', $slug),
@@ -194,8 +198,13 @@ class HomeController extends Controller
 
     public function showStoryHot(Request $request)
     {
-        // If advanced search filters are applied, use regular query
-        if ($request->hasAny(['query', 'category', 'sort', 'chapters', 'status'])) {
+        $hasActiveFilters = ($request->filled('query') && trim($request->input('query')) !== '') ||
+                           ($request->filled('category') && trim($request->input('category')) !== '') ||
+                           ($request->filled('sort') && trim($request->input('sort')) !== '') ||
+                           ($request->filled('chapters') && trim($request->input('chapters')) !== '') ||
+                           ($request->filled('status') && trim($request->input('status')) !== '');
+                           
+        if ($hasActiveFilters) {
             $storiesQuery = Story::query()
                 ->published()
                 ->where('is_featured', true)
@@ -214,12 +223,10 @@ class HomeController extends Controller
                     }
                 ]);
 
-            // Apply advanced search filters
             $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
 
             $stories = $storiesQuery->paginate(20);
         } else {
-            // Use original featured stories logic
             $stories = $this->getFeaturedStoriesForPage();
 
             $perPage = 20;
@@ -235,7 +242,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => $request->filled('query') ? $request->input('query') : 'hot',
+            'query' => 'hot',
+            'searchQuery' => $request->input('query', ''),
             'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.hot'),
@@ -390,7 +398,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => $request->filled('query') ? $request->input('query') : 'rating',
+            'query' => 'rating',
+            'searchQuery' => $request->input('query', ''),
             'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.rating'),
@@ -430,7 +439,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => $request->filled('query') ? $request->input('query') : 'new-chapter',
+            'query' => 'new-chapter',
+            'searchQuery' => $request->input('query', ''),
             'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.new.chapter'),
@@ -474,7 +484,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => $request->filled('query') ? $request->input('query') : 'new',
+            'query' => 'new',
+            'searchQuery' => $request->input('query', ''),
             'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.new'),
@@ -514,7 +525,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => $request->filled('query') ? $request->input('query') : 'view',
+            'query' => 'view',
+            'searchQuery' => $request->input('query', ''),
             'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.view'),
@@ -545,7 +557,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => $request->filled('query') ? $request->input('query') : 'follow',
+            'query' => 'follow',
+            'searchQuery' => $request->input('query', ''),
             'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.follow'),
@@ -594,7 +607,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => $request->filled('query') ? $request->input('query') : 'completed',
+            'query' => 'completed',
+            'searchQuery' => $request->input('query', ''),
             'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.completed'),
@@ -1395,7 +1409,7 @@ class HomeController extends Controller
     private function applyAdvancedFilters($query, Request $request)
     {
         // Filter by search query (keywords)
-        if ($request->filled('query')) {
+        if ($request->filled('query') && trim($request->input('query')) !== '') {
             $searchQuery = trim((string) $request->input('query'));
             $query->where(function ($q) use ($searchQuery) {
                 $q->where('title', 'LIKE', "%{$searchQuery}%")
@@ -1405,14 +1419,14 @@ class HomeController extends Controller
         }
 
         // Filter by category
-        if ($request->filled('category')) {
+        if ($request->filled('category') && trim($request->input('category')) !== '') {
             $query->whereHas('categories', function ($q) use ($request) {
                 $q->where('categories.id', $request->category);
             });
         }
 
         // Filter by completion status
-        if ($request->filled('status')) {
+        if ($request->filled('status') && trim($request->input('status')) !== '') {
             if ($request->status === 'completed') {
                 $query->where('completed', true);
             } elseif ($request->status === 'ongoing') {
@@ -1421,7 +1435,7 @@ class HomeController extends Controller
         }
 
         // Filter by number of chapters
-        if ($request->filled('chapters')) {
+        if ($request->filled('chapters') && trim($request->input('chapters')) !== '') {
             $chaptersFilter = $request->chapters;
             
             // Add chapters count if not already added
@@ -1448,7 +1462,7 @@ class HomeController extends Controller
         }
 
         // Apply sorting
-        if ($request->filled('sort')) {
+        if ($request->filled('sort') && trim($request->input('sort')) !== '') {
             switch ($request->sort) {
                 case 'newest':
                     $query->orderBy('created_at', 'desc');

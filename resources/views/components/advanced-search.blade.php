@@ -113,4 +113,34 @@
 
 @push('scripts')
 <script src="{{ asset('assets/js/advanced-search.js') }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const advancedSearchForm = document.getElementById('advanced-search-form');
+    
+    if (advancedSearchForm) {
+        advancedSearchForm.addEventListener('submit', function(e) {
+            // Remove empty parameters before submitting
+            const formData = new FormData(this);
+            const cleanedParams = new URLSearchParams();
+            
+            for (let [key, value] of formData.entries()) {
+                if (value && value.trim() !== '') {
+                    cleanedParams.append(key, value);
+                }
+            }
+            
+            // Prevent default form submission
+            e.preventDefault();
+            
+            // Construct clean URL
+            const baseUrl = this.action;
+            const cleanUrl = cleanedParams.toString() ? 
+                `${baseUrl}?${cleanedParams.toString()}` : baseUrl;
+            
+            // Navigate to clean URL
+            window.location.href = cleanUrl;
+        });
+    }
+});
+</script>
 @endpush
