@@ -14,6 +14,19 @@ use Symfony\Component\HttpFoundation\Response;
 class AffiliateRedirect
 {
     /**
+     * Static cache để tránh duplicate queries trong cùng request
+     */
+    private static $entityCache = [];
+
+    /**
+     * Get cached entity by key
+     */
+    public static function getCachedEntity($key)
+    {
+        return self::$entityCache[$key] ?? null;
+    }
+
+    /**
      * Handle affiliate link redirection.
      */
     public function handle(Request $request, Closure $next, string $type = null): Response
@@ -26,20 +39,36 @@ class AffiliateRedirect
             // For story route: story/{slug}
             $slug = $request->route('slug');
             if ($slug) {
-                $entity = Story::where('slug', $slug)->first();
+                $cacheKey = "story_{$slug}";
+                if (!isset(self::$entityCache[$cacheKey])) {
+                    self::$entityCache[$cacheKey] = Story::where('slug', $slug)
+                        ->with(['categories' => function ($query) {
+                            $query->select('categories.id', 'categories.name', 'categories.slug');
+                        }])
+                        ->first();
+                }
+                $entity = self::$entityCache[$cacheKey];
             }
         } elseif ($type === 'chapter') {
             // For chapter route: story/{storySlug}/{chapterSlug}
             $chapterSlug = $request->route('chapterSlug');
             if ($chapterSlug) {
-                $entity = Chapter::where('slug', $chapterSlug)->first();
+                $cacheKey = "chapter_{$chapterSlug}";
+                if (!isset(self::$entityCache[$cacheKey])) {
+                    self::$entityCache[$cacheKey] = Chapter::where('slug', $chapterSlug)->first();
+                }
+                $entity = self::$entityCache[$cacheKey];
             }
         } elseif ($type === 'banner') {
             // For banner route: banner/{banner}
             $bannerId = $request->route('banner');
            
             if ($bannerId) {
-                $entity = Banner::where('id', $bannerId->id)->first();
+                $cacheKey = "banner_{$bannerId->id}";
+                if (!isset(self::$entityCache[$cacheKey])) {
+                    self::$entityCache[$cacheKey] = Banner::where('id', $bannerId->id)->first();
+                }
+                $entity = self::$entityCache[$cacheKey];
             }
         }
        

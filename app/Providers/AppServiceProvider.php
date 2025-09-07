@@ -23,6 +23,13 @@ use Illuminate\Support\ServiceProvider;
 class AppServiceProvider extends ServiceProvider
 {
     /**
+     * Static variables để tránh duplicate queries trong cùng request
+     */
+    private static $categories = null;
+    private static $banners = null;
+    private static $donate = null;
+
+    /**
      * Register any application services.
      */
     public function register(): void
@@ -37,6 +44,7 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
 
+        // Composer cho categories - chỉ load khi cần
         View::composer([
             'layouts.partials.header',
             'pages.home',
@@ -46,69 +54,152 @@ class AppServiceProvider extends ServiceProvider
             'pages.information.author.author_create',
             'pages.information.author.author_edit',
         ], function ($view) {
-            $allCategories = Category::withCount('stories')->orderBy('name')->get();
-            $view->with('categories', $allCategories);
-
-
-            $dailyTopPurchased = $this->getTopStoriesPurchased(Carbon::today());
-
-            $weeklyTopPurchased = $this->getTopStoriesPurchased(Carbon::today()->subDays(7));
-
-            $monthlyTopPurchased = $this->getTopStoriesPurchased(Carbon::today()->subDays(30));
-
-
-            $banners = Banner::active()->get();
-
-            $view->with('dailyTopPurchased', $dailyTopPurchased);
-            $view->with('weeklyTopPurchased', $weeklyTopPurchased);
-            $view->with('monthlyTopPurchased', $monthlyTopPurchased);
-            $view->with('banners', $banners);
-
-            $donate = Donate::first() ?? new Donate();
-            $view->with('donate', $donate);
+            $view->with('categories', $this->getCategories());
         });
+
+        // Composer cho top purchased stories - load cho trang home và chapter
+        View::composer(['pages.home', 'pages.chapter'], function ($view) {
+            $topStories = $this->getTopStories();
+            $view->with('dailyTopPurchased', $topStories['daily']);
+            $view->with('weeklyTopPurchased', $topStories['weekly']);
+            $view->with('monthlyTopPurchased', $topStories['monthly']);
+        });
+
+        // Composer cho banners - chỉ load khi cần
+        View::composer([
+            'pages.home',
+            'layouts.partials.header',
+        ], function ($view) {
+            $view->with('banners', $this->getBanners());
+        });
+
     }
 
+    /**
+     * Lấy categories - tránh duplicate trong cùng request
+     */
+    private function getCategories()
+    {
+        if (self::$categories === null) {
+            self::$categories = Category::withCount(['stories' => function ($query) {
+                $query->where('status', 'published');
+            }])->orderBy('name')->get();
+        }
+        return self::$categories;
+    }
+
+    /**
+     * Lấy top stories - tối ưu để tránh duplicate queries
+     */
+    private function getTopStories()
+    {
+        $today = Carbon::today();
+        $weekAgo = $today->copy()->subDays(7);
+        $monthAgo = $today->copy()->subDays(30);
+
+        // Tối ưu: chỉ gọi 1 lần cho mỗi loại, không duplicate
+        return [
+            'daily' => $this->getTopStoriesPurchased($today),
+            'weekly' => $this->getTopStoriesPurchased($weekAgo),
+            'monthly' => $this->getTopStoriesPurchased($monthAgo),
+        ];
+    }
+
+    /**
+     * Lấy banners - tránh duplicate trong cùng request
+     */
+    private function getBanners()
+    {
+        if (self::$banners === null) {
+            self::$banners = Banner::active()
+                ->with(['story' => function ($query) {
+                    $query->select('id', 'slug', 'is_18_plus', 'title');
+                }])
+                ->select('id', 'image', 'link', 'story_id')
+                ->get();
+        }
+        return self::$banners;
+    }
+
+    /**
+     * Tối ưu hóa query để tránh N+1
+     */
     private function getTopStoriesPurchased(Carbon $fromDate)
     {
-        // Purchases từ bảng story_purchases
-        $storyPurchases = DB::table('story_purchases')
-            ->select('story_id', DB::raw('COUNT(*) as purchase_count'), DB::raw('MAX(created_at) as latest'))
-            ->where('created_at', '>=', $fromDate)
-            ->groupBy('story_id');
+        // Sử dụng single query với subquery để tối ưu
+        $storyIds = DB::select("
+            SELECT story_id, SUM(purchase_count) as total_purchases, MAX(latest) as latest_purchase_at
+            FROM (
+                SELECT story_id, COUNT(*) as purchase_count, MAX(created_at) as latest
+                FROM story_purchases 
+                WHERE created_at >= ?
+                GROUP BY story_id
+                
+                UNION ALL
+                
+                SELECT chapters.story_id, COUNT(*) as purchase_count, MAX(chapter_purchases.created_at) as latest
+                FROM chapter_purchases 
+                INNER JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                WHERE chapter_purchases.created_at >= ?
+                GROUP BY chapters.story_id
+            ) as combined_purchases
+            GROUP BY story_id
+            ORDER BY total_purchases DESC
+            LIMIT 10
+        ", [$fromDate, $fromDate]);
+        
+        $storyIds = collect($storyIds)->pluck('story_id');
 
-        // Purchases từ chapter_purchases
-        $chapterPurchases = DB::table('chapter_purchases')
-            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
-            ->select('chapters.story_id', DB::raw('COUNT(*) as purchase_count'), DB::raw('MAX(chapter_purchases.created_at) as latest'))
-            ->where('chapter_purchases.created_at', '>=', $fromDate)
-            ->groupBy('chapters.story_id');
+        if ($storyIds->isEmpty()) {
+            return collect();
+        }
 
-        // Gom 2 bảng bằng UNION
-        $merged = $storyPurchases->unionAll($chapterPurchases);
+        // Lấy stories với một query duy nhất và eager load relationships
+        $stories = Story::whereIn('id', $storyIds)
+            ->where('status', 'published')
+            ->with([
+                'categories:id,name,slug',
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
+            ])
+            ->get()
+            ->keyBy('id');
 
-        // Tính tổng purchase và latest time
-        $totals = DB::table(DB::raw("({$merged->toSql()}) as purchases"))
-            ->mergeBindings($merged)
-            ->select('story_id', DB::raw('SUM(purchase_count) as total_purchases'), DB::raw('MAX(latest) as latest_purchase_at'))
-            ->groupBy('story_id')
-            ->orderByDesc('total_purchases')
-            ->limit(10)
-            ->get();
+        // Lấy purchase data với một query duy nhất
+        $purchaseData = DB::select("
+            SELECT story_id, SUM(purchase_count) as total_purchases, MAX(latest) as latest_purchase_at
+            FROM (
+                SELECT story_id, COUNT(*) as purchase_count, MAX(created_at) as latest
+                FROM story_purchases 
+                WHERE created_at >= ? AND story_id IN (" . $storyIds->implode(',') . ")
+                GROUP BY story_id
+                
+                UNION ALL
+                
+                SELECT chapters.story_id, COUNT(*) as purchase_count, MAX(chapter_purchases.created_at) as latest
+                FROM chapter_purchases 
+                INNER JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                WHERE chapter_purchases.created_at >= ? AND chapters.story_id IN (" . $storyIds->implode(',') . ")
+                GROUP BY chapters.story_id
+            ) as combined_purchases
+            GROUP BY story_id
+        ", [$fromDate, $fromDate]);
+        
+        $purchaseData = collect($purchaseData)->keyBy('story_id');
 
-        // Lấy danh sách truyện tương ứng
-        $storyIds = $totals->pluck('story_id')->toArray();
-        $stories = Story::whereIn('id', $storyIds)->where('status', 'published')->get()->keyBy('id');
+        // Gộp dữ liệu
+        return $storyIds->map(function ($storyId) use ($stories, $purchaseData) {
+            $story = $stories[$storyId] ?? null;
+            $purchase = $purchaseData[$storyId] ?? null;
+            
+            if (!$story || !$purchase) return null;
 
-        // Gộp dữ liệu purchase vào model Story
-        return $totals->map(function ($row) use ($stories) {
-            $story = $stories[$row->story_id] ?? null;
-            if (!$story) return null;
-
-            $story->total_purchases = $row->total_purchases;
-            $story->latest_purchase_at = $row->latest_purchase_at;
-            $story->latest_purchase_diff = $row->latest_purchase_at
-                ? Carbon::parse($row->latest_purchase_at)->diffForHumans()
+            $story->total_purchases = $purchase->total_purchases;
+            $story->latest_purchase_at = $purchase->latest_purchase_at;
+            $story->latest_purchase_diff = $purchase->latest_purchase_at
+                ? Carbon::parse($purchase->latest_purchase_at)->diffForHumans()
                 : 'Chưa có ai mua';
 
             return $story;

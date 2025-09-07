@@ -48,6 +48,14 @@ class HomeController extends Controller
             })
             ->with([
                 'categories:id,name,slug,is_main',
+                'chapters' => function ($query) {
+                    $query->select('id', 'story_id', 'views')
+                        ->where('status', 'published');
+                },
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
             ])
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
@@ -78,7 +86,17 @@ class HomeController extends Controller
         $storiesQuery = Story::query()
             ->published()
             ->where('author_name', 'LIKE', "%{$query}%")
-            ->with(['categories:id,name,slug,is_main'])
+            ->with([
+                'categories:id,name,slug,is_main',
+                'chapters' => function ($query) {
+                    $query->select('id', 'story_id', 'views')
+                        ->where('status', 'published');
+                },
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
+            ])
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
                 'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at'
@@ -113,7 +131,17 @@ class HomeController extends Controller
                 })
                 ->orWhere('translator_name', 'LIKE', "%{$query}%");
             })
-            ->with(['categories:id,name,slug,is_main'])
+            ->with([
+                'categories:id,name,slug,is_main',
+                'chapters' => function ($query) {
+                    $query->select('id', 'story_id', 'views')
+                        ->where('status', 'published');
+                },
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
+            ])
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
                 'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.user_id', 'stories.translator_name'
@@ -141,7 +169,17 @@ class HomeController extends Controller
 
         $storiesQuery = $category->stories()
             ->published()
-            ->with(['categories', 'chapters']);
+            ->with([
+                'categories',
+                'chapters' => function ($query) {
+                    $query->select('id', 'story_id', 'views')
+                        ->where('status', 'published');
+                },
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
+            ]);
 
         // Apply advanced search filters
         $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
@@ -167,7 +205,17 @@ class HomeController extends Controller
                 ->whereHas('chapters', function ($query) {
                     $query->where('status', 'published');
                 })
-                ->with(['categories', 'chapters']);
+                ->with([
+                    'categories',
+                    'chapters' => function ($query) {
+                        $query->select('id', 'story_id', 'views')
+                            ->where('status', 'published');
+                    },
+                    'latestChapter' => function ($query) {
+                        $query->select('id', 'story_id', 'number', 'created_at')
+                            ->where('status', 'published');
+                    }
+                ]);
 
             // Apply advanced search filters
             $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
@@ -202,10 +250,16 @@ class HomeController extends Controller
      */
     private function getFeaturedStoriesForPage()
     {
-        $query = Story::with(['chapters' => function ($query) {
-            $query->select('id', 'story_id', 'views', 'created_at')
-                ->where('status', 'published');
-        }])
+        $query = Story::with([
+            'chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views', 'created_at')
+                    ->where('status', 'published');
+            },
+            'latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'number', 'created_at')
+                    ->where('status', 'published');
+            }
+        ])
             ->published()
             ->where('is_featured', true)
             ->whereHas('chapters', function ($query) {
@@ -256,10 +310,16 @@ class HomeController extends Controller
      */
     private function getHotStoriesForPage()
     {
-        $query = Story::with(['chapters' => function ($query) {
-            $query->select('id', 'story_id', 'views', 'created_at')
-                ->where('status', 'published');
-        }])
+        $query = Story::with([
+            'chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views', 'created_at')
+                    ->where('status', 'published');
+            },
+            'latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'number', 'created_at')
+                    ->where('status', 'published');
+            }
+        ])
             ->published()
             ->whereHas('chapters', function ($query) {
                 $query->where('status', 'published');
@@ -306,6 +366,17 @@ class HomeController extends Controller
         $storiesQuery = Story::select('stories.*')
             ->where('status', 'published')
             ->withAvg('ratings as average_rating', 'rating')
+            ->with([
+                'categories',
+                'chapters' => function ($query) {
+                    $query->select('id', 'story_id', 'views')
+                        ->where('status', 'published');
+                },
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
+            ])
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('ratings')
@@ -343,6 +414,10 @@ class HomeController extends Controller
         $storiesQuery = Story::select('stories.*')
             ->where('stories.status', 'published')
             ->withAvg('ratings as average_rating', 'rating')
+            ->with(['latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'number', 'slug', 'created_at')
+                    ->where('status', 'published');
+            }])
             ->joinSub($latestChapters, 'latest_chapters', function ($join) {
                 $join->on('stories.id', '=', 'latest_chapters.story_id');
             })
@@ -414,6 +489,17 @@ class HomeController extends Controller
             ->groupBy('story_id');
 
         $storiesQuery = Story::select('stories.*')
+            ->with([
+                'categories',
+                'chapters' => function ($query) {
+                    $query->select('id', 'story_id', 'views')
+                        ->where('status', 'published');
+                },
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
+            ])
             ->joinSub($storyViews, 'story_views', function ($join) {
                 $join->on('stories.id', '=', 'story_views.story_id');
             })
@@ -437,6 +523,17 @@ class HomeController extends Controller
     public function showStoryFollow(Request $request)
     {
         $storiesQuery = Story::withCount('bookmarks')
+            ->with([
+                'categories',
+                'chapters' => function ($query) {
+                    $query->select('id', 'story_id', 'views')
+                        ->where('status', 'published');
+                },
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
+            ])
             ->orderByDesc('bookmarks_count');
 
         // Apply advanced search filters
@@ -455,7 +552,17 @@ class HomeController extends Controller
 
     public function showCompletedStories(Request $request)
     {
-        $storiesQuery = Story::with('categories')
+        $storiesQuery = Story::with([
+            'categories',
+            'chapters' => function ($query) {
+                $query->select('id', 'story_id', 'price', 'is_free')
+                    ->where('status', 'published');
+            },
+            'latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'number', 'created_at')
+                    ->where('status', 'published');
+            }
+        ])
             ->published()
             ->where('completed', true)
             ->whereHas('chapters', function ($query) {
@@ -531,7 +638,17 @@ class HomeController extends Controller
 
     private function getCompletedStories()
     {
-        return Story::with('categories')
+        return Story::with([
+            'categories',
+            'chapters' => function ($query) {
+                $query->select('id', 'story_id', 'price', 'is_free')
+                    ->where('status', 'published');
+            },
+            'latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'number', 'created_at')
+                    ->where('status', 'published');
+            }
+        ])
             ->published()
             ->where('completed', true)
             ->whereHas('chapters', function ($query) {
@@ -569,12 +686,18 @@ class HomeController extends Controller
      */
     private function getFeaturedStories($request)
     {
-        $query = Story::with(['chapters' => function ($query) {
-            $query->select('id', 'story_id', 'views', 'created_at')
-                ->where('status', 'published');
-        }])
+        $query = Story::with([
+            'chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views', 'created_at')
+                    ->where('status', 'published');
+            },
+            'latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'number', 'created_at')
+                    ->where('status', 'published');
+            }
+        ])
             ->published()
-            ->where('is_featured', true) // Chỉ lấy truyện đề cử
+            ->where('is_featured', true)
             ->whereHas('chapters', function ($query) {
                 $query->where('status', 'published');
             })
@@ -629,10 +752,16 @@ class HomeController extends Controller
      */
     private function getHotStoriesByScore($request)
     {
-        $query = Story::with(['chapters' => function ($query) {
-            $query->select('id', 'story_id', 'views', 'created_at')
-                ->where('status', 'published');
-        }])
+        $query = Story::with([
+            'chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views', 'created_at')
+                    ->where('status', 'published');
+            },
+            'latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'number', 'created_at')
+                    ->where('status', 'published');
+            }
+        ])
             ->published()
             ->whereHas('chapters', function ($query) {
                 $query->where('status', 'published');
@@ -757,6 +886,10 @@ class HomeController extends Controller
         )
             ->where('stories.status', 'published')
             ->withAvg('ratings as average_rating', 'rating')
+            ->with(['latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'number', 'slug', 'created_at')
+                    ->where('status', 'published');
+            }])
             ->joinSub($latestChapters, 'latest_chapters', function ($join) {
                 $join->on('stories.id', '=', 'latest_chapters.story_id');
             })
@@ -801,6 +934,10 @@ class HomeController extends Controller
                     ->whereColumn('ratings.story_id', 'stories.id');
             })
             ->withAvg('ratings as average_rating', 'rating')
+            ->with(['chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views')
+                    ->where('status', 'published');
+            }])
             ->orderByDesc('average_rating')
             ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
             ->limit(10)
@@ -818,6 +955,10 @@ class HomeController extends Controller
 
         $stories = Story::select('stories.*')
             ->where('stories.status', 'published')
+            ->with(['chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views')
+                    ->where('status', 'published');
+            }])
             ->joinSub($storyViews, 'story_views', function ($join) {
                 $join->on('stories.id', '=', 'story_views.story_id');
             })
@@ -833,6 +974,10 @@ class HomeController extends Controller
     {
         $stories = Story::withCount('bookmarks')
             ->where('status', 'published')
+            ->with(['chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views')
+                    ->where('status', 'published');
+            }])
             ->having('bookmarks_count', '>', 0)
             ->orderByDesc('bookmarks_count')
             ->limit(10)
@@ -842,20 +987,53 @@ class HomeController extends Controller
 
     public function showStory(Request $request, $slug)
     {
-        $story = Story::where('slug', $slug)
-            ->published()
-            ->firstOrFail();
+        $cacheKey = "story_{$slug}";
+        $cachedStory = \App\Http\Middleware\AffiliateRedirect::getCachedEntity($cacheKey);
+        
+        if ($cachedStory && $cachedStory->status === 'published') {
+            $story = $cachedStory;
+        } else {
+            $story = Story::where('slug', $slug)
+                ->published()
+                ->with(['categories' => function ($query) {
+                    $query->select('categories.id', 'categories.name', 'categories.slug');
+                }])
+                ->firstOrFail();
+        }
 
-        $story->load(['categories']);
+        $story->load(['chapters' => function ($query) {
+            $query->where('status', 'published')->select('id', 'story_id', 'views');
+        }]);
 
         $chapters = Chapter::where('story_id', $story->id)
             ->published()
+            ->with(['purchases' => function ($query) {
+                if (auth()->check()) {
+                    $query->where('user_id', auth()->id());
+                } else {
+                    $query->whereRaw('1 = 0');
+                }
+            }])
             ->orderBy('number', 'desc')
             ->paginate(20);
 
+        $chapterPurchaseStatus = [];
+        if (auth()->check()) {
+            $chapterIds = $chapters->pluck('id');
+            $purchasedChapterIds = \App\Models\ChapterPurchase::whereIn('chapter_id', $chapterIds)
+                ->where('user_id', auth()->id())
+                ->pluck('chapter_id')
+                ->toArray();
+            
+            foreach ($chapterIds as $chapterId) {
+                $chapterPurchaseStatus[$chapterId] = in_array($chapterId, $purchasedChapterIds);
+            }
+        }
+
+        $publishedChapters = $story->chapters;
         $stats = [
-            'total_chapters' => $story->chapters()->published()->count(),
-            'total_views' => $story->chapters()->sum('views'),
+            'total_chapters' => $publishedChapters->count(),
+            'total_views' => $publishedChapters->sum('views'),
             'total_bookmarks' => $story->bookmarks()->count(),
             'ratings' => [
                 'count' => Rating::where('story_id', $story->id)->count(),
@@ -930,7 +1108,8 @@ class HomeController extends Controller
             'storyCategories',
             'featuredStories',
             'authorStories',
-            'translatorStories'
+            'translatorStories',
+            'chapterPurchaseStatus'
         ));
     }
 
@@ -966,19 +1145,32 @@ class HomeController extends Controller
 
         $chapters = $chaptersQuery->paginate(50);
 
-        // Nếu là request AJAX, trả về HTML
+        $chapterPurchaseStatus = [];
+        if (auth()->check()) {
+            $chapterIds = $chapters->pluck('id');
+            $purchasedChapterIds = \App\Models\ChapterPurchase::whereIn('chapter_id', $chapterIds)
+                ->where('user_id', auth()->id())
+                ->pluck('chapter_id')
+                ->toArray();
+            
+            foreach ($chapterIds as $chapterId) {
+                $chapterPurchaseStatus[$chapterId] = in_array($chapterId, $purchasedChapterIds);
+            }
+        }
+
         if ($request->ajax()) {
             return response()->json([
                 'html' => view('components.chapter-items', [
                     'chapters' => $chapters,
                     'story' => $story,
-                    'sortOrder' => $sortOrder
+                    'sortOrder' => $sortOrder,
+                    'chapterPurchaseStatus' => $chapterPurchaseStatus
                 ])->render(),
                 'pagination' => view('components.pagination', ['paginator' => $chapters])->render()
             ]);
         }
 
-        return response()->json(['message' => 'Invalid request'], 400);
+        return redirect()->route('show.page.story', $story->slug);
     }
 
     public function chapterByStory($storySlug, $chapterSlug)

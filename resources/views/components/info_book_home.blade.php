@@ -1,3 +1,8 @@
+@php
+    // Tối ưu: tính toán bookmark status một lần để tránh duplicate queries
+    $isBookmarked = auth()->check() ? App\Models\Bookmark::isBookmarked(auth()->id(), $story->id) : false;
+@endphp
+
 <section id="info-book-home">
     <div class="mt-3">
         <div class="info-card-home h-100 py-5">
@@ -190,10 +195,10 @@
                                         <div class="col-6">
                                             <div class="action-button d-flex flex-column align-items-center bookmark-toggle-btn"
                                                 data-story-id="{{ $story->id }}"
-                                                title="@auth @if (App\Models\Bookmark::isBookmarked(Auth::id(), $story->id)) Bỏ theo dõi @else Theo dõi @endif @else Đăng nhập để theo dõi @endauth">
+                                                title="@auth @if ($isBookmarked) Bỏ theo dõi @else Theo dõi @endif @else Đăng nhập để theo dõi @endauth">
                                                 <div class="action-icon position-relative">
                                                     <i
-                                                        class="fas fa-heart fs-4 @auth @if (App\Models\Bookmark::isBookmarked(Auth::id(), $story->id)) text-danger active @else color-3 @endif @else color-3 @endauth bookmark-icon"></i>
+                                                        class="fas fa-heart fs-4 @auth @if ($isBookmarked) text-danger active @else color-3 @endif @else color-3 @endauth bookmark-icon"></i>
                                                     <span
                                                         class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger small bookmark-count">
                                                         {{ $stats['total_bookmarks'] ?? 0 }}
@@ -201,7 +206,7 @@
                                                 </div>
                                                 <div class="action-label small mt-1 text-center bookmark-label">
                                                     @auth
-                                                        @if (App\Models\Bookmark::isBookmarked(Auth::id(), $story->id))
+                                                        @if ($isBookmarked)
                                                             Bỏ theo dõi
                                                         @else
                                                             Theo dõi
