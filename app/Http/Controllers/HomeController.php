@@ -30,21 +30,13 @@ class HomeController extends Controller
     {
         $query = trim((string) $request->input('query'));
 
-        // Search in stories and chapters
+        // Search in stories - simplified to only title, author_name, and translator_name
         $storiesQuery = Story::query()
             ->published()
-            ->where(function ($outer) use ($query) {
-                $outer->where('title', 'LIKE', "%{$query}%")
-                    ->orWhereHas('chapters', function ($q) use ($query) {
-                        $q->where('status', 'published')
-                            ->where(function ($c) use ($query) {
-                                $c->where('title', 'LIKE', "%{$query}%")
-                                    ->orWhere('content', 'LIKE', "%{$query}%");
-                            });
-                    })
-                    ->orWhereHas('categories', function ($q) use ($query) {
-                        $q->where('name', 'LIKE', "%{$query}%");
-                    });
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'LIKE', "%{$query}%")
+                  ->orWhere('author_name', 'LIKE', "%{$query}%")
+                  ->orWhere('translator_name', 'LIKE', "%{$query}%");
             })
             ->with([
                 'categories:id,name,slug,is_main',
@@ -59,18 +51,19 @@ class HomeController extends Controller
             ])
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
-                'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at'
+                'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.translator_name'
             ])
             ->distinct('stories.id');
 
-        // Apply advanced search filters
-        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
+        $requestWithoutQuery = $request->except('query');
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, new Request($requestWithoutQuery));
 
         $stories = $storiesQuery->paginate(20);
 
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
+            'displayQuery' => $query,
             'isSearch' => true,
             'searchType' => 'general',
             'searchUrl' => route('searchHeader'),
@@ -111,6 +104,7 @@ class HomeController extends Controller
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
+            'displayQuery' => $query,
             'isSearch' => true,
             'searchType' => 'author',
             'searchUrl' => route('search.author'),
@@ -156,6 +150,7 @@ class HomeController extends Controller
         return view('pages.search.results', [
             'stories' => $stories,
             'query' => $query,
+            'displayQuery' => $query,
             'isSearch' => true,
             'searchType' => 'translator',
             'searchUrl' => route('search.translator'),
@@ -189,6 +184,8 @@ class HomeController extends Controller
         return view('pages.search.results', [
             'stories' => $stories,
             'currentCategory' => $category,
+            'query' => $request->input('query', ''),
+            'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('categories.story.show', $slug),
             'categories' => Category::orderBy('name')->get()
@@ -198,7 +195,7 @@ class HomeController extends Controller
     public function showStoryHot(Request $request)
     {
         // If advanced search filters are applied, use regular query
-        if ($request->hasAny(['category', 'sort', 'chapters', 'status'])) {
+        if ($request->hasAny(['query', 'category', 'sort', 'chapters', 'status'])) {
             $storiesQuery = Story::query()
                 ->published()
                 ->where('is_featured', true)
@@ -238,7 +235,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => 'hot',
+            'query' => $request->filled('query') ? $request->input('query') : 'hot',
+            'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.hot'),
             'categories' => Category::orderBy('name')->get()
@@ -392,7 +390,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => 'rating',
+            'query' => $request->filled('query') ? $request->input('query') : 'rating',
+            'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.rating'),
             'categories' => Category::orderBy('name')->get()
@@ -431,7 +430,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => 'new-chapter',
+            'query' => $request->filled('query') ? $request->input('query') : 'new-chapter',
+            'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.new.chapter'),
             'categories' => Category::orderBy('name')->get()
@@ -474,7 +474,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => 'new',
+            'query' => $request->filled('query') ? $request->input('query') : 'new',
+            'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.new'),
             'categories' => Category::orderBy('name')->get()
@@ -513,7 +514,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => 'view',
+            'query' => $request->filled('query') ? $request->input('query') : 'view',
+            'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.view'),
             'categories' => Category::orderBy('name')->get()
@@ -543,7 +545,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => 'follow',
+            'query' => $request->filled('query') ? $request->input('query') : 'follow',
+            'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.follow'),
             'categories' => Category::orderBy('name')->get()
@@ -591,7 +594,8 @@ class HomeController extends Controller
 
         return view('pages.search.results', [
             'stories' => $stories,
-            'query' => 'completed',
+            'query' => $request->filled('query') ? $request->input('query') : 'completed',
+            'displayQuery' => $request->input('query', ''),
             'isSearch' => false,
             'searchUrl' => route('story.completed'),
             'categories' => Category::orderBy('name')->get()
@@ -1390,6 +1394,16 @@ class HomeController extends Controller
      */
     private function applyAdvancedFilters($query, Request $request)
     {
+        // Filter by search query (keywords)
+        if ($request->filled('query')) {
+            $searchQuery = trim((string) $request->input('query'));
+            $query->where(function ($q) use ($searchQuery) {
+                $q->where('title', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('author_name', 'LIKE', "%{$searchQuery}%")
+                  ->orWhere('translator_name', 'LIKE', "%{$searchQuery}%");
+            });
+        }
+
         // Filter by category
         if ($request->filled('category')) {
             $query->whereHas('categories', function ($q) use ($request) {

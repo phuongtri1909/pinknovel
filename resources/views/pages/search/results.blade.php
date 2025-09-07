@@ -72,7 +72,8 @@
                 @include('components.advanced-search', [
                     'searchUrl' => $searchUrl ?? '#',
                     'searchType' => $searchType ?? null,
-                    'categories' => $categories ?? collect()
+                    'categories' => $categories ?? collect(),
+                    'currentQuery' => $displayQuery ?? '',
                 ])
             </div>
 
@@ -133,7 +134,8 @@
                         <div class="story-item border-bottom pb-3 pt-3">
                             <div class="row">
                                 <div class="col-4 col-sm-3 col-lg-2">
-                                    <a href="{{ route('show.page.story', $story->slug) }}" class="h-100 w-100 d-inline-block">
+                                    <a href="{{ route('show.page.story', $story->slug) }}"
+                                        class="h-100 w-100 d-inline-block">
                                         <img src="{{ Storage::url($story->cover) }}" alt="{{ $story->title }}"
                                             class="img-fluid rounded"
                                             style="width: 100%; height: 150px; object-fit: cover;">
@@ -162,7 +164,6 @@
                                                     $displayCategories->push($category);
                                                 }
 
-                                                // Nếu chỉ có 1 danh mục chính, thêm 1 danh mục phụ
                                                 if ($displayCategories->count() === 1 && $subCategories->isNotEmpty()) {
                                                     $displayCategories->push($subCategories->first());
                                                 }
@@ -180,28 +181,17 @@
                                         @endforeach
 
                                     </div>
-                                    {{-- <div class="categories mb-2">
-                                        @foreach ($story->categories as $category)
-                                            <a href="{{ route('categories.story.show', $category->slug) }}"
-                                                class="text-decoration-none">
-                                                {{ $category->name }}
-                                            </a>
-                                        @endforeach
-                                    </div> --}}
-                                    {{-- <div class="d-flex small text-muted">
-                                        <div class="me-3">
-                                            <i class="fas fa-book-open me-1 text-danger"></i>
-                                            {{ $story->chapters_count ?? $story->chapters->count() }} chương
-                                        </div>
+
+                                    <div class="d-flex small text-muted">
                                         <div class="me-3">
                                             <i class="fas fa-eye me-1 text-primary"></i>
-                                            {{ number_format($story->view_count) }}
+                                            {{ number_format($story->total_views) }}
                                         </div>
-                                        <div>
-                                            <i class="fas fa-clock me-1 text-warning"></i>
-                                            {{ $story->updated_at->diffForHumans() }}
+                                        <div class="me-3">
+                                            <i class="fas fa-{{ $story->completed ? 'check-circle' : 'clock' }} me-1 {{ $story->completed ? 'text-success' : 'text-warning' }}"></i>
+                                            {{ $story->completed ? 'Hoàn thành' : 'Đang cập nhật' }}
                                         </div>
-                                    </div> --}}
+                                    </div>
                                     <div class="story-description mt-2 small text-muted d-none d-md-block">
                                         {{ cleanDescription($story->description, 200) }}
                                     </div>

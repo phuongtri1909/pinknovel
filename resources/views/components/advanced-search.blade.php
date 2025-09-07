@@ -5,19 +5,17 @@
 <div class="advanced-search-container">
     <div class="search-content">
         <form method="GET" action="{{ $searchUrl }}" id="advanced-search-form">
-            <!-- Hidden field để giữ nguyên search type và query -->
             @if(isset($searchType))
                 <input type="hidden" name="search_type" value="{{ $searchType }}">
             @endif
             
-            <!-- Tìm kiếm nhanh (giống header search) -->
             <div class="filter-group">
                 <div class="filter-label">
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <span>Từ khóa</span>
                 </div>
                 <div class="select-wrapper">
-                    <input type="text" name="query" value="{{ request('query') }}" placeholder="Nhập tên truyện, chương, thể loại..." class="filter-select" />
+                    <input type="text" name="query" value="{{ $currentQuery ?? request('query') }}" placeholder="Nhập tên truyện, tác giả, dịch giả..." class="filter-select" />
                     <i class="fa-solid fa-chevron-down select-arrow" style="pointer-events:none;opacity:.25"></i>
                 </div>
             </div>
