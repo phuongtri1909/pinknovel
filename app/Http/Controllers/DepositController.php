@@ -60,14 +60,17 @@ class DepositController extends Controller
 
         DB::beginTransaction();
         try {
-            // Cập nhật trạng thái giao dịch
+            if ($deposit->status !== Deposit::STATUS_PENDING) {
+                return redirect()->back()->with('error', 'Giao dịch đã được xử lý trước đó.');
+            }
+            
             $deposit->update([
-                'status' => 'approved',
+                'status' => Deposit::STATUS_APPROVED,
                 'approved_at' => now(),
                 'approved_by' => Auth::id(),
             ]);
 
-            // Cộng xu cho người dùng
+           
             $user = $deposit->user;
             $user->coins += $deposit->coins;
             $user->save();
@@ -96,8 +99,13 @@ class DepositController extends Controller
         ]);
 
         try {
+
+            if ($deposit->status !== Deposit::STATUS_PENDING) {
+                return redirect()->back()->with('error', 'Giao dịch đã được xử lý trước đó.');
+            }
+
             $deposit->update([
-                'status' => 'rejected',
+                'status' => Deposit::STATUS_REJECTED,
                 'note' => $request->note,
                 'approved_at' => now(),
                 'approved_by' => Auth::id(),

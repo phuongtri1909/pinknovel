@@ -203,9 +203,12 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <form action="{{ route('admin.paypal-deposits.approve', $deposit) }}" method="POST" class="m-0">
+                            <form action="{{ route('admin.paypal-deposits.approve', $deposit) }}" method="POST" class="m-0" id="approvePaypalForm{{ $deposit->id }}">
                                 @csrf
-                                <button type="submit" class="btn bg-gradient-success">Xác nhận duyệt</button>
+                                <button type="submit" class="btn bg-gradient-success" id="approvePaypalBtn{{ $deposit->id }}">
+                                    <span class="btn-text">Xác nhận duyệt</span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -235,7 +238,10 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Hủy</button>
-                                <button type="submit" class="btn bg-gradient-danger">Từ chối giao dịch</button>
+                                <button type="submit" class="btn bg-gradient-danger" id="rejectPaypalBtn{{ $deposit->id }}">
+                                    <span class="btn-text">Từ chối giao dịch</span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -278,3 +284,34 @@
         @endif
     @endforeach
 @endsection
+
+@push('scripts-admin')
+    <script>
+        $(document).ready(function() {
+            $('[id^="approvePaypalForm"]').on('submit', function(e) {
+                const formId = $(this).attr('id');
+                const depositId = formId.replace('approvePaypalForm', '');
+                const button = $('#approvePaypalBtn' + depositId);
+                const btnText = button.find('.btn-text');
+                const spinner = button.find('.spinner-border');
+
+                // Disable button and show spinner
+                button.prop('disabled', true);
+                btnText.text('Đang xử lý...');
+                spinner.removeClass('d-none');
+            });
+
+            $('form[action*="paypal-deposits"][action*="reject"]').on('submit', function(e) {
+                const form = $(this);
+                const depositId = form.find('button[type="submit"]').attr('id').replace('rejectPaypalBtn', '');
+                const button = $('#rejectPaypalBtn' + depositId);
+                const btnText = button.find('.btn-text');
+                const spinner = button.find('.spinner-border');
+
+                button.prop('disabled', true);
+                btnText.text('Đang xử lý...');
+                spinner.removeClass('d-none');
+            });
+        });
+    </script>
+@endpush

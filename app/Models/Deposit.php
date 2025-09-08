@@ -23,6 +23,10 @@ class Deposit extends Model
         'approved_by'
     ];
 
+    const STATUS_PENDING = 'pending';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+
     protected $casts = [
         'approved_at' => 'datetime'
     ];

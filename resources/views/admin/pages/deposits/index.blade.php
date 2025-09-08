@@ -236,9 +236,12 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <form action="{{ route('deposits.approve', $deposit) }}" method="POST" class="m-0">
+                            <form action="{{ route('deposits.approve', $deposit) }}" method="POST" class="m-0" id="approveForm{{ $deposit->id }}">
                                 @csrf
-                                <button type="submit" class="btn bg-gradient-success">Xác nhận duyệt</button>
+                                <button type="submit" class="btn bg-gradient-success" id="approveBtn{{ $deposit->id }}">
+                                    <span class="btn-text">Xác nhận duyệt</span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>
                             </form>
                         </div>
                     </div>
@@ -268,7 +271,10 @@
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Hủy</button>
-                                <button type="submit" class="btn bg-gradient-danger">Từ chối giao dịch</button>
+                                <button type="submit" class="btn bg-gradient-danger" id="rejectBtn{{ $deposit->id }}">
+                                    <span class="btn-text">Từ chối giao dịch</span>
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -317,10 +323,33 @@
 @push('scripts-admin')
     <script>
         $(document).ready(function() {
-            // Initialize Bootstrap modals if needed
             var modals = [].slice.call(document.querySelectorAll('.modal'))
             modals.map(function (modalEl) {
                 return new bootstrap.Modal(modalEl)
+            });
+
+            $('[id^="approveForm"]').on('submit', function(e) {
+                const formId = $(this).attr('id');
+                const depositId = formId.replace('approveForm', '');
+                const button = $('#approveBtn' + depositId);
+                const btnText = button.find('.btn-text');
+                const spinner = button.find('.spinner-border');
+
+                button.prop('disabled', true);
+                btnText.text('Đang xử lý...');
+                spinner.removeClass('d-none');
+            });
+
+            $('form[action*="deposits"][action*="reject"]').on('submit', function(e) {
+                const form = $(this);
+                const depositId = form.find('button[type="submit"]').attr('id').replace('rejectBtn', '');
+                const button = $('#rejectBtn' + depositId);
+                const btnText = button.find('.btn-text');
+                const spinner = button.find('.spinner-border');
+
+                button.prop('disabled', true);
+                btnText.text('Đang xử lý...');
+                spinner.removeClass('d-none');
             });
         });
     </script>
