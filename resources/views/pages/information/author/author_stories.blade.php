@@ -148,7 +148,7 @@
             <h4 class="fw-bold mb-0">Truyện của tôi</h4>
             <p class="text-muted small mb-0">Quản lý tất cả truyện của bạn</p>
         </div>
-        <a href="{{ route('user.author.stories.create') }}" class="btn btn-primary">
+        <a href="{{ route('user.author.stories.create') }}" class="btn btn-outline-primary">
             <i class="fas fa-plus me-1"></i> Truyện
         </a>
     </div>
@@ -196,7 +196,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <button type="submit" class="btn btn-primary w-100">Lọc</button>
+                <button type="submit" class="btn btn-outline-primary w-100">Lọc</button>
             </div>
         </form>
     </div>
@@ -348,7 +348,7 @@
             </div>
             <h5>Bạn chưa có truyện nào</h5>
             <p class="text-muted">Hãy bắt đầu bằng cách đăng truyện đầu tiên của bạn!</p>
-            <a href="{{ route('user.author.stories.create') }}" class="btn btn-primary">
+            <a href="{{ route('user.author.stories.create') }}" class="btn btn-outline-primary">
                 <i class="fas fa-plus me-2"></i> Đăng truyện mới
             </a>
         </div>

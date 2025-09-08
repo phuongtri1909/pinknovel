@@ -102,7 +102,7 @@ class CommentController extends Controller
     {
         $comment = Comment::findOrFail($commentId);
 
-        if (!auth()->user()->isAdmin() || $comment->level !== 0) {
+        if (auth()->user()->role !== 'admin' || $comment->level !== 0) {
             return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
         }
 
@@ -341,6 +341,18 @@ class CommentController extends Controller
 
             // Load relations for the view
             $comment->load(['user', 'reactions']);
+
+            // Complete daily task for commenting
+            \App\Models\UserDailyTask::completeTask(
+                $user->id,
+                \App\Models\DailyTask::TYPE_COMMENT,
+                [
+                    'story_id' => $validated['story_id'],
+                    'comment_id' => $comment->id,
+                    'comment_time' => now()->toISOString(),
+                ],
+                $request
+            );
 
             // Get pinned comments for proper rendering
             $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])

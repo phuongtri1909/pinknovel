@@ -13,13 +13,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::factory()->create([
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
-            'password' => bcrypt('11111111'),
-            'role' => 'admin',
-            'active' => 'active',
-        ]);
+        if (!User::where('email', 'admin@gmail.com')->exists()) {
+            User::factory()->create([
+                'name' => 'Admin',
+                'email' => 'admin@gmail.com',
+                'password' => bcrypt('11111111'),
+                'role' => 'admin',
+                'active' => 'active',
+            ]);
+        }
         
+        $this->call([
+            WithdrawalConfigSeeder::class,
+            ConfigTaskSeeder::class,
+            DailyTaskSeeder::class,
+        ]);
     }
 }

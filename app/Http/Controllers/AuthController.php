@@ -42,6 +42,15 @@ class AuthController extends Controller
                 $existingUser->active = 'active';
                 $existingUser->save();
                 Auth::login($existingUser);
+                
+                // Complete daily login task
+                \App\Models\UserDailyTask::completeTask(
+                    $existingUser->id,
+                    \App\Models\DailyTask::TYPE_LOGIN,
+                    ['login_time' => now()->toISOString()],
+                    request()
+                );
+                
                 $readingService = new ReadingHistoryService();
                 $readingService->migrateSessionReadingsToUser($existingUser->id);
 
@@ -67,17 +76,25 @@ class AuthController extends Controller
                         $user->avatar = $avatarPaths['original'];
                         unlink($tempFile);
                     } catch (\Exception $e) {
-                        \Log::error('Error processing Google avatar:', ['error' => $e->getMessage()]);
+                        Log::error('Error processing Google avatar:', ['error' => $e->getMessage()]);
                     }
                 }
 
                 $user->save();
                 Auth::login($user);
 
+                // Complete daily login task for new Google user
+                \App\Models\UserDailyTask::completeTask(
+                    $user->id,
+                    \App\Models\DailyTask::TYPE_LOGIN,
+                    ['login_time' => now()->toISOString()],
+                    request()
+                );
+
                 return redirect()->route('home');
             }
         } catch (\Exception $e) {
-            \Log::error('Google login error:', ['error' => $e->getMessage()]);
+            Log::error('Google login error:', ['error' => $e->getMessage()]);
             return redirect()->route('login')->with('error', 'Đăng nhập bằng Google thất bại. Vui lòng thử lại sau.');
         }
     }
@@ -163,7 +180,7 @@ class AuthController extends Controller
                         $avatarPaths = $this->processAndSaveAvatar($request->file('avatar'));
                         $user->avatar = $avatarPaths['original'];
                     } catch (\Exception $e) {
-                        \Log::error('Error processing avatar:', ['error' => $e->getMessage()]);
+                        Log::error('Error processing avatar:', ['error' => $e->getMessage()]);
                         // Continue without avatar if there's an error
                     }
                 }
@@ -281,6 +298,15 @@ class AuthController extends Controller
 
             $user->ip_address = $request->ip();
             $user->save();
+            
+            // Complete daily login task
+            \App\Models\UserDailyTask::completeTask(
+                $user->id,
+                \App\Models\DailyTask::TYPE_LOGIN,
+                ['login_time' => now()->toISOString()],
+                $request
+            );
+            
             // Chuyển dữ liệu đọc từ session sang user
             $readingService = new ReadingHistoryService();
             $readingService->migrateSessionReadingsToUser($user->id);

@@ -178,7 +178,7 @@
                                     </div>
 
                                     <div class="row mt-3">
-                                        <div class="col-6">
+                                        <div class="col-4">
                                             <a href="#comments"
                                                 class="action-button d-flex flex-column align-items-center text-decoration-none">
                                                 <div class="action-icon">
@@ -190,9 +190,8 @@
                                             </a>
                                         </div>
 
-
                                         <!-- Số người theo dõi -->
-                                        <div class="col-6">
+                                        <div class="col-4">
                                             <div class="action-button d-flex flex-column align-items-center bookmark-toggle-btn"
                                                 data-story-id="{{ $story->id }}"
                                                 title="@auth @if ($isBookmarked) Bỏ theo dõi @else Theo dõi @endif @else Đăng nhập để theo dõi @endauth">
@@ -218,6 +217,21 @@
                                             </div>
                                         </div>
 
+                                        <!-- Chia sẻ -->
+                                        <div class="col-4">
+                                            <div class="action-button d-flex flex-column align-items-center share-toggle-btn"
+                                                data-story-id="{{ $story->id }}"
+                                                data-story-title="{{ $story->title }}"
+                                                data-story-url="{{ route('show.page.story', $story->slug) }}"
+                                                title="Chia sẻ truyện">
+                                                <div class="action-icon">
+                                                    <i class="fas fa-share-alt fs-4 color-3"></i>
+                                                </div>
+                                                <div class="action-label small mt-1 text-center">
+                                                    Chia sẻ
+                                                </div>
+                                            </div>
+                                        </div>
 
                                     </div>
                                 </div>
@@ -314,6 +328,35 @@
 
         .info-label {
             min-width: 120px;
+        }
+
+        /* Share Modal Styles */
+        .share-modal {
+            z-index: 1055;
+        }
+
+        .share-option {
+            transition: all 0.3s ease;
+            border-radius: 12px;
+            padding: 15px;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .share-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-decoration: none;
+        }
+
+        .share-facebook { background: linear-gradient(135deg, #1877f2, #42a5f5); color: white; }
+        .share-twitter { background: linear-gradient(135deg, #1da1f2, #0d8bd9); color: white; }
+        .share-telegram { background: linear-gradient(135deg, #0088cc, #26a5e4); color: white; }
+        .share-zalo { background: linear-gradient(135deg, #005baa, #0084ff); color: white; }
+        .share-copy { background: linear-gradient(135deg, #6c757d, #adb5bd); color: white; }
+
+        .info-value {
             width: auto;
             padding-right: 1.5rem;
             text-align: start;
@@ -840,5 +883,162 @@
                 }
             }
         });
+    </script>
+@endpush
+
+<!-- Share Modal -->
+<div class="modal fade share-modal" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title" id="shareModalLabel">
+                    <i class="fas fa-share-alt me-2 text-primary"></i>
+                    Chia sẻ truyện
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a href="#" class="share-option share-facebook" data-platform="facebook">
+                            <div class="d-flex align-items-center">
+                                <i class="fab fa-facebook-f me-3 fs-4"></i>
+                                <span>Facebook</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="#" class="share-option share-twitter" data-platform="twitter">
+                            <div class="d-flex align-items-center">
+                                <i class="fab fa-twitter me-3 fs-4"></i>
+                                <span>Twitter</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <a href="#" class="share-option share-telegram" data-platform="telegram">
+                            <div class="d-flex align-items-center">
+                                <i class="fab fa-telegram-plane me-3 fs-4"></i>
+                                <span>Telegram</span>
+                            </div>
+                        </a>
+                    </div>
+                    {{-- <div class="col-6">
+                        <a href="#" class="share-option share-zalo" data-platform="zalo">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-comment-dots me-3 fs-4"></i>
+                                <span>Zalo</span>
+                            </div>
+                        </a>
+                    </div> --}}
+                    <div class="col-6">
+                        <a href="#" class="share-option share-copy" data-platform="copy">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-copy me-3 fs-4"></i>
+                                <span>Sao chép liên kết</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+    <script>
+        // Share functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const shareToggleBtn = document.querySelector('.share-toggle-btn');
+            const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+            
+            if (shareToggleBtn) {
+                let storyId, storyTitle, storyUrl;
+                
+                shareToggleBtn.addEventListener('click', function() {
+                    storyId = this.dataset.storyId;
+                    storyTitle = this.dataset.storyTitle;
+                    storyUrl = this.dataset.storyUrl;
+                    
+                    shareModal.show();
+                });
+                
+                // Handle share options
+                document.querySelectorAll('.share-option').forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        const platform = this.dataset.platform;
+                        const text = `Đọc truyện "${storyTitle}" tại ${storyUrl}`;
+                        
+                        let shareUrl = '';
+                        
+                        switch(platform) {
+                            case 'facebook':
+                                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(storyUrl)}`;
+                                break;
+                            case 'twitter':
+                                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+                                break;
+                            case 'telegram':
+                                shareUrl = `https://t.me/share/url?url=${encodeURIComponent(storyUrl)}&text=${encodeURIComponent(storyTitle)}`;
+                                break;
+                            case 'zalo':
+                                shareUrl = `https://zalo.me/share?url=${encodeURIComponent(storyUrl)}`;
+                                break;
+                            case 'copy':
+                                navigator.clipboard.writeText(storyUrl).then(() => {
+                                    showToast('Đã sao chép liên kết!', 'success');
+                                    shareModal.hide();
+                                    
+                                    completeShareTask(storyId, 'copy');
+                                }).catch(() => {
+                                    showToast('Không thể sao chép liên kết', 'error');
+                                });
+                                return;
+                        }
+                        
+                        if (shareUrl) {
+                            window.open(shareUrl, '_blank', 'width=600,height=400');
+                            shareModal.hide();
+                            
+                            completeShareTask(storyId, platform);
+                        }
+                    });
+                });
+            }
+        });
+        
+        // Complete share task
+        function completeShareTask(storyId, platform) {
+            if (!@json(auth()->check())) {
+                showToast('Vui lòng đăng nhập để nhận thưởng', 'info');
+                return;
+            }
+            
+            fetch('{{ route("user.daily-tasks.complete.share") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    story_id: storyId,
+                    platform: platform
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                   
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
     </script>
 @endpush

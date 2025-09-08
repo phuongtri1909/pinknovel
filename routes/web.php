@@ -36,6 +36,7 @@ use App\Http\Controllers\Admin\BankController as AdminBankController;
 use App\Http\Controllers\Admin\CardDepositController as AdminCardDepositController;
 use App\Http\Controllers\Admin\PaypalDepositController as AdminPaypalDepositController;
 use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
+use App\Http\Controllers\Admin\AdminDailyTaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -114,6 +115,15 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::get('/bookmark/status', [BookmarkController::class, 'checkStatus'])->name('bookmark.status');
             Route::post('/bookmark/update-chapter', [BookmarkController::class, 'updateCurrentChapter'])->name('bookmark.update.chapter');
             Route::post('/bookmark/remove', [BookmarkController::class, 'remove'])->name('bookmark.remove');
+
+            // Daily Tasks Routes
+            Route::get('/daily-tasks', [App\Http\Controllers\DailyTaskController::class, 'index'])->name('daily-tasks');
+            Route::post('/daily-tasks/complete/login', [App\Http\Controllers\DailyTaskController::class, 'completeLogin'])->name('daily-tasks.complete.login');
+            Route::post('/daily-tasks/complete/comment', [App\Http\Controllers\DailyTaskController::class, 'completeComment'])->name('daily-tasks.complete.comment');
+            Route::post('/daily-tasks/complete/bookmark', [App\Http\Controllers\DailyTaskController::class, 'completeBookmark'])->name('daily-tasks.complete.bookmark');
+            Route::post('/daily-tasks/complete/share', [App\Http\Controllers\DailyTaskController::class, 'completeShare'])->name('daily-tasks.complete.share');
+            Route::get('/daily-tasks/status', [App\Http\Controllers\DailyTaskController::class, 'getTodayStatus'])->name('daily-tasks.status');
+            Route::get('/daily-tasks/history', [App\Http\Controllers\DailyTaskController::class, 'getHistory'])->name('daily-tasks.history');
 
             // Withdrawal routes
             Route::get('/withdrawals', [WithdrawalController::class, 'index'])->name('withdrawals.index');
@@ -344,6 +354,12 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                         Route::post('socials', [SocialController::class, 'store'])->name('socials.store');
                         Route::put('socials/{social}', [SocialController::class, 'update'])->name('socials.update');
                         Route::delete('socials/{social}', [SocialController::class, 'destroy'])->name('socials.destroy');
+
+                        // Daily Tasks Management
+                        Route::resource('daily-tasks', AdminDailyTaskController::class)->except('create', 'store', 'destroy');
+                        Route::post('daily-tasks/{dailyTask}/toggle-active', [AdminDailyTaskController::class, 'toggleActive'])->name('daily-tasks.toggle-active');
+                        Route::get('daily-tasks/dt/user-progress', [AdminDailyTaskController::class, 'userProgress'])->name('daily-tasks.user-progress');
+                        Route::get('daily-tasks/dt/statistics', [AdminDailyTaskController::class, 'statistics'])->name('daily-tasks.statistics');
                     });
                 });
             });

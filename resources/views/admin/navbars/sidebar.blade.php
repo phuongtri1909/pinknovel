@@ -317,6 +317,17 @@
             </li>
 
             <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteNamed('admin.daily-tasks.*') ? 'active' : '' }}"
+                    href="{{ route('admin.daily-tasks.index') }}">
+                    <div
+                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa-solid fa-tasks text-dark icon-sidebar"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">Quản lý nhiệm vụ</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('admin.socials.*') ? 'active' : '' }}"
                     href="{{ route('admin.socials.index') }}">
                     <div

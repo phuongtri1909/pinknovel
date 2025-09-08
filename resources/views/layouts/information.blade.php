@@ -110,6 +110,28 @@
                         </div>
 
                         <div class="user-nav-item">
+                            <a href="{{ route('user.daily-tasks') }}"
+                                class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.daily-tasks') ? 'active' : '' }}">
+                                <i class="fa-solid fa-tasks user-nav-icon"></i>
+                                <span class="user-nav-text">Nhiệm vụ hàng ngày</span>
+                                @php
+                                    $uncompletedTasks = 0;
+                                    if (Auth::check()) {
+                                        $tasks = \App\Models\DailyTask::active()->get();
+                                        foreach ($tasks as $task) {
+                                            if (!$task->isCompletedByUserToday(Auth::id())) {
+                                                $uncompletedTasks++;
+                                            }
+                                        }
+                                    }
+                                @endphp
+                                @if($uncompletedTasks > 0)
+                                    <span class="badge bg-danger rounded-pill ms-1">{{ $uncompletedTasks }}</span>
+                                @endif
+                            </a>
+                        </div>
+
+                        <div class="user-nav-item">
                             <a href="{{ route('user.deposit') }}"
                                 class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.deposit*') ? 'active' : '' }}">
                                 <i class="fa-solid fa-coins user-nav-icon"></i>
@@ -160,39 +182,29 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function() {
-            // Kiểm tra nếu là thiết bị di động (màn hình < 992px)
             function isMobile() {
                 return window.innerWidth < 992;
             }
 
-            // Hàm cuộn đến phần nội dung chính
             function scrollToContent() {
                 if (isMobile()) {
-                    // Lưu trạng thái đã cuộn vào session storage
                     const hasScrolled = sessionStorage.getItem('hasScrolledToContent');
 
-                    // Nếu chưa cuộn trong phiên này
                     if (!hasScrolled) {
-                        // Lấy vị trí của phần nội dung
                         const contentOffset = $('.user-content').offset().top;
 
-                        // Cuộn xuống vị trí này, trừ đi một chút để có khoảng cách
                         $('html, body').animate({
                             scrollTop: contentOffset - 20
                         }, 500);
 
-                        // Đánh dấu đã cuộn
                         sessionStorage.setItem('hasScrolledToContent', 'true');
                     }
                 }
             }
 
-            // Gọi hàm khi trang đã tải xong
             setTimeout(scrollToContent, 300);
 
-            // Thêm sự kiện cho các liên kết trong menu
             $('.user-nav-link').on('click', function() {
-                // Xóa trạng thái đã cuộn khi người dùng nhấp vào menu mới
                 sessionStorage.removeItem('hasScrolledToContent');
             });
 

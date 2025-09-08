@@ -35,6 +35,19 @@ class BookmarkController extends Controller
         // Thực hiện toggle bookmark với chương hiện tại
         $result = Bookmark::toggleBookmark($userId, $storyId, $chapterId);
 
+        // Complete daily task for bookmarking if bookmark was added
+        if ($result['status'] === 'added') {
+            \App\Models\UserDailyTask::completeTask(
+                $userId,
+                \App\Models\DailyTask::TYPE_BOOKMARK,
+                [
+                    'story_id' => $storyId,
+                    'bookmark_time' => now()->toISOString(),
+                ],
+                $request
+            );
+        }
+
         return response()->json($result);
     }
 
