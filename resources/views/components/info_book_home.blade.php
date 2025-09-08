@@ -222,7 +222,7 @@
                                             <div class="action-button d-flex flex-column align-items-center share-toggle-btn"
                                                 data-story-id="{{ $story->id }}"
                                                 data-story-title="{{ $story->title }}"
-                                                data-story-url="{{ route('show.page.story', $story->slug) }}"
+                                                data-story-url="{{ url()->current() }}"
                                                 title="Chia sẻ truyện">
                                                 <div class="action-icon">
                                                     <i class="fas fa-share-alt fs-4 color-3"></i>
@@ -334,14 +334,33 @@
         .share-modal {
             z-index: 1055;
         }
+        
+        .share-modal .modal-dialog {
+            max-width: 280px;
+        }
+        
+        .share-modal .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .share-modal .modal-header {
+            padding: 12px 16px 8px;
+        }
+        
+        .share-modal .modal-body {
+            padding: 8px 16px 16px;
+        }
 
         .share-option {
             transition: all 0.3s ease;
-            border-radius: 12px;
-            padding: 15px;
+            border-radius: 8px;
+            padding: 8px 12px;
             text-decoration: none;
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
         }
 
         .share-option:hover {
@@ -878,7 +897,6 @@
                             // Show error message using showToast
                             showToast('Đã xảy ra lỗi khi gửi đánh giá', 'error');
 
-                            console.error('Error submitting rating:', error);
                         });
                 }
             }
@@ -888,54 +906,46 @@
 
 <!-- Share Modal -->
 <div class="modal fade share-modal" id="shareModal" tabindex="-1" aria-labelledby="shareModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title" id="shareModalLabel">
+            <div class="modal-header border-0 pb-0 py-2">
+                <h6 class="modal-title" id="shareModalLabel">
                     <i class="fas fa-share-alt me-2 text-primary"></i>
-                    Chia sẻ truyện
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    Chia sẻ
+                </h6>
+                <button type="button" class="btn-close btn-close-sm" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body pt-2">
+            <div class="modal-body pt-0 pb-3">
                 <div class="row g-2">
                     <div class="col-6">
                         <a href="#" class="share-option share-facebook" data-platform="facebook">
-                            <div class="d-flex align-items-center">
-                                <i class="fab fa-facebook-f me-3 fs-4"></i>
-                                <span>Facebook</span>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fab fa-facebook-f me-2"></i>
+                                <span class="small">Facebook</span>
                             </div>
                         </a>
                     </div>
                     <div class="col-6">
                         <a href="#" class="share-option share-twitter" data-platform="twitter">
-                            <div class="d-flex align-items-center">
-                                <i class="fab fa-twitter me-3 fs-4"></i>
-                                <span>Twitter</span>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fab fa-twitter me-2"></i>
+                                <span class="small">Twitter</span>
                             </div>
                         </a>
                     </div>
                     <div class="col-6">
                         <a href="#" class="share-option share-telegram" data-platform="telegram">
-                            <div class="d-flex align-items-center">
-                                <i class="fab fa-telegram-plane me-3 fs-4"></i>
-                                <span>Telegram</span>
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fab fa-telegram-plane me-2"></i>
+                                <span class="small">Telegram</span>
                             </div>
                         </a>
                     </div>
-                    {{-- <div class="col-6">
-                        <a href="#" class="share-option share-zalo" data-platform="zalo">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-comment-dots me-3 fs-4"></i>
-                                <span>Zalo</span>
-                            </div>
-                        </a>
-                    </div> --}}
                     <div class="col-6">
                         <a href="#" class="share-option share-copy" data-platform="copy">
                             <div class="d-flex align-items-center justify-content-center">
-                                <i class="fas fa-copy me-3 fs-4"></i>
-                                <span>Sao chép liên kết</span>
+                                <i class="fas fa-copy me-2"></i>
+                                <span class="small">Sao chép</span>
                             </div>
                         </a>
                     </div>
@@ -987,20 +997,21 @@
                                 shareUrl = `https://zalo.me/share?url=${encodeURIComponent(storyUrl)}`;
                                 break;
                             case 'copy':
-                                navigator.clipboard.writeText(storyUrl).then(() => {
-                                    showToast('Đã sao chép liên kết!', 'success');
-                                    shareModal.hide();
-                                    
-                                    completeShareTask(storyId, 'copy');
-                                }).catch(() => {
-                                    showToast('Không thể sao chép liên kết', 'error');
-                                });
+                                // Ensure we have a valid URL
+                                const urlToCopy = storyUrl || window.location.href;
+                                
+                                copyToClipboardReliable(urlToCopy, storyId);
                                 return;
                         }
                         
                         if (shareUrl) {
                             window.open(shareUrl, '_blank', 'width=600,height=400');
-                            shareModal.hide();
+                            // Close modal properly
+                            const modalElement = document.getElementById('shareModal');
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) {
+                                modal.hide();
+                            }
                             
                             completeShareTask(storyId, platform);
                         }
@@ -1008,6 +1019,158 @@
                 });
             }
         });
+        
+        function copyToClipboardReliable(text, storyId) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Đã sao chép liên kết!', 'success');
+                    closeModalAndCompleteTask(storyId);
+                }).catch((err) => {
+                    copyWithSelection(text, storyId);
+                });
+            } else {
+                copyWithSelection(text, storyId);
+            }
+        }
+        
+        function copyWithSelection(text, storyId) {
+            const tempDiv = document.createElement('div');
+            tempDiv.textContent = text;
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '-9999px';
+            tempDiv.style.opacity = '0';
+            tempDiv.style.pointerEvents = 'none';
+            tempDiv.style.userSelect = 'text';
+            tempDiv.style.webkitUserSelect = 'text';
+            tempDiv.style.mozUserSelect = 'text';
+            tempDiv.style.msUserSelect = 'text';
+            
+            document.body.appendChild(tempDiv);
+            
+            // Create a selection
+            const selection = window.getSelection();
+            const range = document.createRange();
+            
+            selection.removeAllRanges();
+            
+            range.selectNodeContents(tempDiv);
+            selection.addRange(range);
+            
+            try {
+                const successful = document.execCommand('copy');
+                
+                selection.removeAllRanges();
+                document.body.removeChild(tempDiv);
+                
+                if (successful) {
+                    showToast('Đã sao chép liên kết!', 'success');
+                    closeModalAndCompleteTask(storyId);
+                } else {
+                    copyWithInputElement(text, storyId);
+                }
+            } catch (err) {
+                selection.removeAllRanges();
+                document.body.removeChild(tempDiv);
+                copyWithInputElement(text, storyId);
+            }
+        }
+        
+        function copyWithInputElement(text, storyId) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = text;
+            input.style.position = 'fixed';
+            input.style.left = '50%';
+            input.style.top = '50%';
+            input.style.transform = 'translate(-50%, -50%)';
+            input.style.opacity = '0';
+            input.style.pointerEvents = 'none';
+            input.style.zIndex = '-1';
+            input.style.width = '1px';
+            input.style.height = '1px';
+            input.style.border = 'none';
+            input.style.outline = 'none';
+            input.style.padding = '0';
+            input.style.margin = '0';
+            
+            document.body.appendChild(input);
+            
+            input.focus();
+            input.select();
+            input.setSelectionRange(0, text.length);
+            
+            setTimeout(() => {
+                try {
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(input);
+                    
+                    if (successful) {
+                        showToast('Đã sao chép liên kết!', 'success');
+                        closeModalAndCompleteTask(storyId);
+                    } else {
+                        copyWithTextareaElement(text, storyId);
+                    }
+                } catch (err) {
+                    document.body.removeChild(input);
+                    copyWithTextareaElement(text, storyId);
+                }
+            }, 10);
+        }
+        
+        function copyWithTextareaElement(text, storyId) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '50%';
+            textarea.style.top = '50%';
+            textarea.style.transform = 'translate(-50%, -50%)';
+            textarea.style.opacity = '0';
+            textarea.style.pointerEvents = 'none';
+            textarea.style.zIndex = '-1';
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.border = 'none';
+            textarea.style.outline = 'none';
+            textarea.style.padding = '0';
+            textarea.style.margin = '0';
+            textarea.style.resize = 'none';
+            textarea.style.overflow = 'hidden';
+            
+            document.body.appendChild(textarea);
+            
+            textarea.focus();
+            textarea.select();
+            textarea.setSelectionRange(0, text.length);
+            
+            setTimeout(() => {
+                try {
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    
+                    if (successful) {
+                        showToast('Đã sao chép liên kết!', 'success');
+                        closeModalAndCompleteTask(storyId);
+                    } else {
+                        showToast('Không thể sao chép liên kết. Vui lòng thử lại.', 'error');
+                    }
+                } catch (err) {
+                    document.body.removeChild(textarea);
+                    showToast('Không thể sao chép liên kết. Vui lòng thử lại.', 'error');
+                }
+            }, 10);
+        }
+        
+        function closeModalAndCompleteTask(storyId) {
+            const modalElement = document.getElementById('shareModal');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+            if (storyId) {
+                completeShareTask(storyId, 'copy');
+            }
+        }
         
         // Complete share task
         function completeShareTask(storyId, platform) {
