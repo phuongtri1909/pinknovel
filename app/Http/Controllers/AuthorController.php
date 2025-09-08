@@ -250,7 +250,26 @@ class AuthorController extends Controller
         }
 
         $categoryNames = $story->categories->pluck('name')->implode(', ');
-        return view('pages.information.author.author_edit', compact('story', 'categoryNames'));
+        
+        $configs = \App\Models\Config::getConfigs([
+            'story_featured_price' => 99999,
+            'story_featured_duration' => 1,
+        ]);
+        
+        $featuredPrice = $configs['story_featured_price'];
+        $featuredDuration = $configs['story_featured_duration'];
+        
+        $hasPendingEditRequest = $story->hasPendingEditRequest();
+        $latestPendingEditRequest = $hasPendingEditRequest ? $story->latestPendingEditRequest() : null;
+        
+        return view('pages.information.author.author_edit', compact(
+            'story', 
+            'categoryNames', 
+            'featuredPrice', 
+            'featuredDuration',
+            'hasPendingEditRequest',
+            'latestPendingEditRequest'
+        ));
     }
 
     // Xử lý cập nhật truyện
@@ -1851,6 +1870,67 @@ class AuthorController extends Controller
             ]);
 
             return back()->withErrors(['error' => 'Có lỗi xảy ra khi cập nhật giá. Vui lòng thử lại.']);
+        }
+    }
+
+    /**
+     * Author đề cử truyện lên trang chủ
+     */
+    public function featured(Request $request, Story $story)
+    {
+        if ($story->user_id !== auth()->id()) {
+            return back()->with('error', 'Bạn không có quyền thực hiện hành động này.');
+        }
+
+        if ($story->status !== 'published') {
+            return back()->with('error', 'Chỉ có thể đề cử truyện đã được xuất bản.');
+        }
+
+        if ($story->is_featured || $story->isCurrentlyAdminFeatured()) {
+            return back()->with('error', 'Truyện đã được admin đề cử, không thể đề cử thêm.');
+        }
+
+        if ($story->isCurrentlyAuthorFeatured()) {
+            return back()->with('error', 'Truyện đang được đề cử, vui lòng chờ hết hạn.');
+        }
+
+        $featuredPrice = \App\Models\Config::getConfig('story_featured_price', 100);
+        $featuredDuration = \App\Models\Config::getConfig('story_featured_duration', 7);
+
+        if (auth()->user()->coins < $featuredPrice) {
+            return back()->with('error', 'Không đủ xu để đề cử truyện. Cần ' . number_format($featuredPrice) . ' xu.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $user = auth()->user();
+            $user->coins -= $featuredPrice;
+            $user->save();
+
+            $featuredRecord = \App\Models\StoryFeatured::createFeatured(
+                $story->id,
+                auth()->id(),
+                \App\Models\StoryFeatured::TYPE_AUTHOR,
+                $featuredDuration,
+                $featuredPrice,
+                null,
+                "Đề cử truyện lên trang chủ"
+            );
+
+            DB::commit();
+
+            return back()->with('success', "Đã đề cử truyện '{$story->title}' lên trang chủ thành công! Truyện sẽ được hiển thị trong {$featuredDuration} ngày.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Author featured story failed', [
+                'story_id' => $story->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->with('error', 'Có lỗi xảy ra khi đề cử truyện. Vui lòng thử lại.');
         }
     }
 }

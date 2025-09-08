@@ -124,11 +124,40 @@
                                        -
                                     @endif
                                 </td>
-                                <td> {{-- NEW COLUMN --}}
-                                    @if($story->is_featured)
-                                        <span class="badge bg-gradient-warning">
-                                            Đề cử #{{ $story->featured_order }}
-                                        </span>
+                                <td>
+                                    @if($story->is_featured || $story->isCurrentlyAdminFeatured())
+                                        <div class="d-flex flex-column">
+                                            <span class="badge bg-gradient-warning mb-1">
+                                                Admin đề cử
+                                                @php
+                                                    $adminFeatured = $story->activeAdminFeatured;
+                                                    $order = $adminFeatured ? $adminFeatured->featured_order : $story->featured_order;
+                                                @endphp
+                                                @if($order)
+                                                    #{{ $order }}
+                                                @endif
+                                            </span>
+                                            @if($story->isCurrentlyAuthorFeatured())
+                                                @php
+                                                    $authorFeatured = $story->activeAuthorFeatured;
+                                                @endphp
+                                                <small class="text-muted">
+                                                    Tác giả: {{ $authorFeatured->featured_until->format('d/m/Y') }}
+                                                </small>
+                                            @endif
+                                        </div>
+                                    @elseif($story->isCurrentlyAuthorFeatured())
+                                        <div class="d-flex flex-column">
+                                            <span class="badge bg-gradient-info mb-1">
+                                                Tác giả đề cử
+                                            </span>
+                                            @php
+                                                $authorFeatured = $story->activeAuthorFeatured;
+                                            @endphp
+                                            <small class="text-muted">
+                                                {{ $authorFeatured->featured_until->format('d/m/Y') }}
+                                            </small>
+                                        </div>
                                     @else
                                         <span class="badge bg-gradient-secondary">Thường</span>
                                     @endif

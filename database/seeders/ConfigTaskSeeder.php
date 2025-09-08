@@ -34,6 +34,18 @@ class ConfigTaskSeeder extends Seeder
             'daily_task_share_reward',
             1,
             'Số xu thưởng khi hoàn thành nhiệm vụ chia sẻ truyện'
+        );
+
+        Config::setConfig(
+            'story_featured_price',
+            99999,
+            'Số xu cần thiết để tác giả đề cử truyện lên trang chủ'
+        );
+
+        Config::setConfig(
+            'story_featured_duration',
+            1,
+            'Số ngày truyện được đề cử (tính bằng ngày)'
         ); 
     }
 } 

@@ -715,7 +715,11 @@ class HomeController extends Controller
             }
         ])
             ->published()
-            ->where('is_featured', true)
+            ->where(function ($q) {
+                $q->where('is_featured', true)
+                  ->orWhereHas('activeAdminFeatured')
+                  ->orWhereHas('activeAuthorFeatured');
+            })
             ->whereHas('chapters', function ($query) {
                 $query->where('status', 'published');
             })
@@ -753,6 +757,7 @@ class HomeController extends Controller
         }
 
         $featuredStories = $query
+            ->orderBy('is_featured', 'desc') // Admin featured trước
             ->orderBy('featured_order', 'asc')
             ->orderBy('created_at', 'desc')
             ->take(12)

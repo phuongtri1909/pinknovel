@@ -269,6 +269,12 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="featured-tab" data-bs-toggle="tab" data-bs-target="#featured"
+                        type="button" role="tab" aria-controls="featured" aria-selected="false">
+                        <i class="fas fa-star me-1"></i> Đề cử truyện
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button"
                         role="tab" aria-controls="review" aria-selected="false">
                         <i class="fas fa-check-circle me-1"></i> Yêu cầu duyệt
@@ -363,8 +369,7 @@
                                     <label for="title" class="form-label">Tiêu đề truyện <span
                                             class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                        id="title" name="title" value="{{ old('title', $story->title) }}"
-                                        required>
+                                        id="title" name="title" value="{{ old('title', $story->title) }}" required>
                                     @error('title')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -490,9 +495,11 @@
 
                                 @if ($story->status == 'pending')
                                     <div class="alert alert-warning mt-4">
-                                        <div class="mb-2"><i class="fas fa-info-circle me-2"></i> <strong>Lưu ý:</strong>
+                                        <div class="mb-2"><i class="fas fa-info-circle me-2"></i> <strong>Lưu
+                                                ý:</strong>
                                         </div>
-                                        <p>Truyện của bạn đang chờ phê duyệt. Nếu bạn cập nhật thông tin, truyện sẽ quay lại trạng thái nháp và cần gửi yêu cầu phê duyệt lại.</p>
+                                        <p>Truyện của bạn đang chờ phê duyệt. Nếu bạn cập nhật thông tin, truyện sẽ quay lại
+                                            trạng thái nháp và cần gửi yêu cầu phê duyệt lại.</p>
                                     </div>
                                 @endif
 
@@ -500,47 +507,62 @@
                                     @if ($story->completed == 1)
                                         {{-- Truyện đã hoàn thành --}}
                                         <div class="alert alert-warning mt-4">
-                                            <div class="mb-2"><i class="fas fa-lock me-2"></i> <strong>Truyện đã hoàn thành:</strong>
+                                            <div class="mb-2"><i class="fas fa-lock me-2"></i> <strong>Truyện đã hoàn
+                                                    thành:</strong>
                                             </div>
-                                            <p>Truyện của bạn đã được đánh dấu là hoàn thành. Khi bạn chỉnh sửa thông tin, hệ thống sẽ gửi yêu cầu duyệt cho admin và những thay đổi sẽ được áp dụng sau khi admin phê duyệt.</p>
-                                            <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê duyệt.</p>
+                                            <p>Truyện của bạn đã được đánh dấu là hoàn thành. Khi bạn chỉnh sửa thông tin,
+                                                hệ thống sẽ gửi yêu cầu duyệt cho admin và những thay đổi sẽ được áp dụng
+                                                sau khi admin phê duyệt.</p>
+                                            <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê
+                                                duyệt.</p>
                                         </div>
                                     @else
                                         {{-- Truyện chưa hoàn thành --}}
                                         <div class="alert alert-success mt-4">
-                                            <div class="mb-2"><i class="fas fa-edit me-2"></i> <strong>Truyện chưa hoàn thành:</strong>
+                                            <div class="mb-2"><i class="fas fa-edit me-2"></i> <strong>Truyện chưa hoàn
+                                                    thành:</strong>
                                             </div>
-                                            <p>Truyện của bạn đang được xuất bản nhưng chưa hoàn thành. Bạn có thể chỉnh sửa thông tin tự do mà không cần phê duyệt admin.</p>
-                                            <p>Khi nào đánh dấu truyện là hoàn thành thì việc chỉnh sửa sẽ cần phê duyệt.</p>
+                                            <p>Truyện của bạn đang được xuất bản nhưng chưa hoàn thành. Bạn có thể chỉnh sửa
+                                                thông tin tự do mà không cần phê duyệt admin.</p>
+                                            <p>Khi nào đánh dấu truyện là hoàn thành thì việc chỉnh sửa sẽ cần phê duyệt.
+                                            </p>
                                         </div>
                                     @endif
                                 @endif
 
-                                @if ($story->status == 'published' && $story->hasPendingEditRequest())
+                                @if ($story->status == 'published' && $hasPendingEditRequest)
                                     <div class="alert alert-warning mt-4">
-                                        <div class="mb-2"><i class="fas fa-clock me-2"></i> <strong>Đang chờ duyệt:</strong>
+                                        <div class="mb-2"><i class="fas fa-clock me-2"></i> <strong>Đang chờ
+                                                duyệt:</strong>
                                         </div>
-                                        <p>Bạn đã gửi yêu cầu chỉnh sửa thông tin truyện này và đang chờ admin phê duyệt.</p>
-                                        <p>Bạn không thể thực hiện thêm thay đổi cho đến khi yêu cầu hiện tại được xử lý.</p>
-                                        <p><small>Thời gian gửi yêu cầu: {{ $story->latestPendingEditRequest()->submitted_at->format('H:i:s d/m/Y') }}</small>
+                                        <p>Bạn đã gửi yêu cầu chỉnh sửa thông tin truyện này và đang chờ admin phê duyệt.
+                                        </p>
+                                        <p>Bạn không thể thực hiện thêm thay đổi cho đến khi yêu cầu hiện tại được xử lý.
+                                        </p>
+                                        <p><small>Thời gian gửi yêu cầu:
+                                                {{ $latestPendingEditRequest->submitted_at->format('H:i:s d/m/Y') }}</small>
                                         </p>
                                     </div>
                                 @endif
 
                                 @if ($story->status == 'rejected')
                                     <div class="alert alert-danger mt-4">
-                                        <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ chối:</strong>
+                                        <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ
+                                                chối:</strong>
                                         </div>
-                                        <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản trị viên.</p>
+                                        <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản
+                                            trị viên.</p>
 
                                         @if ($story->admin_note)
                                             <div class="mt-2">
                                                 <strong>Lý do từ chối:</strong>
-                                                <div class="p-2 bg-light rounded border border-danger mt-1">{{ $story->admin_note }}</div>
+                                                <div class="p-2 bg-light rounded border border-danger mt-1">
+                                                    {{ $story->admin_note }}</div>
                                             </div>
                                         @endif
 
-                                        <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để gửi lại yêu cầu.</p>
+                                        <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để
+                                            gửi lại yêu cầu.</p>
                                     </div>
                                 @endif
                             </div>
@@ -548,14 +570,15 @@
 
                         <div class="d-flex justify-content-end mt-4">
                             <a href="{{ route('user.author.stories') }}" class="btn btn-outline-danger me-2">Hủy</a>
-                            
-                            @if ($story->status == 'published' && $story->hasPendingEditRequest())
+
+                            @if ($story->status == 'published' && $hasPendingEditRequest)
                                 <button type="button" class="btn btn-secondary" disabled>
                                     <i class="fas fa-clock me-1"></i> Đang chờ duyệt
                                 </button>
                             @elseif($story->status == 'published' && $story->completed == 1)
                                 {{-- Truyện đã hoàn thành, cần phê duyệt --}}
-                                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#confirmEditModal">
+                                <button type="button" class="btn btn-warning" data-bs-toggle="modal"
+                                    data-bs-target="#confirmEditModal">
                                     <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu chỉnh sửa
                                 </button>
 
@@ -564,22 +587,27 @@
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <div class="modal-header">
-                                                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Xác nhận chỉnh sửa</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Xác nhận
+                                                    chỉnh sửa</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                    aria-label="Close"></button>
                                             </div>
                                             <div class="modal-body">
                                                 <div class="alert alert-warning">
                                                     <i class="fas fa-exclamation-triangle me-2"></i>
                                                     <strong>Truyện đã hoàn thành</strong>
                                                 </div>
-                                                
+
                                                 <p>Truyện của bạn đã được đánh dấu là hoàn thành.</p>
-                                                <p>Khi bạn chỉnh sửa thông tin, hệ thống sẽ gửi yêu cầu duyệt cho admin và những thay đổi sẽ được áp dụng sau khi admin phê duyệt.</p>
-                                                <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê duyệt.</p>
+                                                <p>Khi bạn chỉnh sửa thông tin, hệ thống sẽ gửi yêu cầu duyệt cho admin và
+                                                    những thay đổi sẽ được áp dụng sau khi admin phê duyệt.</p>
+                                                <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê
+                                                    duyệt.</p>
 
                                                 <div class="mt-3">
                                                     <h6>Các thay đổi sẽ được gửi:</h6>
-                                                    <div id="changesListContainer" class="border p-3 mt-2" style="max-height: 200px; overflow-y: auto;">
+                                                    <div id="changesListContainer" class="border p-3 mt-2"
+                                                        style="max-height: 200px; overflow-y: auto;">
                                                         <ul id="changesList" class="mb-0"></ul>
                                                     </div>
                                                 </div>
@@ -587,7 +615,8 @@
                                                 <p class="mt-3">Bạn có muốn tiếp tục?</p>
                                             </div>
                                             <div class="modal-footer">
-                                                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Hủy bỏ</button>
+                                                <button type="button" class="btn btn-outline-danger"
+                                                    data-bs-dismiss="modal">Hủy bỏ</button>
                                                 <button type="submit" class="btn btn-warning">
                                                     <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu duyệt
                                                 </button>
@@ -747,6 +776,115 @@
                     @endforeach
                 </div>
 
+                <!-- Tab Đề cử truyện -->
+                <div class="tab-pane fade" id="featured" role="tabpanel" aria-labelledby="featured-tab">
+                    <div class=" mb-4">
+
+                        <div class="card-body">
+                            {{-- Sử dụng biến từ controller để tránh duplicate queries --}}
+
+                            <div class="alert alert-info">
+                                <h6><i class="fas fa-info-circle me-2"></i>Thông tin đề cử:</h6>
+                                <ul class="mb-0 mt-2">
+                                    <li class="mb-1">Chi phí đề cử: <strong>{{ number_format($featuredPrice) }}
+                                            xu</strong></li>
+                                    <li class="mb-1">Thời gian đề cử: <strong>{{ $featuredDuration }} ngày</strong></li>
+                                    <li class="mb-1">Truyện sẽ xuất hiện ở vị trí nổi bật trên trang chủ</li>
+                                    <li>Đề cử của admin sẽ có ưu tiên cao hơn đề cử của tác giả</li>
+                                </ul>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Số xu hiện tại</h6>
+                                            <h4 class="text-primary">{{ number_format(Auth::user()->coins) }} xu</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card border-0 bg-light">
+                                        <div class="card-body text-center">
+                                            <h6 class="card-title">Chi phí đề cử</h6>
+                                            <h4 class="text-warning">{{ number_format($featuredPrice) }} xu</h4>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if ($story->is_featured || $story->isCurrentlyAdminFeatured())
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-crown me-2"></i>
+                                    <strong>Truyện đã được admin đề cử:</strong> Truyện của bạn đã được admin đề cử.
+                                    @php
+                                        $adminFeatured = $story->activeAdminFeatured;
+                                        $order = $adminFeatured
+                                            ? $adminFeatured->featured_order
+                                            : $story->featured_order;
+                                    @endphp
+                                    @if ($order)
+                                        <br>Thứ tự: #{{ $order }}
+                                    @endif
+                                    <br>Đề cử của admin có ưu tiên cao hơn đề cử của tác giả.
+                                </div>
+                            @elseif($story->isCurrentlyAuthorFeatured())
+                                <div class="alert alert-success">
+                                    <i class="fas fa-star me-2"></i>
+                                    <strong>Đang được đề cử:</strong> Truyện của bạn đang được đề cử bởi tác giả.
+                                    @php
+                                        $authorFeatured = $story->activeAuthorFeatured;
+                                    @endphp
+                                    @if ($authorFeatured)
+                                        <br>
+                                        <small class="text-muted">
+                                            Đề cử từ: {{ $authorFeatured->featured_at->format('d/m/Y H:i') }}<br>
+                                            Hết hạn: {{ $authorFeatured->featured_until->format('d/m/Y H:i') }}
+                                            (Còn {{ $authorFeatured->days_remaining }} ngày)
+                                        </small>
+                                    @endif
+                                </div>
+                            @else
+                                @if ($story->status !== 'published')
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                        <strong>Chưa thể đề cử:</strong> Truyện phải được xuất bản trước khi có thể đề cử.
+                                    </div>
+                                @elseif(Auth::user()->coins < $featuredPrice)
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <strong>Không đủ xu:</strong> Bạn cần ít nhất {{ number_format($featuredPrice) }}
+                                        xu để đề cử truyện.
+                                        <br>
+                                        <a href="{{ route('user.deposit') }}"
+                                            class="btn btn-sm btn-outline-primary mt-2">
+                                            <i class="fas fa-coins me-1"></i> Nạp xu ngay
+                                        </a>
+                                    </div>
+                                @else
+                                    <form action="{{ route('user.author.stories.featured', $story->id) }}" method="POST"
+                                        id="featuredForm">
+                                        @csrf
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle me-2"></i>
+                                            <strong>Có thể đề cử:</strong> Truyện của bạn đủ điều kiện để đề cử lên trang
+                                            chủ.
+                                        </div>
+
+                                        <div class="d-grid">
+                                            <button type="button" class="btn btn-warning btn-lg" data-bs-toggle="modal"
+                                                data-bs-target="#confirmFeaturedModal">
+                                                <i class="fas fa-star me-2"></i>Đề cử truyện
+                                                ({{ number_format($featuredPrice) }} xu)
+                                            </button>
+                                        </div>
+                                    </form>
+                                @endif
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tab Yêu cầu duyệt -->
                 <div class="tab-pane fade" id="review" role="tabpanel" aria-labelledby="review-tab">
                     <div class="alert alert-info">
@@ -871,6 +1009,61 @@
                             @endif
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal xác nhận đề cử -->
+    <div class="modal fade" id="confirmFeaturedModal" tabindex="-1" aria-labelledby="confirmFeaturedModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmFeaturedModalLabel">
+                        <i class="fas fa-star me-2"></i>Xác nhận đề cử truyện
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Xác nhận đề cử:</strong> Bạn có chắc chắn muốn đề cử truyện
+                        <strong>"{{ $story->title }}"</strong> lên trang chủ?
+                    </div>
+
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted">Chi phí</h6>
+                                <h4 class="text-warning">
+                                    {{ number_format($featuredPrice) }} xu</h4>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted">Thời gian</h6>
+                                <h4 class="text-info">{{ $featuredDuration }}
+                                    ngày</h4>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-3">
+                        <h6>Lưu ý:</h6>
+                        <ul class="small text-muted">
+                            <li>Truyện sẽ xuất hiện ở vị trí nổi bật trên trang chủ</li>
+                            <li>Đề cử của admin sẽ có ưu tiên cao hơn</li>
+                            <li>Xu sẽ được trừ ngay sau khi xác nhận</li>
+                            <li>Không thể hoàn lại xu sau khi đề cử</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-warning" id="confirmFeaturedBtn">
+                        <i class="fas fa-star me-1"></i>Xác nhận đề cử
+                    </button>
                 </div>
             </div>
         </div>
@@ -1050,7 +1243,7 @@
                         'collected': 'Sưu tầm'
                     };
                     changes.push('<li>Loại truyện: <span class="text-danger">' + storyTypes[originalData
-                        .story_type] +
+                            .story_type] +
                         '</span> → <span class="text-success">' + storyTypes[$('#story_type').val()] +
                         '</span></li>');
                 }
@@ -1065,7 +1258,7 @@
                     } else {
                         changes.push(
                             '<li>Bỏ đánh dấu truyện là <span class="text-success">nội dung thông thường</span></li>'
-                            );
+                        );
                     }
                 }
 
@@ -1086,6 +1279,17 @@
                         changesList.append(change);
                     });
                     $('#confirmEditModal button[type="submit"]').prop('disabled', false);
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('confirmFeaturedBtn').addEventListener('click', function() {
+                const form = document.getElementById('featuredForm');
+                if (form) {
+                    form.submit();
                 }
             });
         });

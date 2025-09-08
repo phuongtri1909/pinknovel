@@ -188,6 +188,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 Route::post('/stories/{story}/chapters/batch', [AuthorController::class, 'storeBatchChapters'])->name('stories.chapters.batch.store');
 
                 Route::put('/stories/{story}/mark-complete', [AuthorController::class, 'markComplete'])->name('stories.mark-complete');
+                Route::post('/stories/{story}/featured', [AuthorController::class, 'featured'])->name('stories.featured');
 
                 Route::get('/stories/{story}/chapters/bulk-price', [AuthorController::class, 'bulkPriceForm'])->name('stories.chapters.bulk-price');
                 Route::put('/stories/{story}/chapters/bulk-price/update', [AuthorController::class, 'bulkPriceUpdate'])->name('stories.chapters.bulk-price.update');

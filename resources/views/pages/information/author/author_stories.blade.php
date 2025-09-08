@@ -212,6 +212,7 @@
                         <th scope="col" width="150">Trạng thái</th>
                         <th scope="col" width="5">Full</th>
                         <th scope="col" width="130">Lượt xem</th>
+                        <th scope="col" width="150">Đề cử</th>
                         <th scope="col" width="120">Hành động</th>
                     </tr>
                 </thead>
@@ -279,6 +280,32 @@
                                 <div class="d-flex flex-column align-items-center">
                                     <div class="fw-bold">{{ number_format($story->total_views ?? 0) }}</div>
                                     <div class="small text-muted">lượt xem</div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex flex-column align-items-center">
+                                    @if($story->is_featured || $story->isCurrentlyAdminFeatured())
+                                        <span class="badge bg-warning text-dark mb-1">Admin đề cử</span>
+                                        @php
+                                            $adminFeatured = $story->activeAdminFeatured;
+                                            $order = $adminFeatured ? $adminFeatured->featured_order : $story->featured_order;
+                                        @endphp
+                                        @if($order)
+                                            <small class="text-muted">#{{ $order }}</small>
+                                        @endif
+                                    @elseif($story->isCurrentlyAuthorFeatured())
+                                        <span class="badge bg-info text-white mb-1">Tác giả đề cử</span>
+                                        @php
+                                            $authorFeatured = $story->activeAuthorFeatured;
+                                        @endphp
+                                        @if($authorFeatured)
+                                            <small class="text-muted">
+                                                {{ $authorFeatured->featured_until->format('d/m/Y') }}
+                                            </small>
+                                        @endif
+                                    @else
+                                        <span class="text-muted small">Chưa đề cử</span>
+                                    @endif
                                 </div>
                             </td>
                             <td>

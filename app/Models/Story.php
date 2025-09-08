@@ -201,6 +201,34 @@ class Story extends Model
         return $this->hasMany(StoryPurchase::class);
     }
 
+    /**
+     * Relationship với StoryFeatured
+     */
+    public function featuredRecords()
+    {
+        return $this->hasMany(StoryFeatured::class);
+    }
+
+    /**
+     * Lấy đề cử admin đang hoạt động
+     */
+    public function activeAdminFeatured()
+    {
+        return $this->hasOne(StoryFeatured::class)
+                    ->where('type', StoryFeatured::TYPE_ADMIN)
+                    ->active();
+    }
+
+    /**
+     * Lấy đề cử author đang hoạt động
+     */
+    public function activeAuthorFeatured()
+    {
+        return $this->hasOne(StoryFeatured::class)
+                    ->where('type', StoryFeatured::TYPE_AUTHOR)
+                    ->active();
+    }
+
     public function chapterPurchases()
     {
         return $this->hasManyThrough(
@@ -213,18 +241,6 @@ class Story extends Model
         );
     }
 
-    public function getFeaturedStatusTextAttribute()
-    {
-        return $this->is_featured ? 'Đề cử' : 'Thường';
-    }
-
-    public function getFeaturedBadgeAttribute()
-    {
-        if ($this->is_featured) {
-            return '<span class="badge bg-gradient-warning">Đề cử #' . $this->featured_order . '</span>';
-        }
-        return '';
-    }
 
     public function getIsFeaturedAttribute($value)
     {
@@ -244,6 +260,74 @@ class Story extends Model
     public static function getNextFeaturedOrder()
     {
         return self::where('is_featured', true)->max('featured_order') + 1;
+    }
+
+    /**
+     * Check if story is currently featured by admin
+     */
+    public function isCurrentlyAdminFeatured()
+    {
+        return $this->activeAdminFeatured()->exists();
+    }
+
+    /**
+     * Check if story is currently featured by author
+     */
+    public function isCurrentlyAuthorFeatured()
+    {
+        return $this->activeAuthorFeatured()->exists();
+    }
+
+    /**
+     * Check if story is featured (admin or author)
+     */
+    public function isAnyFeatured()
+    {
+        return $this->is_featured || $this->isCurrentlyAdminFeatured() || $this->isCurrentlyAuthorFeatured();
+    }
+
+    /**
+     * Get featured status text
+     */
+    public function getFeaturedStatusTextAttribute()
+    {
+        if ($this->is_featured || $this->isCurrentlyAdminFeatured()) {
+            return 'Admin đề cử';
+        } elseif ($this->isCurrentlyAuthorFeatured()) {
+            return 'Tác giả đề cử';
+        }
+        return 'Thường';
+    }
+
+    /**
+     * Get featured badge with priority
+     */
+    public function getFeaturedBadgeAttribute()
+    {
+        if ($this->is_featured || $this->isCurrentlyAdminFeatured()) {
+            $adminFeatured = $this->activeAdminFeatured;
+            $order = $adminFeatured ? $adminFeatured->featured_order : $this->featured_order;
+            return '<span class="badge bg-gradient-warning">Admin đề cử #' . $order . '</span>';
+        } elseif ($this->isCurrentlyAuthorFeatured()) {
+            $authorFeatured = $this->activeAuthorFeatured;
+            $daysLeft = $authorFeatured ? $authorFeatured->days_remaining : 0;
+            return '<span class="badge bg-gradient-info">Tác giả đề cử (' . $daysLeft . ' ngày)</span>';
+        }
+        return '';
+    }
+
+    /**
+     * Get current active featured record
+     */
+    public function getCurrentFeaturedAttribute()
+    {
+        // Ưu tiên admin featured
+        if ($this->isCurrentlyAdminFeatured()) {
+            return $this->activeAdminFeatured;
+        } elseif ($this->isCurrentlyAuthorFeatured()) {
+            return $this->activeAuthorFeatured;
+        }
+        return null;
     }
 
     protected $with = ['categories'];

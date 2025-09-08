@@ -48,4 +48,15 @@ class Config extends Model
 
         return $config;
     }
-} 
+
+    public static function getConfigs(array $defaults = [])
+    {
+        $keys = array_keys($defaults);
+
+        $values = self::whereIn('key', $keys)
+            ->pluck('value', 'key')
+            ->toArray();
+
+        return array_merge($defaults, $values);
+    }
+}
