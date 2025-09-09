@@ -1,5 +1,5 @@
 <div class="sidebar-widget recent-reads rounded-4 shadow-sm">
-    <div class="widget-header bg-2">
+    <div class="widget-header bg-pb">
         <h2 class="fs-5 m-0 text-dark fw-bold">
             <span class="hot-stories-tag">HOT</span>
             Phổ Biến
@@ -247,6 +247,9 @@
 @once
     @push('styles')
         <style>
+            .bg-pb{
+                background: #99eae7;
+            }
             /* Hot Stories Tag */
             .hot-stories-tag {
                 display: inline-block;

@@ -222,6 +222,7 @@
             padding: 1.5rem;
             margin-top: 1.5rem;
         }
+
     </style>
 @endpush
 
@@ -457,6 +458,15 @@
                                         value="{{ old('translator_name', $story->translator_name) }}">
                                     <div class="form-text text-muted">Điền tên người dịch/edit truyện</div>
                                     @error('translator_name')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="source_link" class="form-label">Link nguồn <span class="text-muted">(nếu có)</span></label>
+                                    <input type="url" class="form-control @error('source_link') is-invalid @enderror" id="source_link"
+                                        name="source_link" value="{{ old('source_link', $story->source_link) }}" placeholder="https://example.com">
+                                    @error('source_link')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
@@ -775,6 +785,7 @@
                         </div>
                     @endforeach
                 </div>
+
 
                 <!-- Tab Đề cử truyện -->
                 <div class="tab-pane fade" id="featured" role="tabpanel" aria-labelledby="featured-tab">
@@ -1281,6 +1292,7 @@
                     $('#confirmEditModal button[type="submit"]').prop('disabled', false);
                 }
             });
+
         });
     </script>
 

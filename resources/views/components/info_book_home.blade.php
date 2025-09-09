@@ -177,6 +177,21 @@
                                         @endif
                                     </div>
 
+                                    @if($story->source_link)
+                                        <div class="stat-item text-dark mt-2 d-flex justify-content-center">
+                                            <a href="{{ $story->source_link }}" target="_blank" rel="noopener noreferrer" 
+                                               class="action-button d-flex flex-column align-items-center text-decoration-none"
+                                               title="Xem nguồn gốc">
+                                                <div class="action-icon">
+                                                    <i class="fas fa-external-link-alt fs-4 color-3"></i>
+                                                </div>
+                                                <div class="action-label small mt-1 text-center">
+                                                    Nguồn
+                                                </div>
+                                            </a>
+                                        </div>
+                                    @endif
+
                                     <div class="row mt-3">
                                         <div class="col-4">
                                             <a href="#comments"

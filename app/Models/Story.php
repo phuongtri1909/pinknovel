@@ -19,6 +19,7 @@ class Story extends Model
         'cover_thumbnail',
         'completed',
         'link_aff',
+        'source_link',
         'story_type',
         'author_name',
         'is_18_plus',

@@ -181,6 +181,7 @@ class AuthorController extends Controller
             'author_name' => 'required|max:255',
             'story_type' => 'required|in:collected,original,translated',
             'translator_name' => 'nullable|max:255',
+            'source_link' => 'nullable|url|max:500',
             'is_18_plus' => 'nullable|boolean',
             'is_monopoly' => 'nullable|boolean',
         ], [
@@ -218,6 +219,7 @@ class AuthorController extends Controller
                 'cover_thumbnail' => $coverPaths['thumbnail'],
                 'author_name' => $request->author_name,
                 'translator_name' => $request->translator_name,
+                'source_link' => $request->source_link,
                 'story_type' => $request->story_type,
                 'is_18_plus' => $request->has('is_18_plus'),
                 'is_monopoly' => $request->has('is_monopoly'),
@@ -289,6 +291,7 @@ class AuthorController extends Controller
         $hasPendingEditRequest = $story->hasPendingEditRequest();
         $latestPendingEditRequest = $hasPendingEditRequest ? $story->latestPendingEditRequest() : null;
         
+        
         return view('pages.information.author.author_edit', compact(
             'story', 
             'categoryNames', 
@@ -317,6 +320,7 @@ class AuthorController extends Controller
             'story_type' => 'required|in:collected,original,translated',
             'is_18_plus' => 'nullable|boolean',
             'translator_name' => 'nullable|max:255',
+            'source_link' => 'nullable|url|max:500',
             'is_monopoly' => 'nullable|boolean',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
@@ -381,6 +385,7 @@ class AuthorController extends Controller
                     $story->description !== $request->description ||
                     $story->author_name !== $request->author_name ||
                     $story->translator_name !== $request->translator_name ||
+                    $story->source_link !== $request->source_link ||
                     $story->story_type !== $request->story_type ||
                     $story->is_18_plus !== $request->has('is_18_plus') ||
                     $story->is_monopoly !== $request->has('is_monopoly')
@@ -417,6 +422,7 @@ class AuthorController extends Controller
                     'story_type' => $request->story_type,
                     'is_18_plus' => $request->has('is_18_plus'),
                     'translator_name' => $request->translator_name,
+                    'source_link' => $request->source_link,
                     'categories_data' => json_encode($categoryData),
                     'status' => 'pending',
                     'submitted_at' => now(),
@@ -448,6 +454,7 @@ class AuthorController extends Controller
                     'author_name' => $request->author_name,
                     'story_type' => $request->story_type,
                     'translator_name' => $request->translator_name,
+                    'source_link' => $request->source_link,
                     'is_18_plus' => $request->has('is_18_plus'),
                     'is_monopoly' => $request->has('is_monopoly'),
                 ];
