@@ -393,9 +393,9 @@
                                 <div class="input-group">
                                     <span class="input-group-text">$</span>
                                     <input type="number" class="form-control paypal-input" id="usdAmount" name="usd_amount"
-                                        min="5" step="0.01" value="5" required>
+                                        min="5" step="5" value="5" required>
                                 </div>
-                                <small class="text-light opacity-75">Tối thiểu: $5</small>
+                                <small class="text-light opacity-75">Tối thiểu: $5, phải là bội số của $5 (5, 10, 15, 20...)</small>
                                 <div class="invalid-feedback" id="amountError"></div>
                             </div>
                         </div>
@@ -850,6 +850,16 @@
                 updatePreview();
             });
 
+            $('#usdAmount').on('blur', function() {
+                let value = parseFloat($(this).val()) || 0;
+                if (value > 0) {
+                    value = Math.round(value / 5) * 5;
+                    if (value < 5) value = 5;
+                    $(this).val(value);
+                    updatePreview();
+                }
+            });
+
             function updatePreview() {
                 const baseUsdAmount = parseFloat($('#usdAmount').val()) || 0;
                 const paymentMethod = $('input[name="payment_method"]:checked').val();
@@ -1012,6 +1022,10 @@
                 if (!usdAmount || usdAmount < 5) {
                     $('#usdAmount').addClass('is-invalid');
                     $('#amountError').text('Số tiền phải từ $5 trở lên').show();
+                    valid = false;
+                } else if (usdAmount % 5 !== 0) {
+                    $('#usdAmount').addClass('is-invalid');
+                    $('#amountError').text('Số tiền phải là bội số của $5 (ví dụ: $5, $10, $15, $20...)').show();
                     valid = false;
                 } else {
                     $('#usdAmount').removeClass('is-invalid');

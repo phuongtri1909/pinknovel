@@ -75,8 +75,26 @@ class PaypalDepositController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'base_usd_amount' => 'required|numeric|min:5',
-            'usd_amount' => 'required|numeric|min:5',
+            'base_usd_amount' => [
+                'required',
+                'numeric',
+                'min:5',
+                function ($attribute, $value, $fail) {
+                    if ($value % 5 !== 0) {
+                        $fail('Số tiền phải là bội số của $5 (ví dụ: $5, $10, $15, $20...)');
+                    }
+                },
+            ],
+            'usd_amount' => [
+                'required',
+                'numeric',
+                'min:5',
+                function ($attribute, $value, $fail) {
+                    if ($value % 5 !== 0) {
+                        $fail('Số tiền phải là bội số của $5 (ví dụ: $5, $10, $15, $20...)');
+                    }
+                },
+            ],
             'payment_method' => 'required|in:friends_family,goods_services',
             'paypal_email' => 'required|email|max:255'
         ], [

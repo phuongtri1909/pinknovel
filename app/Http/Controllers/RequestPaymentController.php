@@ -42,7 +42,16 @@ class RequestPaymentController extends Controller
     {
         $request->validate([
             'bank_id' => 'required|exists:banks,id',
-            'amount' => 'required|numeric|min:50000',
+            'amount' => [
+                'required',
+                'numeric',
+                'min:50000',
+                function ($attribute, $value, $fail) {
+                    if ($value % 10000 !== 0) {
+                        $fail('Số tiền phải là bội số của 10.000 VNĐ (ví dụ: 50.000, 60.000, 70.000...)');
+                    }
+                },
+            ],
         ], [
             'bank_id.required' => 'Vui lòng chọn ngân hàng',
             'bank_id.exists' => 'Ngân hàng không tồn tại',

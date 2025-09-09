@@ -293,13 +293,14 @@
                             <div class="deposit-amount-container">
                                 <label for="amount" class="form-label fw-bold mb-3">Nhập số tiền muốn nạp (VNĐ)</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control deposit-amount-input" id="amount"
-                                        name="amount" value="{{ number_format(old('amount', 50000), 0, ',', '.') }}"
-                                        data-raw="{{ old('amount', 50000) }}">
+                                    <input type="number" class="form-control deposit-amount-input" id="amount"
+                                        name="amount" value="{{ old('amount', 50000) }}"
+                                        data-raw="{{ old('amount', 50000) }}"
+                                        min="50000" step="10000">
 
                                     <span class="input-group-text">VNĐ</span>
                                 </div>
-                                <div class="form-text">Số tiền tối thiểu: 50.000 VNĐ</div>
+                                <div class="form-text">Số tiền tối thiểu: 50.000 VNĐ, phải là bội số của 10.000 (50.000, 60.000, 70.000...)</div>
                                 <div class="invalid-feedback amount-error">Vui lòng nhập số tiền hợp lệ</div>
 
                                 <div class="deposit-coin-preview mt-4">
@@ -622,26 +623,6 @@
 @once
     @push('info_scripts')
         <script>
-            // Global error handler
-            window.addEventListener('error', function(event) {
-                if (event.error && !event.filename.includes('jquery')) {
-                    if (typeof Swal !== 'undefined') {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Đã xảy ra lỗi',
-                            text: 'Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng tải lại trang và thử lại.',
-                            confirmButtonText: 'Tải lại trang',
-                            confirmButtonColor: 'var(--primary-color-3)'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.reload();
-                            }
-                        });
-                    } else {
-                        alert('Có lỗi xảy ra khi xử lý yêu cầu. Vui lòng tải lại trang và thử lại.');
-                    }
-                }
-            });
 
             // Unhandled promise rejection handler
             window.addEventListener('unhandledrejection', function(event) {
@@ -735,6 +716,9 @@
                 const amount = parseInt($('#amount').data('raw')) || 0;
                 if (amount < 50000) {
                     $('.amount-error').show().text('Số tiền tối thiểu là 50.000 VNĐ');
+                    valid = false;
+                } else if (amount % 10000 !== 0) {
+                    $('.amount-error').show().text('Số tiền phải là bội số của 10.000 VNĐ (ví dụ: 50.000, 60.000, 70.000...)');
                     valid = false;
                 } else {
                     $('.amount-error').hide();
@@ -1216,40 +1200,87 @@
 
             $(document).ready(function() {
                 function formatVndCurrency(value) {
-                    const number = value.toString().replace(/\D/g, '');
-                    return number.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    try {
+                        if (!value || value === '' || value === null || value === undefined) return '';
+                        const number = value.toString().replace(/\D/g, '');
+                        if (number === '' || number === '0') return '';
+                        return number.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+                    } catch (error) {
+                        console.error('Error in formatVndCurrency:', error);
+                        return '';
+                    }
                 }
 
                 function parseVndCurrency(formatted) {
-                    return parseInt(formatted.toString().replace(/\./g, '')) || 0;
+                    try {
+                        if (!formatted || formatted === '' || formatted === null || formatted === undefined) return 0;
+                        return parseInt(formatted.toString().replace(/\./g, '')) || 0;
+                    } catch (error) {
+                        console.error('Error in parseVndCurrency:', error);
+                        return 0;
+                    }
                 }
 
                 $('.deposit-amount-input').on('input', function() {
-                    const input = $(this);
-                    const caret = input[0].selectionStart;
-                    const originalLength = input.val().length;
+                    try {
+                        const input = $(this);
+                        const currentValue = input.val();
+                        
+                        if (currentValue && currentValue.trim() !== '') {
+                            const formatted = formatVndCurrency(currentValue);
+                            if (formatted !== currentValue) {
+                                input.val(formatted);
+                            }
+                            
+                            const rawValue = parseVndCurrency(formatted);
+                            input.data('raw', rawValue);
+                            updateCoinPreview();
+                        } else {
+                            input.data('raw', 0);
+                            updateCoinPreview();
+                        }
+                    } catch (error) {
+                        console.error('Error in input handler:', error);
+                        // Reset về trạng thái an toàn
+                        input.data('raw', 0);
+                        updateCoinPreview();
+                    }
+                });
 
-                    const formatted = formatVndCurrency(input.val());
-                    input.val(formatted);
-
-                    input.data('raw', parseVndCurrency(formatted));
-
-                    const lengthDiff = input.val().length - originalLength;
-                    input[0].setSelectionRange(caret + lengthDiff, caret + lengthDiff);
-
-                    updateCoinPreview();
+                $('.deposit-amount-input').on('blur', function() {
+                    try {
+                        const input = $(this);
+                        let rawValue = input.data('raw') || 0;
+                        
+                        // Làm tròn về bội số của 10.000 gần nhất
+                        if (rawValue > 0) {
+                            rawValue = Math.round(rawValue / 10000) * 10000;
+                            if (rawValue < 50000) rawValue = 50000; // Đảm bảo tối thiểu 50.000
+                            
+                            const formatted = formatVndCurrency(rawValue.toString());
+                            input.val(formatted);
+                            input.data('raw', rawValue);
+                            updateCoinPreview();
+                        }
+                    } catch (error) {
+                        console.error('Error in blur handler:', error);
+                    }
                 });
 
                 function updateCoinPreview() {
                     try {
                         const amount = parseInt($('#amount').data('raw')) || 0;
 
-                        const feeAmount = (amount * window.coinBankPercent) / 100;
-                        const amountAfterFee = amount - feeAmount;
-                        const baseCoins = Math.floor(amountAfterFee / window.coinExchangeRate);
-                        const totalCoins = baseCoins;
+                        if (amount > 0) {
+                            const feeAmount = (amount * window.coinBankPercent) / 100;
+                            const amountAfterFee = amount - feeAmount;
+                            const baseCoins = Math.floor(amountAfterFee / window.coinExchangeRate);
+                            const totalCoins = baseCoins;
 
-                        $('#coinsPreview').text(totalCoins.toLocaleString('vi-VN'));
+                            $('#coinsPreview').text(totalCoins.toLocaleString('vi-VN'));
+                        } else {
+                            $('#coinsPreview').text('0');
+                        }
                     } catch (error) {
                         console.error("Error updating coin preview:", error);
                         $('#coinsPreview').text('0');
@@ -1269,6 +1300,9 @@
                     const amount = parseInt($('#amount').data('raw')) || 0;
                     if (amount < 50000) {
                         $('.amount-error').show().text('Số tiền tối thiểu là 50.000 VNĐ');
+                        valid = false;
+                    } else if (amount % 10000 !== 0) {
+                        $('.amount-error').show().text('Số tiền phải là bội số của 10.000 VNĐ (ví dụ: 50.000, 60.000, 70.000...)');
                         valid = false;
                     } else {
                         $('.amount-error').hide();
@@ -1351,8 +1385,11 @@
 
                 $('.deposit-amount-input').each(function() {
                     const input = $(this);
-                    const raw = input.data('raw');
+                    let raw = input.data('raw');
                     if (raw) {
+                        raw = Math.round(raw / 10000) * 10000;
+                        if (raw < 50000) raw = 50000;
+                        input.data('raw', raw);
                         input.val(formatVndCurrency(raw));
                     }
                 });
