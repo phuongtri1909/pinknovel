@@ -784,7 +784,7 @@ class HomeController extends Controller
         }
 
         $featuredStories = $query
-            ->orderBy('is_featured', 'desc') // Admin featured trước
+            ->orderBy('is_featured', 'desc')
             ->orderBy('featured_order', 'asc')
             ->orderBy('created_at', 'desc')
             ->take(12)
@@ -897,9 +897,8 @@ class HomeController extends Controller
             ->whereHas('chapters', function ($query) {
                 $query->where('status', 'published');
             })
-            ->whereMonth('reviewed_at', now()->month)
-            ->whereYear('reviewed_at', now()->year);
-
+            ->where('reviewed_at', '>=', now()->subMonth());
+            
         return $query->orderByDesc('reviewed_at')
             ->take(20)
             ->get();
