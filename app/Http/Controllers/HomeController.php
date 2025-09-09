@@ -49,6 +49,9 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings', 'rating')
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
                 'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.translator_name'
@@ -91,6 +94,9 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings', 'rating')
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
                 'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at'
@@ -138,6 +144,9 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings', 'rating')
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
                 'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.user_id', 'stories.translator_name'
@@ -177,7 +186,10 @@ class HomeController extends Controller
                     $query->select('id', 'story_id', 'number', 'created_at')
                         ->where('status', 'published');
                 }
-            ]);
+            ])
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings', 'rating');
 
         // Apply advanced search filters
         $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
@@ -221,7 +233,10 @@ class HomeController extends Controller
                         $query->select('id', 'story_id', 'number', 'created_at')
                             ->where('status', 'published');
                     }
-                ]);
+                ])
+                ->withCount(['bookmarks'])
+                ->withSum('chapters', 'views')
+                ->withAvg('ratings', 'rating');
 
             $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
 
@@ -383,6 +398,8 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('ratings')
@@ -426,6 +443,8 @@ class HomeController extends Controller
                 $query->select('id', 'story_id', 'number', 'slug', 'created_at')
                     ->where('status', 'published');
             }])
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
             ->joinSub($latestChapters, 'latest_chapters', function ($join) {
                 $join->on('stories.id', '=', 'latest_chapters.story_id');
             })
@@ -469,7 +488,9 @@ class HomeController extends Controller
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
-            }])
+            }, 'bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings', 'rating')
             ->whereHas('chapters', function ($query) {
                 $query->where('status', 'published');
             })
@@ -512,6 +533,8 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
+            ->withCount(['bookmarks'])
+            ->withAvg('ratings', 'rating')
             ->joinSub($storyViews, 'story_views', function ($join) {
                 $join->on('stories.id', '=', 'story_views.story_id');
             })
@@ -548,6 +571,8 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings', 'rating')
             ->orderByDesc('bookmarks_count');
 
         // Apply advanced search filters
@@ -597,7 +622,9 @@ class HomeController extends Controller
             ])
             ->withCount(['chapters' => function ($query) {
                 $query->where('status', 'published');
-            }])
+            }, 'bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings', 'rating')
             ->latest('updated_at');
 
         // Apply advanced search filters

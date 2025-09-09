@@ -330,10 +330,19 @@
                                             {{ number_format($story->total_views) }}
                                         </div>
                                         <div class="me-3">
-                                            <i
-                                                class="fas fa-{{ $story->completed ? 'check-circle' : 'clock' }} me-1 {{ $story->completed ? 'text-success' : 'text-warning' }}"></i>
-                                            {{ $story->completed ? 'Hoàn thành' : 'Đang cập nhật' }}
+                                            <i class="fas fa-star me-1 text-warning"></i>
+                                            {{ number_format($story->average_rating ?? 0, 1) }}
                                         </div>
+                                        <div class="me-3">
+                                            <i class="fas fa-bookmark me-1 text-danger"></i>
+                                            {{ number_format($story->bookmarks_count ?? 0) }}
+                                        </div>
+                                        
+                                    </div>
+                                    <div>
+                                        <i
+                                            class="fas fa-{{ $story->completed ? 'check-circle' : 'clock' }} me-1 {{ $story->completed ? 'text-success' : 'text-warning' }}"></i>
+                                        {{ $story->completed ? 'Hoàn thành' : 'Đang cập nhật' }}
                                     </div>
                                     <div class="story-description mt-2 small text-muted d-none d-md-block">
                                         {{ cleanDescription($story->description, 200) }}
