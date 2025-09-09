@@ -792,6 +792,7 @@ class HomeController extends Controller
 
         $featuredStories->each(function ($story) {
             $story->hot_score = $this->calculateHotScore($story);
+            $story->featured_time_remaining = $this->getFeaturedTimeRemaining($story);
         });
 
         return $featuredStories;
@@ -868,6 +869,30 @@ class HomeController extends Controller
             ($story->ratings_count * 1.5) +
             ($story->average_rating * 2) +
             ($story->bookmarks_count * 1);
+    }
+
+    /**
+     * Lấy thời gian đề cử còn lại (tính bằng giờ)
+     */
+    private function getFeaturedTimeRemaining($story)
+    {
+        // Kiểm tra admin featured (ưu tiên cao nhất)
+        if ($story->is_featured) {
+            $adminFeatured = $story->activeAdminFeatured;
+            if ($adminFeatured && $adminFeatured->isCurrentlyActive()) {
+                $hoursRemaining = now()->diffInHours($adminFeatured->featured_until, false);
+                return max(0, $hoursRemaining);
+            }
+        }
+
+        // Kiểm tra author featured
+        $authorFeatured = $story->activeAuthorFeatured;
+        if ($authorFeatured && $authorFeatured->isCurrentlyActive()) {
+            $hoursRemaining = now()->diffInHours($authorFeatured->featured_until, false);
+            return max(0, $hoursRemaining);
+        }
+
+        return null; // Không có đề cử nào đang hoạt động
     }
 
     private function getNewStories()

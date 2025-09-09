@@ -10,6 +10,15 @@
             @if ($story->completed === 1)
                 <span class="badge-full"> Full </span>
             @endif
+
+            @if(isset($story->featured_time_remaining) && $story->featured_time_remaining > 0)
+                <div class="featured-timer">
+                    <div class="timer-triangle">
+                        <i class="fas fa-clock timer-icon"></i>
+                        <span class="timer-text">{{ $story->featured_time_remaining }}h</span>
+                    </div>
+                </div>
+            @endif
         </a>
     </div>
     <div class="story-info px-2 text-sm text-gray-600 fw-semibold">
@@ -77,6 +86,44 @@
                 font-weight: 600;
                 z-index: 2;
                 box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            }
+
+            .featured-timer {
+                position: absolute;
+                top: 0;
+                left: 0;
+                z-index: 3;
+            }
+
+            .timer-triangle {
+                width: 0;
+                height: 0;
+                border-style: solid;
+                border-width: 50px 50px 0 0;
+                border-color: #3b82f6 transparent transparent transparent;
+                position: relative;
+            }
+
+            .timer-icon {
+                position: absolute;
+                top: -45px;
+                left: 5px;
+                color: white;
+                font-size: 0.6rem;
+                z-index: 4;
+                transform: rotate(-45deg);
+            }
+
+            .timer-text {
+                position: absolute;
+                top: -36px;
+                left: 9px;
+                color: white;
+                font-size: 0.7rem;
+                font-weight: 600;
+                z-index: 4;
+                transform: rotate(-45deg);
+                line-height: 1;
             }
 
             .hover-content {
