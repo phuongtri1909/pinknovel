@@ -23,6 +23,7 @@ class Chapter extends Model
         'link_aff',
         'price',
         'password',
+        'password_hint',
         'is_free',
         'scheduled_publish_at',
     ];

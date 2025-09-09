@@ -669,6 +669,7 @@ class AuthorController extends Controller
             'is_free' => 'required|boolean',
             'price' => 'required_if:is_free,0|nullable|integer|min:1',
             'password' => 'nullable|required_if:has_password,1|string|max:50',
+            'password_hint' => 'nullable|string|max:500',
             'has_password' => 'required_if:is_free,1|boolean',
             'scheduled_publish_at' => 'nullable|date|after:now',
             'status' => 'required|in:draft,published',
@@ -717,6 +718,7 @@ class AuthorController extends Controller
                 'is_free' => $request->is_free,
                 'price' => !$request->is_free ? $request->price : null,
                 'password' => ($request->is_free && $request->has_password) ? bcrypt($request->password) : null,
+                'password_hint' => ($request->is_free && $request->has_password) ? $request->password_hint : null,
                 'scheduled_publish_at' => $scheduledPublishAt,
             ]);
 
@@ -1019,6 +1021,7 @@ class AuthorController extends Controller
                 'string',
                 'max:50'
             ],
+            'password_hint' => 'nullable|string|max:500',
             'has_password' => 'required_if:is_free,1|boolean',
             'scheduled_publish_at' => 'nullable|date|after:now',
             'status' => 'required|in:draft,published',
@@ -1080,6 +1083,7 @@ class AuthorController extends Controller
                 'is_free' => $request->is_free,
                 'price' => !$request->is_free ? $request->price : null,
                 'password' => $password,
+                'password_hint' => ($request->is_free && $request->has_password) ? $request->password_hint : null,
                 'scheduled_publish_at' => $scheduledPublishAt,
             ]);
 

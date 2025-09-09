@@ -90,6 +90,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
         Route::middleware(['check.ban:ban_read'])->group(function () {
             Route::get('/story/{storySlug}/{chapterSlug}', [HomeController::class, 'chapterByStory'])->middleware('affiliate.redirect:chapter')->name('chapter');
+            Route::post('/story/{storySlug}/{chapterSlug}/check-password', [HomeController::class, 'checkChapterPassword'])->name('chapter.check-password');
             Route::get('/search-chapters', [HomeController::class, 'searchChapters'])->name('chapters.search');
             Route::post('/reading/save-progress', [ReadingController::class, 'saveProgress'])
                 ->name('reading.save-progress');

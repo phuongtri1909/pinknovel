@@ -73,6 +73,13 @@
                             <span class="fs-7">Free</span>
                         </span>
                     @endif
+                    
+                    @if ($chapter->is_free && !empty($chapter->password))
+                        <span class="password-box" title="Chương có mật khẩu">
+                            <span><i class="fas fa-key"></i></span>
+                            <span class="fs-7">Pass</span>
+                        </span>
+                    @endif
 
                     <span class="chapter-info ms-2">
                         <span class="chapter-title">
@@ -157,6 +164,13 @@
                             <span class="fs-7">Free</span>
                         </span>
                     @endif
+                    
+                    @if ($chapter->is_free && !empty($chapter->password))
+                        <span class="password-box" title="Chương có mật khẩu">
+                            <span><i class="fas fa-key"></i></span>
+                            <span class="fs-7">Pass</span>
+                        </span>
+                    @endif
 
                     <span class="chapter-info ms-2">
                         <span class="chapter-title">
@@ -237,6 +251,13 @@
                         <span class="free-box">
                             <span><i class="fas fa-unlock-alt"></i></span>
                             <span class="fs-7">Free</span>
+                        </span>
+                    @endif
+                    
+                    @if ($chapter->is_free && !empty($chapter->password))
+                        <span class="password-box" title="Chương có mật khẩu">
+                            <span><i class="fas fa-key"></i></span>
+                            <span class="fs-7">Pass</span>
                         </span>
                     @endif
 
@@ -399,8 +420,25 @@
             border: 1px solid rgba(46, 204, 113, 0.2);
         }
 
+        .password-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 3px 8px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            min-width: 45px;
+            text-align: center;
+            font-weight: 500;
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+            margin-left: 5px;
+        }
+
         .coin-box .fs-7,
-        .free-box .fs-7 {
+        .free-box .fs-7,
+        .password-box .fs-7 {
             font-size: 0.7rem;
             text-transform: uppercase;
         }

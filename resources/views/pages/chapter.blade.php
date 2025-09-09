@@ -149,9 +149,35 @@
 
                 <!-- Chapter Content -->
                 <div id="chapter-content" class="rounded-4 chapter-content mb-4">
-                    @if (isset($hasAccess) && $hasAccess)
+                    @if (isset($hasAccess) && $hasAccess && isset($hasPasswordAccess) && $hasPasswordAccess)
                         <div style="line-height: 2;">
                             {!! nl2br(e($chapter->content)) !!}
+                        </div>
+                    @elseif (isset($hasAccess) && $hasAccess && isset($hasPasswordAccess) && !$hasPasswordAccess && $chapter->is_free && !empty($chapter->password))
+                        <!-- Modal nhập mật khẩu cho chương miễn phí -->
+                        <div class="password-notice bg-light p-4 rounded-3 text-center my-4">
+                            <div class="mb-3">
+                                <i class="fas fa-key fa-3x text-primary mb-3"></i>
+                                <h4 class="fw-bold">Chương này có mật khẩu</h4>
+                                @if (!empty($chapter->password_hint))
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fas fa-lightbulb me-2"></i>
+                                        <strong>Hướng dẫn:</strong> {{ $chapter->password_hint }}
+                                    </div>
+                                @endif
+                                <p class="text-muted">Vui lòng nhập mật khẩu để xem nội dung chương</p>
+                            </div>
+
+                            <form id="passwordForm" class="password-form">
+                                @csrf
+                                <div class="input-group mb-3" style="max-width: 400px; margin: 0 auto;">
+                                    <input type="password" class="form-control" id="chapterPassword" 
+                                           placeholder="Nhập mật khẩu..." required>
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="fas fa-unlock me-1"></i> Xác nhận
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     @else
                         <div class="chapter-preview">
@@ -875,6 +901,75 @@
     <!-- Script xử lý cài đặt đọc truyện -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Xử lý form nhập mật khẩu chương
+            const passwordForm = document.getElementById('passwordForm');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    const password = document.getElementById('chapterPassword').value;
+                    if (!password.trim()) {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Vui lòng nhập mật khẩu',
+                            text: 'Bạn cần nhập mật khẩu để xem chương này.'
+                        });
+                        return;
+                    }
+                    
+                    // Hiển thị loading
+                    const submitBtn = passwordForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang kiểm tra...';
+                    submitBtn.disabled = true;
+                    
+                    // Gửi request kiểm tra mật khẩu
+                    fetch('{{ route("chapter.check-password", ["storySlug" => $story->slug, "chapterSlug" => $chapter->slug]) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({
+                            password: password
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Thành công!',
+                                text: data.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                // Reload trang để hiển thị nội dung
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Mật khẩu không đúng!',
+                                text: data.message
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi!',
+                            text: 'Đã xảy ra lỗi khi kiểm tra mật khẩu. Vui lòng thử lại.'
+                        });
+                    })
+                    .finally(() => {
+                        // Khôi phục button
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    });
+                });
+            }
             // Các chức năng khác của trang chapter
             const toggleBtn = document.querySelector('.reading-settings-toggle');
             const settingsMenu = document.querySelector('.reading-settings-menu');

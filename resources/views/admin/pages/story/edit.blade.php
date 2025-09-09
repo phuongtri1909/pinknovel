@@ -91,7 +91,7 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="categories">Thể loại (tối đa 4)</label>
+                                    <label for="categories">Thể loại</label>
                                     <select name="categories[]" id="categories" class="form-control" multiple required>
                                         @foreach ($categories as $category)
                                             <option value="{{ $category->id }}"
@@ -103,10 +103,6 @@
                                             </option>
                                         @endforeach
                                     </select>
-                                    <small class="form-text text-muted">Chọn tối đa 4 thể loại</small>
-                                    <div class="invalid-feedback category-limit-error" style="display: none;">
-                                        Bạn chỉ được chọn tối đa 4 thể loại
-                                    </div>
                                     @error('categories')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -259,43 +255,12 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const MAX_CATEGORIES = 4;
             const categoriesSelect = document.getElementById('categories');
-            const categoryLimitError = document.querySelector('.category-limit-error');
-            const submitButton = document.querySelector('button[type="submit"]');
-
-            // Check initial state
-            checkCategoryLimit();
-
-            categoriesSelect.addEventListener('change', checkCategoryLimit);
-
-            function checkCategoryLimit() {
-                const selectedOptions = Array.from(categoriesSelect.selectedOptions);
-
-                if (selectedOptions.length > MAX_CATEGORIES) {
-                    categoryLimitError.style.display = 'block';
-                    submitButton.disabled = true;
-
-                    // Deselect the last selected option
-                    for (let i = MAX_CATEGORIES; i < selectedOptions.length; i++) {
-                        selectedOptions[i].selected = false;
-                    }
-                } else {
-                    categoryLimitError.style.display = 'none';
-                    submitButton.disabled = false;
-                }
-            }
 
             // Form validation before submit
             const form = document.querySelector('form');
             form.addEventListener('submit', function(event) {
                 const selectedOptions = Array.from(categoriesSelect.selectedOptions);
-
-                if (selectedOptions.length > MAX_CATEGORIES) {
-                    event.preventDefault();
-                    categoryLimitError.style.display = 'block';
-                    return false;
-                }
 
                 if (selectedOptions.length === 0) {
                     event.preventDefault();

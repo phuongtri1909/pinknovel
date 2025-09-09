@@ -275,6 +275,17 @@
                             @error('password')
                                 <div class="text-danger small mt-1">{{ $message }}</div>
                             @enderror
+                            
+                            <div class="mt-2">
+                                <label for="password_hint" class="form-label">Hướng dẫn lấy mật khẩu</label>
+                                <textarea class="form-control @error('password_hint') is-invalid @enderror" 
+                                    id="password_hint" name="password_hint" rows="2" 
+                                    placeholder="Ví dụ: Nhập phép tính 1 + 1 = ? hoặc hướng dẫn tìm mật khẩu...">{{ old('password_hint', $chapter->password_hint) }}</textarea>
+                                <div class="form-text text-muted">Hướng dẫn người đọc cách lấy mật khẩu để xem chương</div>
+                                @error('password_hint')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
                 </div>

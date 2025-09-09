@@ -1349,6 +1349,16 @@ class HomeController extends Controller
         if (!$chapter->price || $chapter->price == 0) {
             $hasAccess = true;
         }
+        
+
+        $hasPasswordAccess = true;
+        if ($chapter->is_free && !empty($chapter->password)) {
+            $hasPasswordAccess = false;
+            $passwordSessionKey = "chapter_password_{$chapter->id}";
+            if (session()->has($passwordSessionKey)) {
+                $hasPasswordAccess = true;
+            }
+        }
 
         // Ẩn nội dung nếu không có quyền truy cập
         if (!$hasAccess) {
@@ -1361,7 +1371,7 @@ class HomeController extends Controller
         }
 
         // Xử lý nội dung dựa trên quyền truy cập
-        if (!$hasAccess) {
+        if (!$hasAccess || !$hasPasswordAccess) {
             // Xóa hoàn toàn nội dung để đảm bảo bảo mật
             $chapter->content = '';
         }
@@ -1392,9 +1402,38 @@ class HomeController extends Controller
             'pinnedComments',
             'regularComments',
             'hasAccess',
+            'hasPasswordAccess',
             'hasPurchasedChapter',
             'hasPurchasedStory'
         ));
+    }
+
+    public function checkChapterPassword(Request $request, $storySlug, $chapterSlug)
+    {
+        $story = Story::where('slug', $storySlug)->firstOrFail();
+        $chapter = Chapter::where('slug', $chapterSlug)
+            ->where('story_id', $story->id)
+            ->where('status', 'published')
+            ->firstOrFail();
+
+        $request->validate([
+            'password' => 'required|string'
+        ]);
+
+        if ($chapter->checkPassword($request->password)) {
+            $passwordSessionKey = "chapter_password_{$chapter->id}";
+            session([$passwordSessionKey => true]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Mật khẩu đúng!'
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mật khẩu không đúng!'
+            ], 400);
+        }
     }
 
     public function searchChapters(Request $request)
