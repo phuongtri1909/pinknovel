@@ -124,6 +124,8 @@
                 @if (!Auth()->check() || (Auth()->check() && Auth()->user()->ban_read == false))
                     @include('components.all_chapter', [
                         'chapters' => $chapters,
+                        'story' => $story,
+                        'chapterPurchaseStatus' => $chapterPurchaseStatus,
                         'isAdmin' => Auth::check() && in_array(Auth::user()->role, ['admin', 'mod']),
                         'isAuthor' =>
                             Auth::check() && Auth::user()->role == 'author' && Auth::user()->id == $story->user_id,

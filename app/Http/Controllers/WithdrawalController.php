@@ -260,11 +260,16 @@ class WithdrawalController extends Controller
                 'processed_by' => auth()->id()
             ]);
             
-            // Refund coins to user
+            // Refund coins to user using CoinService
             $user = $withdrawal->user;
-            $user->update([
-                'coins' => $user->coins + $withdrawal->coins
-            ]);
+            $coinService = new \App\Services\CoinService();
+            $coinService->addCoins(
+                $user,
+                $withdrawal->coins,
+                \App\Models\CoinHistory::TYPE_WITHDRAWAL_REFUND,
+                "Hoàn tiền rút xu - Lý do: {$request->note}",
+                $withdrawal
+            );
             
             // Commit transaction
             DB::commit();

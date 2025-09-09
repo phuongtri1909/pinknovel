@@ -1037,8 +1037,8 @@ class HomeController extends Controller
                     $query->whereRaw('1 = 0');
                 }
             }])
-            ->orderBy('number', 'desc')
-            ->paginate(20);
+            ->orderBy('number', 'asc')
+            ->paginate(50);
 
         $chapterPurchaseStatus = [];
         if (auth()->check()) {
@@ -1076,11 +1076,6 @@ class HomeController extends Controller
             ];
         });
 
-        $chapters = $story->chapters()
-            ->published()
-            ->orderBy('number', 'asc')
-            ->paginate(50);
-
         $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
@@ -1103,7 +1098,9 @@ class HomeController extends Controller
                 ->published()
                 ->where('author_name', 'LIKE', "%{$story->author_name}%")
                 ->where('id', '!=', $story->id)
-                ->with(['categories', 'chapters'])
+                ->with(['categories' => function ($query) {
+                    $query->select('categories.id', 'categories.name', 'categories.slug');
+                }, 'chapters'])
                 ->take(5)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -1115,7 +1112,9 @@ class HomeController extends Controller
                 ->published()
                 ->where('user_id', $story->user_id)
                 ->where('id', '!=', $story->id)
-                ->with(['categories', 'chapters', 'user'])
+                ->with(['categories' => function ($query) {
+                    $query->select('categories.id', 'categories.name', 'categories.slug');
+                }, 'chapters', 'user'])
                 ->take(5)
                 ->orderBy('created_at', 'desc')
                 ->get();
@@ -1401,7 +1400,7 @@ class HomeController extends Controller
             });
         }
 
-        $chapters = $query->orderBy('number', 'desc')->take(20)->get();
+        $chapters = $query->orderBy('number', 'asc')->take(20)->get();
 
         return response()->json([
             'html' => view('components.search-results', compact('chapters'))->render()

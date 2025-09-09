@@ -136,14 +136,8 @@ class PurchaseController extends Controller
                 $rawEarnings = ($chapter->price * $authorPercentage) / 100;
                 $authorEarnings = round($rawEarnings);
 
-                // Deduct coins from user
-                DB::table('users')->where('id', $user->id)->update([
-                    'coins' => $user->coins - $chapter->price
-                ]);
-                $user->coins -= $chapter->price; // Update the model instance
-
                 // Create purchase record với amount_received đã tính
-                ChapterPurchase::updateOrCreate(
+                $purchase = ChapterPurchase::updateOrCreate(
                     [
                         'user_id' => $user->id,
                         'chapter_id' => $chapter->id
@@ -156,7 +150,16 @@ class PurchaseController extends Controller
                     ]
                 );
 
-                DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
+                // Sử dụng CoinService để chuyển xu
+                $coinService = new \App\Services\CoinService();
+                $coinService->transferCoins(
+                    $user,
+                    $story->user,
+                    $chapter->price,
+                    \App\Models\CoinHistory::TYPE_CHAPTER_PURCHASE,
+                    "Mua chương: {$chapter->title}",
+                    $purchase
+                );
                 DB::commit();
                 $success = true;
             } catch (\Illuminate\Database\QueryException $e) {
@@ -310,19 +313,24 @@ class PurchaseController extends Controller
                 $rawEarnings = ($story->combo_price * $authorPercentage) / 100;
                 $authorEarnings = round($rawEarnings);
 
-                // Deduct coins from user
-                $freshUser->coins -= $story->combo_price;
-                $freshUser->save();
-
-                StoryPurchase::create([
+                // Create purchase record
+                $purchase = StoryPurchase::create([
                     'user_id' => $user->id,
                     'story_id' => $story->id,
                     'amount_paid' => $story->combo_price,
                     'amount_received' => $authorEarnings,
                 ]);
 
-
-                DB::table('users')->where('id', $story->user_id)->increment('coins', $authorEarnings);
+                // Sử dụng CoinService để chuyển xu
+                $coinService = new \App\Services\CoinService();
+                $coinService->transferCoins(
+                    $freshUser,
+                    $story->user,
+                    $story->combo_price,
+                    \App\Models\CoinHistory::TYPE_STORY_PURCHASE,
+                    "Mua combo truyện: {$story->title}",
+                    $purchase
+                );
 
                 DB::commit();
                 $success = true;

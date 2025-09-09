@@ -698,30 +698,20 @@ class CardDepositController extends Controller
 
         $user = User::find($cardDeposit->user_id);
         if ($user) {
-            $oldCoins = $user->coins;
-
-            // Sử dụng atomic increment để tránh race condition
-            $affectedRows = User::where('id', $cardDeposit->user_id)
-                ->increment('coins', $coins);
-
-            if ($affectedRows > 0) {
-                Log::info('Card deposit successful - Coins added', [
-                    'request_id' => $callbackData['request_id'],
-                    'user_id' => $user->id,
-                    'coins_added' => $coins,
-                    'user_coins_before' => $oldCoins,
-                    'user_coins_after' => $oldCoins + $coins,
-                    'real_amount' => $realAmount,
-                    'is_wrong_amount' => $isWrongAmount,
-                    'penalty_amount' => $penaltyAmount ?? 0
-                ]);
-            } else {
-                Log::error('Failed to increment user coins', [
-                    'user_id' => $cardDeposit->user_id,
-                    'request_id' => $callbackData['request_id'],
-                    'coins_to_add' => $coins
-                ]);
+            // Sử dụng CoinService để ghi lịch sử
+            $coinService = new \App\Services\CoinService();
+            $description = "Nạp thẻ thành công - Mệnh giá: {$realAmount} VND";
+            if ($isWrongAmount) {
+                $description .= " (Sai mệnh giá, phạt: {$penaltyAmount} VND)";
             }
+            
+            $coinService->addCoins(
+                $user,
+                $coins,
+                \App\Models\CoinHistory::TYPE_CARD_DEPOSIT,
+                $description,
+                $cardDeposit
+            );
         } else {
             Log::error('User not found when adding coins', [
                 'user_id' => $cardDeposit->user_id,

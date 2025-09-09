@@ -1904,10 +1904,8 @@ class AuthorController extends Controller
         try {
             DB::beginTransaction();
 
-            $user = auth()->user();
-            $user->coins -= $featuredPrice;
-            $user->save();
-
+            $coinService = new \App\Services\CoinService();
+            
             $featuredRecord = \App\Models\StoryFeatured::createFeatured(
                 $story->id,
                 auth()->id(),
@@ -1916,6 +1914,14 @@ class AuthorController extends Controller
                 $featuredPrice,
                 null,
                 "Đề cử truyện lên trang chủ"
+            );
+
+            $coinService->subtractCoins(
+                auth()->user(),
+                $featuredPrice,
+                \App\Models\CoinHistory::TYPE_FEATURED_STORY,
+                "Đề cử truyện '{$story->title}' lên trang chủ ({$featuredDuration} ngày)",
+                $featuredRecord
             );
 
             DB::commit();

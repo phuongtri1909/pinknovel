@@ -43,7 +43,7 @@
                         $isAdminOrMod = in_array(auth()->user()->role, ['admin', 'mod']);
                         $isAuthorOfStory = auth()->user()->role == 'author' && auth()->user()->id == $story->user_id;
                      
-                        $hasChapterPurchase = $chapterPurchaseStatus[$chapter->id] ?? false;
+                        $hasChapterPurchase = isset($chapterPurchaseStatus) ? ($chapterPurchaseStatus[$chapter->id] ?? false) : false;
                         $isPurchased = $hasChapterPurchase || $hasStoryPurchase;
                         $hasAccess = $chapter->is_free || $isPurchased || $isAdminOrMod || $isAuthorOfStory;
                     }
@@ -128,7 +128,7 @@
                         $isAdminOrMod = in_array(auth()->user()->role, ['admin', 'mod']);
                         $isAuthorOfStory = auth()->user()->role == 'author' && auth()->user()->id == $story->user_id;
                      
-                        $hasChapterPurchase = $chapterPurchaseStatus[$chapter->id] ?? false;
+                        $hasChapterPurchase = isset($chapterPurchaseStatus) ? ($chapterPurchaseStatus[$chapter->id] ?? false) : false;
                         $isPurchased = $hasChapterPurchase || $hasStoryPurchase;
                         $hasAccess = $chapter->is_free || $isPurchased || $isAdminOrMod || $isAuthorOfStory;
                     }
@@ -209,7 +209,7 @@
                     if (auth()->check()) {
                         $isAdminOrMod = in_array(auth()->user()->role, ['admin', 'mod']);
                         $isAuthorOfStory = auth()->user()->role == 'author' && auth()->user()->id == $story->user_id;
-                        $hasChapterPurchase = $chapterPurchaseStatus[$chapter->id] ?? false;
+                        $hasChapterPurchase = isset($chapterPurchaseStatus) ? ($chapterPurchaseStatus[$chapter->id] ?? false) : false;
                         $isPurchased = $hasChapterPurchase || $hasStoryPurchase;
                         $hasAccess = $chapter->is_free || $isPurchased || $isAdminOrMod || $isAuthorOfStory;
                     }

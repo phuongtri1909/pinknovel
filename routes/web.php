@@ -109,6 +109,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
             Route::get('/reading-history', [UserController::class, 'readingHistory'])->name('reading.history');
             Route::post('/reading-history/clear', [UserController::class, 'clearReadingHistory'])->name('reading.history.clear');
             Route::get('purchases', [UserController::class, 'userPurchases'])->name('purchases');
+            Route::get('/coin-history', [App\Http\Controllers\User\CoinHistoryController::class, 'index'])->name('coin-history');
 
             Route::get('/bookmarks', [BookmarkController::class, 'getUserBookmarks'])->name('bookmarks');
             Route::post('/bookmark/toggle', [BookmarkController::class, 'toggle'])->name('bookmark.toggle');
@@ -254,6 +255,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
                     // Coin management routes
                     Route::get('coins', [CoinController::class, 'index'])->name('coins.index');
+                    Route::get('coin-history', [App\Http\Controllers\Admin\CoinHistoryController::class, 'index'])->name('coin-history.index');
+                    Route::get('coin-history/user/{userId}', [App\Http\Controllers\Admin\CoinHistoryController::class, 'showUser'])->name('coin-history.user');
                     Route::get('coins/{user}/create', [CoinController::class, 'create'])->name('coins.create');
                     Route::post('coins/{user}', [CoinController::class, 'store'])->name('coins.store');
 

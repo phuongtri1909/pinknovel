@@ -90,7 +90,16 @@ class UserDailyTask extends Model
                 ]);
 
                 $user = User::find($userId);
-                $user->increment('coins', $task->coin_reward);
+                
+                // Sử dụng CoinService để ghi lịch sử
+                $coinService = new \App\Services\CoinService();
+                $coinService->addCoins(
+                    $user,
+                    $task->coin_reward,
+                    \App\Models\CoinHistory::TYPE_DAILY_TASK,
+                    "Hoàn thành nhiệm vụ: {$task->name}",
+                    $userTask
+                );
 
                 return [
                     'success' => true,

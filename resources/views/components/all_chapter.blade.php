@@ -81,7 +81,12 @@
 
         <div class="list-chapter">
             <div id="chapters-container">
-                @include('components.chapter-items', ['chapters' => $chapters, 'sortOrder' => 'asc'])
+                @include('components.chapter-items', [
+                    'chapters' => $chapters, 
+                    'story' => $story,
+                    'chapterPurchaseStatus' => $chapterPurchaseStatus,
+                    'sortOrder' => 'asc'
+                ])
             </div>
         </div>
 

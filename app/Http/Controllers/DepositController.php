@@ -72,8 +72,16 @@ class DepositController extends Controller
 
            
             $user = $deposit->user;
-            $user->coins += $deposit->coins;
-            $user->save();
+            
+            // Sử dụng CoinService để ghi lịch sử
+            $coinService = new \App\Services\CoinService();
+            $coinService->addCoins(
+                $user,
+                $deposit->coins,
+                \App\Models\CoinHistory::TYPE_BANK_DEPOSIT,
+                "Nạp chuyển khoản thành công - Số tiền: " . number_format($deposit->amount) . " VND",
+                $deposit
+            );
 
             DB::commit();
 

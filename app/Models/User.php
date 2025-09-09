@@ -222,11 +222,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Get coin transactions for this user
+     * Get coin transactions for this user (admin managed)
      */
     public function coinTransactions()
     {
         return $this->hasMany(CoinTransaction::class);
+    }
+
+    /**
+     * Get coin history for this user (automatic transactions)
+     */
+    public function coinHistories()
+    {
+        return $this->hasMany(CoinHistory::class);
     }
 
     /**

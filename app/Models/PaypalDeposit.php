@@ -152,8 +152,15 @@ class PaypalDeposit extends Model
             'processed_at' => now()
         ]);
 
-        // Add coins to user
-        $this->user->increment('coins', $this->coins);
+        // Add coins to user using CoinService
+        $coinService = new \App\Services\CoinService();
+        $coinService->addCoins(
+            $this->user,
+            $this->coins,
+            \App\Models\CoinHistory::TYPE_PAYPAL_DEPOSIT,
+            "Nạp PayPal thành công - Số tiền: {$this->usd_amount} USD",
+            $this
+        );
 
         return true;
     }

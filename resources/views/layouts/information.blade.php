@@ -149,6 +149,14 @@
                             </div>
                         @endif
 
+                        <div class="user-nav-item">
+                            <a href="{{ route('user.coin-history') }}"
+                                class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.coin-history') ? 'active' : '' }}">
+                                <i class="fa-solid fa-history user-nav-icon"></i>
+                                <span class="user-nav-text">Lịch sử xu</span>
+                            </a>
+                        </div>
+
                         <div class="user-nav-item user-nav-logout">
                             <a href="{{ route('logout') }}" class="user-nav-link text-danger text-decoration-none">
                                 <i class="fa-solid fa-arrow-right-from-bracket user-nav-icon"></i>
