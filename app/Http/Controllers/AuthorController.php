@@ -733,11 +733,23 @@ class AuthorController extends Controller
     // Hàm phân tích nội dung batch để tách thành các chương
     private function parseChaptersFromBatchContent($batchContent)
     {
+        $batchContent = trim($batchContent);
+        if (empty($batchContent)) {
+            return [];
+        }
+
+        $batchContent = strip_tags($batchContent);
+        
+        $batchContent = html_entity_decode($batchContent, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        
+        $batchContent = preg_replace('/\r\n|\r/', "\n", $batchContent);
+        
         // Updated pattern to handle all variations:
         // 1. "Chương X: Title" (with colon, no space)
         // 2. "Chương X" (without title)
         // 3. Multiple blank lines between chapters
-        $pattern = '/Chương\s+(\d+)(?:\s*:\s*([^\r\n]*))?[\r\n]+([\s\S]*?)(?=[\r\n]+Chương\s+\d+|\z)/';
+        // 4. Spaces before "Chương"
+        $pattern = '/\s*Chương\s+(\d+)(?:\s*:\s*([^\r\n]*))?[\r\n]+([\s\S]*?)(?=[\r\n]+\s*Chương\s+\d+|\z)/';
 
         preg_match_all($pattern, $batchContent, $matches, PREG_SET_ORDER);
 
@@ -759,6 +771,28 @@ class AuthorController extends Controller
         }
 
         return $chapters;
+    }
+
+    // Function tạo slug unique cho chương
+    private function generateUniqueSlug($storyId, $chapterNumber, $title, $existingSlugs = [])
+    {
+        $baseSlug = 'chuong-' . $chapterNumber . '-' . Str::slug(Str::limit($title, 100));
+        $slug = $baseSlug;
+        $counter = 1;
+
+        // Kiểm tra trùng với existing slugs
+        while (in_array($slug, $existingSlugs)) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        // Kiểm tra trùng với database
+        while (Chapter::where('story_id', $storyId)->where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter;
+            $counter++;
+        }
+
+        return $slug;
     }
 
     // Xử lý lưu nhiều chương cùng lúc
@@ -809,25 +843,18 @@ class AuthorController extends Controller
 
         $errors = [
             'number' => [],
-            'slug' => [],
         ];
 
+        // Chỉ kiểm tra trùng số chương, không kiểm tra trùng tiêu đề
         foreach ($chapters as $chapter) {
-            $slug = 'chuong-' . $chapter['number'] . '-' . Str::slug(Str::limit($chapter['title'], 100));
-
             if (in_array($chapter['number'], $existingNumbers)) {
                 $errors['number'][] = "Chương {$chapter['number']}";
             }
-
-            if (in_array($slug, $existingSlugs)) {
-                $errors['slug'][] = "Chương {$chapter['number']} ({$chapter['title']})";
-            }
         }
 
-        if (!empty($errors['number']) || !empty($errors['slug'])) {
+        if (!empty($errors['number'])) {
             $msg = "Phát hiện chương bị trùng lặp:";
             if ($errors['number']) $msg .= " Trùng số chương: " . implode(', ', $errors['number']) . ".";
-            if ($errors['slug'])   $msg .= " Trùng slug: " . implode(', ', $errors['slug']) . ".";
             return back()->with('error', $msg . ' Vui lòng chỉnh sửa và thử lại.')->withInput();
         }
 
@@ -859,7 +886,7 @@ class AuthorController extends Controller
             }
 
             foreach ($chapters as $index => $chapter) {
-                $slug = 'chuong-' . $chapter['number'] . '-' . Str::slug(Str::limit($chapter['title'], 100));
+                $slug = $this->generateUniqueSlug($story->id, $chapter['number'], $chapter['title'], $existingSlugs);
 
                 $scheduleDate = null;
                 $chapterStatus = $request->status;
@@ -1732,7 +1759,6 @@ class AuthorController extends Controller
         }
 
         $chapterNumbers = $request->input('chapter_numbers', []);
-        $chapterTitles = $request->input('chapter_titles', []);
 
         // Check for duplicate chapter numbers
         $duplicateNumbers = Chapter::where('story_id', $story->id)
@@ -1740,22 +1766,9 @@ class AuthorController extends Controller
             ->pluck('number')
             ->toArray();
 
-        // Check for duplicate titles (by slug)
-        $duplicateTitles = [];
-        foreach ($chapterTitles as $title) {
-            $slug = Str::slug($title);
-            $exists = Chapter::where('story_id', $story->id)
-                ->where('slug', $slug)
-                ->exists();
-
-            if ($exists) {
-                $duplicateTitles[] = $title;
-            }
-        }
-
         return response()->json([
             'duplicate_numbers' => $duplicateNumbers,
-            'duplicate_titles' => $duplicateTitles
+            'duplicate_titles' => [] // Không kiểm tra trùng tiêu đề nữa
         ]);
     }
 
