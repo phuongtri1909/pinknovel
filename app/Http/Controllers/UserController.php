@@ -40,12 +40,19 @@ class UserController extends Controller
             abort(404);
         }
 
-        // Get financial statistics
+        // Get financial statistics - optimized to avoid N+1 queries
         $stats = [
             'total_deposits' => $user->total_deposits,
             'total_spent' => $user->total_chapter_spending + $user->total_story_spending,
             'balance' => $user->coins,
+            'total_withdrawn' => $user->withdrawalRequests()->where('status', 'approved')->sum('coins'),
             'author_revenue' => $user->role === 'author' ? $user->author_revenue : 0,
+            'author_story_revenue' => $user->role === 'author' ? \App\Models\StoryPurchase::whereHas('story', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->sum('amount_received') : 0,
+            'author_chapter_revenue' => $user->role === 'author' ? \App\Models\ChapterPurchase::whereHas('chapter.story', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->sum('amount_received') : 0,
         ];
 
         // Get deposits with pagination
@@ -53,6 +60,16 @@ class UserController extends Controller
             ->with('bank')
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'deposits_page');
+
+        // Get PayPal deposits with pagination
+        $paypalDeposits = $user->paypalDeposits()
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'paypal_deposits_page');
+
+        // Get card deposits with pagination
+        $cardDeposits = $user->cardDeposits()
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'card_deposits_page');
 
         // Get chapter purchases with pagination
         $chapterPurchases = $user->chapterPurchases()
@@ -78,23 +95,89 @@ class UserController extends Controller
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'coin_page');
 
-        // Count totals for tabs
-        $counts = [
-            'deposits' => $user->deposits()->count(),
-            'chapter_purchases' => $user->chapterPurchases()->count(),
-            'story_purchases' => $user->storyPurchases()->count(),
-            'bookmarks' => $user->bookmarks()->count(),
-            'coin_transactions' => $user->coinTransactions()->count(),
-        ];
+        // Get user daily tasks with pagination
+        $userDailyTasks = $user->userDailyTasks()
+            ->with('dailyTask')
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'daily_tasks_page');
+
+        // Get withdrawal requests with pagination
+        $withdrawalRequests = $user->withdrawalRequests()
+            ->with('processedBy')
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'withdrawals_page');
+
+        // Get author earnings (if user is author)
+        $authorChapterEarnings = collect();
+        $authorStoryEarnings = collect();
+        
+        if ($user->role === 'author') {
+            // Get chapter earnings
+            $authorChapterEarnings = \App\Models\ChapterPurchase::whereHas('chapter.story', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['chapter.story', 'user'])
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'author_chapter_earnings_page');
+
+            // Get story earnings
+            $authorStoryEarnings = \App\Models\StoryPurchase::whereHas('story', function($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })
+            ->with(['story', 'user'])
+            ->orderByDesc('created_at')
+            ->paginate(5, ['*'], 'author_story_earnings_page');
+        }
+
+        // Get coin history with pagination
+        $coinHistories = $user->coinHistories()
+            ->orderByDesc('created_at')
+            ->paginate(10, ['*'], 'coin_histories_page');
+
+        // Count totals for tabs - optimized to avoid N+1 queries
+        // Use single query with selectRaw to get all counts at once
+        $counts = DB::select("
+            SELECT 
+                (SELECT COUNT(*) FROM deposits WHERE user_id = ?) as deposits,
+                (SELECT COUNT(*) FROM paypal_deposits WHERE user_id = ?) as paypal_deposits,
+                (SELECT COUNT(*) FROM card_deposits WHERE user_id = ?) as card_deposits,
+                (SELECT COUNT(*) FROM chapter_purchases WHERE user_id = ?) as chapter_purchases,
+                (SELECT COUNT(*) FROM story_purchases WHERE user_id = ?) as story_purchases,
+                (SELECT COUNT(*) FROM bookmarks WHERE user_id = ?) as bookmarks,
+                (SELECT COUNT(*) FROM coin_transactions WHERE user_id = ?) as coin_transactions,
+                (SELECT COUNT(*) FROM user_daily_tasks WHERE user_id = ?) as user_daily_tasks,
+                (SELECT COUNT(*) FROM withdrawal_requests WHERE user_id = ?) as withdrawal_requests,
+                (SELECT COUNT(*) FROM coin_histories WHERE user_id = ?) as coin_histories,
+                (SELECT COUNT(*) FROM chapter_purchases cp 
+                 JOIN chapters c ON cp.chapter_id = c.id 
+                 JOIN stories s ON c.story_id = s.id 
+                 WHERE s.user_id = ?) as author_chapter_earnings,
+                (SELECT COUNT(*) FROM story_purchases sp 
+                 JOIN stories s ON sp.story_id = s.id 
+                 WHERE s.user_id = ?) as author_story_earnings
+        ", [
+            $user->id, $user->id, $user->id, $user->id, $user->id, 
+            $user->id, $user->id, $user->id, $user->id, $user->id,
+            $user->id, $user->id
+        ])[0];
+
+        $counts = (array) $counts;
 
         return view('admin.pages.users.show', compact(
             'user',
             'stats',
             'deposits',
+            'paypalDeposits',
+            'cardDeposits',
             'chapterPurchases',
             'storyPurchases',
             'bookmarks',
             'coinTransactions',
+            'userDailyTasks',
+            'withdrawalRequests',
+            'authorChapterEarnings',
+            'authorStoryEarnings',
+            'coinHistories',
             'counts'
         ));
     }
@@ -735,6 +818,16 @@ class UserController extends Controller
                     ->orderByDesc('created_at')
                     ->paginate(5, ['*'], 'deposits_page', $page);
                 break;
+            case 'paypal-deposits':
+                $data = $user->paypalDeposits()
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'paypal_deposits_page', $page);
+                break;
+            case 'card-deposits':
+                $data = $user->cardDeposits()
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'card_deposits_page', $page);
+                break;
             case 'story-purchases':
                 $data = $user->storyPurchases()
                     ->with(['story'])
@@ -758,6 +851,39 @@ class UserController extends Controller
                     ->with('admin')
                     ->orderByDesc('created_at')
                     ->paginate(5, ['*'], 'coin_page', $page);
+                break;
+            case 'user-daily-tasks':
+                $data = $user->userDailyTasks()
+                    ->with('dailyTask')
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'daily_tasks_page', $page);
+                break;
+            case 'withdrawal-requests':
+                $data = $user->withdrawalRequests()
+                    ->with('processedBy')
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'withdrawals_page', $page);
+                break;
+            case 'author-chapter-earnings':
+                $data = \App\Models\ChapterPurchase::whereHas('chapter.story', function($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->with(['chapter.story', 'user'])
+                ->orderByDesc('created_at')
+                ->paginate(5, ['*'], 'author_chapter_earnings_page', $page);
+                break;
+            case 'author-story-earnings':
+                $data = \App\Models\StoryPurchase::whereHas('story', function($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->with(['story', 'user'])
+                ->orderByDesc('created_at')
+                ->paginate(5, ['*'], 'author_story_earnings_page', $page);
+                break;
+            case 'coin-histories':
+                $data = $user->coinHistories()
+                    ->orderByDesc('created_at')
+                    ->paginate(10, ['*'], 'coin_histories_page', $page);
                 break;
             default:
                 return response()->json(['error' => 'Invalid type'], 400);

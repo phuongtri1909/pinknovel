@@ -130,7 +130,7 @@
                     </div>
                     
                     <!-- Financial Statistics -->
-                    <div class="row mt-4">
+                    <div class="row mt-4 g-3">
                         <div class="col-12">
                             <h5 class="mb-3">Thống kê tài chính</h5>
                         </div>
@@ -179,6 +179,21 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="col-md-3">
+                            <div class="card stats-card bg-gradient-secondary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="text-white mb-0">{{ number_format($stats['total_withdrawn']) }}</h5>
+                                            <p class="mb-0 text-sm">Tổng xu đã rút</p>
+                                        </div>
+                                        <div class="icon-shape bg-white text-center rounded-circle shadow">
+                                            <i class="fas fa-money-bill-wave text-secondary"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         @if($user->role === 'author')
                         <div class="col-md-3">
                             <div class="card stats-card bg-gradient-warning text-white">
@@ -186,7 +201,11 @@
                                     <div class="d-flex justify-content-between">
                                         <div>
                                             <h5 class="text-white mb-0">{{ number_format($stats['author_revenue']) }}</h5>
-                                            <p class="mb-0 text-sm">Doanh thu tác giả</p>
+                                            <p class="mb-0 text-sm">Doanh thu</p>
+                                            <small class="text-white-50">
+                                                T: {{ number_format($stats['author_story_revenue']) }} | 
+                                                C: {{ number_format($stats['author_chapter_revenue']) }}
+                                            </small>
                                         </div>
                                         <div class="icon-shape bg-white text-center rounded-circle shadow">
                                             <i class="fas fa-hand-holding-usd text-warning"></i>
@@ -202,8 +221,20 @@
                     <ul class="nav nav-tabs mt-4" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" data-bs-toggle="tab" href="#deposits" role="tab">
-                                <i class="fas fa-wallet me-1"></i> Nạp xu
+                                <i class="fas fa-wallet me-1"></i> Nạp xu (Bank)
                                 <span class="badge bg-primary rounded-pill">{{ $counts['deposits'] }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#paypal-deposits" role="tab">
+                                <i class="fab fa-paypal me-1"></i> Nạp PayPal
+                                <span class="badge bg-primary rounded-pill">{{ $counts['paypal_deposits'] }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#card-deposits" role="tab">
+                                <i class="fas fa-credit-card me-1"></i> Nạp thẻ
+                                <span class="badge bg-primary rounded-pill">{{ $counts['card_deposits'] }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -218,6 +249,20 @@
                                 <span class="badge bg-primary rounded-pill">{{ $counts['chapter_purchases'] }}</span>
                             </a>
                         </li>
+                        @if($user->role === 'author')
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#author-chapter-earnings" role="tab">
+                                <i class="fas fa-hand-holding-usd me-1"></i> Thu nhập chương
+                                <span class="badge bg-success rounded-pill">{{ $counts['author_chapter_earnings'] }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#author-story-earnings" role="tab">
+                                <i class="fas fa-coins me-1"></i> Thu nhập truyện
+                                <span class="badge bg-success rounded-pill">{{ $counts['author_story_earnings'] }}</span>
+                            </a>
+                        </li>
+                        @endif
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#bookmarks" role="tab">
                                 <i class="fas fa-bookmark me-1"></i> Theo dõi
@@ -225,9 +270,27 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#user-daily-tasks" role="tab">
+                                <i class="fas fa-tasks me-1"></i> Nhiệm vụ
+                                <span class="badge bg-primary rounded-pill">{{ $counts['user_daily_tasks'] }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#withdrawal-requests" role="tab">
+                                <i class="fas fa-money-bill-wave me-1"></i> Rút tiền
+                                <span class="badge bg-primary rounded-pill">{{ $counts['withdrawal_requests'] }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#coin-transactions" role="tab">
                                 <i class="fas fa-coins me-1"></i> Cộng/Trừ xu
                                 <span class="badge bg-primary rounded-pill">{{ $counts['coin_transactions'] }}</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#coin-history" role="tab">
+                                <i class="fas fa-history me-1"></i> Lịch sử xu
+                                <span class="badge bg-info rounded-pill">{{ $counts['coin_histories'] ?? 0 }}</span>
                             </a>
                         </li>
                     </ul>
@@ -283,6 +346,102 @@
                                     </div>
                                     <div class="text-center mt-3">
                                         <button class="btn btn-sm btn-primary load-more" data-type="deposits">
+                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <!-- PayPal Deposits Tab -->
+                        <div class="tab-pane" id="paypal-deposits" role="tabpanel">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Mã giao dịch</th>
+                                            <th>Số tiền USD</th>
+                                            <th>Số xu</th>
+                                            <th>Trạng thái</th>
+                                            <th>Ngày nạp</th>
+                                            <th>Ngày duyệt</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($paypalDeposits as $deposit)
+                                            <tr>
+                                                <td>{{ $deposit->id }}</td>
+                                                <td>{{ $deposit->transaction_code }}</td>
+                                                <td>{{ $deposit->usd_amount_formatted }}</td>
+                                                <td>{{ $deposit->coins_formatted }}</td>
+                                                <td>
+                                                    <span class="badge {{ $deposit->status_badge }}">{{ $deposit->status_text }}</span>
+                                                </td>
+                                                <td>{{ $deposit->created_at->format('d/m/Y H:i') }}</td>
+                                                <td>{{ $deposit->processed_at ? $deposit->processed_at->format('d/m/Y H:i') : 'N/A' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center">Chưa có giao dịch nạp PayPal</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                @if($counts['paypal_deposits'] > 5)
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <x-pagination :paginator="$paypalDeposits" />
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn btn-sm btn-primary load-more" data-type="paypal-deposits">
+                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <!-- Card Deposits Tab -->
+                        <div class="tab-pane" id="card-deposits" role="tabpanel">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Loại thẻ</th>
+                                            <th>Serial</th>
+                                            <th>Mệnh giá</th>
+                                            <th>Số xu</th>
+                                            <th>Trạng thái</th>
+                                            <th>Ngày nạp</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($cardDeposits as $deposit)
+                                            <tr>
+                                                <td>{{ $deposit->id }}</td>
+                                                <td>{{ $deposit->card_type_name }}</td>
+                                                <td>{{ $deposit->serial }}</td>
+                                                <td>{{ $deposit->amount_formatted }}</td>
+                                                <td>{{ $deposit->coins_formatted }}</td>
+                                                <td>
+                                                    <span class="badge {{ $deposit->status_badge }}">{{ $deposit->status_text }}</span>
+                                                </td>
+                                                <td>{{ $deposit->created_at->format('d/m/Y H:i') }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center">Chưa có giao dịch nạp thẻ</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                @if($counts['card_deposits'] > 5)
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <x-pagination :paginator="$cardDeposits" />
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn btn-sm btn-primary load-more" data-type="card-deposits">
                                             Xem thêm <i class="fas fa-chevron-down ms-1"></i>
                                         </button>
                                     </div>
@@ -380,6 +539,102 @@
                             </div>
                         </div>
                         
+                        @if($user->role === 'author')
+                        <!-- Author Chapter Earnings Tab -->
+                        <div class="tab-pane" id="author-chapter-earnings" role="tabpanel">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Người mua</th>
+                                            <th>Truyện</th>
+                                            <th>Chương</th>
+                                            <th>Số xu nhận</th>
+                                            <th>Ngày mua</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($authorChapterEarnings as $earning)
+                                            <tr>
+                                                <td>{{ $earning->id }}</td>
+                                                <td>{{ $earning->user->name }}</td>
+                                                <td>
+                                                    <a href="{{ route('stories.show', $earning->chapter->story_id) }}">
+                                                        {{ $earning->chapter->story->title ?? 'Không xác định' }}
+                                                    </a>
+                                                </td>
+                                                <td>Chương {{ $earning->chapter->number }}: {{ Str::limit($earning->chapter->title, 30) }}</td>
+                                                <td class="text-success fw-bold">+{{ number_format($earning->amount_received) }} xu</td>
+                                                <td>{{ $earning->created_at->format('d/m/Y H:i') }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="6" class="text-center">Chưa có thu nhập từ chương</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                @if($counts['author_chapter_earnings'] > 5)
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <x-pagination :paginator="$authorChapterEarnings" />
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn btn-sm btn-primary load-more" data-type="author-chapter-earnings">
+                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <!-- Author Story Earnings Tab -->
+                        <div class="tab-pane" id="author-story-earnings" role="tabpanel">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Người mua</th>
+                                            <th>Truyện</th>
+                                            <th>Số xu nhận</th>
+                                            <th>Ngày mua</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($authorStoryEarnings as $earning)
+                                            <tr>
+                                                <td>{{ $earning->id }}</td>
+                                                <td>{{ $earning->user->name }}</td>
+                                                <td>
+                                                    <a href="{{ route('stories.show', $earning->story_id) }}">
+                                                        {{ $earning->story->title ?? 'Không xác định' }}
+                                                    </a>
+                                                </td>
+                                                <td class="text-success fw-bold">+{{ number_format($earning->amount_received) }} xu</td>
+                                                <td>{{ $earning->created_at->format('d/m/Y H:i') }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center">Chưa có thu nhập từ truyện</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                @if($counts['author_story_earnings'] > 5)
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <x-pagination :paginator="$authorStoryEarnings" />
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn btn-sm btn-primary load-more" data-type="author-story-earnings">
+                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+                        
                         <!-- Bookmarks Tab -->
                         <div class="tab-pane" id="bookmarks" role="tabpanel">
                             <div class="table-responsive mt-3">
@@ -440,6 +695,102 @@
                             </div>
                         </div>
                         
+                        <!-- User Daily Tasks Tab -->
+                        <div class="tab-pane" id="user-daily-tasks" role="tabpanel">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nhiệm vụ</th>
+                                            <th>Ngày thực hiện</th>
+                                            <th>Số lần hoàn thành</th>
+                                            <th>Lần cuối</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($userDailyTasks as $task)
+                                            <tr>
+                                                <td>{{ $task->id }}</td>
+                                                <td>{{ $task->dailyTask->name ?? 'N/A' }}</td>
+                                                <td>{{ $task->task_date->format('d/m/Y') }}</td>
+                                                <td>{{ $task->completed_count }}</td>
+                                                <td>{{ $task->last_completed_at ? $task->last_completed_at->format('d/m/Y H:i') : 'N/A' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="5" class="text-center">Chưa có nhiệm vụ nào</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                @if($counts['user_daily_tasks'] > 5)
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <x-pagination :paginator="$userDailyTasks" />
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn btn-sm btn-primary load-more" data-type="user-daily-tasks">
+                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <!-- Withdrawal Requests Tab -->
+                        <div class="tab-pane" id="withdrawal-requests" role="tabpanel">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Số xu</th>
+                                            <th>Phí</th>
+                                            <th>Số tiền thực nhận</th>
+                                            <th>Trạng thái</th>
+                                            <th>Ngày yêu cầu</th>
+                                            <th>Ngày xử lý</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($withdrawalRequests as $request)
+                                            <tr>
+                                                <td>{{ $request->id }}</td>
+                                                <td>{{ number_format($request->coins) }} xu</td>
+                                                <td>{{ number_format($request->fee) }} xu</td>
+                                                <td>{{ number_format($request->net_amount) }} xu</td>
+                                                <td>
+                                                    @if($request->status === 'pending')
+                                                        <span class="badge bg-warning">Chờ duyệt</span>
+                                                    @elseif($request->status === 'approved')
+                                                        <span class="badge bg-success">Đã duyệt</span>
+                                                    @elseif($request->status === 'rejected')
+                                                        <span class="badge bg-danger">Từ chối</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ $request->created_at->format('d/m/Y H:i') }}</td>
+                                                <td>{{ $request->processed_at ? $request->processed_at->format('d/m/Y H:i') : 'N/A' }}</td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center">Chưa có yêu cầu rút tiền</td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                @if($counts['withdrawal_requests'] > 5)
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <x-pagination :paginator="$withdrawalRequests" />
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn btn-sm btn-primary load-more" data-type="withdrawal-requests">
+                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        
                         <!-- Coin Transactions Tab -->
                         <div class="tab-pane" id="coin-transactions" role="tabpanel">
                             <div class="d-flex justify-content-end mt-3">
@@ -488,6 +839,87 @@
                                     </div>
                                     <div class="text-center mt-3">
                                         <button class="btn btn-sm btn-primary load-more" data-type="coin-transactions">
+                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
+                                        </button>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        
+                        <!-- Coin History Tab -->
+                        <div class="tab-pane" id="coin-history" role="tabpanel">
+                            <div class="table-responsive mt-3">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Thời gian</th>
+                                            <th>Loại giao dịch</th>
+                                            <th>Mô tả</th>
+                                            <th>Số xu</th>
+                                            <th>Số dư trước</th>
+                                            <th>Số dư sau</th>
+                                            <th>IP</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @forelse($coinHistories as $history)
+                                            <tr>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span>{{ $history->created_at->format('d/m/Y') }}</span>
+                                                        <small class="text-muted">{{ $history->created_at->format('H:i:s') }}</small>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="badge bg-{{ $history->type == 'add' ? 'success' : 'danger' }}">
+                                                        {{ $history->transaction_type_label }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex flex-column">
+                                                        <span>{{ $history->description }}</span>
+                                                        @if($history->reference)
+                                                            <small class="text-muted">
+                                                                Tham chiếu: {{ class_basename($history->reference_type) }} #{{ $history->reference_id }}
+                                                            </small>
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold text-{{ $history->type == 'add' ? 'success' : 'danger' }}">
+                                                        {{ $history->formatted_amount }} xu
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold">{{ number_format($history->balance_before) }} xu</span>
+                                                </td>
+                                                <td>
+                                                    <span class="fw-bold">{{ number_format($history->balance_after) }} xu</span>
+                                                </td>
+                                                <td>
+                                                    <small class="text-muted">{{ $history->ip_address }}</small>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr>
+                                                <td colspan="7" class="text-center py-4">
+                                                    <div class="text-muted">
+                                                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                                                        <p>Chưa có lịch sử xu nào</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        @endforelse
+                                    </tbody>
+                                </table>
+                                
+                                <!-- Pagination -->
+                                @if($coinHistories->hasPages())
+                                    <div class="d-flex justify-content-center mt-4">
+                                        {{ $coinHistories->links('components.pagination') }}
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn btn-sm btn-primary load-more" data-type="coin-histories">
                                             Xem thêm <i class="fas fa-chevron-down ms-1"></i>
                                         </button>
                                     </div>

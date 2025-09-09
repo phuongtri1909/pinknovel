@@ -611,7 +611,7 @@ class AuthorController extends Controller
                 'updated_at',
                 'scheduled_publish_at'
             ])
-            ->orderBy('number', 'asc')
+            ->orderBy('number', 'desc')
             ->paginate(20);
 
         return view('pages.information.author.author_chapters', compact('story', 'chapters'));

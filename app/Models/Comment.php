@@ -48,6 +48,11 @@ class Comment extends Model
 
     public function replies()
     {
+        return $this->hasMany(Comment::class, 'reply_id')->where('level', '<', 3);
+    }
+    
+    public function approvedReplies()
+    {
         return $this->hasMany(Comment::class, 'reply_id')->where('level', '<', 3)->approved();
     }
 

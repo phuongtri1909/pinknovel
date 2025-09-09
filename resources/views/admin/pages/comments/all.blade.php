@@ -167,10 +167,12 @@
             });
         });
         
-        // Approve comment
-        document.querySelectorAll('.approve-comment-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const commentId = this.dataset.commentId;
+        // Approve comment (works for both main comments and replies)
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.approve-comment-btn')) {
+                e.preventDefault();
+                const button = e.target.closest('.approve-comment-btn');
+                const commentId = button.dataset.commentId;
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
                 
                 if (!csrfToken) {
@@ -206,13 +208,15 @@
                         showToast('Có lỗi xảy ra khi duyệt bình luận: ' + error.message,'error');
                     });
                 }
-            });
+            }
         });
         
-        // Reject comment
-        document.querySelectorAll('.reject-comment-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const commentId = this.dataset.commentId;
+        // Reject comment (works for both main comments and replies)
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.reject-comment-btn')) {
+                e.preventDefault();
+                const button = e.target.closest('.reject-comment-btn');
+                const commentId = button.dataset.commentId;
                 const csrfToken = document.querySelector('meta[name="csrf-token"]');
                 
                 if (!csrfToken) {
@@ -248,7 +252,7 @@
                        showToast('Có lỗi xảy ra khi từ chối bình luận: ' + error.message,'error');
                     });
                 }
-            });
+            }
         });
     });
 

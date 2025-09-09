@@ -64,6 +64,9 @@
                     $userId = request('user');
                     $date = request('date');
                     
+                    // Count pending replies
+                    $pendingReplies = $comment->replies->where('approval_status', 'pending')->count();
+                    
                     if ($search || $userId || $date) {
                         foreach ($comment->replies as $reply) {
                             if ($search && stripos($reply->comment, $search) !== false) {
@@ -86,6 +89,9 @@
                 <button class="btn btn-link btn-sm p-0 toggle-replies" data-comment-id="{{ $comment->id }}">
                     <i class="fa-solid fa-chevron-{{ $hasMatchingReply ? 'up' : 'down' }} me-1"></i>
                     {{ $hasMatchingReply ? 'Ẩn trả lời' : 'Xem trả lời' }} ({{ $comment->replies->count() }})
+                    @if($pendingReplies > 0)
+                        <span class="badge bg-warning text-dark ms-1">{{ $pendingReplies }} chờ duyệt</span>
+                    @endif
                 </button>
             @endif
         </div>

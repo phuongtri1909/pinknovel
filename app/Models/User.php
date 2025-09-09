@@ -260,4 +260,28 @@ class User extends Authenticatable
     {
         return $this->hasMany(WithdrawalRequest::class, 'processed_by');
     }
+
+    /**
+     * Get PayPal deposits made by this user
+     */
+    public function paypalDeposits()
+    {
+        return $this->hasMany(PaypalDeposit::class);
+    }
+
+    /**
+     * Get card deposits made by this user
+     */
+    public function cardDeposits()
+    {
+        return $this->hasMany(CardDeposit::class);
+    }
+
+    /**
+     * Get user daily tasks
+     */
+    public function userDailyTasks()
+    {
+        return $this->hasMany(UserDailyTask::class);
+    }
 }

@@ -88,16 +88,16 @@
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->id }}</p>
                                         </td>
                                         <td>
-                                            <div class="d-flex">
+                                            <a href="{{ route('users.show', $deposit->user->id) }}" class="d-flex">
                                                 <div>
-                                                    <img src="{{ $deposit->user->avatar ? asset('storage/' . $deposit->user->avatar) : asset('assets/img/default-avatar.png') }}"
+                                                    <img src="{{ $deposit->user->avatar ? asset('storage/' . $deposit->user->avatar) : asset('assets/images/avatar_default.jpg') }}"
                                                          class="avatar avatar-sm me-2" alt="user image">
                                                 </div>
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-xs">{{ $deposit->user->name }}</h6>
                                                     <p class="text-xs  mb-0">{{ $deposit->user->email }}</p>
                                                 </div>
-                                            </div>
+                                            </a>
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->bank->name }}</p>

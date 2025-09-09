@@ -253,7 +253,14 @@
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-comments text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Quản lý Bình luận</span>
+                    <span class="nav-link-text ms-1">Quản lý Bình luận
+                        @php
+                            $pendingCommentsCount = \App\Models\Comment::where('approval_status', 'pending')->count();
+                        @endphp
+                        @if ($pendingCommentsCount > 0)
+                            <span class="badge bg-danger ms-2">{{ $pendingCommentsCount }}</span>
+                        @endif
+                    </span>
                 </a>
             </li>
 

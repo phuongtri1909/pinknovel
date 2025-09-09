@@ -123,9 +123,9 @@
             </div>
         </div>
 
-        @if ($comment->replies && $comment->replies->count() > 0)
+        @if ($comment->approvedReplies && $comment->approvedReplies->count() > 0)
             <ul class="comments mt-3">
-                @foreach ($comment->replies as $reply)
+                @foreach ($comment->approvedReplies as $reply)
                     @include('components.comments-item', ['comment' => $reply])
                 @endforeach
             </ul>

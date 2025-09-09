@@ -1127,7 +1127,7 @@ class HomeController extends Controller
             ];
         });
 
-        $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+        $pinnedComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
             ->where('is_pinned', true)
@@ -1135,11 +1135,11 @@ class HomeController extends Controller
             ->latest('pinned_at')
             ->get();
 
-        $regularComments = Comment::with(['user', 'replies.user', 'reactions'])
+        $regularComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
-            ->approved() 
+            ->approved()
             ->latest()
             ->paginate(10);
 
@@ -1403,7 +1403,7 @@ class HomeController extends Controller
         }
 
         // Get comments
-        $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+        $pinnedComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
             ->where('is_pinned', true)
@@ -1411,7 +1411,7 @@ class HomeController extends Controller
             ->latest('pinned_at')
             ->get();
 
-        $regularComments = Comment::with(['user', 'replies.user', 'reactions'])
+        $regularComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
