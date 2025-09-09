@@ -14,7 +14,7 @@
             @foreach ($categories as $index => $category)
                 <a href="{{ route('categories.story.show', $category->slug) }}"
                     class="category-item rounded-4 {{ isset($currentCategory) && $currentCategory->id == $category->id ? 'active' : '' }} {{ $index >= 8 ? 'category-hidden' : '' }}">
-                    <span class="category-name">{{ $category->name }}</span>
+                    <span class="category-name">{{ ucwords($category->name) }}</span>
                 </a>
             @endforeach
         </div>
