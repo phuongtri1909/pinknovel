@@ -18,11 +18,15 @@ class Comment extends Model
         'is_pinned',
         'pinned_at',
         'story_id',
+        'approval_status',
+        'approved_at',
+        'approved_by',
     ];
 
     protected $casts = [
         'is_pinned' => 'boolean',
         'pinned_at' => 'datetime',
+        'approved_at' => 'datetime',
     ];
 
     public function user()
@@ -44,7 +48,7 @@ class Comment extends Model
 
     public function replies()
     {
-        return $this->hasMany(Comment::class, 'reply_id')->where('level', '<', 3);
+        return $this->hasMany(Comment::class, 'reply_id')->where('level', '<', 3)->approved();
     }
 
     public function parent()
@@ -76,5 +80,26 @@ class Comment extends Model
     public function story()
     {
         return $this->belongsTo(Story::class);
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    // Add scope for approved comments
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('approval_status', 'pending');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('approval_status', 'rejected');
     }
 }

@@ -1131,6 +1131,7 @@ class HomeController extends Controller
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
             ->where('is_pinned', true)
+            ->approved()
             ->latest('pinned_at')
             ->get();
 
@@ -1138,6 +1139,7 @@ class HomeController extends Controller
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
+            ->approved() 
             ->latest()
             ->paginate(10);
 
@@ -1405,6 +1407,7 @@ class HomeController extends Controller
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
             ->where('is_pinned', true)
+            ->approved()
             ->latest('pinned_at')
             ->get();
 
@@ -1412,6 +1415,7 @@ class HomeController extends Controller
             ->where('story_id', $story->id)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
+            ->approved()
             ->latest()
             ->paginate(10);
 

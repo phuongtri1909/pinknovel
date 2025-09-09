@@ -115,10 +115,6 @@
                                         $('#comments-list').prepend(res.pinnedComments);
                                     }
                                     
-                                    // Add the new comment with animation to the regular comments container
-                                    const newComment = $(res.html).hide();
-                                    $('.regular-comments-container').prepend(newComment);
-                                    newComment.slideDown(300);
                                     
                                     showToast(res.message, 'success');
                                 }
@@ -264,21 +260,27 @@
                             },
                             success: function(res) {
                                 if (res.status === 'success') {
-                                    let replyContainer = btn.closest('.post-comments').find(
-                                        'ul.comments');
-
-                                    // Create replies container if it doesn't exist
-                                    if (replyContainer.length === 0) {
-                                        btn.closest('.post-comments').append(
-                                            '<ul class="comments mt-3"></ul>');
-                                        replyContainer = btn.closest('.post-comments').find(
+                                    // Only show reply if it's approved (has HTML)
+                                    if (res.html) {
+                                        let replyContainer = btn.closest('.post-comments').find(
                                             'ul.comments');
-                                    }
 
-                                    // Add with animation
-                                    const newReply = $(res.html).hide();
-                                    replyContainer.append(newReply);
-                                    newReply.slideDown(300);
+                                        // Create replies container if it doesn't exist
+                                        if (replyContainer.length === 0) {
+                                            btn.closest('.post-comments').append(
+                                                '<ul class="comments mt-3"></ul>');
+                                            replyContainer = btn.closest('.post-comments').find(
+                                                'ul.comments');
+                                        }
+
+                                        // Add with animation
+                                        const newReply = $(res.html).hide();
+                                        replyContainer.append(newReply);
+                                        newReply.slideDown(300);
+                                        
+                                        // Bind events to the new reply
+                                        bindCommentEvents();
+                                    }
                                     
                                     btn.closest('.reply-form').slideUp(200, function() {
                                         $(this).remove();
@@ -287,9 +289,6 @@
                                     // Re-enable reply button
                                     btn.closest('.post-comments').find('.reply-btn').show();
                                     showToast(res.message, 'success');
-                                    
-                                    // Bind events to the new reply
-                                    bindCommentEvents();
                                 }
                             },
                             error: function(xhr) {

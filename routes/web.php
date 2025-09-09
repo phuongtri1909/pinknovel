@@ -276,6 +276,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                     Route::delete('comments/{comment}', [CommentController::class, 'destroy'])->name('comments.destroy');
                     Route::get('comments', [CommentController::class, 'allComments'])->name('comments.all');
                     Route::delete('delete-comments/{comment}', [CommentController::class, 'deleteComment'])->name('delete.comments');
+                    Route::post('comments/{comment}/approve', [CommentController::class, 'approve'])->name('comments.approve')->middleware('role.admin.mod');
+                    Route::post('comments/{comment}/reject', [CommentController::class, 'reject'])->name('comments.reject')->middleware('role.admin.mod');
 
                     Route::resource('banners', BannerController::class);
 

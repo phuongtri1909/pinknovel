@@ -166,6 +166,134 @@
                 }
             });
         });
+        
+        // Approve comment
+        document.querySelectorAll('.approve-comment-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.dataset.commentId;
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                
+                if (!csrfToken) {
+                    showToast('Không tìm thấy CSRF token', 'error');
+                    return;
+                }
+                
+                if (confirm('Bạn có chắc chắn muốn duyệt bình luận này?')) {
+                    fetch(`/admin/comments/${commentId}/approve`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            showToast('Đã duyệt bình luận thành công', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast('Có lỗi xảy ra: ' + (data.message || 'Unknown error'),'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Có lỗi xảy ra khi duyệt bình luận: ' + error.message,'error');
+                    });
+                }
+            });
+        });
+        
+        // Reject comment
+        document.querySelectorAll('.reject-comment-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.dataset.commentId;
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                
+                if (!csrfToken) {
+                    showToast('Không tìm thấy CSRF token', 'error');
+                    return;
+                }
+                
+                if (confirm('Bạn có chắc chắn muốn từ chối bình luận này?')) {
+                    fetch(`/admin/comments/${commentId}/reject`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            showToast('Đã từ chối bình luận thành công', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast('Có lỗi xảy ra: ' + (data.message || 'Unknown error'),'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                       showToast('Có lỗi xảy ra khi từ chối bình luận: ' + error.message,'error');
+                    });
+                }
+            });
+        });
     });
+
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        let alertClass = 'alert-success';
+        let icon = '<i class="fas fa-check-circle me-2"></i>';
+
+        if (type === 'error') {
+            alertClass = 'alert-danger';
+            icon = '<i class="fas fa-exclamation-circle me-2"></i>';
+        } else if (type === 'warning') {
+            alertClass = 'alert-warning';
+            icon = '<i class="fas fa-exclamation-triangle me-2"></i>';
+        } else if (type === 'info') {
+            alertClass = 'alert-info';
+            icon = '<i class="fas fa-info-circle me-2"></i>';
+        }
+
+        const toast = `
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 11">
+            <div class="toast show align-items-center ${alertClass} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${icon} ${message}
+                    </div>
+                    <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        </div>
+        `;
+
+        const existingToasts = document.querySelectorAll('.toast.show');
+        existingToasts.forEach(toast => {
+            toast.parentElement.remove();
+        });
+
+        document.body.insertAdjacentHTML('beforeend', toast);
+
+        setTimeout(() => {
+            const toastElement = document.querySelector('.toast.show');
+            if (toastElement) {
+                toastElement.remove();
+            }
+        }, 3000);
+    }
 </script>
 @endpush 

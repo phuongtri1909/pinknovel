@@ -77,6 +77,7 @@ class CommentController extends Controller
             ->where('story_id', $storyId)
             ->whereNull('reply_id')
             ->where('is_pinned', true)
+            ->approved()
             ->latest('pinned_at')
             ->get();
 
@@ -84,6 +85,7 @@ class CommentController extends Controller
             ->where('story_id', $storyId)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
+            ->approved()
             ->latest()
             ->paginate(10);
 
@@ -125,6 +127,7 @@ class CommentController extends Controller
             ->where('story_id', $comment->story_id)
             ->whereNull('reply_id')
             ->where('is_pinned', true)
+            ->approved()
             ->latest('pinned_at')
             ->get();
 
@@ -132,6 +135,7 @@ class CommentController extends Controller
             ->where('story_id', $comment->story_id)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
+            ->approved()
             ->latest()
             ->paginate(10);
 
@@ -172,6 +176,7 @@ class CommentController extends Controller
                         ->where('story_id', $storyId)
                         ->whereNull('reply_id')
                         ->where('is_pinned', true)
+                        ->approved()
                         ->latest('pinned_at')
                         ->get();
                     
@@ -179,6 +184,7 @@ class CommentController extends Controller
                         ->where('story_id', $storyId)
                         ->whereNull('reply_id')
                         ->where('is_pinned', false)
+                        ->approved()
                         ->latest()
                         ->paginate(10);
                     
@@ -214,6 +220,7 @@ class CommentController extends Controller
                         ->where('story_id', $storyId)
                         ->whereNull('reply_id')
                         ->where('is_pinned', true)
+                        ->approved()
                         ->latest('pinned_at')
                         ->get();
                     
@@ -221,6 +228,7 @@ class CommentController extends Controller
                         ->where('story_id', $storyId)
                         ->whereNull('reply_id')
                         ->where('is_pinned', false)
+                        ->approved()
                         ->latest()
                         ->paginate(10);
                     
@@ -330,6 +338,13 @@ class CommentController extends Controller
         }
 
         try {
+            $approvalStatus = 'pending';
+            if ($user->role === 'admin') {
+                $approvalStatus = 'approved';
+            } elseif ($story->user_id === $user->id) {
+                $approvalStatus = 'approved';
+            }
+
             // Create the comment inside a transaction
             $comment = Comment::create([
                 'user_id' => $user->id,
@@ -337,6 +352,9 @@ class CommentController extends Controller
                 'comment' => $validated['comment'],
                 'reply_id' => $validated['reply_id'] ?? null,
                 'level' => $level,
+                'approval_status' => $approvalStatus,
+                'approved_at' => $approvalStatus === 'approved' ? now() : null,
+                'approved_by' => $approvalStatus === 'approved' ? $user->id : null,
             ]);
 
             // Load relations for the view
@@ -354,29 +372,46 @@ class CommentController extends Controller
                 $request
             );
 
-            // Get pinned comments for proper rendering
-            $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
-                ->where('story_id', $validated['story_id'])
-                ->whereNull('reply_id')
-                ->where('is_pinned', true)
-                ->latest('pinned_at')
-                ->get();
+        $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+            ->where('story_id', $validated['story_id'])
+            ->whereNull('reply_id')
+            ->where('is_pinned', true)
+            ->approved()
+            ->latest('pinned_at')
+            ->get();
 
             if (empty($validated['reply_id'])) {
-                // Only return the single comment HTML if it's a reply
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Đã thêm bình luận',
-                    'html' => view('components.comments-item', compact('comment'))->render(),
-                    'isPinned' => false,
-                    'pinnedComments' => $pinnedComments->count() > 0 ? view('components.comments-list', ['pinnedComments' => $pinnedComments])->render() : null
-                ]);
+                if ($approvalStatus === 'approved') {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Đã thêm bình luận',
+                        'html' => view('components.comments-item', compact('comment'))->render(),
+                        'isPinned' => false,
+                        'pinnedComments' => $pinnedComments->count() > 0 ? view('components.comments-list', ['pinnedComments' => $pinnedComments])->render() : null
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Bình luận của bạn đã được gửi và đang chờ duyệt',
+                        'html' => null,
+                        'isPinned' => false,
+                        'pinnedComments' => $pinnedComments->count() > 0 ? view('components.comments-list', ['pinnedComments' => $pinnedComments])->render() : null
+                    ]);
+                }
             } else {
-                return response()->json([
-                    'status' => 'success',
-                    'message' => 'Đã thêm bình luận',
-                    'html' => view('components.comments-item', compact('comment'))->render()
-                ]);
+                if ($approvalStatus === 'approved') {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Đã thêm bình luận',
+                        'html' => view('components.comments-item', compact('comment'))->render()
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 'success',
+                        'message' => 'Bình luận của bạn đã được gửi và đang chờ duyệt',
+                        'html' => null
+                    ]);
+                }
             }
         } catch (\Exception $e) {
             Log::error('Error saving comment: ' . $e->getMessage());
@@ -399,7 +434,7 @@ class CommentController extends Controller
         $date = $request->date;
 
         // Begin with all comments query
-        $query = Comment::with(['user', 'story']);
+        $query = Comment::with(['user', 'story', 'approver']);
 
         // Apply role-based restrictions
         if ($authUser->role === 'mod') {
@@ -467,7 +502,7 @@ class CommentController extends Controller
         // Get top-level comments that either:
         // 1. Match our filters directly, or
         // 2. Have child comments that match our filters
-        $finalQuery = Comment::with(['user', 'story'])
+        $finalQuery = Comment::with(['user', 'story', 'approver'])
             ->with(['replies.user', 'replies.replies.user', 'replies.replies.replies.user'])
             ->whereNull('reply_id');
 
@@ -554,5 +589,51 @@ class CommentController extends Controller
         }
 
         return redirect()->route('comments.all')->with('error', 'Không thể xóa bình luận của Admin');
+    }
+
+    /**
+     * Approve a comment
+     */
+    public function approve($commentId)
+    {
+        $comment = Comment::findOrFail($commentId);
+        
+        if (auth()->user()->role !== 'admin' && auth()->user()->role !== 'mod') {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $comment->update([
+            'approval_status' => 'approved',
+            'approved_at' => now(),
+            'approved_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Đã duyệt bình luận'
+        ]);
+    }
+
+    /**
+     * Reject a comment
+     */
+    public function reject($commentId)
+    {
+        $comment = Comment::findOrFail($commentId);
+        
+        if (auth()->user()->role !== 'admin' && auth()->user()->role !== 'mod') {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $comment->update([
+            'approval_status' => 'rejected',
+            'approved_at' => now(),
+            'approved_by' => auth()->id()
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Đã từ chối bình luận'
+        ]);
     }
 }

@@ -18,6 +18,9 @@
         </div>
         <div class="comment-meta">
             {{ $comment->created_at->format('d/m/Y H:i') }}
+            @if($comment->approved_at && $comment->approver)
+                <br><small class="text-muted">Duyệt bởi: {{ $comment->approver->name }} ({{ $comment->approved_at->format('d/m/Y H:i') }})</small>
+            @endif
         </div>
     </div>
     
@@ -37,6 +40,20 @@
         <div>
             @if($comment->is_pinned)
                 <span class="badge bg-success">Đã ghim</span>
+            @endif
+            
+            @if($comment->approval_status === 'pending')
+                @if($comment->user && $comment->user->role === 'admin')
+                    <span class="badge bg-info">Admin</span>
+                @elseif($comment->story && $comment->story->user_id === $comment->user_id)
+                    <span class="badge bg-primary">Tác giả</span>
+                @else
+                    <span class="badge bg-warning">Chờ duyệt</span>
+                @endif
+            @elseif($comment->approval_status === 'approved')
+                <span class="badge bg-success">Đã duyệt</span>
+            @elseif($comment->approval_status === 'rejected')
+                <span class="badge bg-danger">Đã từ chối</span>
             @endif
             
             @if($comment->replies && $comment->replies->count() > 0)
@@ -73,13 +90,24 @@
             @endif
         </div>
         
-        <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="d-inline">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-link text-danger btn-sm p-0 delete-comment-btn">
-                <i class="fa-solid fa-trash"></i> Xóa
-            </button>
-        </form>
+        <div class="d-flex gap-2">
+            @if($comment->approval_status === 'pending' && $comment->user && $comment->user->role !== 'admin' && $comment->story && $comment->story->user_id !== $comment->user_id)
+                <button class="btn btn-link text-success btn-sm p-0 approve-comment-btn" data-comment-id="{{ $comment->id }}">
+                    <i class="fa-solid fa-check"></i> Duyệt
+                </button>
+                <button class="btn btn-link text-danger btn-sm p-0 reject-comment-btn" data-comment-id="{{ $comment->id }}">
+                    <i class="fa-solid fa-times"></i> Từ chối
+                </button>
+            @endif
+            
+            <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="d-inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-link text-danger btn-sm p-0 delete-comment-btn">
+                    <i class="fa-solid fa-trash"></i> Xóa
+                </button>
+            </form>
+        </div>
     </div>
 </div>
 

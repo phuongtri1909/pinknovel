@@ -58,17 +58,6 @@ class CoinService
             ]);
 
             DB::commit();
-
-            Log::info('Coin transaction processed', [
-                'user_id' => $user->id,
-                'transaction_id' => $transaction->id,
-                'amount' => $amount,
-                'type' => $type,
-                'transaction_type' => $transactionType,
-                'balance_before' => $balanceBefore,
-                'balance_after' => $balanceAfter,
-            ]);
-
             return $transaction;
 
         } catch (\Exception $e) {
