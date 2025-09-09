@@ -10,15 +10,27 @@
     </div>
 
     <div class="widget-content">
-        <div class="category-grid">
-            @foreach ($categories as $category)
+        <div class="category-grid" id="categoryGrid">
+            @foreach ($categories as $index => $category)
                 <a href="{{ route('categories.story.show', $category->slug) }}"
-                    class="category-item rounded-4 {{ isset($currentCategory) && $currentCategory->id == $category->id ? 'active' : '' }}">
+                    class="category-item rounded-4 {{ isset($currentCategory) && $currentCategory->id == $category->id ? 'active' : '' }} {{ $index >= 8 ? 'category-hidden' : '' }}">
                     <span class="category-name">{{ $category->name }}</span>
-
                 </a>
             @endforeach
         </div>
+        
+        @if($categories->count() > 8)
+            <div class="text-center mt-3">
+                <button class="btn btn-outline-primary btn-sm" id="showMoreCategories">
+                    <i class="fas fa-chevron-down me-1"></i>
+                    Xem thêm
+                </button>
+                <button class="btn btn-outline-secondary btn-sm ms-2" id="showLessCategories" style="display: none;">
+                    <i class="fas fa-chevron-up me-1"></i>
+                    Thu lại
+                </button>
+            </div>
+        @endif
     </div>
 </div>
 
@@ -73,6 +85,10 @@
                 color: #007bff;
             }
 
+            .category-hidden {
+                display: none !important;
+            }
+
 
             /* Responsive adjustments */
             @media (max-width: 575px) {
@@ -99,5 +115,37 @@
                 }
             }
         </style>
+    @endpush
+
+    @push('scripts')
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const showMoreBtn = document.getElementById('showMoreCategories');
+                const showLessBtn = document.getElementById('showLessCategories');
+                const hiddenCategories = document.querySelectorAll('.category-hidden');
+                
+                if (showMoreBtn && showLessBtn && hiddenCategories.length > 0) {
+                    showMoreBtn.addEventListener('click', function() {
+                        hiddenCategories.forEach(function(category) {
+                            category.classList.remove('category-hidden');
+                        });
+                        
+                       
+                        showMoreBtn.style.display = 'none';
+                        showLessBtn.style.display = 'inline-block';
+                    });
+                   
+                    showLessBtn.addEventListener('click', function() {
+                        // Hide categories again
+                        hiddenCategories.forEach(function(category) {
+                            category.classList.add('category-hidden');
+                        });
+                        
+                        showLessBtn.style.display = 'none';
+                        showMoreBtn.style.display = 'inline-block';
+                    });
+                }
+            });
+        </script>
     @endpush
 @endonce
