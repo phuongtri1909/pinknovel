@@ -97,11 +97,74 @@ class AppServiceProvider extends ServiceProvider
         $weekAgo = $today->copy()->subDays(7);
         $monthAgo = $today->copy()->subDays(30);
 
-        // Tối ưu: chỉ gọi 1 lần cho mỗi loại, không duplicate
+        $dailyIds = $this->getTopStoryIds($today);
+        $weeklyIds = $this->getTopStoryIds($weekAgo);
+        $monthlyIds = $this->getTopStoryIds($monthAgo);
+
+        $allStoryIds = collect([$dailyIds, $weeklyIds, $monthlyIds])
+            ->flatten()
+            ->unique()
+            ->values();
+
+        if ($allStoryIds->isEmpty()) {
+            return [
+                'daily' => collect(),
+                'weekly' => collect(),
+                'monthly' => collect(),
+            ];
+        }
+
+        $stories = Story::whereIn('id', $allStoryIds)
+            ->where('status', 'published')
+            ->with([
+                'categories:id,name,slug',
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'created_at')
+                        ->where('status', 'published');
+                }
+            ])
+            ->get()
+            ->keyBy('id');
+
+        $allStoryIdsArray = $allStoryIds->toArray();
+        $purchaseData = DB::select("
+            SELECT story_id, SUM(purchase_count) as total_purchases, MAX(latest) as latest_purchase_at
+            FROM (
+                SELECT story_id, COUNT(*) as purchase_count, MAX(created_at) as latest
+                FROM story_purchases 
+                WHERE story_id IN (" . implode(',', $allStoryIdsArray) . ")
+                GROUP BY story_id
+                UNION ALL
+                SELECT chapters.story_id, COUNT(*) as purchase_count, MAX(chapter_purchases.created_at) as latest
+                FROM chapter_purchases 
+                INNER JOIN chapters ON chapter_purchases.chapter_id = chapters.id
+                WHERE chapters.story_id IN (" . implode(',', $allStoryIdsArray) . ")
+                GROUP BY chapters.story_id
+            ) as combined_purchases
+            GROUP BY story_id
+        ");
+        
+        $purchaseData = collect($purchaseData)->keyBy('story_id');
+
+        $stories->each(function ($story) use ($purchaseData) {
+            $purchase = $purchaseData->get($story->id);
+            if ($purchase) {
+                $story->total_purchases = $purchase->total_purchases;
+                $story->latest_purchase_at = $purchase->latest_purchase_at;
+                $story->latest_purchase_diff = $purchase->latest_purchase_at
+                    ? \Carbon\Carbon::parse($purchase->latest_purchase_at)->diffForHumans()
+                    : 'Chưa có ai mua';
+            } else {
+                $story->total_purchases = 0;
+                $story->latest_purchase_at = null;
+                $story->latest_purchase_diff = 'Chưa có ai mua';
+            }
+        });
+
         return [
-            'daily' => $this->getTopStoriesPurchased($today),
-            'weekly' => $this->getTopStoriesPurchased($weekAgo),
-            'monthly' => $this->getTopStoriesPurchased($monthAgo),
+            'daily' => $dailyIds->map(fn($id) => $stories->get($id))->filter(),
+            'weekly' => $weeklyIds->map(fn($id) => $stories->get($id))->filter(),
+            'monthly' => $monthlyIds->map(fn($id) => $stories->get($id))->filter(),
         ];
     }
 
@@ -122,22 +185,19 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Tối ưu hóa query để tránh N+1
+     * Lấy top story IDs theo ngày (chỉ lấy IDs, không load data)
      */
-    private function getTopStoriesPurchased(Carbon $fromDate)
+    private function getTopStoryIds($fromDate)
     {
-        // Sử dụng single query với subquery để tối ưu
         $storyIds = DB::select("
-            SELECT story_id, SUM(purchase_count) as total_purchases, MAX(latest) as latest_purchase_at
+            SELECT story_id, SUM(purchase_count) as total_purchases
             FROM (
-                SELECT story_id, COUNT(*) as purchase_count, MAX(created_at) as latest
+                SELECT story_id, COUNT(*) as purchase_count
                 FROM story_purchases 
                 WHERE created_at >= ?
                 GROUP BY story_id
-                
                 UNION ALL
-                
-                SELECT chapters.story_id, COUNT(*) as purchase_count, MAX(chapter_purchases.created_at) as latest
+                SELECT chapters.story_id, COUNT(*) as purchase_count
                 FROM chapter_purchases 
                 INNER JOIN chapters ON chapter_purchases.chapter_id = chapters.id
                 WHERE chapter_purchases.created_at >= ?
@@ -148,61 +208,7 @@ class AppServiceProvider extends ServiceProvider
             LIMIT 10
         ", [$fromDate, $fromDate]);
         
-        $storyIds = collect($storyIds)->pluck('story_id');
-
-        if ($storyIds->isEmpty()) {
-            return collect();
-        }
-
-        // Lấy stories với một query duy nhất và eager load relationships
-        $stories = Story::whereIn('id', $storyIds)
-            ->where('status', 'published')
-            ->with([
-                'categories:id,name,slug',
-                'latestChapter' => function ($query) {
-                    $query->select('id', 'story_id', 'number', 'created_at')
-                        ->where('status', 'published');
-                }
-            ])
-            ->get()
-            ->keyBy('id');
-
-        // Lấy purchase data với một query duy nhất
-        $purchaseData = DB::select("
-            SELECT story_id, SUM(purchase_count) as total_purchases, MAX(latest) as latest_purchase_at
-            FROM (
-                SELECT story_id, COUNT(*) as purchase_count, MAX(created_at) as latest
-                FROM story_purchases 
-                WHERE created_at >= ? AND story_id IN (" . $storyIds->implode(',') . ")
-                GROUP BY story_id
-                
-                UNION ALL
-                
-                SELECT chapters.story_id, COUNT(*) as purchase_count, MAX(chapter_purchases.created_at) as latest
-                FROM chapter_purchases 
-                INNER JOIN chapters ON chapter_purchases.chapter_id = chapters.id
-                WHERE chapter_purchases.created_at >= ? AND chapters.story_id IN (" . $storyIds->implode(',') . ")
-                GROUP BY chapters.story_id
-            ) as combined_purchases
-            GROUP BY story_id
-        ", [$fromDate, $fromDate]);
-        
-        $purchaseData = collect($purchaseData)->keyBy('story_id');
-
-        // Gộp dữ liệu
-        return $storyIds->map(function ($storyId) use ($stories, $purchaseData) {
-            $story = $stories[$storyId] ?? null;
-            $purchase = $purchaseData[$storyId] ?? null;
-            
-            if (!$story || !$purchase) return null;
-
-            $story->total_purchases = $purchase->total_purchases;
-            $story->latest_purchase_at = $purchase->latest_purchase_at;
-            $story->latest_purchase_diff = $purchase->latest_purchase_at
-                ? Carbon::parse($purchase->latest_purchase_at)->diffForHumans()
-                : 'Chưa có ai mua';
-
-            return $story;
-        })->filter();
+        return collect($storyIds)->pluck('story_id');
     }
+
 }
