@@ -159,6 +159,7 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 Route::get('/revenue/transactions', [AuthorController::class, 'getTransactionHistory'])->name('revenue.transactions');
                 Route::get('/revenue/top-stories', [AuthorController::class, 'getTopStories'])->name('revenue.top-stories');
                 Route::get('/revenue/top-chapters', [AuthorController::class, 'getTopChapters'])->name('revenue.top-chapters');
+                Route::get('/revenue/story-stats', [AuthorController::class, 'getStoryRevenueStats'])->name('revenue.story-stats');
 
                 Route::group(['prefix' => 'stories', 'as' => 'stories.'], function () {});
 

@@ -574,6 +574,73 @@
         </div>
     </div>
     
+    <!-- Bảng thống kê tổng doanh thu -->
+    <div class="card mt-4 mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">Thống kê tổng doanh thu theo truyện</h5>
+            <span class="badge bg-light text-dark rounded-pill">
+                <i class="fas fa-chart-bar me-1"></i> 
+                Tất cả thời gian
+            </span>
+        </div>
+        <div class="card-body">
+            @if(count($storyRevenueStats) > 0)
+                <div class="table-responsive">
+                    <table id="story-stats-table" class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 35%">Tên truyện</th>
+                                <th style="width: 20%" class="text-end">Doanh thu chương</th>
+                                <th style="width: 20%" class="text-end">Doanh thu combo</th>
+                                <th style="width: 20%" class="text-end">Tổng doanh thu</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($storyRevenueStats as $index => $story)
+                                <tr class="transaction-row">
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>
+                                        <a href="{{ route('show.page.story', $story->slug) }}" class="text-decoration-none fw-semibold color-3">
+                                            {{ $story->title }}
+                                        </a>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-primary">{{ number_format($story->chapter_revenue) }} xu</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-warning">{{ number_format($story->story_revenue) }} xu</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold text-success">{{ number_format($story->total_revenue) }} xu</span>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                @if($storyRevenueStats->hasPages() && $storyRevenueStats->hasMorePages())
+                    <div id="story-stats-pagination" class="d-flex justify-content-center mt-3">
+                        <button id="load-more-story-stats" class="btn btn-outline-primary load-more-btn">
+                            <i class="fas fa-sync-alt me-2"></i> Xem thêm truyện
+                        </button>
+                    </div>
+                @else
+                    <div id="story-stats-pagination" class="d-flex justify-content-center mt-3" style="display: none !important;">
+                        <button id="load-more-story-stats" class="btn btn-outline-primary load-more-btn">
+                            <i class="fas fa-sync-alt me-2"></i> Xem thêm truyện
+                        </button>
+                    </div>
+                @endif
+            @else
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                    <p>Chưa có dữ liệu doanh thu</p>
+                </div>
+            @endif
+        </div>
+    </div>
+
     <!-- Nội dung bán chạy -->
     <div class="row mt-4">
         <!-- Truyện bán chạy -->
@@ -689,9 +756,11 @@
     let currentTransactionPage = 1;
     let currentStoriesPage = 1;
     let currentChaptersPage = 1;
+    let currentStoryStatsPage = 1;
     let hasMoreTransactions = false;
     let hasMoreStories = false;
     let hasMoreChapters = false;
+    let hasMoreStoryStats = false;
     
     // Hiệu ứng đếm số
     function animateNumber(element, targetValue) {
@@ -1190,6 +1259,61 @@
             });
     }
     
+    // Hàm tải thêm thống kê doanh thu theo truyện
+    function loadMoreStoryStats() {
+        currentStoryStatsPage++;
+        
+        fetch(`{{ route('user.author.revenue.story-stats') }}?page=${currentStoryStatsPage}`)
+            .then(response => response.json())
+            .then(data => {
+                hasMoreStoryStats = data.current_page < data.last_page;
+                
+                document.getElementById('story-stats-pagination').style.display = hasMoreStoryStats ? 'flex' : 'none';
+                
+                if (data.data.length === 0) {
+                    return;
+                }
+                
+                const tbody = document.querySelector('#story-stats-table tbody');
+                const startIndex = (currentStoryStatsPage - 1) * data.per_page;
+                
+                data.data.forEach((story, index) => {
+                    const row = document.createElement('tr');
+                    row.className = 'transaction-row';
+                    row.innerHTML = `
+                        <td>${startIndex + index + 1}</td>
+                        <td>
+                            <a href="{{ url('/story') }}/${story.slug}" class="text-decoration-none fw-semibold color-3">
+                                ${story.title}
+                            </a>
+                        </td>
+                        <td class="text-end">
+                            <span class="fw-bold text-primary">${parseInt(story.chapter_revenue).toLocaleString()} xu</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="fw-bold text-warning">${parseInt(story.story_revenue).toLocaleString()} xu</span>
+                        </td>
+                        <td class="text-end">
+                            <span class="fw-bold text-success">${parseInt(story.total_revenue).toLocaleString()} xu</span>
+                        </td>
+                    `;
+                    
+                    row.style.opacity = '0';
+                    row.style.transition = 'opacity 0.3s ease';
+                    
+                    tbody.appendChild(row);
+                    
+                    setTimeout(() => {
+                        row.style.opacity = '1';
+                    }, 50 * index);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching story stats:', error);
+                currentStoryStatsPage--; // Rollback page on error
+            });
+    }
+    
     document.addEventListener('DOMContentLoaded', function() {
         
         // Khởi tạo hiệu ứng hover cho các thẻ
@@ -1223,6 +1347,10 @@
         document.getElementById('load-more-chapters').addEventListener('click', function() {
             currentChaptersPage++;
             loadTopChapters();
+        });
+
+        document.getElementById('load-more-story-stats').addEventListener('click', function() {
+            loadMoreStoryStats();
         });
     });
 </script>

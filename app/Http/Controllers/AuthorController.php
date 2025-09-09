@@ -122,7 +122,34 @@ class AuthorController extends Controller
             });
         }
 
-        $stories = $query->latest()->paginate(10);
+        $stories = $query->with([
+            'chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views');
+            }
+        ])
+        ->withCount(['chapters'])
+        ->withSum('chapters', 'views')
+        ->latest()
+        ->paginate(10);
+
+        $storyIds = $stories->pluck('id');
+        
+        $chapterRevenue = DB::table('chapter_purchases')
+            ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+            ->whereIn('chapters.story_id', $storyIds)
+            ->select('chapters.story_id', DB::raw('SUM(chapter_purchases.amount_received) as total_revenue'))
+            ->groupBy('chapters.story_id')
+            ->pluck('total_revenue', 'story_id');
+
+        $storyRevenue = DB::table('story_purchases')
+            ->whereIn('story_id', $storyIds)
+            ->select('story_id', DB::raw('SUM(amount_received) as total_revenue'))
+            ->groupBy('story_id')
+            ->pluck('total_revenue', 'story_id');
+
+        $stories->each(function ($story) use ($chapterRevenue, $storyRevenue) {
+            $story->total_revenue = ($chapterRevenue->get($story->id, 0) + $storyRevenue->get($story->id, 0));
+        });
 
         // Thống kê
         $publishedCount = auth()->user()->stories()->where('status', 'published')->count();
@@ -1327,6 +1354,34 @@ class AuthorController extends Controller
             ->limit(5)
             ->get();
 
+        $storyRevenueStats = DB::table('stories')
+            ->select(
+                'stories.id',
+                'stories.title',
+                'stories.slug',
+                DB::raw('COALESCE(chapter_revenue.total, 0) as chapter_revenue'),
+                DB::raw('COALESCE(story_revenue.total, 0) as story_revenue'),
+                DB::raw('COALESCE(chapter_revenue.total, 0) + COALESCE(story_revenue.total, 0) as total_revenue')
+            )
+            ->leftJoin(DB::raw('(
+                SELECT 
+                    chapters.story_id,
+                    SUM(chapter_purchases.amount_received) as total
+                FROM chapters
+                INNER JOIN chapter_purchases ON chapters.id = chapter_purchases.chapter_id
+                GROUP BY chapters.story_id
+            ) as chapter_revenue'), 'stories.id', '=', 'chapter_revenue.story_id')
+            ->leftJoin(DB::raw('(
+                SELECT 
+                    story_id,
+                    SUM(amount_received) as total
+                FROM story_purchases
+                GROUP BY story_id
+            ) as story_revenue'), 'stories.id', '=', 'story_revenue.story_id')
+            ->where('stories.user_id', Auth::id())
+            ->orderBy('total_revenue', 'desc')
+            ->paginate(10);
+
         return view('pages.information.author.author_revenue', compact(
             'years',
             'grandTotal',
@@ -1334,7 +1389,8 @@ class AuthorController extends Controller
             'topChapters',
             'lastMonthRevenue',
             'revenueChangePercent',
-            'revenueIncreased'
+            'revenueIncreased',
+            'storyRevenueStats'
         ));
     }
 
@@ -1349,19 +1405,15 @@ class AuthorController extends Controller
         $year = $request->input('year', date('Y'));
         $month = $request->input('month', date('m'));
 
-        // Nếu chỉ có year mà không có month, lấy dữ liệu theo từng tháng của năm đó
-        if ($request->has('year') && !$request->has('month')) {
+        if (empty($month) || $month === '' || $month === null) {
             return $this->getYearlyRevenueData($year);
         }
 
-        // Nếu có cả year và month, lấy dữ liệu theo từng ngày của tháng đó
         return $this->getMonthlyRevenueData($year, $month);
     }
 
-    // Hàm lấy dữ liệu doanh thu theo năm, chia theo tháng
     private function getYearlyRevenueData($year)
     {
-        // Lấy doanh thu từ việc mua chương
         $chapterRevenue = DB::table('chapter_purchases')
             ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
             ->join('stories', 'chapters.story_id', '=', 'stories.id')
@@ -1373,7 +1425,6 @@ class AuthorController extends Controller
             ->pluck('total', 'month')
             ->toArray();
 
-        // Lấy doanh thu từ việc mua trọn bộ
         $storyRevenue = DB::table('story_purchases')
             ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
             ->where('stories.user_id', Auth::id())
@@ -1384,14 +1435,12 @@ class AuthorController extends Controller
             ->pluck('total', 'month')
             ->toArray();
 
-        // Khởi tạo mảng dữ liệu cho 12 tháng
         $data = [];
         $labels = [];
         $chapterData = [];
         $storyData = [];
         $totalData = [];
 
-        // Tính tổng doanh thu
         $totalChapterRevenue = 0;
         $totalStoryRevenue = 0;
 
@@ -1443,13 +1492,10 @@ class AuthorController extends Controller
         ]);
     }
 
-    // Hàm lấy dữ liệu doanh thu theo tháng, chia theo ngày
     private function getMonthlyRevenueData($year, $month)
     {
-        // Lấy số ngày trong tháng
         $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
 
-        // Lấy doanh thu từ việc mua chương
         $chapterRevenue = DB::table('chapter_purchases')
             ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
             ->join('stories', 'chapters.story_id', '=', 'stories.id')
@@ -1462,7 +1508,6 @@ class AuthorController extends Controller
             ->pluck('total', 'day')
             ->toArray();
 
-        // Lấy doanh thu từ việc mua trọn bộ
         $storyRevenue = DB::table('story_purchases')
             ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
             ->where('stories.user_id', Auth::id())
@@ -1474,14 +1519,12 @@ class AuthorController extends Controller
             ->pluck('total', 'day')
             ->toArray();
 
-        // Khởi tạo mảng dữ liệu cho các ngày trong tháng
         $data = [];
         $labels = [];
         $chapterData = [];
         $storyData = [];
         $totalData = [];
 
-        // Tính tổng doanh thu
         $totalChapterRevenue = 0;
         $totalStoryRevenue = 0;
 
@@ -1550,7 +1593,6 @@ class AuthorController extends Controller
         $page = $request->input('page', 1);
         $perPage = $request->input('per_page', 10);
 
-        // Query cho chapter purchases
         $chapterPurchasesQuery = DB::table('chapter_purchases')
             ->select(
                 'chapter_purchases.id',
@@ -1570,7 +1612,6 @@ class AuthorController extends Controller
             ->where('stories.user_id', Auth::id())
             ->whereYear('chapter_purchases.created_at', $year);
 
-        // Nếu có tháng, thêm điều kiện lọc theo tháng
         if ($month) {
             $chapterPurchasesQuery->whereMonth('chapter_purchases.created_at', $month);
         }
@@ -1938,5 +1979,41 @@ class AuthorController extends Controller
 
             return back()->with('error', 'Có lỗi xảy ra khi đề cử truyện. Vui lòng thử lại.');
         }
+    }
+
+    public function getStoryRevenueStats(Request $request)
+    {
+        $page = $request->input('page', 1);
+        $perPage = 10;
+
+        $storyRevenueStats = DB::table('stories')
+            ->select(
+                'stories.id',
+                'stories.title',
+                'stories.slug',
+                DB::raw('COALESCE(chapter_revenue.total, 0) as chapter_revenue'),
+                DB::raw('COALESCE(story_revenue.total, 0) as story_revenue'),
+                DB::raw('COALESCE(chapter_revenue.total, 0) + COALESCE(story_revenue.total, 0) as total_revenue')
+            )
+            ->leftJoin(DB::raw('(
+                SELECT 
+                    chapters.story_id,
+                    SUM(chapter_purchases.amount_received) as total
+                FROM chapters
+                INNER JOIN chapter_purchases ON chapters.id = chapter_purchases.chapter_id
+                GROUP BY chapters.story_id
+            ) as chapter_revenue'), 'stories.id', '=', 'chapter_revenue.story_id')
+            ->leftJoin(DB::raw('(
+                SELECT 
+                    story_id,
+                    SUM(amount_received) as total
+                FROM story_purchases
+                GROUP BY story_id
+            ) as story_revenue'), 'stories.id', '=', 'story_revenue.story_id')
+            ->where('stories.user_id', Auth::id())
+            ->orderBy('total_revenue', 'desc')
+            ->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json($storyRevenueStats);
     }
 }

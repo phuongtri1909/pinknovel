@@ -280,6 +280,8 @@
                                 <div class="d-flex flex-column align-items-center">
                                     <div class="fw-bold">{{ number_format($story->total_views ?? 0) }}</div>
                                     <div class="small text-muted">lượt xem</div>
+                                    <div class="fw-bold text-success mt-1">{{ number_format($story->total_revenue ?? 0) }}</div>
+                                    <div class="small text-muted">xu</div>
                                 </div>
                             </td>
                             <td>
