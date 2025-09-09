@@ -1,56 +1,59 @@
 <section id="comments" class="my-3 my-md-5">
     <div class="container px-2 px-md-3">
         <div class="row">
-            <div class="col-12 col-md-6">
-                <div
-                    class="section-title d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
-                    <div class="title-container mb-2">
-                        <i class="fa-solid fa-pen-nib fa-xl color-2"></i>
-                        <h5 class="fw-bold ms-2 d-inline mb-0">Truyện của tác giả <a
-                                href="{{ route('search.author', ['query' => $story->author_name]) }}"
-                                class="text-decoration-none color-3">{{ $story->author_name }}</a></h5>
-                    </div>
-                </div>
-
-                <div>
-                    @foreach ($authorStories as $story)
-                        <div class="story-item d-flex align-items-center mb-3">
-                            <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
-                                class="story-thumb me-3">
-                            <a href="{{ route('show.page.story', $story->slug) }}"
-                                class="text-decoration-none text-dark story-link">
-                                {{ $story->title }}
-                            </a>
-
-                    @endforeach
-                </div>
-
-
-            </div>
-            <div class="col-12 col-md-6">
-                <div
-                    class="section-title d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
-                    <div class="title-container mb-2">
-                        <i class="fa-solid fa-pen fa-xl color-2"></i>
-                        <h5 class="fw-bold ms-2 d-inline mb-0">Truyện của dịch giả <a
-                                href="{{ route('search.translator', ['query' => $story->user->name]) }}"
-                                class="text-decoration-none color-3">{{ $story->user->name }}</a></h5>
-                    </div>
-                </div>
-
-                <div>
-                    @foreach ($translatorStories as $story)
-                        <div class="story-item d-flex align-items-center mb-3">
-                            <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
-                                class="story-thumb me-3">
-                            <a href="{{ route('show.page.story', $story->slug) }}"
-                                class="text-decoration-none text-dark story-link">
-                                {{ $story->title }}
-                            </a>
+            @if($authorStories && $authorStories->count() > 0)
+                <div class="col-12 {{ $translatorStories && $translatorStories->count() > 0 ? 'col-md-6' : 'col-md-12' }}">
+                    <div
+                        class="section-title d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
+                        <div class="title-container mb-2">
+                            <i class="fa-solid fa-pen-nib fa-xl color-2"></i>
+                            <h5 class="fw-bold ms-2 d-inline mb-0">Truyện của tác giả <a
+                                    href="{{ route('search.author', ['query' => $story->author_name]) }}"
+                                    class="text-decoration-none color-3">{{ $story->author_name }}</a></h5>
                         </div>
-                    @endforeach
+                    </div>
+
+                    <div>
+                        @foreach ($authorStories as $story)
+                            <div class="story-item d-flex align-items-center mb-3">
+                                <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
+                                    class="story-thumb me-3">
+                                <a href="{{ route('show.page.story', $story->slug) }}"
+                                    class="text-decoration-none text-dark story-link">
+                                    {{ $story->title }}
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
-            </div>
+            @endif
+
+            @if($translatorStories && $translatorStories->count() > 0)
+                <div class="col-12 {{ $authorStories && $authorStories->count() > 0 ? 'col-md-6' : 'col-md-12' }}">
+                    <div
+                        class="section-title d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-3">
+                        <div class="title-container mb-2">
+                            <i class="fa-solid fa-pen fa-xl color-2"></i>
+                            <h5 class="fw-bold ms-2 d-inline mb-0">Truyện của dịch giả <a
+                                    href="{{ route('search.translator', ['query' => $story->user->name]) }}"
+                                    class="text-decoration-none color-3">{{ $story->user->name }}</a></h5>
+                        </div>
+                    </div>
+
+                    <div>
+                        @foreach ($translatorStories as $story)
+                            <div class="story-item d-flex align-items-center mb-3">
+                                <img src="{{ asset('storage/' . $story->cover) }}" alt="{{ $story->title }}"
+                                    class="story-thumb me-3">
+                                <a href="{{ route('show.page.story', $story->slug) }}"
+                                    class="text-decoration-none text-dark story-link">
+                                    {{ $story->title }}
+                                </a>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </section>
