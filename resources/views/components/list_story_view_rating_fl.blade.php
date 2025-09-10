@@ -76,7 +76,7 @@
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
                                     <div class="stats-info">
                                         <span class="text-primary">
                                             <i class="fa-solid fa-eye"></i> {{ number_format($story->total_views) }}
@@ -147,7 +147,7 @@
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
                                     <div class="stats-info">
                                         <span class="text-warning">
                                             <i class="fa-solid fa-star"></i>
@@ -218,7 +218,7 @@
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
                                     <div class="stats-info">
                                         <span class="text-danger">
                                             <i class="fa-solid fa-heart"></i>

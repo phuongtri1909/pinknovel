@@ -645,7 +645,6 @@ class HomeController extends Controller
 
     public function index(Request $request)
     {
-
         $hotStories = $this->getHotStories($request);
         $newStories = $this->getNewStories();
         $ratingStories = $this->getRatingStories();
@@ -712,9 +711,27 @@ class HomeController extends Controller
                 'description',
                 'combo_price'
             ])
-            ->withCount(['chapters' => function ($query) {
-                $query->where('status', 'published');
-            }])
+            ->withCount([
+                'chapters' => function ($query) {
+                    $query->where('status', 'published');
+                },
+                'chapters as vip_chapters_count' => function ($query) {
+                    $query->where('status', 'published')->where('is_free', 0);
+                }
+            ])
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(price)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
+                    ->where('status', 'published')
+                    ->where('is_free', 0);
+            }, 'total_chapter_price')
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(views)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
+                    ->where('status', 'published');
+            }, 'total_views')
             ->latest('updated_at')
             ->get();
     }
@@ -732,13 +749,26 @@ class HomeController extends Controller
     private function getFeaturedStories($request)
     {
         $query = Story::with([
+            'categories',
             'chapters' => function ($query) {
-                $query->select('id', 'story_id', 'views', 'created_at')
+                $query->select('id', 'story_id', 'views', 'created_at', 'price', 'is_free')
                     ->where('status', 'published');
             },
             'latestChapter' => function ($query) {
                 $query->select('id', 'story_id', 'number', 'created_at')
                     ->where('status', 'published');
+            },
+            'activeAdminFeatured' => function ($query) {
+                $query->select('id', 'story_id', 'type', 'is_active', 'featured_until')
+                    ->where('type', 'admin')
+                    ->where('is_active', 1)
+                    ->where('featured_until', '>', now());
+            },
+            'activeAuthorFeatured' => function ($query) {
+                $query->select('id', 'story_id', 'type', 'is_active', 'featured_until')
+                    ->where('type', 'author')
+                    ->where('is_active', 1)
+                    ->where('featured_until', '>', now());
             }
         ])
             ->published()
@@ -766,6 +796,7 @@ class HomeController extends Controller
             ])
             ->withCount([
                 'chapters' => fn($q) => $q->where('status', 'published'),
+                'chapters as vip_chapters_count' => fn($q) => $q->where('status', 'published')->where('is_free', 0),
                 'storyPurchases',
                 'chapterPurchases',
                 'ratings',
@@ -775,7 +806,20 @@ class HomeController extends Controller
                 $q->from('ratings')
                     ->selectRaw('AVG(rating)')
                     ->whereColumn('ratings.story_id', 'stories.id');
-            }, 'average_rating');
+            }, 'average_rating')
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(price)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
+                    ->where('status', 'published')
+                    ->where('is_free', 0);
+            }, 'total_chapter_price')
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(views)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
+                    ->where('status', 'published');
+            }, 'total_views');
 
         if ($request && $request->category_id) {
             $query->whereHas('categories', function ($q) use ($request) {
@@ -916,9 +960,27 @@ class HomeController extends Controller
                 'author_name',
                 'description'
             ])
-            ->withCount(['chapters' => function ($query) {
-                $query->where('status', 'published');
-            }])
+            ->withCount([
+                'chapters' => function ($query) {
+                    $query->where('status', 'published');
+                },
+                'chapters as vip_chapters_count' => function ($query) {
+                    $query->where('status', 'published')->where('is_free', 0);
+                }
+            ])
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(price)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
+                    ->where('status', 'published')
+                    ->where('is_free', 0);
+            }, 'total_chapter_price')
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(views)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
+                    ->where('status', 'published');
+            }, 'total_views')
             ->whereHas('chapters', function ($query) {
                 $query->where('status', 'published');
             })
@@ -976,42 +1038,47 @@ class HomeController extends Controller
 
     public function getRatingStories()
     {
-        return Story::select(
-            'stories.id',
-            'stories.user_id',
-            'stories.title',
-            'stories.slug',
-            'stories.description',
-            'stories.cover',
-            'stories.cover_medium',
-            'stories.cover_thumbnail',
-            'stories.completed',
-            'stories.link_aff',
-            'stories.story_type',
-            'stories.author_name',
-            'stories.is_18_plus',
-            'stories.combo_price',
-            'stories.has_combo',
-            'stories.translator_name',
-            'stories.is_monopoly',
-            'stories.submitted_at',
-            'stories.review_note',
-            'stories.admin_note',
-            'stories.created_at',
-            'stories.updated_at',
-            'stories.reviewed_at'
-        )
-            ->where('stories.status', 'published')
+        return Story::select([
+            'id',
+            'title',
+            'slug',
+            'description',
+            'cover',
+            'cover_medium',
+            'author_name',
+            'completed',
+            'is_18_plus',
+            'created_at',
+            'updated_at'
+        ])
+            ->where('status', 'published')
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
                     ->from('ratings')
                     ->whereColumn('ratings.story_id', 'stories.id');
             })
             ->withAvg('ratings as average_rating', 'rating')
-            ->with(['chapters' => function ($query) {
-                $query->select('id', 'story_id', 'views')
+            ->withCount([
+                'chapters' => function ($query) {
+                    $query->where('status', 'published');
+                },
+                'chapters as vip_chapters_count' => function ($query) {
+                    $query->where('status', 'published')->where('is_free', 0);
+                }
+            ])
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(price)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
+                    ->where('status', 'published')
+                    ->where('is_free', 0);
+            }, 'total_chapter_price')
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(views)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
                     ->where('status', 'published');
-            }])
+            }, 'total_views')
             ->orderByDesc('average_rating')
             ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
             ->limit(10)
@@ -1027,12 +1094,40 @@ class HomeController extends Controller
             ->groupBy('story_id')
             ->having('total_views', '>', 0);
 
-        $stories = Story::select('stories.*')
+        return Story::select([
+            'stories.id',
+            'stories.title',
+            'stories.slug',
+            'stories.cover',
+            'stories.cover_medium',
+            'stories.author_name',
+            'stories.completed',
+            'stories.is_18_plus',
+            'stories.created_at',
+            'stories.updated_at'
+        ])
             ->where('stories.status', 'published')
-            ->with(['chapters' => function ($query) {
-                $query->select('id', 'story_id', 'views')
+            ->withCount([
+                'chapters' => function ($query) {
+                    $query->where('status', 'published');
+                },
+                'chapters as vip_chapters_count' => function ($query) {
+                    $query->where('status', 'published')->where('is_free', 0);
+                }
+            ])
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(price)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
+                    ->where('status', 'published')
+                    ->where('is_free', 0);
+            }, 'total_chapter_price')
+            ->selectSub(function ($q) {
+                $q->from('chapters')
+                    ->selectRaw('SUM(views)')
+                    ->whereColumn('chapters.story_id', 'stories.id')
                     ->where('status', 'published');
-            }])
+            }, 'total_views')
             ->joinSub($storyViews, 'story_views', function ($join) {
                 $join->on('stories.id', '=', 'story_views.story_id');
             })
@@ -1040,23 +1135,33 @@ class HomeController extends Controller
             ->orderByDesc('story_views.total_views')
             ->limit(10)
             ->get();
-
-        return $stories;
     }
 
     public function topFollowedStories()
     {
-        $stories = Story::withCount('bookmarks')
+        return Story::select([
+            'id',
+            'title',
+            'slug',
+            'cover',
+            'cover_medium',
+            'author_name',
+            'completed',
+            'is_18_plus',
+            'created_at',
+            'updated_at'
+        ])
             ->where('status', 'published')
-            ->with(['chapters' => function ($query) {
-                $query->select('id', 'story_id', 'views')
-                    ->where('status', 'published');
-            }])
+            ->withCount([
+                'bookmarks',
+                'chapters' => function ($query) {
+                    $query->where('status', 'published');
+                }
+            ])
             ->having('bookmarks_count', '>', 0)
             ->orderByDesc('bookmarks_count')
             ->limit(10)
             ->get();
-        return $stories;
     }
 
     public function showStory(Request $request, $slug)

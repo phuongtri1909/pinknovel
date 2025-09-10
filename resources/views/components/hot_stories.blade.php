@@ -71,7 +71,7 @@
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
 
                                     <div class="text-muted text-sm">
                                         @if ($story->latestChapter)
@@ -136,7 +136,7 @@
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
 
                                     <div class="text-muted text-sm">
                                         @if ($story->latestChapter)
@@ -201,7 +201,7 @@
                                     @endforeach
                                 </div>
                                 <div class="d-flex justify-content-between align-items-center mt-3">
-                                    <p class="mb-0">{{ $story->chapters->count() }} chương</p>
+                                    <p class="mb-0">{{ $story->chapters_count }} chương</p>
 
                                     <div class="text-muted text-sm">
                                         @if ($story->latestChapter)

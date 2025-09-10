@@ -1535,6 +1535,10 @@ body.dark-mode .search-content{
     background-color: #525252 !important;
 }
 
+body.dark-mode .payment-info-value{
+    color: #ffffff !important;
+}
+
 body.dark-mode .story-card {
     background-color: #525252 !important;
     border-color: #404040 !important;

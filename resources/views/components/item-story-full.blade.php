@@ -10,7 +10,7 @@
 
             @if (isset($story) && $story->has_combo)
                 @php
-                    $totalChapterPrice = $story->chapters->where('is_free', 0)->sum('price');
+                    $totalChapterPrice = $story->total_chapter_price ?? 0;
                     if ($totalChapterPrice > 0) {
                         $savingPercent = round((($totalChapterPrice - $story->combo_price) / $totalChapterPrice) * 100);
                     } else {

@@ -91,13 +91,20 @@ class Story extends Model
 
     public function getTotalViewsAttribute()
     {
+        // Sử dụng computed field từ database nếu có, fallback về relationship
+        if (isset($this->attributes['total_views'])) {
+            return $this->attributes['total_views'];
+        }
         return $this->chapters->sum('views');
     }
 
     public function getAverageViewsAttribute()
     {
-        return $this->chapters_count > 0 ?
-            $this->total_views / $this->chapters_count : 0;
+        // Sử dụng computed fields từ database nếu có
+        $chaptersCount = $this->attributes['chapters_count'] ?? $this->chapters_count;
+        $totalViews = $this->attributes['total_views'] ?? $this->total_views;
+        
+        return $chaptersCount > 0 ? $totalViews / $chaptersCount : 0;
     }
 
     public function latestChapter()
@@ -153,6 +160,10 @@ class Story extends Model
      */
     public function getCanCreateComboAttribute()
     {
+        // Sử dụng computed field từ database nếu có, fallback về query
+        if (isset($this->attributes['chapters_count'])) {
+            return $this->completed && $this->attributes['chapters_count'] > 0;
+        }
         return $this->completed && $this->chapters()->where('status', 'published')->count() > 0;
     }
 
@@ -169,6 +180,10 @@ class Story extends Model
      */
     public function getTotalChapterPriceAttribute()
     {
+        // Sử dụng computed field từ database nếu có, fallback về query
+        if (isset($this->attributes['total_chapter_price'])) {
+            return $this->attributes['total_chapter_price'];
+        }
         return $this->chapters()->where('status', 'published')->sum('price');
     }
 

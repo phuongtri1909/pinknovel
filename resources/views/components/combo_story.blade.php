@@ -3,7 +3,7 @@
         <div class="combo-card">
             <div class="combo-badge">
                 @php
-                    $totalChapterPrice = $story->chapters->where('is_free', 0)->sum('price');
+                    $totalChapterPrice = $story->total_chapter_price ?? 0;
 
                     if ($totalChapterPrice > 0) {
                         $savingPercent = round((($totalChapterPrice - $story->combo_price) / $totalChapterPrice) * 100);
@@ -46,7 +46,7 @@
                         <p>
                             <i class="fas fa-check-circle text-success me-2"></i>
                             Mua combo truyện <strong>"{{ $story->title }}"</strong> để được đọc tất cả
-                            <strong>{{ $story->chapters->where('is_free', 0)->count() }}</strong> chương VIP
+                            <strong>{{ $story->vip_chapters_count }}</strong> chương VIP
                         </p>
                         <p class="mb-0">
                             <i class="fas fa-check-circle text-success me-2"></i>

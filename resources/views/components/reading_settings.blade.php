@@ -285,7 +285,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Chapter-specific functionality (only on chapter pages)
     @if(request()->routeIs('chapter'))
-        console.log('Chapter page detected, setting up chapter-specific settings');
         
         const fullscreenBtn = document.querySelector('.fullscreen-btn');
         const bookmarkBtn = document.querySelector('.bookmark-btn');
