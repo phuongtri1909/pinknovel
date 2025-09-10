@@ -477,6 +477,7 @@ class AuthorController extends Controller
                     $coverPaths = $this->processAndSaveImage($request->file('cover'));
 
                     $data['cover'] = $coverPaths['original'];
+                    $data['cover_jpeg'] = $coverPaths['original_jpeg'];
                     $data['cover_medium'] = $coverPaths['medium'];
                     $data['cover_thumbnail'] = $coverPaths['thumbnail'];
                 }
@@ -1277,12 +1278,20 @@ class AuthorController extends Controller
         Storage::disk('public')->makeDirectory("covers/{$yearMonth}/medium");
         Storage::disk('public')->makeDirectory("covers/{$yearMonth}/thumbnail");
 
-        // Process original image
+        // Process original image (WebP)
         $originalImage = Image::make($imageFile);
         $originalImage->encode('webp', 90);
         Storage::disk('public')->put(
             "covers/{$yearMonth}/original/{$fileName}.webp",
             $originalImage->stream()
+        );
+
+        // Process original image (JPEG for social media)
+        $originalImageJpeg = Image::make($imageFile);
+        $originalImageJpeg->encode('jpg', 90);
+        Storage::disk('public')->put(
+            "covers/{$yearMonth}/original/{$fileName}.jpg",
+            $originalImageJpeg->stream()
         );
 
         // Process medium size (400x300)
@@ -1309,6 +1318,7 @@ class AuthorController extends Controller
 
         return [
             'original' => "covers/{$yearMonth}/original/{$fileName}.webp",
+            'original_jpeg' => "covers/{$yearMonth}/original/{$fileName}.jpg",
             'medium' => "covers/{$yearMonth}/medium/{$fileName}.webp",
             'thumbnail' => "covers/{$yearMonth}/thumbnail/{$fileName}.webp"
         ];

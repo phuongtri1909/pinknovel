@@ -15,6 +15,7 @@ class Story extends Model
         'description',
         'status',
         'cover',
+        'cover_jpeg',
         'cover_medium',
         'cover_thumbnail',
         'completed',
