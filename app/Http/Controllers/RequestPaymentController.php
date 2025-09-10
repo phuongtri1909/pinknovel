@@ -155,14 +155,14 @@ class RequestPaymentController extends Controller
     {
         $request->validate([
             'request_payment_id' => 'required|exists:request_payments,id',
-            'transaction_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096',
+            'transaction_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240',
         ], [
             'request_payment_id.required' => 'Mã yêu cầu thanh toán không hợp lệ',
             'request_payment_id.exists' => 'Yêu cầu thanh toán không tồn tại',
             'transaction_image.required' => 'Vui lòng tải lên ảnh chứng minh chuyển khoản',
             'transaction_image.image' => 'File tải lên phải là hình ảnh',
             'transaction_image.mimes' => 'Định dạng hình ảnh phải là jpeg, png, jpg hoặc gif',
-            'transaction_image.max' => 'Kích thước hình ảnh không được vượt quá 4MB',
+            'transaction_image.max' => 'Kích thước hình ảnh không được vượt quá 10MB',
         ]);
 
         $requestPayment = RequestPayment::findOrFail($request->request_payment_id);

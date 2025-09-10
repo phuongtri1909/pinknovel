@@ -741,6 +741,14 @@
                         </div>
                     </div>
 
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            <button type="button" class="btn btn-primary w-100" id="proceedPaymentBtn">
+                                <i class="fab fa-paypal me-2"></i>Xác nhận thanh toán
+                            </button>
+                        </div>
+                    </div>
+
                     <div class="alert alert-info mt-3">
                         <i class="fas fa-info-circle me-2"></i>
                         <small>
@@ -758,13 +766,7 @@
                         <strong>Quan trọng:</strong> Vui lòng chọn đúng loại thanh toán để tránh sai số tiền!
                     </div>
 
-                    <div class="row">
-                        <div class="col-6">
-                            <button type="button" class="btn btn-primary w-100" id="proceedPaymentBtn">
-                                <i class="fab fa-paypal me-2"></i>Xác nhận thanh toán
-                            </button>
-                        </div>
-                    </div>
+                    
                 </div>
             </div>
         </div>

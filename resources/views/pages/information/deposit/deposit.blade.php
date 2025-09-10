@@ -475,6 +475,12 @@
                         <p class="text-muted">Quét mã QR để thực hiện thanh toán</p>
                     </div>
 
+                    <div class="payment-confirmation">
+                        <button type="button" class="confirm-payment-btn" id="confirmPaymentBtn">
+                            <i class="fas fa-check-circle me-2"></i> Tôi đã chuyển khoản
+                        </button>
+                    </div>
+
                     <div class="payment-info">
                         <div class="payment-info-item">
                             <span class="payment-info-label">Ngân hàng:</span>
@@ -542,11 +548,7 @@
                         <br> Giữ biên lai để làm minh chứng.
                     </div>
 
-                    <div class="payment-confirmation">
-                        <button type="button" class="confirm-payment-btn" id="confirmPaymentBtn">
-                            <i class="fas fa-check-circle me-2"></i> Tôi đã chuyển khoản
-                        </button>
-                    </div>
+                    
                 </div>
             </div>
         </div>

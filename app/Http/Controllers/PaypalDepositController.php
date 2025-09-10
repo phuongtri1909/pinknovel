@@ -212,14 +212,14 @@ class PaypalDepositController extends Controller
 
         $request->validate([
             'transaction_code' => 'required|string|exists:request_payment_paypals,transaction_code',
-            'evidence_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:4096'
+            'evidence_image' => 'required|image|mimes:jpeg,png,jpg,gif|max:10240'
         ], [
             'transaction_code.required' => 'Mã giao dịch không hợp lệ',
             'transaction_code.exists' => 'Không tìm thấy yêu cầu thanh toán',
             'evidence_image.required' => 'Vui lòng tải lên ảnh chứng minh',
             'evidence_image.image' => 'File phải là hình ảnh',
             'evidence_image.mimes' => 'Chỉ hỗ trợ định dạng: jpeg, png, jpg, gif',
-            'evidence_image.max' => 'Kích thước file không được vượt quá 4MB'
+            'evidence_image.max' => 'Kích thước file không được vượt quá 10MB'
         ]);
 
         $requestPayment = RequestPaymentPaypal::where('transaction_code', $request->transaction_code)
