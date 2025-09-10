@@ -86,17 +86,23 @@
 
                                 <div class="form-group">
                                     <label for="categories">Thể loại</label>
-                                    <select name="categories[]" id="categories" class="form-control" multiple required>
-                                        @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}">
-                                                {{ $category->name }}
-                                                @if($category->is_main)
-                                                    ⭐ (Thể loại chính)
-                                                @endif
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    
+                                    <div class="category-tags-container">
+                                        <div class="selected-categories mb-2" id="selected-categories">
+                                            <!-- Selected categories will appear here -->
+                                        </div>
+                                        <select id="category-select" class="form-control">
+                                            <option value="">-- Chọn thể loại --</option>
+                                            @foreach ($categories as $category)
+                                                <option value="{{ $category->id }}">
+                                                    {{ $category->name }}
+                                                    @if($category->is_main)
+                                                        ⭐ (Thể loại chính)
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <!-- Hidden inputs will be generated dynamically by JavaScript -->
+                                    </div>
                                     @error('categories')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -105,7 +111,7 @@
                                 <div class="form-group">
                                     <label for="link_aff" class="form-label">Link Affiliate</label>
                                     <input type="url" class="form-control" id="link_aff" name="link_aff"
-                                        value="{{ old('link_aff', $story->link_aff ?? '') }}"
+                                        value="{{ old('link_aff') }}"
                                         placeholder="Nhập link affiliate (Shopee, TikTok...)">
                                     @error('link_aff')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -203,7 +209,46 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            
+            const categorySelect = document.getElementById('category-select');
+            const selectedCategoriesContainer = document.getElementById('selected-categories');
+
+            // Initialize hidden inputs for existing categories (if any from old input)
+            updateCategoriesInput();
+
+            // Add category when select changes
+            categorySelect.addEventListener('change', function() {
+                const selectedValue = this.value;
+                if (selectedValue) {
+                    addCategory(selectedValue, this.options[this.selectedIndex].text);
+                    this.value = ''; // Reset select
+                }
+            });
+
+            // Form validation before submit
+            const form = document.querySelector('form');
+            form.addEventListener('submit', function(event) {
+                const selectedCategories = document.querySelectorAll('.category-tag');
+                const categoryTagsContainer = document.querySelector('.category-tags-container');
+                
+                if (selectedCategories.length === 0) {
+                    event.preventDefault();
+                    categoryTagsContainer.classList.add('is-invalid');
+                    categorySelect.classList.add('is-invalid');
+                    return false;
+                } else {
+                    categoryTagsContainer.classList.remove('is-invalid');
+                    categorySelect.classList.remove('is-invalid');
+                }
+
+                // Ensure hidden inputs are updated before submit
+                updateCategoriesInput();
+                
+                // Debug: Log the hidden inputs
+                const hiddenInputs = document.querySelectorAll('input[name="categories[]"]');
+                console.log('Hidden inputs before submit:', Array.from(hiddenInputs).map(input => input.value));
+
+                return true;
+            });
             
             // Handle combo pricing toggle
             const hasComboCheckbox = document.getElementById('has_combo');
@@ -225,6 +270,73 @@
                 comboPricingContainer.style.display = 'block';
             }
         });
+
+        // Add category function
+        function addCategory(categoryId, categoryName) {
+            const selectedCategoriesContainer = document.getElementById('selected-categories');
+            const categorySelect = document.getElementById('category-select');
+            
+            // Check if category already exists
+            if (document.querySelector(`[data-category-id="${categoryId}"]`)) {
+                return;
+            }
+            
+            // Create tag element
+            const tag = document.createElement('span');
+            tag.className = 'badge bg-primary me-2 mb-2 category-tag';
+            tag.setAttribute('data-category-id', categoryId);
+            tag.innerHTML = `${categoryName} <button type="button" class="btn-close btn-close-white ms-1" onclick="removeCategory(${categoryId})"></button>`;
+            
+            // Add to container
+            selectedCategoriesContainer.appendChild(tag);
+            
+            // Disable option in select
+            const option = categorySelect.querySelector(`option[value="${categoryId}"]`);
+            if (option) {
+                option.disabled = true;
+            }
+            
+            // Update hidden input
+            updateCategoriesInput();
+        }
+        
+        // Remove category function
+        function removeCategory(categoryId) {
+            const tag = document.querySelector(`[data-category-id="${categoryId}"]`);
+            const categorySelect = document.getElementById('category-select');
+            
+            if (tag) {
+                tag.remove();
+                
+                // Enable option in select
+                const option = categorySelect.querySelector(`option[value="${categoryId}"]`);
+                if (option) {
+                    option.disabled = false;
+                }
+                
+                // Update hidden input
+                updateCategoriesInput();
+            }
+        }
+        
+        // Update hidden inputs with selected categories
+        function updateCategoriesInput() {
+            const selectedCategories = document.querySelectorAll('.category-tag');
+            const categoryIds = Array.from(selectedCategories).map(tag => tag.getAttribute('data-category-id'));
+            
+            // Remove existing hidden inputs
+            const existingInputs = document.querySelectorAll('input[name="categories[]"]');
+            existingInputs.forEach(input => input.remove());
+            
+            // Create new hidden inputs for each category ID
+            categoryIds.forEach(categoryId => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'categories[]';
+                hiddenInput.value = categoryId;
+                document.querySelector('.category-tags-container').appendChild(hiddenInput);
+            });
+        }
     </script>
 
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
@@ -239,4 +351,68 @@
             removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
         });
     </script>
+@endpush
+
+@push('styles')
+    <style>
+        /* Category Tags Styles */
+        .category-tags-container {
+            border: 1px solid #e9ecef;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+        }
+
+        .selected-categories {
+            min-height: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .category-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            background-color: #5e72e4 !important;
+            color: white;
+            border: none;
+            cursor: default;
+        }
+
+        .category-tag .btn-close {
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .category-tag .btn-close:hover {
+            opacity: 1;
+        }
+
+        .category-tag .btn-close:focus {
+            box-shadow: none;
+        }
+
+        #category-select {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        #category-select:focus {
+            border-color: #5e72e4;
+            box-shadow: 0 0 0 0.2rem rgba(94, 114, 228, 0.25);
+        }
+
+        .category-tags-container.is-invalid #category-select {
+            border-color: #dc3545;
+        }
+
+        .category-tags-container.is-invalid .selected-categories {
+            border-color: #dc3545;
+        }
+    </style>
 @endpush

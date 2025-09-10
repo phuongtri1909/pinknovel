@@ -92,17 +92,32 @@
 
                                 <div class="form-group">
                                     <label for="categories">Thể loại</label>
-                                    <select name="categories[]" id="categories" class="form-control" multiple required>
-                                        @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}"
-                                                {{ in_array($category->id, $story->categories->pluck('id')->toArray()) ? 'selected' : '' }}>
-                                                {{ $category->name }}
-                                                @if($category->is_main)
-                                                    ⭐ (Thể loại chính)
-                                                @endif
-                                            </option>
-                                        @endforeach
-                                    </select>
+                                    <div class="category-tags-container">
+                                        <div class="selected-categories mb-2" id="selected-categories">
+                                            @foreach ($story->categories as $category)
+                                                <span class="badge bg-primary me-2 mb-2 category-tag" data-category-id="{{ $category->id }}">
+                                                    {{ $category->name }}
+                                                    @if($category->is_main)
+                                                        ⭐
+                                                    @endif
+                                                    <button type="button" class="btn-close btn-close-white ms-1" onclick="removeCategory({{ $category->id }})"></button>
+                                                </span>
+                                            @endforeach
+                                        </div>
+                                        <select id="category-select" class="form-control">
+                                            <option value="">-- Chọn thể loại --</option>
+                                            @foreach ($categories as $category)
+                                                <option value="{{ $category->id }}" 
+                                                    {{ in_array($category->id, $story->categories->pluck('id')->toArray()) ? 'disabled' : '' }}>
+                                                    {{ $category->name }}
+                                                    @if($category->is_main)
+                                                        ⭐ (Thể loại chính)
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        </select>
+                                        <!-- Hidden inputs will be generated dynamically by JavaScript -->
+                                    </div>
                                     @error('categories')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -255,18 +270,43 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            const categoriesSelect = document.getElementById('categories');
+            const categorySelect = document.getElementById('category-select');
+            const selectedCategoriesContainer = document.getElementById('selected-categories');
+
+            // Initialize hidden inputs for existing categories
+            updateCategoriesInput();
+
+            // Add category when select changes
+            categorySelect.addEventListener('change', function() {
+                const selectedValue = this.value;
+                if (selectedValue) {
+                    addCategory(selectedValue, this.options[this.selectedIndex].text);
+                    this.value = ''; // Reset select
+                }
+            });
 
             // Form validation before submit
             const form = document.querySelector('form');
             form.addEventListener('submit', function(event) {
-                const selectedOptions = Array.from(categoriesSelect.selectedOptions);
-
-                if (selectedOptions.length === 0) {
+                const selectedCategories = document.querySelectorAll('.category-tag');
+                const categoryTagsContainer = document.querySelector('.category-tags-container');
+                
+                if (selectedCategories.length === 0) {
                     event.preventDefault();
-                    categoriesSelect.classList.add('is-invalid');
+                    categoryTagsContainer.classList.add('is-invalid');
+                    categorySelect.classList.add('is-invalid');
                     return false;
+                } else {
+                    categoryTagsContainer.classList.remove('is-invalid');
+                    categorySelect.classList.remove('is-invalid');
                 }
+
+                // Ensure hidden inputs are updated before submit
+                updateCategoriesInput();
+                
+                // Debug: Log the hidden inputs
+                const hiddenInputs = document.querySelectorAll('input[name="categories[]"]');
+                console.log('Hidden inputs before submit:', Array.from(hiddenInputs).map(input => input.value));
 
                 return true;
             });
@@ -314,6 +354,74 @@
                 }
             });
         });
+
+        // Add category function
+        function addCategory(categoryId, categoryName) {
+            const selectedCategoriesContainer = document.getElementById('selected-categories');
+            const categorySelect = document.getElementById('category-select');
+            const categoriesInput = document.getElementById('categories-input');
+            
+            // Check if category already exists
+            if (document.querySelector(`[data-category-id="${categoryId}"]`)) {
+                return;
+            }
+            
+            // Create tag element
+            const tag = document.createElement('span');
+            tag.className = 'badge bg-primary me-2 mb-2 category-tag';
+            tag.setAttribute('data-category-id', categoryId);
+            tag.innerHTML = `${categoryName} <button type="button" class="btn-close btn-close-white ms-1" onclick="removeCategory(${categoryId})"></button>`;
+            
+            // Add to container
+            selectedCategoriesContainer.appendChild(tag);
+            
+            // Disable option in select
+            const option = categorySelect.querySelector(`option[value="${categoryId}"]`);
+            if (option) {
+                option.disabled = true;
+            }
+            
+            // Update hidden input
+            updateCategoriesInput();
+        }
+        
+        // Remove category function
+        function removeCategory(categoryId) {
+            const tag = document.querySelector(`[data-category-id="${categoryId}"]`);
+            const categorySelect = document.getElementById('category-select');
+            
+            if (tag) {
+                tag.remove();
+                
+                // Enable option in select
+                const option = categorySelect.querySelector(`option[value="${categoryId}"]`);
+                if (option) {
+                    option.disabled = false;
+                }
+                
+                // Update hidden input
+                updateCategoriesInput();
+            }
+        }
+        
+        // Update hidden inputs with selected categories
+        function updateCategoriesInput() {
+            const selectedCategories = document.querySelectorAll('.category-tag');
+            const categoryIds = Array.from(selectedCategories).map(tag => tag.getAttribute('data-category-id'));
+            
+            // Remove existing hidden inputs
+            const existingInputs = document.querySelectorAll('input[name="categories[]"]');
+            existingInputs.forEach(input => input.remove());
+            
+            // Create new hidden inputs for each category ID
+            categoryIds.forEach(categoryId => {
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'categories[]';
+                hiddenInput.value = categoryId;
+                document.querySelector('.category-tags-container').appendChild(hiddenInput);
+            });
+        }
     </script>
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
     <script>
@@ -345,6 +453,66 @@
         .form-switch .form-check-input:focus {
             border-color: rgba(45, 206, 137, 0.25);
             box-shadow: 0 0 0 0.2rem rgba(45, 206, 137, 0.25);
+        }
+
+        /* Category Tags Styles */
+        .category-tags-container {
+            border: 1px solid #e9ecef;
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            background-color: #f8f9fa;
+        }
+
+        .selected-categories {
+            min-height: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .category-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            background-color: #5e72e4 !important;
+            color: white;
+            border: none;
+            cursor: default;
+        }
+
+        .category-tag .btn-close {
+            font-size: 0.75rem;
+            margin-left: 0.5rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .category-tag .btn-close:hover {
+            opacity: 1;
+        }
+
+        .category-tag .btn-close:focus {
+            box-shadow: none;
+        }
+
+        #category-select {
+            border: 1px solid #ced4da;
+            border-radius: 0.375rem;
+        }
+
+        #category-select:focus {
+            border-color: #5e72e4;
+            box-shadow: 0 0 0 0.2rem rgba(94, 114, 228, 0.25);
+        }
+
+        .category-tags-container.is-invalid #category-select {
+            border-color: #dc3545;
+        }
+
+        .category-tags-container.is-invalid .selected-categories {
+            border-color: #dc3545;
         }
     </style>
 @endpush
