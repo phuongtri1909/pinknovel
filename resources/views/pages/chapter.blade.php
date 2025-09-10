@@ -385,6 +385,7 @@
 
         .reading-settings-container {
             z-index: 1000;
+            display: block; /* Hiện mặc định khi load trang */
         }
 
         .reading-settings-toggle {
@@ -982,6 +983,10 @@
             const fontDecreaseBtn = document.querySelector('.font-decrease-btn');
             const fontFamilyBtn = document.querySelector('.font-family-btn');
             const chapterContent = document.getElementById('chapter-content');
+            const readingSettingsContainer = document.querySelector('.reading-settings-container');
+            
+            // Biến để theo dõi scroll
+            let lastScrollTop = 0;
 
             // Create font family dropdown
             const fontFamilyDropdown = document.createElement('div');
@@ -1129,6 +1134,25 @@
 
             // Load preferences on page load
             loadSavedPreferences();
+            
+            // Xử lý hiển thị reading-settings khi scroll
+            window.addEventListener('scroll', function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                // Chỉ ẩn khi scroll xuống
+                if (scrollTop > lastScrollTop) {
+                    readingSettingsContainer.style.display = 'none';
+                    // Đóng menu nếu đang mở
+                    settingsMenu.classList.remove('active');
+                    fontFamilyDropdown.classList.remove('active');
+                }
+                // Hiện lại khi scroll lên
+                else if (scrollTop < lastScrollTop) {
+                    readingSettingsContainer.style.display = 'block';
+                }
+                
+                lastScrollTop = scrollTop;
+            });
 
             // Fix dropdown positioning
             const dropdownButtons = document.querySelectorAll('.chapter-list-dropdown .btn');

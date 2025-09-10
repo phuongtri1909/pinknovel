@@ -76,9 +76,9 @@
     <div class="pt-5 container">
         <!-- Mobile Filter Toggle Button -->
         <div class="d-md-none mb-3">
-            <button class="btn bg-1 w-100" type="button" id="mobileFilterToggle">
+            <button class="btn w-100" type="button" id="mobileFilterToggle">
                 <i class="fa-solid fa-filter me-2"></i>
-                <span>Bộ lọc tìm kiếm</span>
+                <span>Tìm kiếm nâng cao</span>
                 <i class="fa-solid fa-chevron-down ms-auto" id="filterToggleIcon"></i>
             </button>
         </div>
@@ -363,6 +363,7 @@
 
 @push('styles')
     <style>
+
          #mobileFilterToggle {
              display: flex;
              align-items: center;
@@ -372,6 +373,7 @@
              padding: 12px 16px;
              color: white !important;
              border: none;
+             background-color: #4e8ad8;
          }
 
          #mobileFilterToggle:hover {
@@ -469,8 +471,7 @@
 
                          toggleIcon.classList.remove('fa-chevron-up');
                          toggleIcon.classList.add('fa-chevron-down');
-                         toggleButton.classList.remove('bg-3');
-                         toggleButton.classList.add('bg-1');
+                        
                     } else {
                         // Show the search with smooth animation
                         mobileSearch.style.display = 'block';
@@ -484,8 +485,7 @@
 
                          toggleIcon.classList.remove('fa-chevron-down');
                          toggleIcon.classList.add('fa-chevron-up');
-                         toggleButton.classList.remove('bg-1');
-                         toggleButton.classList.add('bg-3');
+                       
                     }
                 });
             }

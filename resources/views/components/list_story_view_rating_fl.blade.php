@@ -250,6 +250,13 @@
             .bg-pb{
                 background: #99eae7;
             }
+
+            @media (min-width: 768px) {
+                .bg-pb{
+                    background: var(--primary-color-2);
+                }
+            }
+
             /* Hot Stories Tag */
             .hot-stories-tag {
                 display: inline-block;

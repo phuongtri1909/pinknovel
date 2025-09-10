@@ -29,17 +29,14 @@
                 </a>
             </h5>
         </div>
-        <div class="d-flex justify-content-between align-items-center mt-1">
-           
-            <span>
+        <div class="story-views-time-container mt-1">
+            <span class="story-views">
                 <i class="fas fa-eye eye fs-8 text-primary"></i>
                 {{ format_number_short($story->total_views) }}
             </span>
-
-            <span class="text-end " title="{{ $story->latestChapter?->created_at?->format('d/m/Y H:i') }}">
+            <span class="story-time" title="{{ $story->latestChapter?->created_at?->format('d/m/Y H:i') }}">
                 {{ time_elapsed_string($story->latestChapter?->created_at) }}
             </span>
-           
         </div>
         <div class="story-stats-container mb-2 mt-1">
             <div class="d-flex justify-content-between">
@@ -179,6 +176,32 @@
             .category-badge:hover {
                 background: rgba(255, 255, 255, 0.3);
                 transform: translateY(-1px);
+            }
+
+            .story-views-time-container {
+                display: flex;
+                align-items: center;
+                white-space: nowrap;
+                overflow-x: auto;
+                overflow-y: hidden;
+                min-width: 0;
+                gap: 8px;
+                scrollbar-width: none; /* Firefox */
+                -ms-overflow-style: none; /* IE and Edge */
+            }
+
+            .story-views-time-container::-webkit-scrollbar {
+                display: none; /* Chrome, Safari, Opera */
+            }
+
+            .story-views {
+                flex-shrink: 0;
+            }
+
+            .story-time {
+                flex-shrink: 0;
+                text-align: right;
+                white-space: nowrap;
             }
 
             @keyframes fadeInUp {
