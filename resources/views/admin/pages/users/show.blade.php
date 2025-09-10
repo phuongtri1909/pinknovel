@@ -262,6 +262,12 @@
                                 <span class="badge bg-success rounded-pill">{{ $counts['author_story_earnings'] }}</span>
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#author-featured-stories" role="tab">
+                                <i class="fas fa-star me-1"></i> Đề cử truyện
+                                <span class="badge bg-warning rounded-pill">{{ $counts['author_featured_stories'] }}</span>
+                            </a>
+                        </li>
                         @endif
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#bookmarks" role="tab">
@@ -632,6 +638,21 @@
                                     </div>
                                 @endif
                             </div>
+                        </div>
+                        
+                        <!-- Author Featured Stories Tab -->
+                        <div class="tab-pane" id="author-featured-stories" role="tabpanel">
+                            @include('admin.pages.users.partials.author-featured-stories-table', ['data' => $authorFeaturedStories])
+                            @if($counts['author_featured_stories'] > 5)
+                                <div class="d-flex justify-content-center mt-3">
+                                    <x-pagination :paginator="$authorFeaturedStories" />
+                                </div>
+                                <div class="text-center mt-3">
+                                    <button class="btn btn-sm btn-primary load-more" data-type="author-featured-stories">
+                                        Xem thêm <i class="fas fa-chevron-down ms-1"></i>
+                                    </button>
+                                </div>
+                            @endif
                         </div>
                         @endif
                         

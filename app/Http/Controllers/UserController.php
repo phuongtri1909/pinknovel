@@ -110,6 +110,7 @@ class UserController extends Controller
         // Get author earnings (if user is author)
         $authorChapterEarnings = collect();
         $authorStoryEarnings = collect();
+        $authorFeaturedStories = collect();
         
         if ($user->role === 'author') {
             // Get chapter earnings
@@ -127,6 +128,13 @@ class UserController extends Controller
             ->with(['story', 'user'])
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'author_story_earnings_page');
+
+            // Get featured stories (author's own featured stories)
+            $authorFeaturedStories = \App\Models\StoryFeatured::where('user_id', $user->id)
+                ->where('type', \App\Models\StoryFeatured::TYPE_AUTHOR)
+                ->with(['story'])
+                ->orderByDesc('created_at')
+                ->paginate(5, ['*'], 'author_featured_stories_page');
         }
 
         // Get coin history with pagination
@@ -148,6 +156,7 @@ class UserController extends Controller
                 (SELECT COUNT(*) FROM user_daily_tasks WHERE user_id = ?) as user_daily_tasks,
                 (SELECT COUNT(*) FROM withdrawal_requests WHERE user_id = ?) as withdrawal_requests,
                 (SELECT COUNT(*) FROM coin_histories WHERE user_id = ?) as coin_histories,
+                (SELECT COUNT(*) FROM story_featureds WHERE user_id = ? AND type = 'author') as author_featured_stories,
                 (SELECT COUNT(*) FROM chapter_purchases cp 
                  JOIN chapters c ON cp.chapter_id = c.id 
                  JOIN stories s ON c.story_id = s.id 
@@ -158,7 +167,7 @@ class UserController extends Controller
         ", [
             $user->id, $user->id, $user->id, $user->id, $user->id, 
             $user->id, $user->id, $user->id, $user->id, $user->id,
-            $user->id, $user->id
+            $user->id, $user->id, $user->id
         ])[0];
 
         $counts = (array) $counts;
@@ -177,6 +186,7 @@ class UserController extends Controller
             'withdrawalRequests',
             'authorChapterEarnings',
             'authorStoryEarnings',
+            'authorFeaturedStories',
             'coinHistories',
             'counts'
         ));
@@ -879,6 +889,13 @@ class UserController extends Controller
                 ->with(['story', 'user'])
                 ->orderByDesc('created_at')
                 ->paginate(5, ['*'], 'author_story_earnings_page', $page);
+                break;
+            case 'author-featured-stories':
+                $data = \App\Models\StoryFeatured::where('user_id', $user->id)
+                    ->where('type', \App\Models\StoryFeatured::TYPE_AUTHOR)
+                    ->with(['story'])
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'author_featured_stories_page', $page);
                 break;
             case 'coin-histories':
                 $data = $user->coinHistories()

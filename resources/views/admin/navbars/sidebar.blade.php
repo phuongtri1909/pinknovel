@@ -4,15 +4,14 @@
         <i class="fas fa-times p-3 cursor-pointer opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
             aria-hidden="true" id="iconSidenav"></i>
         @php
-            // Get the logo from LogoSite model
-            $logoSite = \App\Models\LogoSite::first();
+          
             $logoPath =
                 $logoSite && $logoSite->logo
                     ? Storage::url($logoSite->logo)
                     : asset('assets/images/logo/logo_site.webp');
         @endphp
         <a class="d-flex m-0 justify-content-center text-wrap" href="{{ route('home') }}">
-            <img height="70" class="logo_site" src="{{ $logoPath }}" alt="{{ config('app.name') }} logo">
+            <img height="70" class="logof_site" src="{{ $logoPath }}" alt="{{ config('app.name') }} logo">
         </a>
     </div>
     <hr class="horizontal dark mt-0">

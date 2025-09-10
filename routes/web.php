@@ -27,6 +27,7 @@ use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\CardDepositController;
 use App\Http\Controllers\Admin\ConfigController;
 use App\Http\Controllers\Admin\SocialController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\PaypalDepositController;
 use App\Http\Controllers\RequestPaymentController;
 use App\Http\Controllers\Admin\StoryReviewController;
@@ -246,9 +247,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
                 // Sử dụng middleware 'role' thay vì 'role.admin.mod'
                 Route::group(['middleware' => 'role:admin,mod'], function () {
-                    Route::get('/dashboard', function () {
-                        return redirect()->route('stories.index');
-                    })->name('admin.dashboard');
+                    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+                    Route::get('/dashboard/data', [DashboardController::class, 'getStatsData'])->name('admin.dashboard.data');
 
                     Route::get('users', [UserController::class, 'index'])->name('users.index');
                     Route::get('users/{user}', [UserController::class, 'show'])->name('users.show');

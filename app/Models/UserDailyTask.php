@@ -16,6 +16,7 @@ class UserDailyTask extends Model
         'daily_task_id',
         'task_date',
         'completed_count',
+        'coin_reward',
         'last_completed_at',
         'ip_address',
         'user_agent',
@@ -81,8 +82,12 @@ class UserDailyTask extends Model
                     return ['success' => false, 'message' => 'Đã hoàn thành tối đa nhiệm vụ này trong ngày'];
                 }
 
+                // Lấy coin_reward từ config tại thời điểm hiện tại
+                $coinReward = \App\Models\Config::getConfig("daily_task_{$task->type}_reward", 0);
+                
                 $userTask->increment('completed_count');
                 $userTask->update([
+                    'coin_reward' => $coinReward, // Lưu coin_reward vào user_daily_tasks
                     'last_completed_at' => now(),
                     'ip_address' => $ipAddress,
                     'user_agent' => $userAgent,
@@ -95,7 +100,7 @@ class UserDailyTask extends Model
                 $coinService = new \App\Services\CoinService();
                 $coinService->addCoins(
                     $user,
-                    $task->coin_reward,
+                    $coinReward,
                     \App\Models\CoinHistory::TYPE_DAILY_TASK,
                     "Hoàn thành nhiệm vụ: {$task->name}",
                     $userTask
@@ -103,8 +108,8 @@ class UserDailyTask extends Model
 
                 return [
                     'success' => true,
-                    'message' => "Hoàn thành nhiệm vụ '{$task->name}' và nhận được {$task->coin_reward} xu!",
-                    'coins_earned' => $task->coin_reward,
+                    'message' => "Hoàn thành nhiệm vụ '{$task->name}' và nhận được {$coinReward} xu!",
+                    'coins_earned' => $coinReward,
                     'completed_count' => $userTask->completed_count,
                     'max_per_day' => $task->max_per_day,
                 ];
