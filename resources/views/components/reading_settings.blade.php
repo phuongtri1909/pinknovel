@@ -45,6 +45,7 @@
     position: fixed !important;
     bottom: 0 !important;
     left: 0 !important;
+    transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .reading-settings-toggle {
@@ -280,8 +281,44 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Load theme on page load
     loadSavedTheme();
+
+    let lastScrollTop = 0;
+    const readingSettingsContainer = document.querySelector('.reading-settings-container');
+    let isScrolling = false;
+
+    function handleScroll() {
+        if (isScrolling) return;
+        
+        isScrolling = true;
+        requestAnimationFrame(function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > lastScrollTop && scrollTop > 100) {
+                readingSettingsContainer.style.opacity = '0';
+                readingSettingsContainer.style.transform = 'translateY(20px)';
+                readingSettingsMenu.classList.remove('active');
+            }
+    
+            else if (scrollTop < lastScrollTop) {
+                readingSettingsContainer.style.opacity = '1';
+                readingSettingsContainer.style.transform = 'translateY(0)';
+            }
+            
+            lastScrollTop = scrollTop;
+            isScrolling = false;
+        });
+    }
+
+    function showContainerOnLoad() {
+        readingSettingsContainer.style.opacity = '1';
+        readingSettingsContainer.style.transform = 'translateY(0)';
+    }
+
+    window.addEventListener('scroll', handleScroll);
+    
+    showContainerOnLoad();
+    
 
     // Chapter-specific functionality (only on chapter pages)
     @if(request()->routeIs('chapter'))
@@ -415,26 +452,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Load chapter preferences on page load
         loadSavedChapterPreferences();
-
-        // Hide reading settings when scrolling down
-        let lastScrollTop = 0;
-        const readingSettingsContainer = document.querySelector('.reading-settings-container');
-
-        window.addEventListener('scroll', function() {
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            
-            // Hide when scrolling down
-            if (scrollTop > lastScrollTop) {
-                readingSettingsContainer.style.display = 'none';
-                readingSettingsMenu.classList.remove('active');
-            }
-            // Show when scrolling up
-            else if (scrollTop < lastScrollTop) {
-                readingSettingsContainer.style.display = 'block';
-            }
-            
-            lastScrollTop = scrollTop;
-        });
     @endif
 });
 </script>
