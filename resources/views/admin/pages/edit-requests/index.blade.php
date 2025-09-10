@@ -173,7 +173,7 @@
                     
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-4">
-                        {{ $editRequests->appends(request()->except('page'))->links() }}
+                        <x-pagination :paginator="$editRequests" />
                     </div>
                 </div>
             </div>

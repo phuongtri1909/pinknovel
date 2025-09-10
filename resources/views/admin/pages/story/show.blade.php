@@ -234,7 +234,7 @@
                                 </table>
                                 @if($story_purchases_count > 10)
                                     <div class="d-flex justify-content-center mt-3">
-                                        {{ $story_purchases->fragment('story-purchases')->links() }}
+                                        <x-pagination :paginator="$story_purchases" />
                                     </div>
                                 @endif
                             </div>
@@ -271,7 +271,7 @@
                                 </table>
                                 @if($chapter_purchases_count > 10)
                                     <div class="d-flex justify-content-center mt-3">
-                                        {{ $chapter_purchases->fragment('chapter-purchases')->links() }}
+                                        <x-pagination :paginator="$chapter_purchases" />
                                     </div>
                                 @endif
                             </div>
@@ -322,7 +322,7 @@
                                 </table>
                                 @if($bookmarks_count > 10)
                                     <div class="d-flex justify-content-center mt-3">
-                                        {{ $bookmarks->fragment('bookmarks')->links() }}
+                                        <x-pagination :paginator="$bookmarks" />
                                     </div>
                                 @endif
                             </div>

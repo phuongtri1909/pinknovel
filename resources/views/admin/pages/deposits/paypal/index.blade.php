@@ -145,7 +145,7 @@
                         </table>
                     </div>
                     <div class="px-4 pt-4">
-                        {{ $paypalDeposits->withQueryString()->links() }}
+                        <x-pagination :paginator="$paypalDeposits" />
                     </div>
                 </div>
             </div>

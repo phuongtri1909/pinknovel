@@ -263,7 +263,7 @@
                         </table>
                     </div>
                     <div class="px-4 pt-4">
-                        {{ $histories->withQueryString()->links() }}
+                        <x-pagination :paginator="$histories" />
                     </div>
                 </div>
             </div>

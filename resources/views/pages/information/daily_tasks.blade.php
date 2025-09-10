@@ -352,7 +352,7 @@
 
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center p-3">
-                        {{ $history->links() }}
+                        <x-pagination :paginator="$history" />
                     </div>
                 @else
                     <div class="text-center py-5">

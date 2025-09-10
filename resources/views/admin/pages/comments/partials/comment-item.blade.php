@@ -64,8 +64,39 @@
                     $userId = request('user');
                     $date = request('date');
                     
-                    // Count pending replies
-                    $pendingReplies = $comment->replies->where('approval_status', 'pending')->count();
+                    $pendingReplies = 0;
+                    foreach ($comment->replies as $reply) {
+                        if ($reply->approval_status === 'pending' && 
+                            $reply->user && 
+                            $reply->user->role !== 'admin' && 
+                            $reply->story && 
+                            $reply->story->user_id !== $reply->user_id) {
+                            $pendingReplies++;
+                        }
+                        if ($reply->replies) {
+                            foreach ($reply->replies as $nestedReply) {
+                                if ($nestedReply->approval_status === 'pending' && 
+                                    $nestedReply->user && 
+                                    $nestedReply->user->role !== 'admin' && 
+                                    $nestedReply->story && 
+                                    $nestedReply->story->user_id !== $nestedReply->user_id) {
+                                    $pendingReplies++;
+                                }
+                                // Count level 3 replies
+                                if ($nestedReply->replies) {
+                                    foreach ($nestedReply->replies as $level3Reply) {
+                                        if ($level3Reply->approval_status === 'pending' && 
+                                            $level3Reply->user && 
+                                            $level3Reply->user->role !== 'admin' && 
+                                            $level3Reply->story && 
+                                            $level3Reply->story->user_id !== $level3Reply->user_id) {
+                                            $pendingReplies++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     
                     if ($search || $userId || $date) {
                         foreach ($comment->replies as $reply) {
@@ -97,7 +128,11 @@
         </div>
         
         <div class="d-flex gap-2">
-            @if($comment->approval_status === 'pending' && $comment->user && $comment->user->role !== 'admin' && $comment->story && $comment->story->user_id !== $comment->user_id)
+            @if($comment->approval_status === 'pending' && 
+                $comment->user && 
+                $comment->user->role !== 'admin' && 
+                $comment->story && 
+                $comment->story->user_id !== $comment->user_id)
                 <button class="btn btn-link text-success btn-sm p-0 approve-comment-btn" data-comment-id="{{ $comment->id }}">
                     <i class="fa-solid fa-check"></i> Duyệt
                 </button>

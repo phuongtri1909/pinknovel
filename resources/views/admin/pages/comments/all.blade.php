@@ -71,7 +71,12 @@
                 <div class="d-flex flex-row justify-content-between align-items-center flex-wrap">
                     <div>
                         <h5 class="mb-0">Quản lý tất cả bình luận</h5>
-                        <p class="text-sm mb-0">Tổng số: {{ $totalComments }} bình luận</p>
+                        <p class="text-sm mb-0">
+                            Tổng số: {{ $totalComments }} bình luận
+                            @if(isset($pendingCommentsCount) && $pendingCommentsCount > 0)
+                                | <span class="text-warning">Chờ duyệt: {{ $pendingCommentsCount }}</span>
+                            @endif
+                        </p>
                     </div>
                     
                     <form method="GET" class="mt-3 d-flex flex-column flex-md-row gap-2 w-100 w-md-auto">
@@ -123,7 +128,7 @@
                         @endforeach
                         
                         <div class="mt-4">
-                            {{ $comments->appends(request()->query())->links() }}
+                            <x-pagination :paginator="$comments" />
                         </div>
                     @else
                         <div class="alert alert-info text-center">
@@ -149,10 +154,16 @@
                 if (repliesContainer) {
                     if (repliesContainer.classList.contains('d-none')) {
                         repliesContainer.classList.remove('d-none');
-                        this.innerHTML = '<i class="fa-solid fa-chevron-up me-1"></i>Ẩn trả lời';
+                        const originalText = this.innerHTML;
+                        const pendingBadge = originalText.match(/<span class="badge[^>]*>.*?<\/span>/);
+                        const pendingBadgeHtml = pendingBadge ? pendingBadge[0] : '';
+                        this.innerHTML = '<i class="fa-solid fa-chevron-up me-1"></i>Ẩn trả lời ' + pendingBadgeHtml;
                     } else {
                         repliesContainer.classList.add('d-none');
-                        this.innerHTML = '<i class="fa-solid fa-chevron-down me-1"></i>Xem trả lời';
+                        const originalText = this.innerHTML;
+                        const pendingBadge = originalText.match(/<span class="badge[^>]*>.*?<\/span>/);
+                        const pendingBadgeHtml = pendingBadge ? pendingBadge[0] : '';
+                        this.innerHTML = '<i class="fa-solid fa-chevron-down me-1"></i>Xem trả lời ' + pendingBadgeHtml;
                     }
                 }
             });

@@ -488,7 +488,7 @@
                                 </table>
                                 @if($counts['story_purchases'] > 5)
                                     <div class="d-flex justify-content-center mt-3">
-                                        {{ $storyPurchases->fragment('story-purchases')->links() }}
+                                        <x-pagination :paginator="$storyPurchases" />
                                     </div>
                                     <div class="text-center mt-3">
                                         <button class="btn btn-sm btn-primary load-more" data-type="story-purchases">

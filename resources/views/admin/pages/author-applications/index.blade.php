@@ -144,7 +144,7 @@
                     
                     <!-- Pagination -->
                     <div class="d-flex justify-content-center mt-4">
-                        {{ $applications->appends(request()->except('page'))->links() }}
+                        <x-pagination :paginator="$applications" />
                     </div>
                 </div>
             </div>

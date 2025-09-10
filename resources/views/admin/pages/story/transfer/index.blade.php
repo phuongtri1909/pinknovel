@@ -175,7 +175,7 @@
                         </table>
                     </div>
                     <div class="px-4 pt-4">
-                        {{ $stories->withQueryString()->links() }}
+                        <x-pagination :paginator="$stories" />
                     </div>
                 </div>
             </div>

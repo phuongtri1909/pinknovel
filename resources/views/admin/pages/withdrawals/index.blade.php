@@ -134,7 +134,7 @@
                             </table>
 
                             <div class="d-flex justify-content-center mt-4">
-                                {{ $withdrawalRequests->appends(['status' => $status])->links() }}
+                                <x-pagination :paginator="$withdrawalRequests" />
                             </div>
                         @endif
                     </div>

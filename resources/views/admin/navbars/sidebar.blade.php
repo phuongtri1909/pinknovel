@@ -254,7 +254,14 @@
                     </div>
                     <span class="nav-link-text ms-1">Quản lý Bình luận
                         @php
-                            $pendingCommentsCount = \App\Models\Comment::where('approval_status', 'pending')->count();
+                            $pendingCommentsCount = \App\Models\Comment::where('approval_status', 'pending')
+                                ->whereHas('user', function($q) {
+                                    $q->where('role', '!=', 'admin');
+                                })
+                                ->whereDoesntHave('story', function($q) {
+                                    $q->whereColumn('stories.user_id', 'comments.user_id');
+                                })
+                                ->count();
                         @endphp
                         @if ($pendingCommentsCount > 0)
                             <span class="badge bg-danger ms-2">{{ $pendingCommentsCount }}</span>

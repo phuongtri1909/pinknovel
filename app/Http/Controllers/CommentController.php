@@ -547,6 +547,15 @@ class CommentController extends Controller
             $finalQuery->whereHas('user', function ($q) {
                 $q->whereIn('role', ['user']);
             });
+        } else {
+            $finalQuery->where(function($q) {
+                $q->whereHas('user', function($userQuery) {
+                    $userQuery->where('role', '!=', 'admin');
+                })
+                ->orWhereDoesntHave('story', function($storyQuery) {
+                    $storyQuery->whereColumn('stories.user_id', 'comments.user_id');
+                });
+            });
         }
 
         $comments = $finalQuery->orderBy('id', 'desc')->paginate(15);
@@ -565,8 +574,17 @@ class CommentController extends Controller
         $users = $usersQuery->orderBy('name')->get();
 
         $totalComments = Comment::count();
+        
+        $pendingCommentsCount = Comment::where('approval_status', 'pending')
+            ->whereHas('user', function($q) {
+                $q->where('role', '!=', 'admin');
+            })
+            ->whereDoesntHave('story', function($q) {
+                $q->whereColumn('stories.user_id', 'comments.user_id');
+            })
+            ->count();
 
-        return view('admin.pages.comments.all', compact('comments', 'users', 'stories', 'totalComments'));
+        return view('admin.pages.comments.all', compact('comments', 'users', 'stories', 'totalComments', 'pendingCommentsCount'));
     }
 
     /**
