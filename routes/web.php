@@ -97,6 +97,11 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                 ->name('reading.save-progress');
         });
 
+        // Facebook cache clearing routes
+        Route::get('/clear-facebook-cache', function() {
+            return view('pages.clear-facebook-cache');
+        })->name('clear.facebook.cache');
+
         Route::post('/comments/{comment}/react', [CommentController::class, 'react'])->name('comments.react');
         Route::get('/stories/{storyId}/comments', [CommentController::class, 'loadComments'])->name('comments.load');
 

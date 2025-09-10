@@ -1,25 +1,27 @@
 @extends('layouts.app')
 
 @section('title', " Truyện {$story->title} | Chương {$chapter->number}: {$chapter->title} | " . config('app.name'))
-@section('description', Str::limit(strip_tags($chapter->content), 160))
+@section('description', Str::limit(html_entity_decode(strip_tags($chapter->content)), 160))
 @section('keyword', "chương {$chapter->number}, {$chapter->title}")
 
-@push('meta')
+@section('meta')
+    <meta property="og:type" content="article">
     <meta property="og:title" content="Chương {{ $chapter->number }}: {{ $chapter->title }} - {{ $story->title }}">
-    <meta property="og:description" content="{{ Str::limit(strip_tags($chapter->content), 100) }}">
-    <meta property="og:image" content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
-    <meta property="og:image:secure_url" content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
+    <meta property="og:description" content="{{ Str::limit(html_entity_decode(strip_tags($chapter->content)), 100) }}">
+    <meta property="og:image" content="{{ $story->cover ? Storage::url($story->cover) . '?v=' . $story->updated_at->timestamp : asset('assets/images/logo/logo_site.webp') . '?v=' . time() }}">
+    <meta property="og:image:secure_url" content="{{ $story->cover ? Storage::url($story->cover) . '?v=' . $story->updated_at->timestamp : asset('assets/images/logo/logo_site.webp') . '?v=' . time() }}">
     <meta property="og:image:width" content="600">
     <meta property="og:image:height" content="800">
     <meta property="og:image:alt" content="Ảnh bìa truyện {{ $story->title }} - Chương {{ $chapter->number }}">
-    <meta property="og:type" content="article">
     <meta property="og:url" content="{{ url()->current() }}">
     <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:updated_time" content="{{ $chapter->updated_at->format('c') }}">
+    <meta property="article:modified_time" content="{{ $chapter->updated_at->format('c') }}">
 
     {{-- Article specific meta tags --}}
     <meta property="article:author" content="{{ $story->author_name ?? ($story->user->name ?? 'Unknown') }}">
     <meta property="article:published_time" content="{{ $chapter->created_at->format('c') }}">
-    <meta property="article:modified_time" content="{{ $chapter->updated_at->format('c') }}">
     <meta property="article:section" content="{{ $story->categories->first()->name ?? 'Truyện' }}">
     @foreach($story->categories as $category)
         <meta property="article:tag" content="{{ $category->name }}">
@@ -29,9 +31,9 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Chương {{ $chapter->number }}: {{ $chapter->title }} - {{ $story->title }}">
     <meta name="twitter:description" content="{{ Str::limit(strip_tags($chapter->content), 160) }}">
-    <meta name="twitter:image" content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
+    <meta name="twitter:image" content="{{ $story->cover ? Storage::url($story->cover) . '?v=' . $story->updated_at->timestamp : asset('assets/images/logo/logo_site.webp') . '?v=' . time() }}">
     <meta name="twitter:image:alt" content="Ảnh bìa truyện {{ $story->title }} - Chương {{ $chapter->number }}">
-@endpush
+@endsection
 
 @section('content')
     <meta name="csrf-token" content="{{ csrf_token() }}">

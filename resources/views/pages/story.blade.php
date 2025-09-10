@@ -2,7 +2,7 @@
 
 @section('title', $story->title . ' - Truyện Pink novel - Đọc Truyện Online Miễn Phí | ' . config('app.name'))
 
-@section('description', Str::limit(strip_tags($story->description), 160))
+@section('description', Str::limit(html_entity_decode(strip_tags($story->description)), 160))
 
 @section('keyword',
     implode(', ', [
@@ -18,36 +18,35 @@
     'web đọc truyện',
     ]))
 
-    @push('meta')
-        <meta property="og:title" content="{{ $story->title }} - {{ config('app.name') }}">
-        <meta property="og:description" content="{{ Str::limit(strip_tags($story->description), 160) }}">
-        <meta property="og:image"
-            content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
-        <meta property="og:image:secure_url"
-            content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
-        <meta property="og:image:width" content="600">
-        <meta property="og:image:height" content="800">
-        <meta property="og:image:alt" content="Ảnh bìa truyện {{ $story->title }}">
-        <meta property="og:type" content="book">
-        <meta property="og:url" content="{{ url()->current() }}">
-        <meta property="og:site_name" content="{{ config('app.name') }}">
+@section('meta')
+    <meta property="og:type" content="book">
+    <meta property="og:title" content="{{ $story->title }} - {{ config('app.name') }}">
+    <meta property="og:description" content="{{ Str::limit(html_entity_decode(strip_tags($story->description)), 160) }}">
+    <meta property="og:image" content="{{ $story->cover ? Storage::url($story->cover) . '?v=' . $story->updated_at->timestamp : asset('assets/images/logo/logo_site.webp') . '?v=' . time() }}">
+    <meta property="og:image:secure_url" content="{{ $story->cover ? Storage::url($story->cover) . '?v=' . $story->updated_at->timestamp : asset('assets/images/logo/logo_site.webp') . '?v=' . time() }}">
+    <meta property="og:image:width" content="600">
+    <meta property="og:image:height" content="800">
+    <meta property="og:image:alt" content="Ảnh bìa truyện {{ $story->title }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:site_name" content="{{ config('app.name') }}">
+    <meta property="og:locale" content="vi_VN">
+    <meta property="og:updated_time" content="{{ $story->updated_at->format('c') }}">
 
-        {{-- Twitter Card Meta Tags --}}
-        <meta name="twitter:card" content="summary_large_image">
-        <meta name="twitter:title" content="{{ $story->title }} - {{ config('app.name') }}">
-        <meta name="twitter:description" content="{{ Str::limit(strip_tags($story->description), 160) }}">
-        <meta name="twitter:image"
-            content="{{ $story->cover ? Storage::url($story->cover) : asset('assets/images/logo/logo_site.webp') }}">
-        <meta name="twitter:image:alt" content="Ảnh bìa truyện {{ $story->title }}">
+    {{-- Twitter Card Meta Tags --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $story->title }} - {{ config('app.name') }}">
+    <meta name="twitter:description" content="{{ Str::limit(html_entity_decode(strip_tags($story->description)), 160) }}">
+    <meta name="twitter:image" content="{{ $story->cover ? Storage::url($story->cover) . '?v=' . $story->updated_at->timestamp : asset('assets/images/logo/logo_site.webp') . '?v=' . time() }}">
+    <meta name="twitter:image:alt" content="Ảnh bìa truyện {{ $story->title }}">
 
-        {{-- Additional Book Meta Tags --}}
-        <meta property="book:author" content="{{ $story->author_name ?? ($story->user->name ?? 'Unknown') }}">
-        <meta property="book:isbn" content="">
-        <meta property="book:release_date" content="{{ $story->created_at->format('Y-m-d') }}">
-        @foreach ($story->categories as $category)
-            <meta property="book:tag" content="{{ $category->name }}">
-        @endforeach
-    @endpush
+    {{-- Additional Book Meta Tags --}}
+    <meta property="book:author" content="{{ $story->author_name ?? ($story->user->name ?? 'Unknown') }}">
+    <meta property="book:isbn" content="">
+    <meta property="book:release_date" content="{{ $story->created_at->format('Y-m-d') }}">
+    @foreach ($story->categories as $category)
+        <meta property="book:tag" content="{{ $category->name }}">
+    @endforeach
+@endsection
 
     @push('styles')
         <style>
