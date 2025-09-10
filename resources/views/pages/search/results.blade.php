@@ -275,15 +275,15 @@
                     @foreach ($stories as $story)
                         <div class="story-item border-bottom pb-3 pt-3">
                             <div class="row">
-                                <div class="col-4 col-sm-3 col-lg-2">
+                                <div class="col-5 col-sm-3 col-lg-2">
                                     <a href="{{ route('show.page.story', $story->slug) }}"
                                         class="h-100 w-100 d-inline-block">
                                         <img src="{{ Storage::url($story->cover) }}" alt="{{ $story->title }}"
                                             class="img-fluid rounded"
-                                            style="width: 100%; height: 150px; object-fit: cover;">
+                                            style="width: 100%; height: 180px; object-fit: cover;">
                                     </a>
                                 </div>
-                                <div class="col-8 col-sm-9 col-lg-10">
+                                <div class="col-7 col-sm-9 col-lg-10">
                                     <h6 class="h6 mb-1">
                                         <a href="{{ route('show.page.story', $story->slug) }}"
                                             class="text-dark text-decoration-none">

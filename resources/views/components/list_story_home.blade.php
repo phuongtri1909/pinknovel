@@ -2,7 +2,7 @@
     <div class="mt-4 bg-list rounded-4 px-0 p-md-4 pb-4">
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
-            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-fire fa-xl" style="color: #ef4444;"></i> Truyện Đề
+            <h2 class="fs-5 m-0 text-dark fw-bold title-dark"><i class="fa-solid fa-fire fa-xl" style="color: #ef4444;"></i> Truyện Đề
                 Cử</h2>
             <div>
                 <a class="color-3 text-decoration-none" href="{{ route('story.hot') }}">Xem tất cả <i
@@ -78,6 +78,17 @@
             #storiesContainer.loading {
                 opacity: 0.6;
                 pointer-events: none;
+            }
+
+            /* Dark mode styles */
+            body.dark-mode .bg-list {
+                background-color: #2d2d2d !important;
+            }
+
+            body.dark-mode .alert-info {
+                background-color: rgba(13, 202, 240, 0.2) !important;
+                border-color: #0dcaf0 !important;
+                color: #0dcaf0 !important;
             }
         </style>
     @endpush

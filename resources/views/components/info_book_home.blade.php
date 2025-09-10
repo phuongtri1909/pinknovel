@@ -435,6 +435,12 @@
         }
 
         /*  */
+
+        body.dark-mode .info-card-home {
+            background: #2d2d2d !important;
+            border-color: #404040 !important;
+        }
+
         .info-card-home {
             background: var(--primary-color-6);
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
@@ -969,6 +975,258 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+    <script>
+        // Share functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const shareToggleBtn = document.querySelector('.share-toggle-btn');
+            const shareModal = new bootstrap.Modal(document.getElementById('shareModal'));
+            
+            if (shareToggleBtn) {
+                let storyId, storyTitle, storyUrl;
+                
+                shareToggleBtn.addEventListener('click', function() {
+                    storyId = this.dataset.storyId;
+                    storyTitle = this.dataset.storyTitle;
+                    storyUrl = this.dataset.storyUrl;
+                    
+                    shareModal.show();
+                });
+                
+                // Handle share options
+                document.querySelectorAll('.share-option').forEach(option => {
+                    option.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        const platform = this.dataset.platform;
+                        const text = `Đọc truyện "${storyTitle}" tại ${storyUrl}`;
+                        
+                        let shareUrl = '';
+                        
+                        switch(platform) {
+                            case 'facebook':
+                                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(storyUrl)}`;
+                                break;
+                            case 'twitter':
+                                shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+                                break;
+                            case 'telegram':
+                                shareUrl = `https://t.me/share/url?url=${encodeURIComponent(storyUrl)}&text=${encodeURIComponent(storyTitle)}`;
+                                break;
+                            case 'zalo':
+                                shareUrl = `https://zalo.me/share?url=${encodeURIComponent(storyUrl)}`;
+                                break;
+                            case 'copy':
+                                // Ensure we have a valid URL
+                                const urlToCopy = storyUrl || window.location.href;
+                                
+                                copyToClipboardReliable(urlToCopy, storyId);
+                                return;
+                        }
+                        
+                        if (shareUrl) {
+                            window.open(shareUrl, '_blank', 'width=600,height=400');
+                            // Close modal properly
+                            const modalElement = document.getElementById('shareModal');
+                            const modal = bootstrap.Modal.getInstance(modalElement);
+                            if (modal) {
+                                modal.hide();
+                            }
+                            
+                            completeShareTask(storyId, platform);
+                        }
+                    });
+                });
+            }
+        });
+        
+        function copyToClipboardReliable(text, storyId) {
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('Đã sao chép liên kết!', 'success');
+                    closeModalAndCompleteTask(storyId);
+                }).catch((err) => {
+                    copyWithSelection(text, storyId);
+                });
+            } else {
+                copyWithSelection(text, storyId);
+            }
+        }
+        
+        function copyWithSelection(text, storyId) {
+            const tempDiv = document.createElement('div');
+            tempDiv.textContent = text;
+            tempDiv.style.position = 'absolute';
+            tempDiv.style.left = '-9999px';
+            tempDiv.style.top = '-9999px';
+            tempDiv.style.opacity = '0';
+            tempDiv.style.pointerEvents = 'none';
+            tempDiv.style.userSelect = 'text';
+            tempDiv.style.webkitUserSelect = 'text';
+            tempDiv.style.mozUserSelect = 'text';
+            tempDiv.style.msUserSelect = 'text';
+            
+            document.body.appendChild(tempDiv);
+            
+            // Create a selection
+            const selection = window.getSelection();
+            const range = document.createRange();
+            
+            selection.removeAllRanges();
+            
+            range.selectNodeContents(tempDiv);
+            selection.addRange(range);
+            
+            try {
+                const successful = document.execCommand('copy');
+                
+                selection.removeAllRanges();
+                document.body.removeChild(tempDiv);
+                
+                if (successful) {
+                    showToast('Đã sao chép liên kết!', 'success');
+                    closeModalAndCompleteTask(storyId);
+                } else {
+                    copyWithInputElement(text, storyId);
+                }
+            } catch (err) {
+                selection.removeAllRanges();
+                document.body.removeChild(tempDiv);
+                copyWithInputElement(text, storyId);
+            }
+        }
+        
+        function copyWithInputElement(text, storyId) {
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = text;
+            input.style.position = 'fixed';
+            input.style.left = '50%';
+            input.style.top = '50%';
+            input.style.transform = 'translate(-50%, -50%)';
+            input.style.opacity = '0';
+            input.style.pointerEvents = 'none';
+            input.style.zIndex = '-1';
+            input.style.width = '1px';
+            input.style.height = '1px';
+            input.style.border = 'none';
+            input.style.outline = 'none';
+            input.style.padding = '0';
+            input.style.margin = '0';
+            
+            document.body.appendChild(input);
+            
+            input.focus();
+            input.select();
+            input.setSelectionRange(0, text.length);
+            
+            setTimeout(() => {
+                try {
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(input);
+                    
+                    if (successful) {
+                        showToast('Đã sao chép liên kết!', 'success');
+                        closeModalAndCompleteTask(storyId);
+                    } else {
+                        copyWithTextareaElement(text, storyId);
+                    }
+                } catch (err) {
+                    document.body.removeChild(input);
+                    copyWithTextareaElement(text, storyId);
+                }
+            }, 10);
+        }
+        
+        function copyWithTextareaElement(text, storyId) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            textarea.style.position = 'fixed';
+            textarea.style.left = '50%';
+            textarea.style.top = '50%';
+            textarea.style.transform = 'translate(-50%, -50%)';
+            textarea.style.opacity = '0';
+            textarea.style.pointerEvents = 'none';
+            textarea.style.zIndex = '-1';
+            textarea.style.width = '1px';
+            textarea.style.height = '1px';
+            textarea.style.border = 'none';
+            textarea.style.outline = 'none';
+            textarea.style.padding = '0';
+            textarea.style.margin = '0';
+            textarea.style.resize = 'none';
+            textarea.style.overflow = 'hidden';
+            
+            document.body.appendChild(textarea);
+            
+            textarea.focus();
+            textarea.select();
+            textarea.setSelectionRange(0, text.length);
+            
+            setTimeout(() => {
+                try {
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    
+                    if (successful) {
+                        showToast('Đã sao chép liên kết!', 'success');
+                        closeModalAndCompleteTask(storyId);
+                    } else {
+                        showToast('Không thể sao chép liên kết. Vui lòng thử lại.', 'error');
+                    }
+                } catch (err) {
+                    document.body.removeChild(textarea);
+                    showToast('Không thể sao chép liên kết. Vui lòng thử lại.', 'error');
+                }
+            }, 10);
+        }
+        
+        function closeModalAndCompleteTask(storyId) {
+            const modalElement = document.getElementById('shareModal');
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            }
+            if (storyId) {
+                completeShareTask(storyId, 'copy');
+            }
+        }
+        
+        // Complete share task
+        function completeShareTask(storyId, platform) {
+            if (!@json(auth()->check())) {
+                showToast('Vui lòng đăng nhập để nhận thưởng', 'info');
+                return;
+            }
+            
+            fetch('{{ route("user.daily-tasks.complete.share") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    story_id: storyId,
+                    platform: platform
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                } else {
+                   
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+    </style>
+@endpush
 
 @push('scripts')
     <script>

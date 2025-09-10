@@ -19,8 +19,10 @@
 
         @yield('content')
         @include('components.top_button')
+        @include('components.reading_settings')
     </div>
     <div id="fb-root" class="w-100"></div>
 </body>
 
 @include('layouts.partials.footer')
+

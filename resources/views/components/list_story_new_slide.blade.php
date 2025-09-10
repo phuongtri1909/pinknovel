@@ -2,7 +2,7 @@
     <div class="mt-4 bg-list rounded-4 px-0 p-md-2">
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center p-3 rounded-top-custom">
-            <h2 class="fs-5 m-0 text-dark fw-bold d-flex">
+            <h2 class="fs-5 m-0 text-dark fw-bold title-dark d-flex">
                 <span class="new-release-tag">NEW</span>
                 Mới Phát Hành
             </h2>
@@ -199,6 +199,12 @@
             .newStoriesSwiper-mobile {
                 padding: 0 20px 50px 20px;
                 overflow: hidden;
+                cursor: grab;
+            }
+
+            .newStoriesSwiper:active,
+            .newStoriesSwiper-mobile:active {
+                cursor: grabbing;
             }
 
             .newStoriesSwiper .swiper-slide,
@@ -256,6 +262,12 @@
                 border-radius: 8px;
                 transition: all 0.3s ease;
                 height: 100%;
+                pointer-events: none;
+            }
+
+            .story-new-item a,
+            .story-new-item button {
+                pointer-events: auto;
             }
 
             /* Pagination - Đưa xuống thấp hơn */
@@ -333,21 +345,62 @@
             .swiper-container {
                 padding-bottom: 30px !important;
             }
+
+            /* Dark mode styles */
+            body.dark-mode .bg-list {
+                background-color: #2d2d2d !important;
+            }
+
+            body.dark-mode .alert-info {
+                background-color: rgba(13, 202, 240, 0.2) !important;
+                border-color: #0dcaf0 !important;
+                color: #0dcaf0 !important;
+            }
+
+            body.dark-mode .new-stories-pagination .swiper-pagination-bullet,
+            body.dark-mode .new-stories-pagination-mobile .swiper-pagination-bullet {
+                background: #666 !important;
+            }
+
+            body.dark-mode .new-stories-pagination .swiper-pagination-bullet-active,
+            body.dark-mode .new-stories-pagination-mobile .swiper-pagination-bullet-active {
+                background: var(--primary-color-3) !important;
+            }
         </style>
     @endpush
 
     @push('scripts')
         <script>
             document.addEventListener('DOMContentLoaded', function() {
-                const totalStories = {{ $newStories->count() }};
+                try {
+                    const totalStories = {{ $newStories->count() }};
 
-                // Desktop Swiper
-                const desktopSlidesNeeded = Math.ceil(totalStories / 6);
-                if (desktopSlidesNeeded > 1) {
-                    const desktopSwiper = new Swiper('.newStoriesSwiper', {
+                    // Desktop Swiper
+                    const desktopSlidesNeeded = Math.ceil(totalStories / 6);
+                    if (desktopSlidesNeeded > 1) {
+                        const desktopSwiperElement = document.querySelector('.newStoriesSwiper');
+                        if (desktopSwiperElement) {
+                            const desktopSwiper = new Swiper('.newStoriesSwiper', {
                         slidesPerView: 1,
                         spaceBetween: 20,
                         loop: true,
+                        allowTouchMove: true,
+                        grabCursor: true,
+                        touchRatio: 1,
+                        touchAngle: 45,
+                        simulateTouch: true,
+                        resistance: true,
+                        resistanceRatio: 0.85,
+                        threshold: 5,
+                        longSwipes: true,
+                        longSwipesRatio: 0.5,
+                        longSwipesMs: 300,
+                        followFinger: true,
+                        keyboard: {
+                            enabled: true,
+                            onlyInViewport: true,
+                        },
+                        mousewheel: false,
                         autoplay: {
                             delay: 5000,
                             disableOnInteraction: false,
@@ -367,32 +420,46 @@
                                         pagination.style.marginTop = '15px';
                                     }
 
-                                    this.slides.forEach(slide => {
-                                        const items = slide.querySelectorAll('.story-item');
-                                        items.forEach((item, index) => {
-                                            item.style.animationDelay = `${(index + 1) * 0.1}s`;
+                                    if (this.slides && this.slides.length > 0) {
+                                        this.slides.forEach(slide => {
+                                            const items = slide.querySelectorAll('.story-item');
+                                            items.forEach((item, index) => {
+                                                item.style.animationDelay = `${(index + 1) * 0.1}s`;
+                                            });
                                         });
-                                    });
+                                    }
                                 }, 100);
                             },
                             slideChange: function() {
-                                const activeSlide = this.slides[this.activeIndex];
-                                const items = activeSlide.querySelectorAll('.story-item');
-                                items.forEach((item, index) => {
-                                    item.style.animation = 'none';
-                                    item.offsetHeight;
-                                    item.style.animation = `fadeInUp 0.6s ease forwards`;
-                                    item.style.animationDelay = `${(index + 1) * 0.1}s`;
-                                });
+                                if (this.slides && this.slides.length > 0 && this.activeIndex !== undefined) {
+                                    const activeSlide = this.slides[this.activeIndex];
+                                    if (activeSlide) {
+                                        const items = activeSlide.querySelectorAll('.story-item');
+                                        items.forEach((item, index) => {
+                                            item.style.animation = 'none';
+                                            item.offsetHeight;
+                                            item.style.animation = `fadeInUp 0.6s ease forwards`;
+                                            item.style.animationDelay = `${(index + 1) * 0.1}s`;
+                                        });
+                                    }
+                                }
                             }
                         }
                     });
+                    console.log('Desktop Swiper initialized successfully');
+                    } else {
+                        console.log('Desktop Swiper element not found');
+                    }
+                } else {
+                    console.log('Desktop Swiper not needed (only 1 slide)');
                 }
 
                 // Mobile Swiper
                 const mobileSlidesNeeded = Math.ceil(totalStories / 3);
                 if (mobileSlidesNeeded > 1) {
-                    const mobileSwiper = new Swiper('.newStoriesSwiper-mobile', {
+                    const mobileSwiperElement = document.querySelector('.newStoriesSwiper-mobile');
+                    if (mobileSwiperElement) {
+                        const mobileSwiper = new Swiper('.newStoriesSwiper-mobile', {
                         slidesPerView: 1,
                         spaceBetween: 20,
                         loop: true,
@@ -415,26 +482,36 @@
                                         pagination.style.marginTop = '12px';
                                     }
 
-                                    this.slides.forEach(slide => {
-                                        const items = slide.querySelectorAll('.story-item');
-                                        items.forEach((item, index) => {
-                                            item.style.animationDelay = `${(index + 1) * 0.1}s`;
+                                    if (this.slides && this.slides.length > 0) {
+                                        this.slides.forEach(slide => {
+                                            const items = slide.querySelectorAll('.story-item');
+                                            items.forEach((item, index) => {
+                                                item.style.animationDelay = `${(index + 1) * 0.1}s`;
+                                            });
                                         });
-                                    });
+                                    }
                                 }, 100);
                             },
                             slideChange: function() {
-                                const activeSlide = this.slides[this.activeIndex];
-                                const items = activeSlide.querySelectorAll('.story-item');
-                                items.forEach((item, index) => {
-                                    item.style.animation = 'none';
-                                    item.offsetHeight;
-                                    item.style.animation = `fadeInUp 0.6s ease forwards`;
-                                    item.style.animationDelay = `${(index + 1) * 0.1}s`;
-                                });
+                                if (this.slides && this.slides.length > 0 && this.activeIndex !== undefined) {
+                                    const activeSlide = this.slides[this.activeIndex];
+                                    if (activeSlide) {
+                                        const items = activeSlide.querySelectorAll('.story-item');
+                                        items.forEach((item, index) => {
+                                            item.style.animation = 'none';
+                                            item.offsetHeight;
+                                            item.style.animation = `fadeInUp 0.6s ease forwards`;
+                                            item.style.animationDelay = `${(index + 1) * 0.1}s`;
+                                        });
+                                    }
+                                }
                             }
                         }
                     });
+                    }
+                }
+                } catch (error) {
+                    console.error('Error initializing Swiper:', error);
                 }
             });
         </script>

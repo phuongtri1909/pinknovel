@@ -114,6 +114,23 @@
                     font-size: 13px;
                 }
             }
+
+            /* Dark mode styles for stories_same_author_translator component */
+            body.dark-mode .section-title {
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .story-link {
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .story-item:hover {
+                background-color: rgba(255, 255, 255, 0.05) !important;
+            }
+
+            body.dark-mode .story-item:hover .story-link {
+                color: var(--primary-color-3) !important;
+            }
         </style>
     @endpush
 @endonce

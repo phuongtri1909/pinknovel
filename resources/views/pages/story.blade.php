@@ -102,6 +102,33 @@
                     height: 200px;
                 }
             }
+
+            /* Dark mode styles for story page */
+            body.dark-mode .card-search {
+                background-color: #404040 !important;
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .form-control {
+                background-color: #2d2d2d !important;
+                border-color: #555 !important;
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .form-control:focus {
+                background-color: #2d2d2d !important;
+                border-color: var(--primary-color-3) !important;
+                color: #e0e0e0 !important;
+                box-shadow: 0 0 0 0.2rem rgba(57, 205, 224, 0.25) !important;
+            }
+
+            body.dark-mode .form-control::placeholder {
+                color: rgba(224, 224, 224, 0.6) !important;
+            }
+
+            body.dark-mode .text-danger {
+                color: #f1aeb5 !important;
+            }
         </style>
     @endpush
 

@@ -223,6 +223,13 @@
                                     <div class="value">{{ $story->review_note }}</div>
                                 </div>
                                 @endif
+
+                                @if($story->source_link)
+                                <div class="story-info-item">
+                                    <div class="label">Link nguồn:</div>
+                                    <a href="{{ $story->source_link }}" target="_blank">{{ $story->source_link }}</a>
+                                </div>
+                                @endif
                             </div>
                         </div>
 

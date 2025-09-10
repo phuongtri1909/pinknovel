@@ -54,6 +54,54 @@
                 margin-top: 10px;
             }
         }
+
+        /* Dark mode styles for all_chapter component */
+        body.dark-mode .section-title {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .sort-btn {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .sort-btn:hover {
+            color: var(--primary-color-3) !important;
+            background-color: rgba(57, 205, 224, 0.1) !important;
+        }
+
+        body.dark-mode .form-control {
+            background-color: #2d2d2d !important;
+            border-color: #555 !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .form-control:focus {
+            background-color: #2d2d2d !important;
+            border-color: var(--primary-color-3) !important;
+            color: #e0e0e0 !important;
+            box-shadow: 0 0 0 0.2rem rgba(57, 205, 224, 0.25) !important;
+        }
+
+        body.dark-mode .form-control::placeholder {
+            color: rgba(224, 224, 224, 0.6) !important;
+        }
+
+        body.dark-mode .search-chapter-input {
+            background-color: #2d2d2d !important;
+            border-color: #555 !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .search-chapter-input:focus {
+            border-color: var(--primary-color-3) !important;
+            box-shadow: 0 0 0 0.2rem rgba(57, 205, 224, 0.25) !important;
+        }
+
+        body.dark-mode .alert-danger {
+            background-color: rgba(220, 53, 69, 0.2) !important;
+            border-color: #dc3545 !important;
+            color: #f1aeb5 !important;
+        }
     </style>
 @endpush
 

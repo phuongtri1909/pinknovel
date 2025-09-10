@@ -1,7 +1,7 @@
 <!-- filepath: /d:/full_truyen/resources/views/components/categories-widget.blade.php -->
 <div class="sidebar-widget categories-widget rounded-4 shadow-sm">
     <div class="widget-header mb-3">
-        <h3 class="fs-5 m-0 text-dark">
+        <h3 class="fs-5 m-0 text-dark title-dark">
             <i class="fas fa-tags text-primary me-2"></i>
             @if (!$currentCategory)
                 Thể Loại

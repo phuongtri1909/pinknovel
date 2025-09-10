@@ -1,6 +1,6 @@
 <div class="sidebar-widget recent-reads rounded-4 shadow-sm">
     <div class="widget-header bg-pb">
-        <h2 class="fs-5 m-0 text-dark fw-bold">
+        <h2 class="fs-5 m-0 text-dark fw-bold title-dark">
             <span class="hot-stories-tag">HOT</span>
             Phổ Biến
         </h2>
@@ -492,6 +492,62 @@
                     font-size: 0.5rem;
                     padding: 0px 3px;
                 }
+            }
+
+            /* Dark mode styles */
+            body.dark-mode .sidebar-widget {
+                background-color: #2d2d2d !important;
+                border-color: #404040 !important;
+            }
+
+            body.dark-mode .widget-header {
+                background-color: #404040 !important;
+            }
+
+            body.dark-mode .hot-story-item {
+                border-color: #404040 !important;
+            }
+
+            body.dark-mode .hot-story-item:hover {
+                background-color: rgba(255, 255, 255, 0.05) !important;
+            }
+
+            body.dark-mode .hot-story-title a {
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .hot-story-title a:hover {
+                color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode .story-rank {
+                background-color: #404040 !important;
+                border-color: var(--primary-color-3) !important;
+                color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode #hotStoriesTabs .nav-link {
+                color: #ccc !important;
+                border-color: #404040 !important;
+            }
+
+            body.dark-mode #hotStoriesTabs .nav-link:hover {
+                color: var(--primary-color-3) !important;
+                background-color: rgba(57, 205, 224, 0.1) !important;
+            }
+
+            body.dark-mode #hotStoriesTabs .nav-link.active {
+                color: var(--primary-color-3) !important;
+                background-color: #404040 !important;
+                border-color: #404040 #404040 #2d2d2d !important;
+            }
+
+            body.dark-mode .badge.bg-1 {
+                background-color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode .hot-stories-tag {
+                background: linear-gradient(135deg, #dc2626, #ef4444, #f87171, #dc2626) !important;
             }
         </style>
     @endpush

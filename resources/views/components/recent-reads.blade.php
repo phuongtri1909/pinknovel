@@ -1,6 +1,6 @@
 <div class="sidebar-widget recent-reads rounded-4 shadow-sm">
     <div class="widget-header">
-        <h3 class="fs-5 m-0 text-dark">
+        <h3 class="fs-5 m-0 text-dark title-dark">
             <i class="fas fa-history text-primary me-2 fa-xl text-info"></i>Đọc Gần Đây
         </h3>
     </div>

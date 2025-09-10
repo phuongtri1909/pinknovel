@@ -297,35 +297,6 @@
         </div>
     </section>
 
-    <!-- Reading Settings Floating Button -->
-    <div class="reading-settings-container position-fixed bottom-0 start-0 mx-2 mb-2 mx-md-4">
-        <div class="reading-settings-menu">
-            <button class="reading-setting-btn fullscreen-btn" title="Toàn màn hình">
-                <i class="fas fa-expand"></i>
-            </button>
-            <button class="reading-setting-btn bookmark-btn" title="Đánh dấu trang">
-                <i class="fas fa-bookmark"></i>
-            </button>
-            <button class="reading-setting-btn theme-btn" title="Chế độ tối/sáng">
-                <i class="fas fa-moon"></i>
-            </button>
-            <button class="reading-setting-btn book-mode-btn" title="Chế độ sách">
-                <i class="fas fa-book-open"></i>
-            </button>
-            <button class="reading-setting-btn font-increase-btn" title="Tăng cỡ chữ">
-                <i class="fas fa-plus"></i>
-            </button>
-            <button class="reading-setting-btn font-decrease-btn" title="Giảm cỡ chữ">
-                <i class="fas fa-minus"></i>
-            </button>
-            <button class="reading-setting-btn font-family-btn" title="Đổi font chữ">
-                <i class="fas fa-font"></i>
-            </button>
-        </div>
-        <button class="reading-settings-toggle">
-            <i class="fas fa-cog"></i>
-        </button>
-    </div>
 
     <div class="container">
         <div class="row">
@@ -383,174 +354,6 @@
             }
         }
 
-        .reading-settings-container {
-            z-index: 1000;
-            display: block; /* Hiện mặc định khi load trang */
-        }
-
-        .reading-settings-toggle {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background-color: var(--primary-color-3);
-            color: white;
-            border: none;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .reading-settings-toggle:hover {
-            transform: scale(1.1);
-        }
-
-        .reading-settings-toggle i {
-            font-size: 20px;
-        }
-
-        .reading-settings-menu {
-            position: absolute;
-            bottom: 60px;
-            left: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            transform: translateY(10px);
-        }
-
-        .reading-settings-menu.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .reading-setting-btn {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background-color: white;
-            color: var(--primary-color-3);
-            border: 2px solid var(--primary-color-3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .reading-setting-btn:hover {
-            transform: scale(1.1);
-            background-color: var(--primary-color-3);
-            color: white;
-        }
-
-        .reading-setting-btn.active {
-            background-color: var(--primary-color-3);
-            color: white;
-        }
-
-        /* Dark mode styles */
-        body.dark-mode {
-            background-color: #222;
-            color: #eee;
-        }
-
-        body.dark-mode #chapter-content {
-            color: #fff;
-        }
-
-        body.dark-mode #chapter-content * {
-            color: #fff !important;
-        }
-
-        body.dark-mode .breadcrumb-item,
-        body.dark-mode .breadcrumb-item a,
-        body.dark-mode .chapter-title,
-        body.dark-mode .badge,
-        body.dark-mode .dropdown-menu,
-        body.dark-mode .dropdown-item {
-            color: #fff !important;
-        }
-
-        body.dark-mode .badge {
-            background-color: #333;
-        }
-
-        body.dark-mode .dropdown-menu {
-            background-color: #333;
-        }
-
-        body.dark-mode .dropdown-item:hover {
-            background-color: #444;
-        }
-
-        /* Book mode styles */
-        body.book-mode #chapter-content {
-            background-color: #f8f5e8;
-            padding: 30px;
-            color: #333;
-            border: 1px solid #ddd;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Font families */
-        body.font-segoe {
-            font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
-        }
-
-        body.font-roboto {
-            font-family: 'Roboto', sans-serif !important;
-        }
-
-        body.font-open-sans {
-            font-family: 'Open Sans', sans-serif !important;
-        }
-
-        body.font-lora {
-            font-family: 'Lora', serif !important;
-        }
-
-        body.font-merriweather {
-            font-family: 'Merriweather', serif !important;
-        }
-
-        /* Font family dropdown */
-        .font-family-dropdown {
-            position: absolute;
-            left: 60px;
-            bottom: 0;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            display: none;
-        }
-
-        .font-family-dropdown.active {
-            display: block;
-        }
-
-        .font-family-dropdown button {
-            display: block;
-            width: 100%;
-            text-align: left;
-            padding: 8px 12px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .font-family-dropdown button:hover {
-            background-color: #f0f0f0;
-        }
 
         /* Chapter dropdown styles */
         .chapter-dropdown-menu {
@@ -782,6 +585,79 @@
         body.dark-mode .bookmark-btn.active:hover {
             background-color: var(--primary-color-2);
         }
+
+        /* Dark mode styles for chapter page */
+        body.dark-mode .chapter-content {
+            background-color: #2d2d2d !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .chapter-title {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .chapter-meta .badge {
+            background-color: #404040 !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .breadcrumb {
+            background-color: transparent !important;
+        }
+
+        body.dark-mode .breadcrumb-item.active {
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .password-notice {
+            background-color: #404040 !important;
+            border-color: #555 !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .purchase-notice {
+            background-color: #404040 !important;
+            border-color: #555 !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .chapter-purchase-option,
+        body.dark-mode .story-purchase-option {
+            background-color: #2d2d2d !important;
+            border-color: #555 !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .story-purchase-option {
+            background-color: #1a2332 !important;
+            border-color: #2c5282 !important;
+        }
+
+        body.dark-mode .alert-success {
+            background-color: rgba(25, 135, 84, 0.2) !important;
+            border-color: #198754 !important;
+            color: #75b798 !important;
+        }
+
+        body.dark-mode .alert-danger {
+            background-color: rgba(220, 53, 69, 0.2) !important;
+            border-color: #dc3545 !important;
+            color: #f1aeb5 !important;
+        }
+
+        body.dark-mode .btn-outline-secondary {
+            border-color: #666 !important;
+            color: #ccc !important;
+        }
+
+        body.dark-mode .btn-outline-secondary:hover {
+            background-color: #666 !important;
+            color: white !important;
+        }
+
+        body.dark-mode .text-danger {
+            color: #f1aeb5 !important;
+        }
     </style>
 @endpush
 
@@ -973,186 +849,6 @@
                     });
                 });
             }
-            // Các chức năng khác của trang chapter
-            const toggleBtn = document.querySelector('.reading-settings-toggle');
-            const settingsMenu = document.querySelector('.reading-settings-menu');
-            const fullscreenBtn = document.querySelector('.fullscreen-btn');
-            const themeBtn = document.querySelector('.theme-btn');
-            const bookModeBtn = document.querySelector('.book-mode-btn');
-            const fontIncreaseBtn = document.querySelector('.font-increase-btn');
-            const fontDecreaseBtn = document.querySelector('.font-decrease-btn');
-            const fontFamilyBtn = document.querySelector('.font-family-btn');
-            const chapterContent = document.getElementById('chapter-content');
-            const readingSettingsContainer = document.querySelector('.reading-settings-container');
-            
-            // Biến để theo dõi scroll
-            let lastScrollTop = 0;
-
-            // Create font family dropdown
-            const fontFamilyDropdown = document.createElement('div');
-            fontFamilyDropdown.className = 'font-family-dropdown';
-            fontFamilyDropdown.innerHTML = `
-                <button data-font="font-segoe">Segoe UI (Mặc định)</button>
-                <button data-font="font-roboto">Roboto</button>
-                <button data-font="font-open-sans">Open Sans</button>
-                <button data-font="font-lora">Lora</button>
-                <button data-font="font-merriweather">Merriweather</button>
-            `;
-            document.querySelector('.reading-settings-container').appendChild(fontFamilyDropdown);
-
-            // Toggle settings menu
-            toggleBtn.addEventListener('click', function() {
-                settingsMenu.classList.toggle('active');
-                fontFamilyDropdown.classList.remove('active');
-            });
-
-            // Fullscreen functionality
-            fullscreenBtn.addEventListener('click', function() {
-                if (!document.fullscreenElement) {
-                    document.documentElement.requestFullscreen().catch(err => {
-                        console.log(`Error attempting to enable fullscreen: ${err.message}`);
-                    });
-                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                    fullscreenBtn.classList.add('active');
-                } else {
-                    if (document.exitFullscreen) {
-                        document.exitFullscreen();
-                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                        fullscreenBtn.classList.remove('active');
-                    }
-                }
-            });
-
-            // Theme toggle (dark/light)
-            themeBtn.addEventListener('click', function() {
-                document.body.classList.toggle('dark-mode');
-                themeBtn.classList.toggle('active');
-
-                if (document.body.classList.contains('dark-mode')) {
-                    themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
-                } else {
-                    themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
-                }
-            });
-
-            // Book mode toggle
-            bookModeBtn.addEventListener('click', function() {
-                document.body.classList.toggle('book-mode');
-                bookModeBtn.classList.toggle('active');
-            });
-
-            // Font size adjustment
-            let currentFontSize = parseInt(window.getComputedStyle(chapterContent).fontSize);
-
-            fontIncreaseBtn.addEventListener('click', function() {
-                if (currentFontSize < 24) {
-                    currentFontSize += 1;
-                    chapterContent.style.fontSize = currentFontSize + 'px';
-                    localStorage.setItem('chapter-font-size', currentFontSize);
-                }
-            });
-
-            fontDecreaseBtn.addEventListener('click', function() {
-                if (currentFontSize > 12) {
-                    currentFontSize -= 1;
-                    chapterContent.style.fontSize = currentFontSize + 'px';
-                    localStorage.setItem('chapter-font-size', currentFontSize);
-                }
-            });
-
-            // Font family toggle
-            fontFamilyBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                fontFamilyDropdown.classList.toggle('active');
-            });
-
-            // Font family selection
-            fontFamilyDropdown.querySelectorAll('button').forEach(button => {
-                button.addEventListener('click', function() {
-                    const fontClass = this.getAttribute('data-font');
-
-                    // Remove all font classes from body
-                    document.body.classList.remove('font-segoe', 'font-roboto', 'font-open-sans',
-                        'font-lora', 'font-merriweather');
-
-                    // Add selected font class to body
-                    document.body.classList.add(fontClass);
-
-                    // Save preference
-                    localStorage.setItem('chapter-font-family', fontClass);
-
-                    // Close dropdown
-                    fontFamilyDropdown.classList.remove('active');
-                });
-            });
-
-            // Close menus when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!e.target.closest('.reading-settings-container')) {
-                    fontFamilyDropdown.classList.remove('active');
-                }
-            });
-
-            // Load saved preferences
-            function loadSavedPreferences() {
-                // Load font size
-                const savedFontSize = localStorage.getItem('chapter-font-size');
-                if (savedFontSize) {
-                    currentFontSize = parseInt(savedFontSize);
-                    chapterContent.style.fontSize = currentFontSize + 'px';
-                }
-
-                // Load font family
-                const savedFontFamily = localStorage.getItem('chapter-font-family');
-                if (savedFontFamily) {
-                    document.body.classList.add(savedFontFamily);
-                }
-
-                // Load theme
-                if (localStorage.getItem('dark-mode') === 'true') {
-                    document.body.classList.add('dark-mode');
-                    themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
-                    themeBtn.classList.add('active');
-                }
-
-                // Load book mode
-                if (localStorage.getItem('book-mode') === 'true') {
-                    document.body.classList.add('book-mode');
-                    bookModeBtn.classList.add('active');
-                }
-            }
-
-            // Save theme preference when changed
-            themeBtn.addEventListener('click', function() {
-                localStorage.setItem('dark-mode', document.body.classList.contains('dark-mode'));
-            });
-
-            // Save book mode preference when changed
-            bookModeBtn.addEventListener('click', function() {
-                localStorage.setItem('book-mode', document.body.classList.contains('book-mode'));
-            });
-
-            // Load preferences on page load
-            loadSavedPreferences();
-            
-            // Xử lý hiển thị reading-settings khi scroll
-            window.addEventListener('scroll', function() {
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                
-                // Chỉ ẩn khi scroll xuống
-                if (scrollTop > lastScrollTop) {
-                    readingSettingsContainer.style.display = 'none';
-                    // Đóng menu nếu đang mở
-                    settingsMenu.classList.remove('active');
-                    fontFamilyDropdown.classList.remove('active');
-                }
-                // Hiện lại khi scroll lên
-                else if (scrollTop < lastScrollTop) {
-                    readingSettingsContainer.style.display = 'block';
-                }
-                
-                lastScrollTop = scrollTop;
-            });
 
             // Fix dropdown positioning
             const dropdownButtons = document.querySelectorAll('.chapter-list-dropdown .btn');

@@ -34,8 +34,9 @@
                 <i class="fas fa-eye eye fs-8 text-primary"></i>
                 {{ format_number_short($story->total_views) }}
             </span>
-            <span class="story-time" title="{{ $story->latestChapter?->created_at?->format('d/m/Y H:i') }}">
-                {{ time_elapsed_string($story->latestChapter?->created_at) }}
+            <span class="story-time text-danger">
+                <i class="fa-solid fa-heart"></i>
+                {{ number_format($story->bookmarks_count) }}
             </span>
         </div>
         <div class="story-stats-container mb-2 mt-1">
@@ -182,16 +183,8 @@
                 display: flex;
                 align-items: center;
                 white-space: nowrap;
-                overflow-x: auto;
-                overflow-y: hidden;
-                min-width: 0;
+                justify-content: space-between;
                 gap: 8px;
-                scrollbar-width: none; /* Firefox */
-                -ms-overflow-style: none; /* IE and Edge */
-            }
-
-            .story-views-time-container::-webkit-scrollbar {
-                display: none; /* Chrome, Safari, Opera */
             }
 
             .story-views {

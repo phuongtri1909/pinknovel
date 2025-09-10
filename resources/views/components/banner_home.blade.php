@@ -109,6 +109,35 @@
                 .swiper-button-prev:hover {
                     color: #900 !important;
                 }
+
+                /* Dark mode styles */
+                body.dark-mode .banner-carousel-section {
+                    background-color: transparent;
+                }
+
+                body.dark-mode .banner-home-swiper .title {
+                    background: rgba(45, 45, 45, 0.8) !important;
+                    border-color: rgba(216, 107, 107, 0.6) !important;
+                    color: #e0e0e0 !important;
+                }
+
+                body.dark-mode .banner-home-swiper .swiper-slide-active .title {
+                    box-shadow: 0 20px 30px 2px rgba(216, 107, 107, 0.4) !important;
+                }
+
+                body.dark-mode .swiper-pagination-bullet-active {
+                    background: var(--primary-color-3) !important;
+                }
+
+                body.dark-mode .swiper-button-next,
+                body.dark-mode .swiper-button-prev {
+                    color: var(--primary-color-3) !important;
+                }
+
+                body.dark-mode .swiper-button-next:hover,
+                body.dark-mode .swiper-button-prev:hover {
+                    color: var(--primary-color-1) !important;
+                }
             </style>
         @endpush
 

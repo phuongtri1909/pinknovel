@@ -461,6 +461,10 @@ body {
     background-color: #000;
 }
 
+body.dark-mode .footer-links a:not(:last-child)::after {
+    background-color: #e0e0e0;
+}
+
 .border-top-custom-2 {
     border-top: 3px solid #c5c5c5;
 }
@@ -1446,4 +1450,527 @@ body {
 
 .social-icon .custom-zalo {
     font-size: 1.2em;
+}
+
+/* ===== DARK MODE STYLES ===== */
+body.dark-mode {
+    background-color: #1a1a1a !important;
+    transition: all 0.3s ease;
+}
+
+body.dark-mode .color-hover{
+    color: #cccccc !important;
+}
+
+body.dark-mode .color-hover:hover{
+    color: #ffffff !important;
+}
+
+body.dark-mode .text-dark{
+    color: #ffffff !important;
+}
+
+body.dark-mode .text-gray-600{
+    color: #b9cfee !important;
+}
+
+/* Dark mode for header */
+
+body.dark-mode .navbar-brand,
+body.dark-mode .nav-link,
+body.dark-mode .dropdown-toggle {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .search-input {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .search-input::placeholder {
+    color: rgba(224, 224, 224, 0.7) !important;
+}
+
+body.dark-mode .search-input:focus {
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-color: var(--primary-color-3) !important;
+    color: #e0e0e0 !important;
+}
+
+/* Dark mode for dropdown menus */
+body.dark-mode .dropdown-menu {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+}
+
+body.dark-mode .dropdown-item {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .dropdown-item:hover {
+    background-color: #404040 !important;
+    color: #ffffff !important;
+}
+
+/* Dark mode for cards and containers */
+body.dark-mode .card,
+body.dark-mode .content-wrapper,
+body.dark-mode .sidebar-widget,
+body.dark-mode .info-card {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .bg-white{
+    background-color: #525252 !important;
+}
+
+body.dark-mode .buy-combo-btn{
+    color: #ffffff !important;
+}
+
+body.dark-mode .search-content{
+    background-color: #525252 !important;
+}
+
+body.dark-mode .story-card {
+    background-color: #525252 !important;
+    border-color: #404040 !important;
+}
+
+body.dark-mode .text-muted{
+    color: #c5c5c5 !important;
+}
+
+body.dark-mode .user-nav-link{
+    color: #c5c5c5 !important;
+}
+
+body.dark-mode .user-content{
+    background-color: #525252 !important;
+}
+
+body.dark-mode .user-nav-link.active{
+    color: #ffffff !important;
+}
+
+body.dark-mode .story-title a {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .story-title a:hover {
+    color: var(--primary-color-3) !important;
+}
+
+/* Dark mode for badges */
+body.dark-mode .badge {
+    background-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+/* Dark mode for buttons */
+body.dark-mode .btn-outline-secondary {
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .btn-outline-secondary:hover {
+    background-color: #404040 !important;
+    border-color: #404040 !important;
+    color: #ffffff !important;
+}
+
+/* Dark mode for forms */
+body.dark-mode .form-control {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .form-control:focus {
+    background-color: #2d2d2d !important;
+    border-color: var(--primary-color-3) !important;
+    color: #e0e0e0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(216, 107, 107, 0.25) !important;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: rgba(224, 224, 224, 0.7) !important;
+}
+
+/* Dark mode for breadcrumbs */
+body.dark-mode .breadcrumb {
+    background-color: transparent !important;
+}
+
+body.dark-mode .breadcrumb-item,
+body.dark-mode .breadcrumb-item a {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .breadcrumb-item.active {
+    color: var(--primary-color-3) !important;
+}
+
+/* Dark mode for alerts */
+body.dark-mode .alert {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .alert-success {
+    background-color: rgba(40, 167, 69, 0.2) !important;
+    border-color: #28a745 !important;
+    color: #28a745 !important;
+}
+
+body.dark-mode .alert-danger {
+    background-color: rgba(220, 53, 69, 0.2) !important;
+    border-color: #dc3545 !important;
+    color: #dc3545 !important;
+}
+
+/* Dark mode for tables */
+body.dark-mode .table {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dark-mode .table-hover tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Dark mode for pagination */
+body.dark-mode .page-link {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .page-link:hover {
+    background-color: #404040 !important;
+    border-color: #404040 !important;
+    color: #ffffff !important;
+}
+
+body.dark-mode .page-item.active .page-link {
+    background-color: var(--primary-color-3) !important;
+    border-color: var(--primary-color-3) !important;
+    color: #ffffff !important;
+}
+
+/* Dark mode for modal */
+body.dark-mode .modal-content {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .modal-header {
+    border-bottom-color: #404040 !important;
+}
+
+body.dark-mode .modal-footer {
+    border-top-color: #404040 !important;
+}
+
+body.dark-mode .btn-close {
+    filter: invert(1) !important;
+}
+
+/* Dark mode for offcanvas */
+body.dark-mode .offcanvas {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .offcanvas-header {
+    border-bottom-color: #404040 !important;
+}
+
+/* Dark mode for accordion */
+body.dark-mode .accordion-item {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+}
+
+body.dark-mode .accordion-button {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .accordion-button:not(.collapsed) {
+    background-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .accordion-button::after {
+    filter: invert(1) !important;
+}
+
+body.dark-mode .accordion-body {
+    background-color: #2d2d2d !important;
+    color: #e0e0e0 !important;
+}
+
+/* Dark mode for progress bars */
+body.dark-mode .progress {
+    background-color: #404040 !important;
+}
+
+/* Dark mode for list groups */
+body.dark-mode .list-group-item {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .list-group-item:hover {
+    background-color: #404040 !important;
+}
+
+/* Dark mode for text colors */
+body.dark-mode .title-dark {
+    color: #e0e0e0 !important;
+}
+
+/* Dark mode for footer */
+body.dark-mode footer {
+    background-color: #1a1a1a !important;
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .footer-links a {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .footer-links a:hover {
+    color: var(--primary-color-3) !important;
+}
+
+body.dark-mode .footer-category {
+    color: rgba(224, 224, 224, 0.7) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+body.dark-mode .footer-category:hover {
+    color: #e0e0e0 !important;
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Dark mode for social icons */
+body.dark-mode .social-icon {
+    background-color: var(--primary-color-3) !important;
+}
+
+body.dark-mode .social-icon:hover {
+    background-color: var(--primary-color-1) !important;
+}
+
+/* Dark mode for reading settings */
+body.dark-mode .reading-settings-container {
+    z-index: 1000;
+}
+
+body.dark-mode .reading-settings-toggle {
+    background-color: var(--primary-color-3) !important;
+    color: white !important;
+}
+
+body.dark-mode .reading-setting-btn {
+    background-color: #2d2d2d !important;
+    color: var(--primary-color-3) !important;
+    border-color: var(--primary-color-3) !important;
+}
+
+body.dark-mode .reading-setting-btn:hover {
+    background-color: var(--primary-color-3) !important;
+    color: white !important;
+}
+
+body.dark-mode .reading-setting-btn.active {
+    background-color: var(--primary-color-3) !important;
+    color: white !important;
+}
+
+/* Dark mode for font family dropdown */
+body.dark-mode .font-family-dropdown {
+    background-color: #2d2d2d !important;
+    border-color: #404040 !important;
+}
+
+body.dark-mode .font-family-dropdown button {
+    color: #e0e0e0 !important;
+}
+
+body.dark-mode .font-family-dropdown button:hover {
+    background-color: #404040 !important;
+}
+
+/* ===== READING SETTINGS STYLES ===== */
+.reading-settings-container {
+    z-index: 1000;
+    display: block !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+}
+
+.reading-settings-toggle {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: var(--primary-color-3);
+    color: white;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.reading-settings-toggle:hover {
+    transform: scale(1.1);
+}
+
+.reading-settings-toggle i {
+    font-size: 20px;
+}
+
+.reading-settings-menu {
+    position: absolute;
+    bottom: 60px;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    transform: translateY(10px);
+    z-index: 1001;
+}
+
+.reading-settings-menu.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    display: flex !important;
+}
+
+/* Force show menu for testing */
+.reading-settings-menu.active {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+    display: flex !important;
+    position: absolute !important;
+    bottom: 60px !important;
+    left: 0 !important;
+    z-index: 1001 !important;
+}
+
+.reading-setting-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: white;
+    color: var(--primary-color-3);
+    border: 2px solid var(--primary-color-3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.reading-setting-btn:hover {
+    transform: scale(1.1);
+    background-color: var(--primary-color-3);
+    color: white;
+}
+
+.reading-setting-btn.active {
+    background-color: var(--primary-color-3);
+    color: white;
+}
+
+/* Font family dropdown */
+.font-family-dropdown {
+    position: absolute;
+    left: 60px;
+    bottom: 0;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    display: none;
+    border: 1px solid #ddd;
+}
+
+.font-family-dropdown.active {
+    display: block;
+}
+
+.font-family-dropdown button {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
+    color: #333;
+    transition: background-color 0.2s ease;
+}
+
+.font-family-dropdown button:hover {
+    background-color: #f0f0f0;
+}
+
+/* Font families */
+body.font-segoe {
+    font-family: 'Segoe UI', 'Segoe UI Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif !important;
+}
+
+body.font-roboto {
+    font-family: 'Roboto', sans-serif !important;
+}
+
+body.font-open-sans {
+    font-family: 'Open Sans', sans-serif !important;
+}
+
+body.font-lora {
+    font-family: 'Lora', serif !important;
+}
+
+body.font-merriweather {
+    font-family: 'Merriweather', serif !important;
+}
+
+/* Book mode styles */
+body.book-mode #chapter-content {
+    background-color: #f8f5e8;
+    padding: 30px;
+    color: #333;
+    border: 1px solid #ddd;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode book mode */
+body.dark-mode.book-mode #chapter-content {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border-color: #404040;
 }

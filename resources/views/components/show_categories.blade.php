@@ -1,7 +1,7 @@
 <!-- filepath: /d:/full_truyen/resources/views/components/categories-widget.blade.php -->
 <div class="sidebar-widget categories-widget rounded-4 shadow-sm mt-4">
     <div class="widget-header mb-3">
-        <h3 class="fs-5 m-0 text-dark">
+        <h3 class="fs-5 m-0 text-dark title-dark">
             <i class="fas fa-tags text-primary me-2"></i>
 
             Thể Loại
@@ -113,6 +113,53 @@
                 .category-grid {
                     grid-template-columns: repeat(5, 1fr);
                 }
+            }
+
+            /* Dark mode styles */
+            body.dark-mode .sidebar-widget {
+                background-color: #2d2d2d !important;
+                border-color: #404040 !important;
+            }
+
+            body.dark-mode .widget-header {
+                background-color: #404040 !important;
+            }
+
+            body.dark-mode .category-item {
+                background-color: #404040 !important;
+                border-color: #555 !important;
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .category-item:hover {
+                background-color: var(--primary-color-3) !important;
+                color: white !important;
+                transform: translateY(-2px) !important;
+            }
+
+            body.dark-mode .category-item.active {
+                background-color: var(--primary-color-3) !important;
+                color: white !important;
+            }
+
+            body.dark-mode .btn-outline-primary {
+                border-color: var(--primary-color-3) !important;
+                color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode .btn-outline-primary:hover {
+                background-color: var(--primary-color-3) !important;
+                color: white !important;
+            }
+
+            body.dark-mode .btn-outline-secondary {
+                border-color: #666 !important;
+                color: #ccc !important;
+            }
+
+            body.dark-mode .btn-outline-secondary:hover {
+                background-color: #666 !important;
+                color: white !important;
             }
         </style>
     @endpush

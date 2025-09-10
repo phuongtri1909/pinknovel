@@ -324,6 +324,36 @@
                     font-size: 0.95rem;
                 }
             }
+
+            /* Dark mode styles for combo_story component */
+            body.dark-mode .combo-card {
+                background: linear-gradient(135deg, #2d2d2d 0%, #1a1a2e 100%) !important;
+            }
+
+            body.dark-mode .combo-title {
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .combo-description {
+                background-color: rgba(57, 205, 224, 0.1) !important;
+            }
+
+            body.dark-mode .combo-description p {
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .old-price {
+                color: rgba(224, 224, 224, 0.6) !important;
+            }
+
+            body.dark-mode .new-price {
+                color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode .savings-tag {
+                background-color: rgba(76, 175, 80, 0.2) !important;
+                color: #81c784 !important;
+            }
         </style>
     @endpush
 @endonce

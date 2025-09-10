@@ -3,7 +3,7 @@
         <div class="col-12">
 
             <div class="d-flex justify-content-between align-items-center p-3 px-md-0 rounded-top-custom">
-                <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-gear me-1" style="color: #22c55e;"></i> Mới Cập Nhật
+                <h2 class="fs-5 m-0 text-dark fw-bold title-dark"><i class="fa-solid fa-gear me-1" style="color: #22c55e;"></i> Mới Cập Nhật
                 </h2>
                 <div>
                     <a class="color-3 text-decoration-none" href="{{ route('story.new.chapter') }}">Xem tất cả <i
@@ -116,6 +116,15 @@
                 text-align: left;
                 min-width: auto;
             }
+        }
+
+        /* Dark mode styles */
+        body.dark-mode .bg-list {
+            background-color: #2d2d2d !important;
+        }
+
+        body.dark-mode hr {
+            border-color: #404040 !important;
         }
     </style>
 @endpush

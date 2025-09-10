@@ -2,7 +2,7 @@
     <div class="mt-4 bg-list rounded-4 px-0 p-md-4 pb-4">
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center pt-1 pb-3 rounded-top-custom">
-            <h2 class="fs-5 m-0 text-dark fw-bold"><i class="fa-solid fa-check-circle" style="color: #57f17d"></i> Hoàn Thành</h2>
+            <h2 class="fs-5 m-0 text-dark fw-bold title-dark"><i class="fa-solid fa-check-circle" style="color: #57f17d"></i> Hoàn Thành</h2>
             <div>
                 <a class="color-3 text-decoration-none" href="{{ route('story.completed') }}">Xem tất cả <i
                         class="fa-solid fa-arrow-right"></i></a>
@@ -81,6 +81,29 @@
                 opacity: 0;
                 transform: translateY(20px);
                 animation: fadeInUp 0.6s ease forwards;
+            }
+
+            /* Dark mode styles */
+            body.dark-mode .bg-list {
+                background-color: #2d2d2d !important;
+            }
+            body.dark-mode .alert-info {
+                background-color: rgba(13, 202, 240, 0.2) !important;
+                border-color: #0dcaf0 !important;
+                color: #0dcaf0 !important;
+            }
+
+
+            body.dark-mode .storyFullSwiper .swiper-button-next,
+            body.dark-mode .storyFullSwiper .swiper-button-prev {
+                background: rgba(45, 45, 45, 0.9) !important;
+                color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode .storyFullSwiper .swiper-button-next:hover,
+            body.dark-mode .storyFullSwiper .swiper-button-prev:hover {
+                background: var(--primary-color-3) !important;
+                color: white !important;
             }
         </style>
     @endpush

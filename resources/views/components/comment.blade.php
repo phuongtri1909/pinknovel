@@ -851,6 +851,111 @@
             .blog-comment li {
                 animation: commentAppear 0.4s ease-out;
             }
+
+            /* Dark mode styles for comment component */
+            body.dark-mode .section-title {
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .submit-comment {
+                background-color: #2d2d2d !important;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            body.dark-mode .submit-comment:focus-within {
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3) !important;
+            }
+
+            body.dark-mode .submit-comment textarea {
+                background-color: #2d2d2d !important;
+                border-color: #555 !important;
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .submit-comment textarea:focus {
+                border-color: var(--primary-color-3) !important;
+                box-shadow: 0 0 0 0.2rem rgba(57, 205, 224, 0.25) !important;
+            }
+
+            body.dark-mode .submit-comment textarea::placeholder {
+                color: rgba(224, 224, 224, 0.6) !important;
+            }
+
+            body.dark-mode .blog-comment .post-comments .content-post-comments {
+                background-color: #2d2d2d !important;
+                border-color: #555 !important;
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .blog-comment .post-comments .content-post-comments:hover {
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2) !important;
+            }
+
+            body.dark-mode .blog-comment .meta {
+                color: rgba(224, 224, 224, 0.6) !important;
+                border-bottom-color: #404040 !important;
+            }
+
+            body.dark-mode .blog-comment ul.comments ul:before {
+                border-left-color: #555 !important;
+            }
+
+            body.dark-mode .blog-comment ul.comments ul li:before {
+                border-top-color: #555 !important;
+            }
+
+            body.dark-mode .reaction-btn {
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .reaction-btn:hover {
+                background-color: #404040 !important;
+            }
+
+            body.dark-mode .reaction-btn.active {
+                background-color: #404040 !important;
+                color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode .reply-form {
+                background-color: #404040 !important;
+                border-left-color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode .reply-form textarea {
+                background-color: #2d2d2d !important;
+                border-color: #555 !important;
+                color: #e0e0e0 !important;
+            }
+
+            body.dark-mode .reply-form textarea:focus {
+                border-color: var(--primary-color-3) !important;
+                box-shadow: 0 0 0 0.2rem rgba(57, 205, 224, 0.25) !important;
+            }
+
+            body.dark-mode .reply-form textarea::placeholder {
+                color: rgba(224, 224, 224, 0.6) !important;
+            }
+
+            body.dark-mode .btn-outline-primary {
+                border-color: var(--primary-color-3) !important;
+                color: var(--primary-color-3) !important;
+            }
+
+            body.dark-mode .btn-outline-primary:hover {
+                background-color: var(--primary-color-3) !important;
+                color: white !important;
+            }
+
+            body.dark-mode .pinned-comment .content-post-comments {
+                border-color: #ffc107 !important;
+                background-color: #2d2d2d !important;
+                box-shadow: 0 3px 10px rgba(255, 193, 7, 0.2) !important;
+            }
+
+            body.dark-mode .pinned-comment .pinned-badge {
+                color: #ffc107 !important;
+            }
         </style>
     @endpush
 @endonce
