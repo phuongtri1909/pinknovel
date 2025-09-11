@@ -125,7 +125,7 @@
                         </table>
                     </div>
                     <div class="px-4 pt-4">
-                        <x-pagination :paginator="$deposits" />
+                        <x-pagination :paginator="$cardDeposits" />
                     </div>
                 </div>
             </div>
