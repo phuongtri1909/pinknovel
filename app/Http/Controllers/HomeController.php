@@ -1029,6 +1029,7 @@ class HomeController extends Controller
                 DB::raw('COUNT(*) as chapters_count')
             )
             ->where('status', 'published')
+            ->where('created_at', '>=', now()->subMonth())
             ->groupBy('story_id');
 
         // Use withSubquery to avoid GROUP BY issues
@@ -1057,7 +1058,6 @@ class HomeController extends Controller
                 $join->on('stories.id', '=', 'latest_chapters.story_id');
             })
             ->addSelect('latest_chapters.chapters_count', 'latest_chapters.latest_chapter_time')
-            ->orderByDesc('average_rating')
             ->orderByDesc('latest_chapters.latest_chapter_time')
             ->limit(20)
             ->get();
