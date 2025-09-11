@@ -24,12 +24,14 @@ class TrackOnlineUsers
         $referer = $request->header('referer');
         $userId = Auth::id();
 
-        // Truncate URLs if they're too long (safeguard for very long URLs)
-        if (strlen($currentPage) > 65535) { // TEXT field max length
+        if (strlen($currentPage) > 65535) {
             $currentPage = substr($currentPage, 0, 65535);
         }
         if ($referer && strlen($referer) > 65535) {
             $referer = substr($referer, 0, 65535);
+        }
+        if ($userAgent && strlen($userAgent) > 65535) {
+            $userAgent = substr($userAgent, 0, 65535);
         }
 
         OnlineUser::where('last_activity', '<', now()->subMinutes(5))->delete();
