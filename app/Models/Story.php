@@ -95,6 +95,9 @@ class Story extends Model
         if (isset($this->attributes['total_views'])) {
             return $this->attributes['total_views'];
         }
+        if (isset($this->attributes['chapters_sum_views'])) {
+            return $this->attributes['chapters_sum_views'];
+        }
         return $this->chapters->sum('views');
     }
 

@@ -51,14 +51,9 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
-            ->select([
-                'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
-                'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.translator_name'
-            ])
             ->withCount(['bookmarks'])
             ->withSum('chapters', 'views')
-            ->withAvg('ratings as average_rating', 'rating')
-            ->groupBy('stories.id');
+            ->withAvg('ratings as average_rating', 'rating');
 
         // Apply advanced search filters (excluding query since it's already applied above)
         $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request, false);
@@ -99,14 +94,9 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
-            ->select([
-                'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
-                'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at'
-            ])
             ->withCount(['bookmarks'])
             ->withSum('chapters', 'views')
-            ->withAvg('ratings as average_rating', 'rating')
-            ->groupBy('stories.id');
+            ->withAvg('ratings as average_rating', 'rating');
 
         // Apply advanced search filters
         $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
@@ -152,14 +142,9 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
-            ->select([
-                'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
-                'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.user_id', 'stories.translator_name'
-            ])
             ->withCount(['bookmarks'])
             ->withSum('chapters', 'views')
-            ->withAvg('ratings as average_rating', 'rating')
-            ->groupBy('stories.id');
+            ->withAvg('ratings as average_rating', 'rating');
 
         // Apply advanced search filters
         $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
@@ -247,7 +232,7 @@ class HomeController extends Controller
                 ])
                 ->withCount(['bookmarks'])
                 ->withSum('chapters', 'views')
-                ->withAvg('ratings', 'rating');
+                ->withAvg('ratings as average_rating', 'rating');
 
             $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
 
