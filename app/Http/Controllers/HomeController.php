@@ -30,7 +30,6 @@ class HomeController extends Controller
     {
         $query = trim((string) $request->input('query'));
 
-        // Search in stories - simplified to only title, author_name, and translator_name
         $storiesQuery = Story::query()
             ->published()
             ->where(function ($q) use ($query) {
@@ -38,8 +37,11 @@ class HomeController extends Controller
                   ->orWhere('author_name', 'LIKE', "%{$query}%")
                   ->orWhere('translator_name', 'LIKE', "%{$query}%");
             })
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->with([
-                'categories:id,name,slug,is_main',
+                'categories',
                 'chapters' => function ($query) {
                     $query->select('id', 'story_id', 'views')
                         ->where('status', 'published');
@@ -49,17 +51,17 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
-            ->withCount(['bookmarks'])
-            ->withSum('chapters', 'views')
-            ->withAvg('ratings', 'rating')
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
                 'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.translator_name'
             ])
-            ->distinct('stories.id');
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings as average_rating', 'rating')
+            ->groupBy('stories.id');
 
-        $requestWithoutQuery = $request->except('query');
-        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, new Request($requestWithoutQuery));
+        // Apply advanced search filters (excluding query since it's already applied above)
+        $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request, false);
 
         $stories = $storiesQuery->paginate(20);
 
@@ -83,8 +85,11 @@ class HomeController extends Controller
         $storiesQuery = Story::query()
             ->published()
             ->where('author_name', 'LIKE', "%{$query}%")
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->with([
-                'categories:id,name,slug,is_main',
+                'categories',
                 'chapters' => function ($query) {
                     $query->select('id', 'story_id', 'views')
                         ->where('status', 'published');
@@ -94,14 +99,14 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
-            ->withCount(['bookmarks'])
-            ->withSum('chapters', 'views')
-            ->withAvg('ratings', 'rating')
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
                 'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at'
             ])
-            ->distinct('stories.id');
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings as average_rating', 'rating')
+            ->groupBy('stories.id');
 
         // Apply advanced search filters
         $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
@@ -133,8 +138,11 @@ class HomeController extends Controller
                 })
                 ->orWhere('translator_name', 'LIKE', "%{$query}%");
             })
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->with([
-                'categories:id,name,slug,is_main',
+                'categories',
                 'chapters' => function ($query) {
                     $query->select('id', 'story_id', 'views')
                         ->where('status', 'published');
@@ -144,14 +152,14 @@ class HomeController extends Controller
                         ->where('status', 'published');
                 }
             ])
-            ->withCount(['bookmarks'])
-            ->withSum('chapters', 'views')
-            ->withAvg('ratings', 'rating')
             ->select([
                 'stories.id', 'stories.title', 'stories.slug', 'stories.cover', 'stories.cover_medium',
                 'stories.completed', 'stories.author_name', 'stories.description', 'stories.updated_at', 'stories.reviewed_at', 'stories.user_id', 'stories.translator_name'
             ])
-            ->distinct('stories.id');
+            ->withCount(['bookmarks'])
+            ->withSum('chapters', 'views')
+            ->withAvg('ratings as average_rating', 'rating')
+            ->groupBy('stories.id');
 
         // Apply advanced search filters
         $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
@@ -176,6 +184,9 @@ class HomeController extends Controller
 
         $storiesQuery = $category->stories()
             ->published()
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->with([
                 'categories',
                 'chapters' => function ($query) {
@@ -189,7 +200,7 @@ class HomeController extends Controller
             ])
             ->withCount(['bookmarks'])
             ->withSum('chapters', 'views')
-            ->withAvg('ratings', 'rating');
+            ->withAvg('ratings as average_rating', 'rating');
 
         // Apply advanced search filters
         $storiesQuery = $this->applyAdvancedFilters($storiesQuery, $request);
@@ -272,6 +283,7 @@ class HomeController extends Controller
     private function getFeaturedStoriesForPage()
     {
         $query = Story::with([
+            'categories',
             'chapters' => function ($query) {
                 $query->select('id', 'story_id', 'views', 'created_at')
                     ->where('status', 'published');
@@ -312,6 +324,7 @@ class HomeController extends Controller
                     ->selectRaw('AVG(rating)')
                     ->whereColumn('ratings.story_id', 'stories.id');
             }, 'average_rating')
+            ->withSum('chapters', 'views')
             ->orderBy('featured_order', 'asc')
             ->orderBy('created_at', 'desc');
 
@@ -386,6 +399,9 @@ class HomeController extends Controller
     {
         $storiesQuery = Story::select('stories.*')
             ->where('status', 'published')
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->withAvg('ratings as average_rating', 'rating')
             ->with([
                 'categories',
@@ -438,11 +454,21 @@ class HomeController extends Controller
         // Use withSubquery to avoid GROUP BY issues
         $storiesQuery = Story::select('stories.*')
             ->where('stories.status', 'published')
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->withAvg('ratings as average_rating', 'rating')
-            ->with(['latestChapter' => function ($query) {
-                $query->select('id', 'story_id', 'number', 'slug', 'created_at')
-                    ->where('status', 'published');
-            }])
+            ->with([
+                'categories',
+                'chapters' => function ($query) {
+                    $query->select('id', 'story_id', 'views')
+                        ->where('status', 'published');
+                },
+                'latestChapter' => function ($query) {
+                    $query->select('id', 'story_id', 'number', 'slug', 'created_at')
+                        ->where('status', 'published');
+                }
+            ])
             ->withCount(['bookmarks'])
             ->withSum('chapters', 'views')
             ->joinSub($latestChapters, 'latest_chapters', function ($join) {
@@ -469,11 +495,21 @@ class HomeController extends Controller
 
     public function showStoryNew(Request $request)
     {
-        $query = Story::with(['latestChapter' => function ($query) {
-            $query->select('id', 'story_id', 'title', 'slug', 'number', 'views', 'created_at', 'status')
-                ->where('status', 'published');
-        }, 'categories'])
+        $query = Story::with([
+            'categories',
+            'chapters' => function ($query) {
+                $query->select('id', 'story_id', 'views')
+                    ->where('status', 'published');
+            },
+            'latestChapter' => function ($query) {
+                $query->select('id', 'story_id', 'title', 'slug', 'number', 'views', 'created_at', 'status')
+                    ->where('status', 'published');
+            }
+        ])
             ->published()
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->select([
                 'id',
                 'title',
@@ -490,10 +526,7 @@ class HomeController extends Controller
                 $query->where('status', 'published');
             }, 'bookmarks'])
             ->withSum('chapters', 'views')
-            ->withAvg('ratings', 'rating')
-            ->whereHas('chapters', function ($query) {
-                $query->where('status', 'published');
-            })
+            ->withAvg('ratings as average_rating', 'rating')
             ->whereMonth('reviewed_at', now()->month)
             ->whereYear('reviewed_at', now()->year)
             ->orderByDesc('reviewed_at');
@@ -522,6 +555,10 @@ class HomeController extends Controller
             ->groupBy('story_id');
 
         $storiesQuery = Story::select('stories.*')
+            ->where('stories.status', 'published')
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->with([
                 'categories',
                 'chapters' => function ($query) {
@@ -534,7 +571,7 @@ class HomeController extends Controller
                 }
             ])
             ->withCount(['bookmarks'])
-            ->withAvg('ratings', 'rating')
+            ->withAvg('ratings as average_rating', 'rating')
             ->joinSub($storyViews, 'story_views', function ($join) {
                 $join->on('stories.id', '=', 'story_views.story_id');
             })
@@ -560,6 +597,10 @@ class HomeController extends Controller
     public function showStoryFollow(Request $request)
     {
         $storiesQuery = Story::withCount('bookmarks')
+            ->published()
+            ->whereHas('chapters', function ($query) {
+                $query->where('status', 'published');
+            })
             ->with([
                 'categories',
                 'chapters' => function ($query) {
@@ -572,7 +613,7 @@ class HomeController extends Controller
                 }
             ])
             ->withSum('chapters', 'views')
-            ->withAvg('ratings', 'rating')
+            ->withAvg('ratings as average_rating', 'rating')
             ->orderByDesc('bookmarks_count');
 
         // Apply advanced search filters
@@ -596,7 +637,7 @@ class HomeController extends Controller
         $storiesQuery = Story::with([
             'categories',
             'chapters' => function ($query) {
-                $query->select('id', 'story_id', 'price', 'is_free')
+                $query->select('id', 'story_id', 'price', 'is_free', 'views')
                     ->where('status', 'published');
             },
             'latestChapter' => function ($query) {
@@ -624,7 +665,7 @@ class HomeController extends Controller
                 $query->where('status', 'published');
             }, 'bookmarks'])
             ->withSum('chapters', 'views')
-            ->withAvg('ratings', 'rating')
+            ->withAvg('ratings as average_rating', 'rating')
             ->latest('updated_at');
 
         // Apply advanced search filters
@@ -685,7 +726,7 @@ class HomeController extends Controller
         return Story::with([
             'categories',
             'chapters' => function ($query) {
-                $query->select('id', 'story_id', 'price', 'is_free')
+                $query->select('id', 'story_id', 'price', 'is_free', 'views')
                     ->where('status', 'published');
             },
             'latestChapter' => function ($query) {
@@ -732,6 +773,7 @@ class HomeController extends Controller
                     ->whereColumn('chapters.story_id', 'stories.id')
                     ->where('status', 'published');
             }, 'total_views')
+            ->withAvg('ratings as average_rating', 'rating')
             ->latest('updated_at')
             ->get();
     }
@@ -1609,10 +1651,10 @@ class HomeController extends Controller
     /**
      * Apply advanced search filters to the query
      */
-    private function applyAdvancedFilters($query, Request $request)
+    private function applyAdvancedFilters($query, Request $request, $skipQuery = false)
     {
-        // Filter by search query (keywords)
-        if ($request->filled('query') && trim($request->input('query')) !== '') {
+        // Filter by search query (keywords) - skip if already applied
+        if (!$skipQuery && $request->filled('query') && trim($request->input('query')) !== '') {
             $searchQuery = trim((string) $request->input('query'));
             $query->where(function ($q) use ($searchQuery) {
                 $q->where('title', 'LIKE', "%{$searchQuery}%")
@@ -1689,7 +1731,7 @@ class HomeController extends Controller
                     }])->withSum('chapters', 'views')->orderBy('chapters_sum_views', 'desc');
                     break;
                 case 'highest_rating':
-                    $query->withAvg('ratings', 'rating')->orderBy('ratings_avg_rating', 'desc');
+                    $query->withAvg('ratings as average_rating', 'rating')->orderBy('average_rating', 'desc');
                     break;
             }
         }
