@@ -1059,7 +1059,7 @@ class HomeController extends Controller
             ->addSelect('latest_chapters.chapters_count', 'latest_chapters.latest_chapter_time')
             ->orderByDesc('average_rating')
             ->orderByDesc('latest_chapters.latest_chapter_time')
-            ->limit(10)
+            ->limit(20)
             ->get();
     }
 
