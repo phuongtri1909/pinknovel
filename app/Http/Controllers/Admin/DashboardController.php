@@ -329,7 +329,7 @@ class DashboardController extends Controller
     
     private function getAuthorRevenueStats($dateFilter)
     {
-        // Get author revenue statistics
+        // Get author revenue statistics - Fixed to avoid duplicate counting
         $authorRevenueStats = DB::select("
             SELECT 
                 u.id,
@@ -337,18 +337,35 @@ class DashboardController extends Controller
                 u.email,
                 COUNT(DISTINCT s.id) as story_count,
                 COUNT(DISTINCT c.id) as chapter_count,
-                COALESCE(SUM(sp.amount_received), 0) as story_revenue,
-                COALESCE(SUM(cp.amount_received), 0) as chapter_revenue,
-                COALESCE(SUM(sp.amount_received), 0) + COALESCE(SUM(cp.amount_received), 0) as total_revenue
+                COALESCE(story_revenue.total, 0) as story_revenue,
+                COALESCE(chapter_revenue.total, 0) as chapter_revenue,
+                COALESCE(story_revenue.total, 0) + COALESCE(chapter_revenue.total, 0) as total_revenue
             FROM users u
             LEFT JOIN stories s ON u.id = s.user_id AND s.status = 'published'
             LEFT JOIN chapters c ON s.id = c.story_id
-            LEFT JOIN story_purchases sp ON s.id = sp.story_id 
-                AND sp.created_at BETWEEN ? AND ?
-            LEFT JOIN chapter_purchases cp ON c.id = cp.chapter_id 
-                AND cp.created_at BETWEEN ? AND ?
+            LEFT JOIN (
+                SELECT 
+                    s2.user_id,
+                    SUM(sp.amount_received) as total
+                FROM stories s2
+                INNER JOIN story_purchases sp ON s2.id = sp.story_id 
+                    AND sp.created_at BETWEEN ? AND ?
+                WHERE s2.status = 'published'
+                GROUP BY s2.user_id
+            ) as story_revenue ON u.id = story_revenue.user_id
+            LEFT JOIN (
+                SELECT 
+                    s3.user_id,
+                    SUM(cp.amount_received) as total
+                FROM stories s3
+                INNER JOIN chapters c2 ON s3.id = c2.story_id
+                INNER JOIN chapter_purchases cp ON c2.id = cp.chapter_id 
+                    AND cp.created_at BETWEEN ? AND ?
+                WHERE s3.status = 'published'
+                GROUP BY s3.user_id
+            ) as chapter_revenue ON u.id = chapter_revenue.user_id
             WHERE u.role = 'author' AND u.active = 'active'
-            GROUP BY u.id, u.name, u.email
+            GROUP BY u.id, u.name, u.email, story_revenue.total, chapter_revenue.total
             HAVING total_revenue > 0
             ORDER BY total_revenue DESC
             LIMIT 20

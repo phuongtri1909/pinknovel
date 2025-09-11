@@ -261,8 +261,8 @@
                 </div>
 
                 <div class="mb-3">
-                    <label for="source_link" class="form-label">Link nguồn <span class="text-muted">(nếu có)</span></label>
-                    <input type="url" class="form-control @error('source_link') is-invalid @enderror" id="source_link"
+                    <label for="source_link" class="form-label">Link nguồn <span class="text-danger">*</span></label>
+                    <input required type="url" class="form-control @error('source_link') is-invalid @enderror" id="source_link"
                         name="source_link" value="{{ old('source_link') }}" placeholder="https://example.com">
                     @error('source_link')
                         <div class="invalid-feedback">{{ $message }}</div>

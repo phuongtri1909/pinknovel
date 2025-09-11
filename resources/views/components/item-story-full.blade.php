@@ -208,7 +208,7 @@
                 }
 
                 .story-description {
-                    -webkit-line-clamp: 2;
+                    -webkit-line-clamp: 6;
                     font-size: 0.75rem;
                 }
 
@@ -241,7 +241,7 @@
                 }
 
                 .story-description {
-                    -webkit-line-clamp: 2;
+                    -webkit-line-clamp: 8;
                     font-size: 0.7rem;
                 }
 
@@ -275,7 +275,7 @@
                 }
 
                 .story-description {
-                    -webkit-line-clamp: 3;
+                    -webkit-line-clamp: 5;
                     font-size: 0.8rem;
                 }
             }

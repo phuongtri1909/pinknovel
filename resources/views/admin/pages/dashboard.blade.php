@@ -8,6 +8,64 @@
     .stats-card:hover {
         transform: translateY(-2px);
     }
+    
+    /* Alternating background colors for stats cards */
+    .row .col-xl-3:nth-child(1) .stats-card,
+    .row .col-xl-3:nth-child(3) .stats-card,
+    .row .col-xl-3:nth-child(5) .stats-card,
+    .row .col-xl-3:nth-child(7) .stats-card {
+        background: white !important;
+        color: #333 !important;
+    }
+    
+    .row .col-xl-3:nth-child(2) .stats-card,
+    .row .col-xl-3:nth-child(4) .stats-card,
+    .row .col-xl-3:nth-child(6) .stats-card,
+    .row .col-xl-3:nth-child(8) .stats-card {
+        background: #f8f9fa !important;
+        color: #333 !important;
+    }
+    
+    /* Override gradient backgrounds */
+    .stats-card.bg-gradient-primary,
+    .stats-card.bg-gradient-success,
+    .stats-card.bg-gradient-info,
+    .stats-card.bg-gradient-warning,
+    .stats-card.bg-gradient-secondary,
+    .stats-card.bg-gradient-danger,
+    .stats-card.bg-gradient-dark {
+        background: inherit !important;
+        color: inherit !important;
+    }
+    
+    /* Icon colors for alternating backgrounds */
+    .row .col-xl-3:nth-child(1) .stats-card .icon-shape,
+    .row .col-xl-3:nth-child(3) .stats-card .icon-shape,
+    .row .col-xl-3:nth-child(5) .stats-card .icon-shape,
+    .row .col-xl-3:nth-child(7) .stats-card .icon-shape {
+        background: #e3f2fd !important;
+    }
+    
+    .row .col-xl-3:nth-child(2) .stats-card .icon-shape,
+    .row .col-xl-3:nth-child(4) .stats-card .icon-shape,
+    .row .col-xl-3:nth-child(6) .stats-card .icon-shape,
+    .row .col-xl-3:nth-child(8) .stats-card .icon-shape {
+        background: #f3e5f5 !important;
+    }
+    
+    .row .col-xl-3:nth-child(1) .stats-card .icon i,
+    .row .col-xl-3:nth-child(3) .stats-card .icon i,
+    .row .col-xl-3:nth-child(5) .stats-card .icon i,
+    .row .col-xl-3:nth-child(7) .stats-card .icon i {
+        color: #1976d2 !important;
+    }
+    
+    .row .col-xl-3:nth-child(2) .stats-card .icon i,
+    .row .col-xl-3:nth-child(4) .stats-card .icon i,
+    .row .col-xl-3:nth-child(6) .stats-card .icon i,
+    .row .col-xl-3:nth-child(8) .stats-card .icon i {
+        color: #7b1fa2 !important;
+    }
     .chart-container {
         height: 300px;
     }
@@ -23,11 +81,11 @@
 @endpush
 
 @section('content-auth')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column mb-4">
     <h2 class="fw-bold mb-0">Dashboard Thống Kê</h2>
     
     <!-- Date Filter -->
-    <div class="d-flex gap-2">
+    <div class="d-flex gap-2 mt-2">
         <select id="yearSelect" class="form-select form-select-sm" style="width: 100px;">
             @for($i = date('Y'); $i >= 2020; $i--)
                 <option value="{{ $i }}" {{ $year == $i ? 'selected' : '' }}>{{ $i }}</option>
@@ -43,7 +101,7 @@
             @endfor
         </select>
         
-        <button id="refreshBtn" class="btn btn-primary btn-sm">
+        <button id="refreshBtn" class="btn btn-primary btn-sm mb-0 px-3">
             <i class="fas fa-sync-alt"></i> Làm mới
         </button>
     </div>
@@ -72,7 +130,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-single-02 text-primary"></i>
+                            <i class="fas fa-user text-primary"></i>
                         </div>
                     </div>
                 </div>
@@ -92,7 +150,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-books text-success"></i>
+                            <i class="fas fa-book text-success"></i>
                         </div>
                     </div>
                 </div>
@@ -112,7 +170,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-single-copy-04 text-info"></i>
+                            <i class="fas fa-file-alt text-info"></i>
                         </div>
                     </div>
                 </div>
@@ -132,7 +190,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-chat-round text-warning"></i>
+                            <i class="fas fa-comments text-warning"></i>
                         </div>
                     </div>
                 </div>
@@ -155,7 +213,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-world text-info"></i>
+                            <i class="fas fa-globe text-info"></i>
                         </div>
                     </div>
                 </div>
@@ -175,7 +233,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-single-02 text-secondary"></i>
+                            <i class="fas fa-users text-secondary"></i>
                         </div>
                     </div>
                 </div>
@@ -195,7 +253,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-active-40 text-warning"></i>
+                            <i class="fas fa-circle text-warning"></i>
                         </div>
                     </div>
                 </div>
@@ -215,7 +273,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-chart-bar-32 text-danger"></i>
+                            <i class="fas fa-chart-bar text-danger"></i>
                         </div>
                     </div>
                 </div>
@@ -238,7 +296,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-money-coins text-dark"></i>
+                            <i class="fas fa-coins text-dark"></i>
                         </div>
                     </div>
                 </div>
@@ -258,7 +316,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-credit-card text-success"></i>
+                            <i class="fas fa-credit-card text-success"></i>
                         </div>
                     </div>
                 </div>
@@ -278,7 +336,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-money-coins text-danger"></i>
+                            <i class="fas fa-money-bill-wave text-danger"></i>
                         </div>
                     </div>
                 </div>
@@ -298,7 +356,7 @@
                     </div>
                     <div class="col-4 text-end">
                         <div class="icon icon-shape bg-white text-center rounded-circle shadow">
-                            <i class="ni ni-trophy text-info"></i>
+                            <i class="fas fa-trophy text-info"></i>
                         </div>
                     </div>
                 </div>
@@ -508,10 +566,10 @@
                             <tr>
                                 <td>
                                     <div class="d-flex px-2 py-1">
-                                        <div class="d-flex flex-column justify-content-center">
+                                        <a href="{{ route('users.show', $author->id) }}" class="d-flex flex-column justify-content-center">
                                             <h6 class="mb-0 text-sm">{{ $author->name }}</h6>
                                             <p class="text-xs text-secondary mb-0">{{ $author->email }}</p>
-                                        </div>
+                                        </a>
                                     </div>
                                 </td>
                                 <td class="align-middle text-center text-sm">

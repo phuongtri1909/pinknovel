@@ -1539,6 +1539,10 @@ body.dark-mode .payment-info-value{
     color: #ffffff !important;
 }
 
+body.dark-mode .batch-format-example{
+    background-color: #090909 !important;
+}
+
 body.dark-mode .story-card {
     background-color: #525252 !important;
     border-color: #404040 !important;

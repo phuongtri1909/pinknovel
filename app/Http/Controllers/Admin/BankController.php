@@ -40,20 +40,19 @@ class BankController extends Controller
             'account_name' => 'required|string|max:255',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'qr_code' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|boolean',
         ]);
 
         $data = $request->except(['logo', 'qr_code']);
 
-        // Process and save logo if provided
         if ($request->hasFile('logo')) {
             $data['logo'] = $this->processAndSaveImage($request->file('logo'), 'banks/logos');
         }
 
-        // Process and save QR code if provided
         if ($request->hasFile('qr_code')) {
             $data['qr_code'] = $this->processAndSaveImage($request->file('qr_code'), 'banks/qr_codes');
         }
+
+        $data['status'] = $request->has('status');
 
         Bank::create($data);
 
@@ -89,28 +88,24 @@ class BankController extends Controller
             'account_name' => 'required|string|max:255',
             'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'qr_code' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|boolean',
         ]);
 
         $data = $request->except(['logo', 'qr_code']);
 
-        // Process and save logo if provided
         if ($request->hasFile('logo')) {
-            // Delete old logo if exists
             if ($bank->logo) {
                 Storage::disk('public')->delete($bank->logo);
             }
             $data['logo'] = $this->processAndSaveImage($request->file('logo'), 'banks/logos');
         }
 
-        // Process and save QR code if provided
         if ($request->hasFile('qr_code')) {
-            // Delete old QR code if exists
             if ($bank->qr_code) {
                 Storage::disk('public')->delete($bank->qr_code);
             }
             $data['qr_code'] = $this->processAndSaveImage($request->file('qr_code'), 'banks/qr_codes');
         }
+        $data['status'] = $request->has('status');
 
         $bank->update($data);
 
@@ -123,18 +118,15 @@ class BankController extends Controller
      */
     public function destroy(Bank $bank)
     {
-        // Check if bank has any deposits
         if ($bank->deposits()->exists()) {
             return redirect()->route('admin.banks.index')
                 ->with('error', 'Không thể xóa ngân hàng này vì đã có giao dịch liên quan.');
         }
 
-        // Delete logo if exists
         if ($bank->logo) {
             Storage::disk('public')->delete($bank->logo);
         }
 
-        // Delete QR code if exists
         if ($bank->qr_code) {
             Storage::disk('public')->delete($bank->qr_code);
         }
@@ -160,13 +152,10 @@ class BankController extends Controller
         $randomString = substr(md5(uniqid()), 0, 8);
         $fileName = "{$timestamp}_{$randomString}";
 
-        // Create directory if it doesn't exist
         Storage::disk('public')->makeDirectory("{$path}/{$yearMonth}");
 
-        // Process image
         $image = Image::make($file);
         
-        // Resize the image to a reasonable size while maintaining aspect ratio
         $image->resize(800, null, function ($constraint) {
             $constraint->aspectRatio();
             $constraint->upsize();
@@ -174,7 +163,6 @@ class BankController extends Controller
         
         $image->encode('webp', 85);
 
-        // Save image
         Storage::disk('public')->put(
             "{$path}/{$yearMonth}/{$fileName}.webp",
             $image->stream()
