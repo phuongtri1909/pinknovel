@@ -116,6 +116,9 @@ class AppServiceProvider extends ServiceProvider
 
         $stories = Story::whereIn('id', $allStoryIds)
             ->where('status', 'published')
+            ->withCount(['chapters' => function ($query) {
+                $query->where('status', 'published');
+            }])
             ->with([
                 'categories:id,name,slug',
                 'latestChapter' => function ($query) {
