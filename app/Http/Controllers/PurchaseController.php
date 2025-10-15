@@ -156,6 +156,7 @@ class PurchaseController extends Controller
                     $user,
                     $story->user,
                     $chapter->price,
+                    $authorEarnings,
                     \App\Models\CoinHistory::TYPE_CHAPTER_PURCHASE,
                     "Mua chương: {$chapter->title}",
                     $purchase
@@ -327,6 +328,7 @@ class PurchaseController extends Controller
                     $freshUser,
                     $story->user,
                     $story->combo_price,
+                    $authorEarnings,
                     \App\Models\CoinHistory::TYPE_STORY_PURCHASE,
                     "Mua combo truyện: {$story->title}",
                     $purchase

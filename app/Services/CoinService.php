@@ -76,7 +76,7 @@ class CoinService
     /**
      * Transfer coins between users (for purchases)
      */
-    public function transferCoins(User $fromUser, User $toUser, int $amount, string $transactionType, string $description = null, $reference = null)
+    public function transferCoins(User $fromUser, User $toUser, int $amount, int $amount_received, string $transactionType, string $description = null, $reference = null)
     {
         DB::beginTransaction();
 
@@ -85,7 +85,7 @@ class CoinService
             $buyerTransaction = $this->subtractCoins($fromUser, $amount, $transactionType, $description, $reference);
 
             // Add to seller
-            $sellerTransaction = $this->addCoins($toUser, $amount, $this->getEarningsType($transactionType), $description, $reference);
+            $sellerTransaction = $this->addCoins($toUser, $amount_received, $this->getEarningsType($transactionType), $description, $reference);
 
             DB::commit();
 

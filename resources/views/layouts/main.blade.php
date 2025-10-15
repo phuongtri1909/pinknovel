@@ -11,7 +11,7 @@
         $faviconPath =
             $logoSite && $logoSite->favicon
                 ? Storage::url($logoSite->favicon)
-                : asset('assets/images/logo/favicon.ico');
+                : asset('favicon.ico');
     @endphp
     <title>@yield('title')</title>
     <meta name="description" content="@yield('description')">

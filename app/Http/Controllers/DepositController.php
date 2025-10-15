@@ -25,9 +25,9 @@ class DepositController extends Controller
 
     public function __construct()
     {
-        $this->coinBankPercent = Config::getConfig('coin_bank_percent', 15);
-        $this->coinPayPalPercent = Config::getConfig('coin_paypal_percent', 0);
-        $this->coinCardPercent = Config::getConfig('coin_card_percent', 30);
+        $this->coinBankPercent = Config::getConfig('coin_bank_percentage', 15);
+        $this->coinPayPalPercent = Config::getConfig('coin_paypal_percentage', 0);
+        $this->coinCardPercent = Config::getConfig('coin_card_percentage', 30);
 
         $this->coinExchangeRate = Config::getConfig('coin_exchange_rate', 100);
         $this->coinPayPalRate = Config::getConfig('coin_paypal_rate', 20000);
@@ -39,12 +39,12 @@ class DepositController extends Controller
         $user = Auth::user();
         $banks = Bank::where('status', true)->get();
         $deposits = Deposit::where('user_id', $user->id)->latest()->paginate(10);
-        
+
         $coinExchangeRate = $this->coinExchangeRate;
         $coinBankPercent = $this->coinBankPercent;
 
         return view('pages.information.deposit.deposit', compact(
-            'banks', 
+            'banks',
             'deposits',
             'coinExchangeRate',
             'coinBankPercent'
@@ -63,16 +63,16 @@ class DepositController extends Controller
             if ($deposit->status !== Deposit::STATUS_PENDING) {
                 return redirect()->back()->with('error', 'Giao dịch đã được xử lý trước đó.');
             }
-            
+
             $deposit->update([
                 'status' => Deposit::STATUS_APPROVED,
                 'approved_at' => now(),
                 'approved_by' => Auth::id(),
             ]);
 
-           
+
             $user = $deposit->user;
-            
+
             // Sử dụng CoinService để ghi lịch sử
             $coinService = new \App\Services\CoinService();
             $coinService->addCoins(

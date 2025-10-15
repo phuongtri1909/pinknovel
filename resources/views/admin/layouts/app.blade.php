@@ -10,7 +10,7 @@
     @php
         // Get the logo and favicon from LogoSite model
         $logoSite = \App\Models\LogoSite::first();
-        $faviconPath = $logoSite && $logoSite->favicon ? Storage::url($logoSite->favicon) : asset('assets/images/logo/favicon.ico');
+        $faviconPath = $logoSite && $logoSite->favicon ? Storage::url($logoSite->favicon) : asset('favicon.ico');
     @endphp
 
     <link rel="icon" type="image/png" href="{{ $faviconPath }}">

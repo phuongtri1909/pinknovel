@@ -14,7 +14,7 @@
         $faviconPath =
             $logoSite && $logoSite->favicon
                 ? Storage::url($logoSite->favicon)
-                : asset('assets/images/logo/favicon.ico');
+                : asset('favicon.ico');
     @endphp
 
     <title>@yield('title', 'Trang chủ - Pink Novel')</title>
