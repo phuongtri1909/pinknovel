@@ -21,7 +21,7 @@
     <meta name="description" content="@yield('description', 'Truyện Pink Novel - Đọc truyện online, tiểu thuyết, truyện tranh, tiểu thuyết hay nhất')">
     <meta name="keywords" content="@yield('keywords', 'truyện, tiểu thuyết, truyện tranh, đọc truyện online')">
     <meta name="robots" content="index, follow">
-    
+
     @hasSection('meta')
         @yield('meta')
     @else
@@ -49,7 +49,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="canonical" href="{{ url()->current() }}">
 
-    <meta name="google-site-verification" content="" />
+    <meta name="google-site-verification" content="mPImhOc_vPGRlqrDydzF58rDmYohxUvnpPCWFJV6t6w" />
 
     <script type="application/ld+json">
         {
