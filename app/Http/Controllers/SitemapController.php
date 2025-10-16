@@ -54,12 +54,6 @@ class SitemapController extends Controller
                 'priority' => '1.0'
             ],
             [
-                'loc' => route('contact'),
-                'lastmod' => Carbon::now()->toAtomString(),
-                'changefreq' => 'monthly',
-                'priority' => '0.5'
-            ],
-            [
                 'loc' => route('login'),
                 'lastmod' => Carbon::now()->toAtomString(),
                 'changefreq' => 'monthly',
@@ -70,6 +64,12 @@ class SitemapController extends Controller
                 'lastmod' => Carbon::now()->toAtomString(),
                 'changefreq' => 'monthly',
                 'priority' => '0.3'
+            ],
+            [
+                'loc' => route('guide.show'),
+                'lastmod' => Carbon::now()->toAtomString(),
+                'changefreq' => 'daily',
+                'priority' => '0.8'
             ]
         ];
 
