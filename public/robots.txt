@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Allow: /huong-dan
 Allow: /story/
 Allow: /stories/
 Allow: /categories-story/
@@ -19,5 +20,5 @@ Disallow: /comment/store
 Disallow: /ratings
 
 # Sitemaps
-Sitemap: https://cakhonho.com/sitemap.xml
+Sitemap: https://pinknovel.net/sitemap.xml
 Crawl-delay: 10
