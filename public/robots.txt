@@ -21,4 +21,3 @@ Disallow: /ratings
 
 # Sitemaps
 Sitemap: https://pinknovel.net/sitemap.xml
-Crawl-delay: 10

@@ -49,6 +49,15 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <link rel="canonical" href="{{ url()->current() }}">
 
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z4GK25GY3J"></script>
+    <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-Z4GK25GY3J');
+    </script>
     <meta name="google-site-verification" content="mPImhOc_vPGRlqrDydzF58rDmYohxUvnpPCWFJV6t6w" />
 
     <script type="application/ld+json">
