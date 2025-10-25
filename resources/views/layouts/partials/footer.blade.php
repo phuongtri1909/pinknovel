@@ -25,13 +25,13 @@
                         @endforelse
                     </div>
                     <div class="footer-links">
-                        <a href="{{ route('home') }}" class="text-white">Trang Chủ</a>
-                        <a href="{{ route('contact') }}" class="text-white">Liên hệ</a>
-                        <a href="{{ route('privacy-policy') }}" class="text-white">Quyền riêng tư</a>
-                        <a href="{{ route('terms') }}" class="text-white">Điều khoản sử dụng</a>
-                        <a href="{{ route('content-rules') }}" class="text-white">Quy tắc nội dung</a>
-                        <a href="{{ route('confidental') }}" class="text-white">Bảo mật thông tin</a>
-                        <a href="{{ route('guide.show') }}" class="text-white">Hướng Dẫn</a>
+                        <a href="{{ route('home') }}">Trang Chủ</a>
+                        <a href="{{ route('contact') }}">Liên hệ</a>
+                        <a href="{{ route('privacy-policy') }}">Quyền riêng tư</a>
+                        <a href="{{ route('terms') }}">Điều khoản sử dụng</a>
+                        <a href="{{ route('content-rules') }}">Quy tắc nội dung</a>
+                        <a href="{{ route('confidental') }}">Bảo mật thông tin</a>
+                        <a href="{{ route('guide.show') }}">Hướng Dẫn</a>
                     </div>
 
                     <div class="py-3">
