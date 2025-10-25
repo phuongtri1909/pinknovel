@@ -70,7 +70,38 @@ class SitemapController extends Controller
                 'lastmod' => Carbon::now()->toAtomString(),
                 'changefreq' => 'daily',
                 'priority' => '0.8'
-            ]
+            ],
+            [
+                'loc' => route('contact'),
+                'lastmod' => Carbon::now()->toAtomString(),
+                'changefreq' => 'monthly',
+                'priority' => '0.3'
+            ],
+            [
+                'loc' => route('privacy-policy'),
+                'lastmod' => Carbon::now()->toAtomString(),
+                'changefreq' => 'daily',
+                'priority' => '0.9'
+            ],
+
+            [
+                'loc' => route('terms'),
+                'lastmod' => Carbon::now()->toAtomString(),
+                'changefreq' => 'weekly',
+                'priority' => '0.7'
+            ],
+            [
+                'loc' => route('content-rules'),
+                'lastmod' => Carbon::now()->toAtomString(),
+                'changefreq' => 'weekly',
+                'priority' => '0.6'
+            ],
+            [
+                'loc' => route('confidental'),
+                'lastmod' => Carbon::now()->toAtomString(),
+                'changefreq' => 'monthly',
+                'priority' => '0.4'
+            ],
         ];
 
         return response()->view('sitemaps.main', [
