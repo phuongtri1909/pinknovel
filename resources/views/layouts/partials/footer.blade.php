@@ -6,8 +6,9 @@
                 <div class="col-12 col-md-6">
                     <div class="social-icons mb-3 py-3">
                         @forelse($socials as $social)
-                            <a href="{{ $social->url }}" target="_blank" class="social-icon" aria-label="{{ $social->name }}">
-                                @if(strpos($social->icon, 'custom-') === 0)
+                            <a href="{{ $social->url }}" target="_blank" class="social-icon"
+                                aria-label="{{ $social->name }}">
+                                @if (strpos($social->icon, 'custom-') === 0)
                                     <span class="{{ $social->icon }}"></span>
                                 @else
                                     <i class="{{ $social->icon }}"></i>
@@ -17,15 +18,20 @@
                             <a href="https://facebook.com" target="_blank" class="social-icon" aria-label="Facebook">
                                 <i class="fab fa-facebook-f"></i>
                             </a>
-                            <a href="mailto:contact@pinknovel.com" target="_blank" class="social-icon" aria-label="Email">
+                            <a href="mailto:contact@pinknovel.com" target="_blank" class="social-icon"
+                                aria-label="Email">
                                 <i class="fas fa-envelope"></i>
                             </a>
                         @endforelse
                     </div>
                     <div class="footer-links">
-                        <a href="{{ route('home') }}" class="text-decoration-none">Trang Chủ</a>
-                        <a href="" class="text-decoration-none">Điều Khoản</a>
-                        <a href="{{ route('guide.show') }}" class="text-decoration-none">Hướng Dẫn</a>
+                        <a href="{{ route('home') }}" class="text-white">Trang Chủ</a>
+                        <a href="{{ route('contact') }}" class="text-white">Liên hệ</a>
+                        <a href="{{ route('privacy-policy') }}" class="text-white">Quyền riêng tư</a>
+                        <a href="{{ route('terms') }}" class="text-white">Điều khoản sử dụng</a>
+                        <a href="{{ route('content-rules') }}" class="text-white">Quy tắc nội dung</a>
+                        <a href="{{ route('confidental') }}" class="text-white">Bảo mật thông tin</a>
+                        <a href="{{ route('guide.show') }}" class="text-white">Hướng Dẫn</a>
                     </div>
 
                     <div class="py-3">
@@ -38,13 +44,14 @@
                     <!-- Facebook Page Plugin -->
                     <div class="mt-4">
                         <div class="w-100">
-                            <div class="fb-page" data-href="https://www.facebook.com/pinknovel" data-small-header="false"
-                                data-adapt-container-width="true" data-hide-cover="false" data-show-facepile="true">
+                            <div class="fb-page" data-href="https://www.facebook.com/pinknovel"
+                                data-small-header="false" data-adapt-container-width="true" data-hide-cover="false"
+                                data-show-facepile="true">
                             </div>
                         </div>
                     </div>
                 </div>
-                
+
             </div>
 
 

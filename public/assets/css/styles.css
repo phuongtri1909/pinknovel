@@ -433,9 +433,9 @@ body {
 
 .footer-links {
     display: flex;
-    justify-content: center;
-    align-items: center;
     gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;;
 }
 
 .footer-links a {

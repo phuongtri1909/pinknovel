@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CoinController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\GuideController;
 use App\Http\Controllers\StoryController;
@@ -27,17 +28,17 @@ use App\Http\Controllers\WithdrawalController;
 use App\Http\Controllers\CardDepositController;
 use App\Http\Controllers\Admin\ConfigController;
 use App\Http\Controllers\Admin\SocialController;
-use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\PaypalDepositController;
 use App\Http\Controllers\RequestPaymentController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\StoryReviewController;
 use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\StoryTransferController;
+use App\Http\Controllers\Admin\AdminDailyTaskController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
 use App\Http\Controllers\Admin\CardDepositController as AdminCardDepositController;
 use App\Http\Controllers\Admin\PaypalDepositController as AdminPaypalDepositController;
 use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
-use App\Http\Controllers\Admin\AdminDailyTaskController;
 
 /*
 |--------------------------------------------------------------------------
@@ -58,6 +59,13 @@ Route::get('/sitemap-main.xml', [SitemapController::class, 'main'])->name('sitem
 Route::get('/sitemap-stories.xml', [SitemapController::class, 'stories'])->name('sitemap.stories');
 Route::get('/sitemap-chapters.xml', [SitemapController::class, 'chapters'])->name('sitemap.chapters');
 Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories'])->name('sitemap.categories');
+
+Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+Route::get('/privacy-policy', [PageController::class, 'privacyPolicy'])->name('privacy-policy');
+Route::get('/terms', [PageController::class, 'terms'])->name('terms');
+Route::get('/content-rules', [PageController::class, 'contentRules'])->name('content-rules');
+Route::get('/confidental', [PageController::class, 'confidental'])->name('confidental');
+
 
 Route::post('/card-deposit/callback', [CardDepositController::class, 'callback'])->name('card.deposit.callback');
 
