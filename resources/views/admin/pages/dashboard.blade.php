@@ -646,12 +646,12 @@
                                 <td>
                                     <div class="d-flex px-2 py-1">
                                         <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">TB lượt truy cập/ngày</h6>
+                                            <h6 class="mb-0 text-sm">Tổng lượt xem trong ngày</h6>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="align-middle text-center text-sm">
-                                    <span class="text-xs font-weight-bold">{{ number_format($visitorStats['avg_daily_visits']) }}</span>
+                                    <span class="text-xs font-weight-bold">{{ number_format($visitorStats['today_page_views'] ?? 0) }}</span>
                                 </td>
                             </tr>
                         </tbody>
@@ -718,15 +718,21 @@
                 </div>
                 
                 @if(count($onlineStats['top_pages']) > 0)
-                <div class="mt-3">
+                <div class="mt-3" id="topPagesContainer">
                     <h6 class="text-sm font-weight-bold mb-2">Trang được xem nhiều nhất:</h6>
-                    <div class="list-group list-group-flush">
+                    <div class="list-group list-group-flush" id="topPagesList">
                         @foreach($onlineStats['top_pages'] as $page)
                         <div class="list-group-item px-0 py-1">
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="text-xs text-truncate" style="max-width: 200px;" title="{{ $page->current_page }}">
+                                @php
+                                    $pageUrl = $page->current_page;
+                                    if (!str_starts_with($pageUrl, 'http')) {
+                                        $pageUrl = url($pageUrl);
+                                    }
+                                @endphp
+                                <a href="{{ $pageUrl }}" target="_blank" class="text-xs text-truncate text-decoration-none" style="max-width: 200px;" title="{{ $page->current_page }}">
                                     {{ Str::limit($page->current_page, 30) }}
-                                </span>
+                                </a>
                                 <span class="badge badge-sm bg-primary">{{ $page->view_count }}</span>
                             </div>
                         </div>
@@ -1093,7 +1099,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Utility functions
-    function formatNumber(num) {
+    function formatNumber(num, decimals = 0) {
+        if (decimals > 0) {
+            return new Intl.NumberFormat('vi-VN', {
+                minimumFractionDigits: decimals,
+                maximumFractionDigits: decimals
+            }).format(num);
+        }
         return new Intl.NumberFormat('vi-VN').format(num);
     }
     
@@ -1183,12 +1195,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 <td>
                     <div class="d-flex px-2 py-1">
                         <div class="d-flex flex-column justify-content-center">
-                            <h6 class="mb-0 text-sm">TB lượt truy cập/ngày</h6>
+                            <h6 class="mb-0 text-sm">Tổng lượt xem trong ngày</h6>
                         </div>
                     </div>
                 </td>
                 <td class="align-middle text-center text-sm">
-                    <span class="text-xs font-weight-bold">${formatNumber(visitorStats.avg_daily_visits)}</span>
+                    <span class="text-xs font-weight-bold">${formatNumber(visitorStats.today_page_views || 0)}</span>
                 </td>
             </tr>
         `;
@@ -1237,6 +1249,57 @@ document.addEventListener('DOMContentLoaded', function() {
                 </td>
             </tr>
         `;
+        
+        // Update top pages list
+        updateTopPages(onlineStats.top_pages || []);
+    }
+    
+    // Function to update top pages
+    function updateTopPages(topPages) {
+        let container = document.getElementById('topPagesContainer');
+        let list = document.getElementById('topPagesList');
+        
+        if (!container || !list) {
+            // Create container if it doesn't exist
+            const statsTable = document.getElementById('onlineStatsTable');
+            if (statsTable && topPages.length > 0) {
+                const cardBody = statsTable.closest('.card')?.querySelector('.card-body');
+                if (cardBody) {
+                    const newContainer = document.createElement('div');
+                    newContainer.className = 'mt-3';
+                    newContainer.id = 'topPagesContainer';
+                    newContainer.innerHTML = `
+                        <h6 class="text-sm font-weight-bold mb-2">Trang được xem nhiều nhất:</h6>
+                        <div class="list-group list-group-flush" id="topPagesList"></div>
+                    `;
+                    cardBody.appendChild(newContainer);
+                    // Re-fetch elements after creation
+                    list = document.getElementById('topPagesList');
+                }
+            }
+        }
+        
+        if (list && topPages.length > 0) {
+            list.innerHTML = topPages.map(page => {
+                let pageUrl = page.current_page || page.url || '';
+                if (pageUrl && !pageUrl.startsWith('http')) {
+                    pageUrl = window.location.origin + (pageUrl.startsWith('/') ? '' : '/') + pageUrl;
+                }
+                const displayText = truncateText(page.current_page || page.url || 'N/A', 30);
+                return `
+                    <div class="list-group-item px-0 py-1">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="${pageUrl}" target="_blank" class="text-xs text-truncate text-decoration-none" style="max-width: 200px;" title="${page.current_page || page.url || ''}">
+                                ${displayText}
+                            </a>
+                            <span class="badge badge-sm bg-primary">${page.view_count || 0}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } else if (list && topPages.length === 0) {
+            list.innerHTML = '<div class="list-group-item px-0 py-1 text-muted text-xs">Không có dữ liệu</div>';
+        }
     }
     
     // Event listeners

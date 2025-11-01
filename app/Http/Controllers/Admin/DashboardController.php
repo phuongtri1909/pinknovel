@@ -401,8 +401,8 @@ class DashboardController extends Controller
     
     private function getVisitorStats($dateFilter)
     {
-        // Get visitor statistics
-        $visitorStats = DB::select("
+        // First try to get from visitor_stats table
+        $visitorStatsFromTable = DB::select("
             SELECT 
                 COALESCE(SUM(total_visits), 0) as total_visits,
                 COALESCE(SUM(unique_visitors), 0) as unique_visitors,
@@ -417,6 +417,77 @@ class DashboardController extends Controller
             $dateFilter['start']->format('Y-m-d'), 
             $dateFilter['end']->format('Y-m-d')
         ])[0];
+        
+        // Get today's page views (or selected day)
+        $todayStart = Carbon::today();
+        $todayEnd = Carbon::today()->endOfDay();
+        
+        $todayPageViews = DB::table('online_users')
+            ->whereBetween('created_at', [$todayStart, $todayEnd])
+            ->count();
+        
+        $visitorStatsFromTable->today_page_views = $todayPageViews;
+        
+        // If visitor_stats has data, return it
+        if ($visitorStatsFromTable->total_visits > 0 || 
+            $visitorStatsFromTable->unique_visitors > 0 || 
+            $visitorStatsFromTable->page_views > 0) {
+            return (array) $visitorStatsFromTable;
+        }
+        
+        // Otherwise, calculate from online_users table
+        $daysDiff = $dateFilter['start']->diffInDays($dateFilter['end']) + 1;
+        if ($daysDiff == 0) $daysDiff = 1; // Prevent division by zero
+        
+        // Get basic stats from online_users
+        $basicStats = DB::select("
+            SELECT 
+                COUNT(*) as total_visits,
+                COUNT(DISTINCT COALESCE(session_id, ip_address)) as unique_visitors,
+                COUNT(*) as page_views
+            FROM online_users 
+            WHERE created_at BETWEEN ? AND ?
+        ", [
+            $dateFilter['start'], 
+            $dateFilter['end']
+        ])[0];
+        
+        // Get new users count from users table
+        $newUsersCount = DB::table('users')
+            ->whereBetween('created_at', [$dateFilter['start'], $dateFilter['end']])
+            ->count();
+        
+        // Get returning users (users who visited during period but created before period)
+        $returningUsersCount = DB::select("
+            SELECT COUNT(DISTINCT ou.user_id) as count
+            FROM online_users ou
+            INNER JOIN users u ON ou.user_id = u.id
+            WHERE ou.created_at BETWEEN ? AND ?
+            AND u.created_at < ?
+        ", [
+            $dateFilter['start'], 
+            $dateFilter['end'],
+            $dateFilter['start']
+        ])[0]->count ?? 0;
+        
+        // Get today's page views (or selected day)
+        $todayStart = Carbon::today();
+        $todayEnd = Carbon::today()->endOfDay();
+        
+        $todayPageViews = DB::table('online_users')
+            ->whereBetween('created_at', [$todayStart, $todayEnd])
+            ->count();
+        
+        $visitorStats = (object) [
+            'total_visits' => $basicStats->total_visits ?? 0,
+            'unique_visitors' => $basicStats->unique_visitors ?? 0,
+            'page_views' => $basicStats->page_views ?? 0,
+            'new_users' => $newUsersCount,
+            'returning_users' => $returningUsersCount,
+            'avg_daily_visits' => ($basicStats->total_visits ?? 0) / $daysDiff,
+            'avg_daily_unique_visitors' => ($basicStats->unique_visitors ?? 0) / $daysDiff,
+            'today_page_views' => $todayPageViews
+        ];
         
         return (array) $visitorStats;
     }
