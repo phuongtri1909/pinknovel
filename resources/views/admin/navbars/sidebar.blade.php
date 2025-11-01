@@ -20,11 +20,12 @@
         <a href="{{ route('home') }}" class="btn btn-white btn-sm w-100 mb-0">Trang chủ</a>
     </div>
 
-    <div class="collapse navbar-collapse  w-auto" id="sidenav-collapse-main">
+    <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
         <ul class="navbar-nav">
+            {{-- Dashboard --}}
             <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteNamed('admin.dashboard') ? 'active' : '' }}"
-                    href="{{ route('admin.dashboard') }}">
+                    href="{{ route('admin.dashboard') }}" data-menu="dashboard">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <svg width="12px" height="12px" viewBox="0 0 45 40" version="1.1"
@@ -49,338 +50,409 @@
                 </a>
             </li>
 
-
+            {{-- Truyện --}}
+            @php
+                $storiesMenuActive = Route::currentRouteNamed('stories.*', 'stories.chapters.*', 'categories.*', 
+                    'admin.story-transfer.*', 'admin.story-reviews.*', 'admin.edit-requests.*', 
+                    'admin.author-applications.*');
+            @endphp
             <li class="nav-item mt-2">
-                <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Chức năng</h6>
+                <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Quản lý</h6>
             </li>
-
+            
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('categories.*') ? 'active' : '' }}"
-                    href="{{ route('categories.index') }}">
+                <a class="nav-link {{ $storiesMenuActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" 
+                    href="#storiesSubmenu" role="button" aria-expanded="{{ $storiesMenuActive ? 'true' : 'false' }}" 
+                    aria-controls="storiesSubmenu">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-book text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Danh sách thể loại</span>
+                    <span class="nav-link-text ms-1">Truyện</span>
+                    <i class="fas fa-chevron-down text-xs opacity-5"></i>
                 </a>
+                <div class="collapse mt-1 {{ $storiesMenuActive ? 'show' : '' }}" id="storiesSubmenu" style="margin-left: 15px">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('stories.*', 'stories.chapters.*') ? 'active' : '' }}"
+                                href="{{ route('stories.index') }}" data-menu="stories-list">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-layer-group text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Danh sách truyện</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('categories.*') ? 'active' : '' }}"
+                                href="{{ route('categories.index') }}" data-menu="categories">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-book text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Danh sách thể loại</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.story-transfer.*') ? 'active' : '' }}"
+                                href="{{ route('admin.story-transfer.index') }}" data-menu="story-transfer">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-exchange-alt text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Chuyển nhượng truyện</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.story-reviews.*') ? 'active' : '' }}"
+                                href="{{ route('admin.story-reviews.index') }}" data-menu="story-reviews">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-check-to-slot text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Duyệt truyện
+                                    @php
+                                        $pendingStoryCount = \App\Models\Story::where('status', 'pending')->count();
+                                    @endphp
+                                    @if ($pendingStoryCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingStoryCount }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.edit-requests.*') ? 'active' : '' }}"
+                                href="{{ route('admin.edit-requests.index') }}" data-menu="edit-requests">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-pen-to-square text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Duyệt chỉnh sửa
+                                    @php
+                                        $pendingEditCount = \App\Models\StoryEditRequest::where('status', 'pending')->count();
+                                    @endphp
+                                    @if ($pendingEditCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingEditCount }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.author-applications.*') ? 'active' : '' }}"
+                                href="{{ route('admin.author-applications.index') }}" data-menu="author-applications">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-pen-nib text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Đơn đăng ký tác giả
+                                    @php
+                                        $pendingCount = \App\Models\AuthorApplication::where('status', 'pending')->count();
+                                    @endphp
+                                    @if ($pendingCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingCount }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
+            {{-- Tài chính --}}
+            @php
+                $financeMenuActive = Route::currentRouteNamed('deposits.*', 'admin.card-deposits.*', 
+                    'admin.paypal-deposits.*', 'admin.withdrawals.*', 'admin.banks.*');
+            @endphp
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('stories.*', 'stories.chapters.*') ? 'active' : '' }}"
-                    href="{{ route('stories.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-layer-group text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Danh sách truyện</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.story-transfer.*') ? 'active' : '' }}"
-                    href="{{ route('admin.story-transfer.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fas fa-exchange-alt text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Chuyển nhượng truyện</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.author-applications.*') ? 'active' : '' }}"
-                    href="{{ route('admin.author-applications.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-pen-nib text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Đơn đăng ký tác giả
-                        @php
-                            $pendingCount = \App\Models\AuthorApplication::where('status', 'pending')->count();
-                        @endphp
-                        @if ($pendingCount > 0)
-                            <span class="badge bg-danger ms-2">{{ $pendingCount }}</span>
-                        @endif
-                    </span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.story-reviews.*') ? 'active' : '' }}"
-                    href="{{ route('admin.story-reviews.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-check-to-slot text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Duyệt truyện
-                        @php
-                            $pendingStoryCount = \App\Models\Story::where('status', 'pending')->count();
-                        @endphp
-                        @if ($pendingStoryCount > 0)
-                            <span class="badge bg-danger ms-2">{{ $pendingStoryCount }}</span>
-                        @endif
-                    </span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.edit-requests.*') ? 'active' : '' }}"
-                    href="{{ route('admin.edit-requests.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-pen-to-square text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Duyệt chỉnh sửa
-                        @php
-                            $pendingEditCount = \App\Models\StoryEditRequest::where('status', 'pending')->count();
-                        @endphp
-                        @if ($pendingEditCount > 0)
-                            <span class="badge bg-danger ms-2">{{ $pendingEditCount }}</span>
-                        @endif
-                    </span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('banners.*') ? 'active' : '' }}"
-                    href="{{ route('banners.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-regular fa-image text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Banners</span>
-                </a>
-            </li>
-
-
-
-            {{-- <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('donate.*') ? 'active' : '' }}"
-                    href="{{ route('donate.edit') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-hand-holding-heart text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Cấu hình Donate</span>
-                </a>
-            </li> --}}
-
-            <li class="nav-item">
-                <a href="{{ route('admin.withdrawals.index') }}"
-                    class="nav-link {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}">
+                <a class="nav-link {{ $financeMenuActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" 
+                    href="#financeSubmenu" role="button" aria-expanded="{{ $financeMenuActive ? 'true' : 'false' }}" 
+                    aria-controls="financeSubmenu">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-money-bill-transfer text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Quản lý rút xu
-                        @php
-                            $pendingWithdrawalsCount = \App\Models\WithdrawalRequest::where(
-                                'status',
-                                'pending',
-                            )->count();
-                        @endphp
-                        @if ($pendingWithdrawalsCount > 0)
-                            <span class="badge bg-danger ms-2">{{ $pendingWithdrawalsCount }}</span>
-                        @endif
-                    </span>
+                    <span class="nav-link-text ms-1">Tài chính</span>
+                    <i class="fas fa-chevron-down text-xs opacity-5"></i>
                 </a>
+                <div class="collapse mt-1 {{ $financeMenuActive ? 'show' : '' }}" id="financeSubmenu" style="margin-left: 15px">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('deposits.*') ? 'active' : '' }}"
+                                href="{{ route('deposits.index') }}" data-menu="deposits">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-university text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Nạp xu - Bank
+                                    @php
+                                        $pendingDepositsCount = \App\Models\Deposit::where('status', 'pending')->count();
+                                    @endphp
+                                    @if ($pendingDepositsCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingDepositsCount }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.card-deposits.*') ? 'active' : '' }}"
+                                href="{{ route('admin.card-deposits.index') }}" data-menu="card-deposits">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-credit-card text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Nạp xu - Thẻ cào</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.paypal-deposits.*') ? 'active' : '' }}"
+                                href="{{ route('admin.paypal-deposits.index') }}" data-menu="paypal-deposits">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fab fa-paypal text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Nạp xu - PayPal
+                                    @php
+                                        $pendingPaypalCount = \App\Models\PaypalDeposit::where('status', 'processing')->count();
+                                    @endphp
+                                    @if ($pendingPaypalCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingPaypalCount }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}"
+                                href="{{ route('admin.withdrawals.index') }}" data-menu="withdrawals">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-money-bill-transfer text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Quản lý rút xu
+                                    @php
+                                        $pendingWithdrawalsCount = \App\Models\WithdrawalRequest::where(
+                                            'status',
+                                            'pending',
+                                        )->count();
+                                    @endphp
+                                    @if ($pendingWithdrawalsCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingWithdrawalsCount }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.banks.*') ? 'active' : '' }}"
+                                href="{{ route('admin.banks.index') }}" data-menu="banks">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-university text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Quản lý Ngân hàng</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
+            {{-- Xu --}}
+            @php
+                $coinMenuActive = Route::currentRouteNamed('coins.*', 'coin.transactions', 'coin-history.index');
+            @endphp
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.banks.*') ? 'active' : '' }}"
-                    href="{{ route('admin.banks.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-university text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Quản lý Ngân hàng</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('deposits.*') ? 'active' : '' }}"
-                    href="{{ route('deposits.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-university text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Nạp xu - Bank</span>
-                    @php
-                        $pendingDepositsCount = \App\Models\Deposit::where('status', 'pending')->count();
-                    @endphp
-                    @if ($pendingDepositsCount > 0)
-                        <span class="badge bg-danger ms-2">{{ $pendingDepositsCount }}</span>
-                    @endif
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.card-deposits.*') ? 'active' : '' }}"
-                    href="{{ route('admin.card-deposits.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-credit-card text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Nạp xu - Thẻ cào</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.paypal-deposits.*') ? 'active' : '' }}"
-                    href="{{ route('admin.paypal-deposits.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fab fa-paypal text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Nạp xu - PayPal
-                        @php
-                            $pendingPaypalCount = \App\Models\PaypalDeposit::where('status', 'processing')->count();
-                        @endphp
-                        @if ($pendingPaypalCount > 0)
-                            <span class="badge bg-danger ms-2">{{ $pendingPaypalCount }}</span>
-                        @endif
-                    </span>
-                </a>
-            </li>
-
-
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('comments.all') ? 'active' : '' }}"
-                    href="{{ route('comments.all') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-comments text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Quản lý Bình luận
-                        @php
-                            $pendingCommentsCount = \App\Models\Comment::where('approval_status', 'pending')
-                                ->whereHas('user', function($q) {
-                                    $q->where('role', '!=', 'admin');
-                                })
-                                ->whereDoesntHave('story', function($q) {
-                                    $q->whereColumn('stories.user_id', 'comments.user_id');
-                                })
-                                ->count();
-                        @endphp
-                        @if ($pendingCommentsCount > 0)
-                            <span class="badge bg-danger ms-2">{{ $pendingCommentsCount }}</span>
-                        @endif
-                    </span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('users.*') ? 'active' : '' }}"
-                    href="{{ route('users.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-users text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Danh sách User</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('coins.*') ? 'active' : '' }}"
-                    href="{{ route('coins.index') }}">
+                <a class="nav-link {{ $coinMenuActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" 
+                    href="#coinSubmenu" role="button" aria-expanded="{{ $coinMenuActive ? 'true' : 'false' }}" 
+                    aria-controls="coinSubmenu">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-coins text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Quản lý xu</span>
+                    <span class="nav-link-text ms-1">Xu</span>
+                    <i class="fas fa-chevron-down text-xs opacity-5"></i>
                 </a>
+                <div class="collapse mt-1 {{ $coinMenuActive ? 'show' : '' }}" id="coinSubmenu" style="margin-left: 15px">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('coins.*') ? 'active' : '' }}"
+                                href="{{ route('coins.index') }}" data-menu="coins">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-coins text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Quản lý xu</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('coin.transactions') ? 'active' : '' }}"
+                                href="{{ route('coin.transactions') }}" data-menu="coin-transactions">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-history text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Kiểm soát xu thủ công</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('coin-history.index') ? 'active' : '' }}"
+                                href="{{ route('coin-history.index') }}" data-menu="coin-history">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-history text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Lịch sử xu</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
+            {{-- Người dùng --}}
+            @php
+                $userMenuActive = Route::currentRouteNamed('users.*', 'comments.all');
+            @endphp
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('coin.transactions') ? 'active' : '' }}"
-                    href="{{ route('coin.transactions') }}">
+                <a class="nav-link {{ $userMenuActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" 
+                    href="#userSubmenu" role="button" aria-expanded="{{ $userMenuActive ? 'true' : 'false' }}" 
+                    aria-controls="userSubmenu">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-history text-dark icon-sidebar"></i>
+                        <i class="fa-solid fa-users text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Kiểm soát xu thủ công</span>
+                    <span class="nav-link-text ms-1">Người dùng</span>
+                    <i class="fas fa-chevron-down text-xs opacity-5"></i>
                 </a>
+                <div class="collapse mt-1 {{ $userMenuActive ? 'show' : '' }}" id="userSubmenu" style="margin-left: 15px">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('users.*') ? 'active' : '' }}"
+                                href="{{ route('users.index') }}" data-menu="users">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-users text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Danh sách User</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('comments.all') ? 'active' : '' }}"
+                                href="{{ route('comments.all') }}" data-menu="comments">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-comments text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Quản lý Bình luận
+                                    @php
+                                        $pendingCommentsCount = \App\Models\Comment::where('approval_status', 'pending')
+                                            ->whereHas('user', function($q) {
+                                                $q->where('role', '!=', 'admin');
+                                            })
+                                            ->whereDoesntHave('story', function($q) {
+                                                $q->whereColumn('stories.user_id', 'comments.user_id');
+                                            })
+                                            ->count();
+                                    @endphp
+                                    @if ($pendingCommentsCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingCommentsCount }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('coin-history.index') ? 'active' : '' }}"
-                    href="{{ route('coin-history.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-history text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Lịch sử xu</span>
-                </a>
-            </li>
-
+            {{-- Cài đặt --}}
+            @php
+                $settingsMenuActive = Route::currentRouteNamed('admin.configs.*', 'logo-site.*', 
+                    'admin.daily-tasks.*', 'admin.socials.*', 'admin.guide.*', 'banners.*');
+            @endphp
             <li class="nav-item mt-2">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Cài đặt</h6>
             </li>
-
+            
             <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.configs.*') ? 'active' : '' }}"
-                    href="{{ route('admin.configs.index') }}">
+                <a class="nav-link {{ $settingsMenuActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" 
+                    href="#settingsSubmenu" role="button" aria-expanded="{{ $settingsMenuActive ? 'true' : 'false' }}" 
+                    aria-controls="settingsSubmenu">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-gears text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Cấu hình hệ thống</span>
+                    <span class="nav-link-text ms-1">Cài đặt</span>
+                    <i class="fas fa-chevron-down text-xs opacity-5"></i>
                 </a>
+                <div class="collapse mt-1 {{ $settingsMenuActive ? 'show' : '' }}" id="settingsSubmenu" style="margin-left: 15px">
+                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.configs.*') ? 'active' : '' }}"
+                                href="{{ route('admin.configs.index') }}" data-menu="configs">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-gears text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Cấu hình hệ thống</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('logo-site.*') ? 'active' : '' }}"
+                                href="{{ route('logo-site.edit') }}" data-menu="logo">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-regular fa-images text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Logo</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('banners.*') ? 'active' : '' }}"
+                                href="{{ route('banners.index') }}" data-menu="banners">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-regular fa-image text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Banners</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.daily-tasks.*') ? 'active' : '' }}"
+                                href="{{ route('admin.daily-tasks.index') }}" data-menu="daily-tasks">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-tasks text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Quản lý nhiệm vụ</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.socials.*') ? 'active' : '' }}"
+                                href="{{ route('admin.socials.index') }}" data-menu="socials">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-share-nodes text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Liên hệ</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('admin.guide.*') ? 'active' : '' }}"
+                                href="{{ route('admin.guide.edit') }}" data-menu="guide">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-book text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Quản lý Hướng dẫn</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('logo-site.*') ? 'active' : '' }}"
-                    href="{{ route('logo-site.edit') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-regular fa-images text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Logo</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.daily-tasks.*') ? 'active' : '' }}"
-                    href="{{ route('admin.daily-tasks.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-tasks text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Quản lý nhiệm vụ</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {{ Route::currentRouteNamed('admin.socials.*') ? 'active' : '' }}"
-                    href="{{ route('admin.socials.index') }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-share-nodes text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Liên hệ</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a href="{{ route('admin.guide.edit') }}"
-                    class="nav-link {{ request()->routeIs('admin.guide.*') ? 'active' : '' }}">
-                    <div
-                        class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                        <i class="fa-solid fa-book text-dark icon-sidebar"></i>
-                    </div>
-                    <span class="nav-link-text ms-1">Quản lý Hướng dẫn</span>
-                </a>
-            </li>
-
-
-
+            {{-- Tài khoản --}}
             <li class="nav-item mt-3">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Tài khoản</h6>
             </li>
 
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('logout') }}">
+                <a class="nav-link" href="{{ route('logout') }}" data-menu="logout">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-right-from-bracket text-dark"></i>
@@ -390,5 +462,196 @@
             </li>
         </ul>
     </div>
+
+    @push('scripts-admin')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Keep parent menu open when child menu is active
+            const activeChildMenu = document.querySelector('.collapse .nav-link.active');
+            if (activeChildMenu) {
+                const parentCollapse = activeChildMenu.closest('.collapse');
+                if (parentCollapse) {
+                    // Show the collapse
+                    parentCollapse.classList.add('show');
+                    
+                    // Update parent link
+                    const parentLink = document.querySelector(`[href="#${parentCollapse.id}"]`);
+                    if (parentLink) {
+                        parentLink.classList.remove('collapsed');
+                        parentLink.setAttribute('aria-expanded', 'true');
+                        
+                        // Update chevron
+                        const chevron = parentLink.querySelector('.fa-chevron-down');
+                        if (chevron) {
+                            chevron.classList.add('rotated');
+                        }
+                    }
+                }
+            }
+
+            // Use event delegation for collapse events
+            document.addEventListener('show.bs.collapse', function(e) {
+                const target = e.target;
+                const parentLink = document.querySelector(`[href="#${target.id}"]`);
+                if (parentLink) {
+                    parentLink.classList.remove('collapsed');
+                    parentLink.setAttribute('aria-expanded', 'true');
+                    const chevron = parentLink.querySelector('.fa-chevron-down');
+                    if (chevron) {
+                        chevron.classList.add('rotated');
+                    }
+                }
+            });
+            
+            document.addEventListener('hide.bs.collapse', function(e) {
+                const target = e.target;
+                const parentLink = document.querySelector(`[href="#${target.id}"]`);
+                if (parentLink) {
+                    parentLink.classList.add('collapsed');
+                    parentLink.setAttribute('aria-expanded', 'false');
+                    const chevron = parentLink.querySelector('.fa-chevron-down');
+                    if (chevron) {
+                        chevron.classList.remove('rotated');
+                    }
+                }
+            });
+
+            // Initialize chevron states
+            const collapseElements = document.querySelectorAll('[data-bs-toggle="collapse"]');
+            collapseElements.forEach(element => {
+                const targetId = element.getAttribute('href');
+                const target = document.querySelector(targetId);
+                if (target && target.classList.contains('show')) {
+                    element.classList.remove('collapsed');
+                    element.setAttribute('aria-expanded', 'true');
+                    const chevron = element.querySelector('.fa-chevron-down');
+                    if (chevron) {
+                        chevron.classList.add('rotated');
+                    }
+                }
+            });
+
+            // Scroll to active menu on page load
+            setTimeout(() => {
+                const activeMenu = document.querySelector('.nav-link.active');
+                if (activeMenu) {
+                    const sidenavMain = document.getElementById('sidenav-main');
+                    if (sidenavMain) {
+                        const activeMenuOffset = activeMenu.offsetTop;
+                        const sidenavHeight = sidenavMain.offsetHeight;
+                        const scrollPosition = activeMenuOffset - (sidenavHeight / 2) + (activeMenu.offsetHeight / 2);
+                        sidenavMain.scrollTo({
+                            top: Math.max(0, scrollPosition),
+                            behavior: 'smooth'
+                        });
+                    }
+                }
+            }, 300);
+        });
+    </script>
+    <style>
+        /* Remove list bullets */
+        .sidenav .navbar-nav,
+        .sidenav .navbar-nav .nav,
+        .sidenav .collapse .nav,
+        .sidenav .btn-toggle-nav,
+        .sidenav .navbar-nav li,
+        .sidenav .navbar-nav .nav li,
+        .sidenav .collapse .nav li,
+        .sidenav .btn-toggle-nav li {
+            list-style: none;
+            padding-left: 0;
+            margin-left: 0;
+        }
+        
+        /* Remove any pseudo-elements that might create dots */
+        .sidenav .navbar-nav li::before,
+        .sidenav .navbar-nav .nav li::before,
+        .sidenav .collapse .nav li::before,
+        .sidenav .btn-toggle-nav li::before,
+        .sidenav .navbar-nav li::after,
+        .sidenav .navbar-nav .nav li::after,
+        .sidenav .collapse .nav li::after,
+        .sidenav .btn-toggle-nav li::after {
+            content: none;
+        }
+        
+        .sidenav .nav .nav-item .nav-link {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .sidenav .nav .nav-item .nav-link .icon,
+        .sidenav .btn-toggle-nav .nav-item .nav-link .icon {
+            min-width: 2rem;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .sidenav .nav-link[data-bs-toggle="collapse"] {
+            position: relative;
+            padding-right: 3rem !important;
+        }
+        
+        /* Hide Bootstrap's automatic chevron (::after pseudo-element) from dashboard CSS */
+        .sidenav.navbar-vertical .navbar-nav .nav-link[data-bs-toggle="collapse"]::after,
+        .sidenav.navbar-vertical .navbar-nav .nav-link[data-bs-toggle="collapse"]:after,
+        .sidenav.navbar-vertical .navbar-nav .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after,
+        .sidenav.navbar-vertical .navbar-nav .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]:after,
+        .sidenav.navbar-vertical .navbar-nav .nav-link[data-bs-toggle="collapse"][aria-expanded="false"]::after,
+        .sidenav.navbar-vertical .navbar-nav .nav-link[data-bs-toggle="collapse"][aria-expanded="false"]:after,
+        .sidenav .nav-link[data-bs-toggle="collapse"]::after,
+        .sidenav .nav-link[data-bs-toggle="collapse"]:after,
+        .sidenav .navbar-nav .nav-link[data-bs-toggle="collapse"]::after,
+        .sidenav .navbar-nav .nav-link[data-bs-toggle="collapse"]:after {
+            display: none !important;
+            content: none !important;
+            border: none !important;
+            font-family: none !important;
+            margin-left: 0 !important;
+            transform: none !important;
+        }
+        
+        /* Hide any dropdown-toggle chevron from dashboard CSS */
+        .sidenav .nav-link.dropdown-toggle::after,
+        .sidenav .nav-link.dropdown-toggle:after {
+            display: none !important;
+            content: none !important;
+            border: none !important;
+        }
+        
+        .sidenav .nav-link[data-bs-toggle="collapse"] .fa-chevron-down {
+            transition: transform 0.3s ease;
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            margin-top: -0.5em;
+        }
+        
+        .sidenav .nav-link[data-bs-toggle="collapse"] .fa-chevron-down.rotated {
+            transform: rotate(180deg);
+        }
+        
+        .sidenav .collapse.show {
+            display: block;
+        }
+        
+        .sidenav-main {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        /* Ensure submenu items display correctly */
+        .sidenav .btn-toggle-nav .nav-item .nav-link {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            display: flex;
+            align-items: center;
+        }
+    </style>
+    @endpush
 
 </aside>
