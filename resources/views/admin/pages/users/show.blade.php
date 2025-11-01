@@ -21,8 +21,44 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
         
+        .nav-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .nav-tabs .nav-item {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+        
+        @media (min-width: 768px) {
+            .nav-tabs .nav-item {
+                flex: 0 0 auto;
+                max-width: none;
+            }
+        }
+        
         .nav-tabs .nav-link {
             position: relative;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.875rem;
+        }
+        
+        @media (max-width: 767.98px) {
+            .nav-tabs .nav-link {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.75rem;
+                text-align: center;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            
+            .nav-tabs .nav-link .badge {
+                font-size: 0.65rem;
+                padding: 0.2em 0.4em;
+            }
         }
         
         .nav-tabs .nav-link.active:after {
@@ -221,13 +257,13 @@
                     <ul class="nav nav-tabs mt-4" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" data-bs-toggle="tab" href="#deposits" role="tab">
-                                <i class="fas fa-wallet me-1"></i> Nạp xu (Bank)
+                                <i class="fas fa-wallet me-1"></i> <span class="d-none d-md-inline">Nạp xu </span>(Bank)
                                 <span class="badge bg-primary rounded-pill">{{ $counts['deposits'] }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#paypal-deposits" role="tab">
-                                <i class="fab fa-paypal me-1"></i> Nạp PayPal
+                                <i class="fab fa-paypal me-1"></i> <span class="d-none d-md-inline">Nạp </span>PayPal
                                 <span class="badge bg-primary rounded-pill">{{ $counts['paypal_deposits'] }}</span>
                             </a>
                         </li>
@@ -252,19 +288,19 @@
                         @if($user->role === 'author')
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#author-chapter-earnings" role="tab">
-                                <i class="fas fa-hand-holding-usd me-1"></i> Thu nhập chương
+                                <i class="fas fa-hand-holding-usd me-1"></i> <span class="d-none d-md-inline">Thu nhập </span>Chương
                                 <span class="badge bg-success rounded-pill">{{ $counts['author_chapter_earnings'] }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#author-story-earnings" role="tab">
-                                <i class="fas fa-coins me-1"></i> Thu nhập truyện
+                                <i class="fas fa-coins me-1"></i> <span class="d-none d-md-inline">Thu nhập </span>Truyện
                                 <span class="badge bg-success rounded-pill">{{ $counts['author_story_earnings'] }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#author-featured-stories" role="tab">
-                                <i class="fas fa-star me-1"></i> Đề cử truyện
+                                <i class="fas fa-star me-1"></i> Đề cử
                                 <span class="badge bg-warning rounded-pill">{{ $counts['author_featured_stories'] }}</span>
                             </a>
                         </li>
@@ -289,13 +325,13 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#coin-transactions" role="tab">
-                                <i class="fas fa-coins me-1"></i> Cộng/Trừ xu
+                                <i class="fas fa-coins me-1"></i> <span class="d-none d-md-inline">Cộng/Trừ </span>Xu
                                 <span class="badge bg-primary rounded-pill">{{ $counts['coin_transactions'] }}</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" data-bs-toggle="tab" href="#coin-history" role="tab">
-                                <i class="fas fa-history me-1"></i> Lịch sử xu
+                                <i class="fas fa-history me-1"></i> Lịch sử
                                 <span class="badge bg-info rounded-pill">{{ $counts['coin_histories'] ?? 0 }}</span>
                             </a>
                         </li>

@@ -3,7 +3,6 @@
 @section('title', 'Quản lý Hướng dẫn')
 
 @section('content-auth')
-<div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
@@ -62,7 +61,6 @@
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('scripts-admin')

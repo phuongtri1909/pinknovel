@@ -4,22 +4,22 @@
 <div class="row">
     <div class="col-12">
         <div class="card mb-0 mx-0 mx-md-4 mb-md-4">
-            <div class="card-header pb-0">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <h5 class="mb-0">Chi tiết nhiệm vụ: {{ $dailyTask->name }}</h5>
-                        <p class="text-sm mb-0">{{ $dailyTask->description }}</p>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <a href="{{ route('admin.daily-tasks.edit', $dailyTask) }}" class="btn bg-gradient-primary btn-sm">
-                            <i class="fas fa-edit"></i> Chỉnh sửa
-                        </a>
-                        <a href="{{ route('admin.daily-tasks.index') }}" class="btn bg-gradient-secondary btn-sm">
-                            <i class="fas fa-arrow-left"></i> Quay lại
-                        </a>
+                <div class="card-header pb-0">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-2">
+                        <div>
+                            <h5 class="mb-0">Chi tiết nhiệm vụ: <span class="d-none d-md-inline">{{ $dailyTask->name }}</span><span class="d-md-none">{{ Str::limit($dailyTask->name, 20) }}</span></h5>
+                            <p class="text-sm mb-0 d-none d-md-block">{{ $dailyTask->description }}</p>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('admin.daily-tasks.edit', $dailyTask) }}" class="btn bg-gradient-primary btn-sm">
+                                <i class="fas fa-edit me-2"></i><span class="d-none d-md-inline">Chỉnh sửa</span><span class="d-md-none">Sửa</span>
+                            </a>
+                            <a href="{{ route('admin.daily-tasks.index') }}" class="btn bg-gradient-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-2"></i><span class="d-none d-md-inline">Quay lại</span><span class="d-md-none">Quay lại</span>
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
             <div class="card-body">
                 <!-- Thông tin cơ bản -->
                 <div class="row mb-4">

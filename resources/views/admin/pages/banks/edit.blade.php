@@ -3,15 +3,14 @@
 @section('title', 'Chỉnh sửa Ngân hàng')
 
 @section('content-auth')
-<div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
                         <h4 class="mb-0">Chỉnh sửa Ngân hàng: {{ $bank->name }}</h4>
-                        <a href="{{ route('admin.banks.index') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left mr-1"></i> Quay lại
+                        <a href="{{ route('admin.banks.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i><span class="d-none d-md-inline">Quay lại</span><span class="d-md-none">Quay lại</span>
                         </a>
                     </div>
                 </div>
@@ -121,19 +120,20 @@
                         </div>
                         
                         <div class="form-group mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save mr-1"></i> Lưu thay đổi
-                            </button>
-                            <a href="{{ route('admin.banks.index') }}" class="btn btn-secondary ml-2">
-                                <i class="fas fa-times mr-1"></i> Hủy
-                            </a>
+                            <div class="d-flex flex-column flex-md-row gap-2">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-save me-2"></i><span class="d-none d-md-inline">Lưu thay đổi</span><span class="d-md-none">Lưu</span>
+                                </button>
+                                <a href="{{ route('admin.banks.index') }}" class="btn btn-secondary btn-sm">
+                                    <i class="fas fa-times me-2"></i><span class="d-none d-md-inline">Hủy</span><span class="d-md-none">Hủy</span>
+                                </a>
+                            </div>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('scripts')

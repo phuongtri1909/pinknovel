@@ -5,16 +5,14 @@
         <div class="col-12">
             <div class="card mb-0 mx-0 mx-md-4 mb-md-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="mb-0">Tiến độ hoàn thành nhiệm vụ của User</h5>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('admin.daily-tasks.statistics') }}" class="btn bg-gradient-info btn-sm mb-0">
-                                <i class="fas fa-chart-bar"></i> Thống kê
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                        <h5 class="mb-0">Tiến độ hoàn thành nhiệm vụ của User</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('admin.daily-tasks.statistics') }}" class="btn bg-gradient-info btn-sm">
+                                <i class="fas fa-chart-bar me-2"></i><span class="d-none d-md-inline">Thống kê</span><span class="d-md-none">TK</span>
                             </a>
-                            <a href="{{ route('admin.daily-tasks.index') }}" class="btn bg-gradient-secondary btn-sm mb-0">
-                                <i class="fas fa-arrow-left"></i> Quay lại
+                            <a href="{{ route('admin.daily-tasks.index') }}" class="btn bg-gradient-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-2"></i><span class="d-none d-md-inline">Quay lại</span><span class="d-md-none">Quay lại</span>
                             </a>
                         </div>
                     </div>

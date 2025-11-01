@@ -17,10 +17,10 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-between mt-3">
-                    <form method="GET" class="d-flex gap-2" id="filterForm">
+                <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mt-3">
+                    <form method="GET" class="d-flex flex-column flex-md-row gap-2 flex-fill" id="filterForm">
                         <!-- Status filter -->
-                        <select name="status" class="form-select form-select-sm" style="width: auto;">
+                        <select name="status" class="form-select form-select-sm">
                             <option value="">- Trạng thái -</option>
                             <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>Hiển thị</option>
                             <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Nháp</option>
@@ -28,15 +28,15 @@
                             <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ chối</option>
                         </select>
 
-                        <!-- Featured filter - NEW -->
-                        <select name="featured" class="form-select form-select-sm" style="width: auto;">
-                            <option value="">- Tất cả -</option>
+                        <!-- Featured filter -->
+                        <select name="featured" class="form-select form-select-sm">
+                            <option value="">- Đề cử -</option>
                             <option value="1" {{ request('featured') == '1' ? 'selected' : '' }}>Đề cử</option>
                             <option value="0" {{ request('featured') == '0' ? 'selected' : '' }}>Thường</option>
                         </select>
 
                         <!-- Category filter -->
-                        <select name="category" class="form-select form-select-sm" style="width: auto;">
+                        <select name="category" class="form-select form-select-sm">
                             <option value="">- Thể loại -</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ request('category') == $category->id ? 'selected' : '' }}>
@@ -46,7 +46,7 @@
                         </select>
 
                         <!-- Search input -->
-                        <div class="input-group input-group-sm">
+                        <div class="input-group input-group-sm flex-fill">
                             <input type="text" class="form-control" name="search"
                                    value="{{ request('search') }}" placeholder="Tìm kiếm...">
                             <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
@@ -55,14 +55,14 @@
                         </div>
                     </form>
 
-                    <div>
+                    <div class="d-flex flex-column flex-md-row gap-2">
                         <a href="{{ route('stories.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
-                            <i class="fas fa-plus me-2"></i>Thêm truyện mới
+                            <i class="fas fa-plus me-2"></i><span class="d-none d-md-inline">Thêm truyện mới</span><span class="d-md-none">Thêm</span>
                         </a>
 
-                        <!-- Bulk actions button - NEW -->
+                        <!-- Bulk actions button -->
                         <button type="button" class="btn bg-gradient-warning btn-sm mb-0" data-bs-toggle="modal" data-bs-target="#bulkActionsModal">
-                            <i class="fas fa-star me-2"></i>Đề cử hàng loạt
+                            <i class="fas fa-star me-2"></i><span class="d-none d-md-inline">Đề cử hàng loạt</span><span class="d-md-none">Hàng loạt</span>
                         </button>
                     </div>
                 </div>

@@ -161,7 +161,7 @@
             {{-- Tài chính --}}
             @php
                 $financeMenuActive = Route::currentRouteNamed('deposits.*', 'admin.card-deposits.*', 
-                    'admin.paypal-deposits.*', 'admin.withdrawals.*', 'admin.banks.*');
+                    'admin.paypal-deposits.*', 'admin.withdrawals.*', 'admin.banks.*', 'request.payments.*', 'admin.request-payment-paypal.*');
             @endphp
             <li class="nav-item">
                 <a class="nav-link {{ $financeMenuActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" 
@@ -177,7 +177,7 @@
                 <div class="collapse mt-1 {{ $financeMenuActive ? 'show' : '' }}" id="financeSubmenu" style="margin-left: 15px">
                     <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
                         <li class="nav-item">
-                            <a class="nav-link {{ Route::currentRouteNamed('deposits.*') ? 'active' : '' }}"
+                            <a class="nav-link {{ Route::currentRouteNamed('deposits.*', 'request.payments.*') ? 'active' : '' }}"
                                 href="{{ route('deposits.index') }}" data-menu="deposits">
                                 <div
                                     class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
@@ -204,7 +204,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ Route::currentRouteNamed('admin.paypal-deposits.*') ? 'active' : '' }}"
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.paypal-deposits.*','admin.request-payment-paypal.*') ? 'active' : '' }}"
                                 href="{{ route('admin.paypal-deposits.index') }}" data-menu="paypal-deposits">
                                 <div
                                     class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">

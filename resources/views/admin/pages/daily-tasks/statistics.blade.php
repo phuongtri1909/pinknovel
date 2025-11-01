@@ -5,16 +5,14 @@
         <div class="col-12">
             <div class="card mb-0 mx-0 mx-md-4 mb-md-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="mb-0">Thống kê nhiệm vụ hàng ngày</h5>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('admin.daily-tasks.user-progress') }}" class="btn bg-gradient-warning btn-sm mb-0">
-                                <i class="fas fa-users"></i> Tiến độ user
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                        <h5 class="mb-0">Thống kê nhiệm vụ hàng ngày</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('admin.daily-tasks.user-progress') }}" class="btn bg-gradient-warning btn-sm">
+                                <i class="fas fa-users me-2"></i><span class="d-none d-md-inline">Tiến độ user</span><span class="d-md-none">Tiến độ</span>
                             </a>
-                            <a href="{{ route('admin.daily-tasks.index') }}" class="btn bg-gradient-secondary btn-sm mb-0">
-                                <i class="fas fa-arrow-left"></i> Quay lại
+                            <a href="{{ route('admin.daily-tasks.index') }}" class="btn bg-gradient-secondary btn-sm">
+                                <i class="fas fa-arrow-left me-2"></i><span class="d-none d-md-inline">Quay lại</span><span class="d-md-none">Quay lại</span>
                             </a>
                         </div>
                     </div>
@@ -29,49 +27,49 @@
                         </div>
                         <div class="col-md-2">
                             <div class="card bg-gradient-primary text-white">
-                                <div class="card-body text-center">
-                                    <h6 class="text-white">Tổng nhiệm vụ</h6>
-                                    <h4 class="text-white">{{ $stats['total_tasks'] }}</h4>
+                                <div class="card-body text-center p-2 py-3">
+                                    <h6 class="text-white mb-1" style="font-size: 0.75rem;">Tổng nhiệm vụ</h6>
+                                    <h5 class="text-white mb-0" style="font-size: 1.25rem;">{{ $stats['total_tasks'] }}</h5>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="card bg-gradient-success text-white">
-                                <div class="card-body text-center">
-                                    <h6 class="text-white">Nhiệm vụ hoạt động</h6>
-                                    <h4 class="text-white">{{ $stats['active_tasks'] }}</h4>
+                                <div class="card-body text-center p-2 py-3">
+                                    <h6 class="text-white mb-1" style="font-size: 0.75rem;">Nhiệm vụ hoạt động</h6>
+                                    <h5 class="text-white mb-0" style="font-size: 1.25rem;">{{ $stats['active_tasks'] }}</h5>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="card bg-gradient-info text-white">
-                                <div class="card-body text-center">
-                                    <h6 class="text-white">Tổng hoàn thành</h6>
-                                    <h4 class="text-white">{{ number_format($stats['total_completions']) }}</h4>
+                                <div class="card-body text-center p-2 py-3">
+                                    <h6 class="text-white mb-1" style="font-size: 0.75rem;">Tổng hoàn thành</h6>
+                                    <h5 class="text-white mb-0" style="font-size: 1.25rem;">{{ number_format($stats['total_completions']) }}</h5>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="card bg-gradient-warning text-white">
-                                <div class="card-body text-center">
-                                    <h6 class="text-white">User tham gia</h6>
-                                    <h4 class="text-white">{{ number_format($stats['unique_users']) }}</h4>
+                                <div class="card-body text-center p-2 py-3">
+                                    <h6 class="text-white mb-1" style="font-size: 0.75rem;">User tham gia</h6>
+                                    <h5 class="text-white mb-0" style="font-size: 1.25rem;">{{ number_format($stats['unique_users']) }}</h5>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="card bg-gradient-danger text-white">
-                                <div class="card-body text-center">
-                                    <h6 class="text-white">Hôm nay</h6>
-                                    <h4 class="text-white">{{ number_format($stats['today_completions']) }}</h4>
+                                <div class="card-body text-center p-2 py-3">
+                                    <h6 class="text-white mb-1" style="font-size: 0.75rem;">Hôm nay</h6>
+                                    <h5 class="text-white mb-0" style="font-size: 1.25rem;">{{ number_format($stats['today_completions']) }}</h5>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-2">
                             <div class="card bg-gradient-dark text-white">
-                                <div class="card-body text-center">
-                                    <h6 class="text-white">Tuần này</h6>
-                                    <h4 class="text-white">{{ number_format($stats['this_week_completions']) }}</h4>
+                                <div class="card-body text-center p-2 py-3">
+                                    <h6 class="text-white mb-1" style="font-size: 0.75rem;">Tuần này</h6>
+                                    <h5 class="text-white mb-0" style="font-size: 1.25rem;">{{ number_format($stats['this_week_completions']) }}</h5>
                                 </div>
                             </div>
                         </div>

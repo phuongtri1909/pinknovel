@@ -5,7 +5,12 @@
     <div class="col-12">
         <div class="card mb-0 mx-0 mx-md-4 mb-md-4">
             <div class="card-header pb-0">
-                <h5 class="mb-0">Chỉnh sửa nhiệm vụ</h5>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                    <h5 class="mb-0">Chỉnh sửa nhiệm vụ</h5>
+                    <a href="{{ route('admin.daily-tasks.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-2"></i><span class="d-none d-md-inline">Quay lại</span><span class="d-md-none">Quay lại</span>
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 @include('admin.pages.components.success-error')
@@ -93,9 +98,15 @@
                             </div>
                         </div>
 
-                        <div class="col-12 text-center mt-4">
-                            <button type="submit" class="btn bg-gradient-primary">Cập nhật</button>
-                            <a href="{{ route('admin.daily-tasks.index') }}" class="btn btn-outline-secondary">Quay lại</a>
+                        <div class="col-12 mt-4">
+                            <div class="d-flex flex-column flex-md-row justify-content-center gap-2">
+                                <button type="submit" class="btn bg-gradient-primary btn-sm">
+                                    <i class="fas fa-save me-2"></i><span class="d-none d-md-inline">Cập nhật</span><span class="d-md-none">Cập nhật</span>
+                                </button>
+                                <a href="{{ route('admin.daily-tasks.index') }}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-times me-2"></i><span class="d-none d-md-inline">Hủy</span><span class="d-md-none">Hủy</span>
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </form>

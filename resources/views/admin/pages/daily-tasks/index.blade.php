@@ -5,16 +5,14 @@
         <div class="col-12">
             <div class="card mb-0 mx-0 mx-md-4 mb-md-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="mb-0">Quản lý nhiệm vụ hàng ngày</h5>
-                        </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ route('admin.daily-tasks.statistics') }}" class="btn bg-gradient-info btn-sm mb-0">
-                                <i class="fas fa-chart-bar"></i> Thống kê
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                        <h5 class="mb-0">Quản lý nhiệm vụ hàng ngày</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{{ route('admin.daily-tasks.statistics') }}" class="btn bg-gradient-info btn-sm">
+                                <i class="fas fa-chart-bar me-2"></i><span class="d-none d-md-inline">Thống kê</span><span class="d-md-none">TK</span>
                             </a>
-                            <a href="{{ route('admin.daily-tasks.user-progress') }}" class="btn bg-gradient-warning btn-sm mb-0">
-                                <i class="fas fa-users"></i> Tiến độ user
+                            <a href="{{ route('admin.daily-tasks.user-progress') }}" class="btn bg-gradient-warning btn-sm">
+                                <i class="fas fa-users me-2"></i><span class="d-none d-md-inline">Tiến độ user</span><span class="d-md-none">Tiến độ</span>
                             </a>
                         </div>
                     </div>
@@ -81,19 +79,21 @@
                                         <td class="text-center">
                                             <span class="text-xs font-weight-bold">{{ $task->order }}</span>
                                         </td>
-                                        <td class="text-center d-flex flex-column gap-1">
-                                            <a href="{{ route('admin.daily-tasks.show', $task) }}" class="btn btn-link text-info p-1 mb-0" title="Xem chi tiết">
-                                                <i class="fas fa-eye text-info"></i> Chi tiết
-                                            </a>
-                                            <a href="{{ route('admin.daily-tasks.edit', $task) }}" class="btn btn-link text-dark p-1 mb-0" title="Sửa">
-                                                <i class="fas fa-pencil-alt text-dark"></i> Sửa
-                                            </a>
-                                            <form action="{{ route('admin.daily-tasks.toggle-active', $task) }}" method="POST" class="d-inline">
-                                                @csrf
-                                                <button type="submit" class="btn btn-link text-{{ $task->active ? 'warning' : 'success' }} p-1 mb-0" title="{{ $task->active ? 'Tạm dừng' : 'Kích hoạt' }}">
-                                                    <i class="fas fa-{{ $task->active ? 'pause' : 'play' }}"></i> {{ $task->active ? 'Tạm dừng' : 'Kích hoạt' }}
-                                                </button>
-                                            </form>
+                                        <td class="text-center">
+                                            <div class="d-flex flex-wrap justify-content-center gap-1">
+                                                <a href="{{ route('admin.daily-tasks.show', $task) }}" class="btn btn-sm btn-outline-info" title="Xem chi tiết">
+                                                    <i class="fas fa-eye me-2"></i><span class="d-none d-md-inline">Chi tiết</span>
+                                                </a>
+                                                <a href="{{ route('admin.daily-tasks.edit', $task) }}" class="btn btn-sm btn-outline-success" title="Sửa">
+                                                    <i class="fas fa-pencil-alt me-2"></i><span class="d-none d-md-inline">Sửa</span>
+                                                </a>
+                                                <form action="{{ route('admin.daily-tasks.toggle-active', $task) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-outline-{{ $task->active ? 'warning' : 'success' }}" title="{{ $task->active ? 'Tạm dừng' : 'Kích hoạt' }}">
+                                                        <i class="fas fa-{{ $task->active ? 'pause' : 'play' }} me-2"></i><span class="d-none d-md-inline">{{ $task->active ? 'Tạm dừng' : 'Kích hoạt' }}</span>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach

@@ -56,7 +56,6 @@
 @endpush
 
 @section('content-auth')
-<div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
@@ -253,7 +252,6 @@
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('scripts-admin')

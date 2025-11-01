@@ -5,18 +5,18 @@
         <div class="col-12">
             <div class="card mb-4 mx-0 mx-md-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex flex-row justify-content-between">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
                         <div>
                             <h5 class="mb-0">Chuyển nhượng truyện</h5>
                             <p class="text-sm mb-0">Quản lý việc chuyển nhượng truyện giữa các tác giả</p>
                         </div>
-                        <div>
-                            <a href="{{ route('admin.story-transfer.history') }}" class="btn bg-gradient-info btn-sm me-2">
-                                <i class="fas fa-history me-2"></i>Lịch sử chuyển nhượng
+                        <div class="d-flex flex-column flex-md-row gap-2">
+                            <a href="{{ route('admin.story-transfer.history') }}" class="btn bg-gradient-info btn-sm">
+                                <i class="fas fa-history me-2"></i><span class="d-none d-md-inline">Lịch sử chuyển nhượng</span><span class="d-md-none">Lịch sử</span>
                             </a>
                             <button class="btn bg-gradient-warning btn-sm" data-bs-toggle="modal"
                                 data-bs-target="#bulkTransferModal">
-                                <i class="fas fa-exchange-alt me-2"></i>Chuyển nhượng hàng loạt
+                                <i class="fas fa-exchange-alt me-2"></i><span class="d-none d-md-inline">Chuyển nhượng hàng loạt</span><span class="d-md-none">Hàng loạt</span>
                             </button>
                         </div>
                     </div>
@@ -24,49 +24,43 @@
                     <!-- Filters -->
                     <div class="row mt-3">
                         <div class="col-12">
-                            <form method="GET" class="d-flex gap-2 flex-wrap">
-                                <div class="form-group">
-                                    <select name="current_author" class="form-select form-select-sm"
-                                        onchange="this.form.submit()">
-                                        <option value="">- Tác giả hiện tại -</option>
-                                        @foreach ($authors as $author)
-                                            <option value="{{ $author->id }}"
-                                                {{ request('current_author') == $author->id ? 'selected' : '' }}>
-                                                {{ $author->name }} ({{ $author->email }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-                                        <option value="">- Trạng thái -</option>
-                                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Nháp
+                            <form method="GET" class="d-flex flex-column flex-md-row gap-2" id="filterForm">
+                                <select name="current_author" class="form-select form-select-sm"
+                                    onchange="this.form.submit()">
+                                    <option value="">- Tác giả hiện tại -</option>
+                                    @foreach ($authors as $author)
+                                        <option value="{{ $author->id }}"
+                                            {{ request('current_author') == $author->id ? 'selected' : '' }}>
+                                            {{ $author->name }} ({{ $author->email }})
                                         </option>
-                                        <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ
-                                            duyệt</option>
-                                        <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>
-                                            Đã xuất bản</option>
-                                        <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ
-                                            chối</option>
-                                    </select>
-                                </div>
+                                    @endforeach
+                                </select>
 
-                                <div class="form-group">
-                                    <select name="story_type" class="form-select form-select-sm"
-                                        onchange="this.form.submit()">
-                                        <option value="">- Loại truyện -</option>
-                                        <option value="original"
-                                            {{ request('story_type') == 'original' ? 'selected' : '' }}>Truyện gốc</option>
-                                        <option value="translation"
-                                            {{ request('story_type') == 'translation' ? 'selected' : '' }}>Truyện dịch
-                                        </option>
-                                    </select>
-                                </div>
+                                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="">- Trạng thái -</option>
+                                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Nháp
+                                    </option>
+                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ
+                                        duyệt</option>
+                                    <option value="published" {{ request('status') == 'published' ? 'selected' : '' }}>
+                                        Đã xuất bản</option>
+                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ
+                                        chối</option>
+                                </select>
 
-                                <div class="input-group input-group-sm">
+                                <select name="story_type" class="form-select form-select-sm"
+                                    onchange="this.form.submit()">
+                                    <option value="">- Loại truyện -</option>
+                                    <option value="original"
+                                        {{ request('story_type') == 'original' ? 'selected' : '' }}>Truyện gốc</option>
+                                    <option value="translation"
+                                        {{ request('story_type') == 'translation' ? 'selected' : '' }}>Truyện dịch
+                                    </option>
+                                </select>
+
+                                <div class="input-group input-group-sm flex-fill">
                                     <input type="text" class="form-control" name="search"
-                                        value="{{ request('search') }}" placeholder="Tìm kiếm truyện, tác giả...">
+                                        value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                     <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
                                         <i class="fas fa-search"></i>
                                     </button>
@@ -83,23 +77,15 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase  text-xxs font-weight-bolder ">
+                                    <th class="text-uppercase text-xxs font-weight-bolder">
                                         <input type="checkbox" id="selectAll">
                                     </th>
-                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Truyện
-                                    </th>
-                                    <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Tác
-                                        giả hiện tại</th>
-
-                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Chương
-                                    </th>
-                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Trạng
-                                        thái</th>
-                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Ngày tạo
-                                    </th>
-                                    <th
-                                        class="text-center text-uppercase  text-xxs font-weight-bolder ">
-                                        Thao tác</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder">Truyện</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder ps-2 d-none d-md-table-cell">Tác giả hiện tại</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder d-none d-lg-table-cell">Chương</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder">Trạng thái</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder d-none d-md-table-cell">Ngày tạo</th>
+                                    <th class="text-center text-uppercase text-xxs font-weight-bolder">Thao tác</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -115,12 +101,14 @@
                                                         class="avatar avatar-sm me-3" alt="story cover">
                                                 </div>
                                                 <div class="d-flex flex-column justify-content-center">
-                                                    <h6 class="mb-0 text-sm">{{ Str::limit($story->title, 40) }}</h6>
-
+                                                    <h6 class="mb-0 text-sm">{{ Str::limit($story->title, 30) }}</h6>
+                                                    <p class="text-xs text-muted mb-0 d-md-none">
+                                                        {{ $story->user->name }}
+                                                    </p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell">
                                             <div class="d-flex">
                                                 <div>
                                                     <img src="{{ $story->user->avatar ? asset('storage/' . $story->user->avatar) : asset('assets/img/default-avatar.png') }}"
@@ -128,19 +116,14 @@
                                                 </div>
                                                 <div class="d-flex flex-column justify-content-center">
                                                     <h6 class="mb-0 text-xs">{{ $story->user->name }}</h6>
-                                                    <p class="text-xs  mb-0">{{ $story->user->email }}</p>
-                                                    <span
-                                                        class="badge badge-xs bg-gradient-info">{{ $story->user->role }}</span>
+                                                    <p class="text-xs mb-0">{{ $story->user->email }}</p>
+                                                    <span class="badge badge-xs bg-gradient-info">{{ $story->user->role }}</span>
                                                 </div>
                                             </div>
                                         </td>
-
-                                        <td>
-
-                                            <p class="text-xs font-weight-bold mb-0">{{ $story->chapters_count ?? 0 }}
-                                                chương</p>
-                                            <p class="text-xs  mb-0">{{ number_format($story->total_views) }}
-                                                lượt xem</p>
+                                        <td class="d-none d-lg-table-cell">
+                                            <p class="text-xs font-weight-bold mb-0">{{ $story->chapters_count ?? 0 }} chương</p>
+                                            <p class="text-xs mb-0">{{ number_format($story->total_views) }} lượt xem</p>
                                         </td>
                                         <td>
                                             @if ($story->status === 'published')
@@ -153,22 +136,20 @@
                                                 <span class="badge badge-sm bg-gradient-danger">Từ chối</span>
                                             @endif
                                         </td>
-                                        <td>
-                                            <p class="text-xs font-weight-bold mb-0">
-                                                {{ $story->created_at->format('d/m/Y') }}</p>
-                                            <p class="text-xs  mb-0">{{ $story->created_at->format('H:i') }}
-                                            </p>
+                                        <td class="d-none d-md-table-cell">
+                                            <p class="text-xs font-weight-bold mb-0">{{ $story->created_at->format('d/m/Y') }}</p>
+                                            <p class="text-xs mb-0">{{ $story->created_at->format('H:i') }}</p>
                                         </td>
                                         <td class="align-middle text-center">
                                             <a href="{{ route('admin.story-transfer.show', $story) }}"
                                                 class="btn btn-link text-info text-gradient px-3 mb-0">
-                                                <i class="fas fa-exchange-alt me-2"></i>Chuyển nhượng
+                                                <i class="fas fa-exchange-alt me-2"></i><span class="d-none d-md-inline">Chuyển nhượng</span>
                                             </a>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="8" class="text-center py-4">Không có truyện nào</td>
+                                        <td colspan="7" class="text-center py-4">Không có truyện nào</td>
                                     </tr>
                                 @endforelse
                             </tbody>

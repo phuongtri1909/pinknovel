@@ -1,29 +1,30 @@
 @extends('admin.layouts.app')
 
 @section('content-auth')
-<div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6>Cộng/Trừ xu cho người dùng</h6>
-                        <a href="{{ route('coins.index') }}" class="btn btn-secondary btn-sm">Quay lại</a>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                        <h6 class="mb-0">Cộng/Trừ xu cho người dùng</h6>
+                        <a href="{{ route('coins.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i><span class="d-none d-md-inline">Quay lại</span><span class="d-md-none">Quay lại</span>
+                        </a>
                     </div>
                 </div>
                 <div class="card-body">
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-6 mb-3 mb-md-0">
                             <div class="d-flex align-items-center">
                                 <img src="{{ $user->avatar ? Storage::url($user->avatar) : asset('assets/images/avatar_default.jpg') }}" 
-                                     class="rounded-circle" style="width: 60px; height: 60px; object-fit: cover;">
-                                <div class="ms-3">
-                                    <h5 class="mb-0">{{ $user->name }}</h5>
-                                    <p class="text-muted mb-0">{{ $user->email }}</p>
+                                     class="rounded-circle flex-shrink-0" style="width: 60px; height: 60px; object-fit: cover;">
+                                <div class="ms-3 flex-grow-1" style="min-width: 0;">
+                                    <h5 class="mb-0 text-truncate" style="max-width: 100%;">{{ $user->name }}</h5>
+                                    <p class="text-muted mb-0 text-truncate" style="max-width: 100%;" title="{{ $user->email }}">{{ Str::limit($user->email, 30) }}</p>
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 text-end">
+                        <div class="col-md-6 text-md-end text-start">
                             <div class="bg-gradient-primary text-white p-3 rounded">
                                 <h6 class="mb-0">Số xu hiện tại</h6>
                                 <h3 class="mb-0">{{ number_format($user->coins) }}</h3>
@@ -73,9 +74,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-end mt-4">
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-save me-2"></i> Lưu giao dịch
+                        <div class="d-flex flex-column flex-md-row justify-content-end gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="fas fa-save me-2"></i><span class="d-none d-md-inline">Lưu giao dịch</span><span class="d-md-none">Lưu</span>
                             </button>
                         </div>
                     </form>
@@ -83,5 +84,4 @@
             </div>
         </div>
     </div>
-</div>
 @endsection

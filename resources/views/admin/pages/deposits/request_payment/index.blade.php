@@ -5,36 +5,36 @@
         <div class="col-12">
             <div class="card mb-4 mx-0 mx-md-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex flex-row justify-content-between">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
                         <div>
                             <h5 class="mb-0">Quản lý yêu cầu thanh toán</h5>
                             <p class="text-sm mb-0">
                                 Danh sách các yêu cầu thanh toán đang chờ xử lý
                             </p>
                         </div>
-                        <div>
+                        <div class="d-flex flex-column flex-md-row gap-2">
                             <button class="btn bg-gradient-danger btn-sm" id="deleteExpiredBtn" data-url="{{ route('request.payments.delete-expired') }}">
-                                <i class="fas fa-trash me-2"></i> Xóa yêu cầu hết hạn
+                                <i class="fas fa-trash me-2"></i><span class="d-none d-md-inline">Xóa yêu cầu hết hạn</span><span class="d-md-none">Xóa hết hạn</span>
                             </button>
-                            <a href="{{ route('deposits.index') }}" class="btn bg-gradient-primary btn-sm ms-2">
-                                <i class="fas fa-list me-2"></i> Quản lý nạp xu
+                            <a href="{{ route('deposits.index') }}" class="btn bg-gradient-primary btn-sm">
+                                <i class="fas fa-list me-2"></i><span class="d-none d-md-inline">Quản lý nạp xu</span><span class="d-md-none">Nạp xu</span>
                             </a>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between mt-3">
-                        <form method="GET" class="d-flex gap-2">
-                            <select name="status" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mt-3">
+                        <form method="GET" class="d-flex flex-column flex-md-row gap-2 flex-fill" id="filterForm">
+                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="">- Trạng thái -</option>
                                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ xử lý</option>
                                 <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Đã hoàn thành</option>
                                 <option value="expired" {{ request('status') == 'expired' ? 'selected' : '' }}>Đã hết hạn</option>
                             </select>
 
-                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;"
+                            <input type="date" name="date" class="form-control form-control-sm"
                                    value="{{ request('date') }}" onchange="this.form.submit()">
 
-                            <div class="input-group input-group-sm">
+                            <div class="input-group input-group-sm flex-fill">
                                 <input type="text" class="form-control" name="search"
                                        value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                 <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">

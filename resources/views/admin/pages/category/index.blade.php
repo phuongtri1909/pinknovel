@@ -5,12 +5,12 @@
         <div class="col-12">
             <div class="card mb-0 mx-0 mx-md-4 mb-md-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
                         <div>
                             <h5 class="mb-0">Danh sách thể loại</h5>
                         </div>
                         <a href="{{ route('categories.create') }}" class="btn bg-gradient-primary btn-sm mb-0">
-                            <i class="fas fa-plus"></i> Thêm thể loại
+                            <i class="fas fa-plus me-2"></i><span class="d-none d-md-inline">Thêm thể loại</span><span class="d-md-none">Thêm</span>
                         </a>
                     </div>
                 </div>
@@ -23,8 +23,8 @@
                                 <tr>
                                     <th class="text-uppercase  text-xxs font-weight-bolder ">ID</th>
                                     <th class="text-uppercase  text-xxs font-weight-bolder  ps-2">Tên thể loại</th>
-                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Slug</th>
-                                    <th class="text-uppercase  text-xxs font-weight-bolder ">Mô tả</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  d-none d-md-table-cell">Slug</th>
+                                    <th class="text-uppercase  text-xxs font-weight-bolder  d-none d-lg-table-cell">Mô tả</th>
                                     <th class="text-center text-uppercase  text-xxs font-weight-bolder ">Thể loại chính</th>
                                     <th class="text-center text-uppercase  text-xxs font-weight-bolder ">Hành động</th>
                                 </tr>
@@ -38,11 +38,13 @@
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $category->name }}</p>
                                         </td>
-                                        <td>
-                                            <p class="text-xs font-weight-bold mb-0">{{ $category->slug }}</p>
+                                        <td class="d-none d-md-table-cell">
+                                            <p class="text-xs font-weight-bold mb-0">{{ Str::limit($category->slug, 20) }}</p>
                                         </td>
-                                        <td>
-                                            <p class="text-xs font-weight-bold mb-0">{{ $category->description }}</p>
+                                        <td class="d-none d-lg-table-cell">
+                                            <p class="text-xs font-weight-bold mb-0" style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $category->description }}">
+                                                {{ $category->description }}
+                                            </p>
                                         </td>
                                         <td class="text-center">
                                             @if($category->is_main)
@@ -53,10 +55,10 @@
                                         </td>
                                         <td class="text-center d-flex flex-column">
                                             <a href="{{ route('categories.show', $category->id) }}" class="mx-3 text-info" title="Xem truyện">
-                                                <i class="fas fa-eye text-info"></i> xem truyện
+                                                <i class="fas fa-eye text-info"></i> <span class="d-none d-md-inline">xem truyện</span>
                                             </a>
                                             <a href="{{ route('categories.edit', $category->id) }}" class="mx-3" title="Sửa">
-                                                <i class="fas fa-pencil-alt"></i> sửa
+                                                <i class="fas fa-pencil-alt"></i> <span class="d-none d-md-inline">sửa</span>
                                             </a>
                                             @include('admin.pages.components.delete-form', [
                                                 'id' => $category->id,

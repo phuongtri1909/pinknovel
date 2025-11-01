@@ -1,14 +1,15 @@
 @extends('admin.layouts.app')
 
 @section('content-auth')
-<div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
             <div class="card mb-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h6>Thêm cấu hình mới</h6>
-                        <a href="{{ route('admin.configs.index') }}" class="btn btn-outline-primary btn-sm mb-0">Quay lại</a>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+                        <h6 class="mb-0">Thêm cấu hình mới</h6>
+                        <a href="{{ route('admin.configs.index') }}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-arrow-left me-2"></i><span class="d-none d-md-inline">Quay lại</span><span class="d-md-none">Quay lại</span>
+                        </a>
                     </div>
                 </div>
                 <div class="card-body">
@@ -40,13 +41,14 @@
                             <small class="form-text text-muted">Mô tả ngắn gọn về mục đích của cấu hình này</small>
                         </div>
 
-                        <div class="d-flex justify-content-end mt-4">
-                            <button type="submit" class="btn bg-gradient-primary">Lưu cấu hình</button>
+                        <div class="d-flex flex-column flex-md-row justify-content-end gap-2 mt-4">
+                            <button type="submit" class="btn bg-gradient-primary btn-sm">
+                                <i class="fas fa-save me-2"></i><span class="d-none d-md-inline">Lưu cấu hình</span><span class="d-md-none">Lưu</span>
+                            </button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection 

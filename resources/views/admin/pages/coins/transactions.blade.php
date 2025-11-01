@@ -1,7 +1,6 @@
 @extends('admin.layouts.app')
 
 @section('content-auth')
-<div class="container-fluid py-4">
     <!-- Statistics Cards -->
     <div class="row mb-4">
         <div class="col-xl-3 col-sm-6 mb-xl-0 mb-4">
@@ -98,41 +97,33 @@
         <div class="col-12">
             <div class="card mb-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h6>Lịch sử kiểm soát xu thủ công</h6>
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 mb-3">
+                        <h6 class="mb-0">Lịch sử kiểm soát xu thủ công</h6>
                         <a href="{{ route('coins.index') }}" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus me-1"></i> Thêm giao dịch
+                            <i class="fas fa-plus me-2"></i><span class="d-none d-md-inline">Thêm giao dịch</span><span class="d-md-none">Thêm</span>
                         </a>
                     </div>
 
                     <!-- Filters -->
                     <form method="GET" action="{{ route('coin.transactions') }}" class="mb-3">
-                        <div class="row g-3">
-                            <div class="col-md-3">
-                                <input type="text" class="form-control form-control-sm" name="search"
-                                       placeholder="Tìm kiếm người dùng..." value="{{ request('search') }}">
-                            </div>
-                            <div class="col-md-2">
-                                <select name="type" class="form-select form-select-sm">
-                                    <option value="">Tất cả loại</option>
-                                    <option value="add" {{ request('type') == 'add' ? 'selected' : '' }}>Cộng xu</option>
-                                    <option value="subtract" {{ request('type') == 'subtract' ? 'selected' : '' }}>Trừ xu</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <input type="date" class="form-control form-control-sm" name="date_from"
-                                       value="{{ request('date_from') }}" placeholder="Từ ngày">
-                            </div>
-                            <div class="col-md-2">
-                                <input type="date" class="form-control form-control-sm" name="date_to"
-                                       value="{{ request('date_to') }}" placeholder="Đến ngày">
-                            </div>
-                            <div class="col-md-3">
-                                <button type="submit" class="btn btn-primary btn-sm me-2">
-                                    <i class="fas fa-search"></i> Tìm kiếm
+                        <div class="d-flex flex-column flex-md-row gap-2">
+                            <input type="text" class="form-control form-control-sm" name="search"
+                                   placeholder="Tìm kiếm..." value="{{ request('search') }}">
+                            <select name="type" class="form-select form-select-sm">
+                                <option value="">Tất cả loại</option>
+                                <option value="add" {{ request('type') == 'add' ? 'selected' : '' }}>Cộng xu</option>
+                                <option value="subtract" {{ request('type') == 'subtract' ? 'selected' : '' }}>Trừ xu</option>
+                            </select>
+                            <input type="date" class="form-control form-control-sm" name="date_from"
+                                   value="{{ request('date_from') }}" placeholder="Từ ngày">
+                            <input type="date" class="form-control form-control-sm" name="date_to"
+                                   value="{{ request('date_to') }}" placeholder="Đến ngày">
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-primary btn-sm">
+                                    <i class="fas fa-search me-2"></i><span class="d-none d-md-inline">Tìm kiếm</span>
                                 </button>
                                 <a href="{{ route('coin.transactions') }}" class="btn btn-secondary btn-sm">
-                                    <i class="fas fa-refresh"></i> Làm mới
+                                    <i class="fas fa-refresh me-2"></i><span class="d-none d-md-inline">Làm mới</span>
                                 </a>
                             </div>
                         </div>
@@ -144,19 +135,19 @@
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr>
-                                    <th class="text-uppercase text-xxs font-weight-bolder">ID</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder d-none d-md-table-cell">ID</th>
                                     <th class="text-uppercase text-xxs font-weight-bolder ps-2">Người dùng</th>
                                     <th class="text-uppercase text-xxs font-weight-bolder ps-2">Loại giao dịch</th>
                                     <th class="text-uppercase text-xxs font-weight-bolder ps-2">Số xu</th>
-                                    <th class="text-uppercase text-xxs font-weight-bolder ps-2">Quản trị viên</th>
-                                    <th class="text-uppercase text-xxs font-weight-bolder ps-2">Ghi chú</th>
-                                    <th class="text-uppercase text-xxs font-weight-bolder ps-2">Thời gian</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder ps-2 d-none d-lg-table-cell">Quản trị viên</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder ps-2 d-none d-md-table-cell">Ghi chú</th>
+                                    <th class="text-uppercase text-xxs font-weight-bolder ps-2 d-none d-md-table-cell">Thời gian</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($transactions as $transaction)
                                 <tr>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <p class="text-sm font-weight-bold mb-0">#{{ $transaction->id }}</p>
                                     </td>
                                     <td>
@@ -167,14 +158,16 @@
                                             </div>
                                             <div class="d-flex flex-column justify-content-center">
                                                 <h6 class="mb-0 text-sm">{{ $transaction->user->name }}</h6>
-                                                <p class="text-xs text-secondary mb-0">{{ $transaction->user->email }}</p>
+                                                <small class="text-xs text-muted d-md-none">{{ Str::limit($transaction->user->email, 20) }}</small>
+                                                <p class="text-xs text-secondary mb-0 d-none d-md-block">{{ $transaction->user->email }}</p>
+                                                <small class="text-xs text-muted d-md-none">{{ $transaction->created_at->format('d/m/Y') }}</small>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
                                         <span class="badge bg-{{ $transaction->type === 'add' ? 'success' : 'danger' }}">
                                             <i class="fas fa-{{ $transaction->type === 'add' ? 'plus' : 'minus' }} me-1"></i>
-                                            {{ $transaction->type === 'add' ? 'Cộng xu' : 'Trừ xu' }}
+                                            <span class="d-none d-md-inline">{{ $transaction->type === 'add' ? 'Cộng xu' : 'Trừ xu' }}</span>
                                         </span>
                                     </td>
                                     <td>
@@ -182,19 +175,19 @@
                                             {{ $transaction->type === 'add' ? '+' : '-' }}{{ number_format($transaction->amount) }}
                                         </p>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-lg-table-cell">
                                         <div class="d-flex align-items-center">
                                             <img src="{{ $transaction->admin->avatar ? Storage::url($transaction->admin->avatar) : asset('assets/images/avatar_default.jpg') }}"
                                                  class="avatar avatar-xs me-2">
                                             <p class="text-sm font-weight-bold mb-0">{{ $transaction->admin->name }}</p>
                                         </div>
                                     </td>
-                                    <td>
-                                        <p class="text-sm mb-0">
+                                    <td class="d-none d-md-table-cell">
+                                        <p class="text-sm mb-0" style="max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="{{ $transaction->note ?: 'Không có ghi chú' }}">
                                             {{ $transaction->note ?: 'Không có ghi chú' }}
                                         </p>
                                     </td>
-                                    <td>
+                                    <td class="d-none d-md-table-cell">
                                         <p class="text-sm font-weight-bold mb-0">{{ $transaction->created_at->format('d/m/Y H:i') }}</p>
                                         <p class="text-xs text-secondary mb-0">{{ $transaction->created_at->diffForHumans() }}</p>
                                     </td>
@@ -220,7 +213,6 @@
             </div>
         </div>
     </div>
-</div>
 @endsection
 
 @push('styles')

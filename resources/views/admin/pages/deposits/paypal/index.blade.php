@@ -5,27 +5,27 @@
         <div class="col-12">
             <div class="card mb-4 mx-0 mx-md-4">
                 <div class="card-header pb-0">
-                    <div class="d-flex flex-row justify-content-between">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
                         <div>
                             <h5 class="mb-0">Quản lý nạp PayPal</h5>
                             <p class="text-sm mb-0">Quản lý các giao dịch nạp xu bằng PayPal</p>
                         </div>
-                        <div>
+                        <div class="d-flex flex-column flex-md-row gap-2">
                             <a href="{{ route('admin.request-payment-paypal.index') }}" class="btn bg-gradient-warning btn-sm">
-                                <i class="fas fa-clock me-2"></i>Yêu cầu thanh toán
+                                <i class="fas fa-clock me-2"></i><span class="d-none d-md-inline">Yêu cầu thanh toán</span><span class="d-md-none">Yêu cầu</span>
                             </a>
                             <a href="{{ route('admin.card-deposits.index') }}" class="btn bg-gradient-info btn-sm">
-                                <i class="fas fa-credit-card me-2"></i>Card Deposits
+                                <i class="fas fa-credit-card me-2"></i><span class="d-none d-md-inline">Card Deposits</span><span class="d-md-none">Card</span>
                             </a>
                             <a href="{{ route('deposits.index') }}" class="btn bg-gradient-primary btn-sm">
-                                <i class="fas fa-university me-2"></i>Bank Deposits
+                                <i class="fas fa-university me-2"></i><span class="d-none d-md-inline">Bank Deposits</span><span class="d-md-none">Bank</span>
                             </a>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-between mt-3">
-                        <form method="GET" class="d-flex gap-2">
-                            <select name="status" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                    <div class="d-flex flex-column flex-md-row justify-content-between gap-2 mt-3">
+                        <form method="GET" class="d-flex flex-column flex-md-row gap-2 flex-fill" id="filterForm">
+                            <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
                                 <option value="">- Trạng thái -</option>
                                 <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Chờ xử lý</option>
                                 <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Đang xử lý</option>
@@ -33,10 +33,10 @@
                                 <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Từ chối</option>
                             </select>
 
-                            <input type="date" name="date" class="form-control form-control-sm" style="width: auto;"
+                            <input type="date" name="date" class="form-control form-control-sm"
                                    value="{{ request('date') }}" onchange="this.form.submit()">
 
-                            <div class="input-group input-group-sm">
+                            <div class="input-group input-group-sm flex-fill">
                                 <input type="text" class="form-control" name="search"
                                        value="{{ request('search') }}" placeholder="Tìm kiếm...">
                                 <button class="btn bg-gradient-primary btn-sm px-2 mb-0" type="submit">
