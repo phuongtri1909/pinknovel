@@ -112,10 +112,8 @@ class StoryController extends Controller
             });
         }
 
-        // Order by featured first, then by latest - NEW
-        $query->orderBy('is_featured', 'desc')
-            ->orderBy('featured_order', 'asc')
-            ->orderBy('created_at', 'desc');
+        // Order by latest (newest first)
+        $query->latest('created_at');
 
         $stories = $query->paginate(15);
 
