@@ -73,14 +73,6 @@ class CommentController extends Controller
 
     public function loadComments(Request $request, $storyId)
     {
-        $pinnedComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
-            ->where('story_id', $storyId)
-            ->whereNull('reply_id')
-            ->where('is_pinned', true)
-            ->approved()
-            ->latest('pinned_at')
-            ->get();
-
         $regularComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
             ->where('story_id', $storyId)
             ->whereNull('reply_id')
@@ -90,12 +82,39 @@ class CommentController extends Controller
             ->paginate(10);
 
         if ($request->ajax()) {
-            $html = view('components.comments-list', compact('pinnedComments', 'regularComments'))->render();
+            // If page > 1, only return regular comments (load more)
+            if ($request->has('page') && $request->page > 1) {
+                $html = view('components.comments-list', [
+                    'pinnedComments' => collect(),
+                    'regularComments' => $regularComments
+                ])->render();
+            } else {
+                // First load, include pinned comments
+                $pinnedComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
+                    ->where('story_id', $storyId)
+                    ->whereNull('reply_id')
+                    ->where('is_pinned', true)
+                    ->approved()
+                    ->latest('pinned_at')
+                    ->get();
+                
+                $html = view('components.comments-list', compact('pinnedComments', 'regularComments'))->render();
+            }
+            
             return response()->json([
                 'html' => $html,
                 'hasMore' => $regularComments->hasMorePages()
             ]);
         }
+
+        // Initial load - include pinned comments
+        $pinnedComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
+            ->where('story_id', $storyId)
+            ->whereNull('reply_id')
+            ->where('is_pinned', true)
+            ->approved()
+            ->latest('pinned_at')
+            ->get();
 
         return view('components.comment', compact('pinnedComments', 'regularComments', 'storyId'));
     }

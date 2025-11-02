@@ -196,8 +196,12 @@
                                         <div class="col-4">
                                             <a href="#comments"
                                                 class="action-button d-flex flex-column align-items-center text-decoration-none">
-                                                <div class="action-icon">
+                                                <div class="action-icon position-relative">
                                                     <i class="fas fa-comments fs-4 color-3"></i>
+                                                    <span
+                                                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger small comment-count">
+                                                        {{ $stats['total_comments'] ?? 0 }}
+                                                    </span>
                                                 </div>
                                                 <div class="action-label small mt-1 text-center">
                                                     Bình luận

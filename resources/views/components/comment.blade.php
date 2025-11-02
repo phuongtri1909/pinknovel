@@ -162,10 +162,23 @@
                                 page: page
                             },
                             success: function(res) {
-                                // Add with animation
-                                const newComments = $(res.html).hide();
-                                $('#comments-list').append(newComments);
-                                newComments.slideDown(300);
+                                // Only append regular comments container (exclude pinned comments)
+                                const $html = $(res.html);
+                                const $regularContainer = $html.find('.regular-comments-container');
+                                
+                                if ($regularContainer.length > 0) {
+                                    // Only append regular comments items
+                                    $regularContainer.find('li').each(function() {
+                                        const $comment = $(this).hide();
+                                        $('#comments-list').append($comment);
+                                        $comment.slideDown(300);
+                                    });
+                                } else {
+                                    // Fallback: append all if structure is different
+                                    const $newComments = $html.hide();
+                                    $('#comments-list').append($newComments);
+                                    $newComments.slideDown(300);
+                                }
 
                                 if (!res.hasMore) {
                                     $('#load-more-comments').fadeOut(300, function() {
