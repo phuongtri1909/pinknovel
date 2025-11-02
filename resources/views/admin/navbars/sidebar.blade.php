@@ -54,7 +54,7 @@
             @php
                 $storiesMenuActive = Route::currentRouteNamed('stories.*', 'stories.chapters.*', 'categories.*', 
                     'admin.story-transfer.*', 'admin.story-reviews.*', 'admin.edit-requests.*', 
-                    'admin.author-applications.*');
+                    'admin.author-applications.*', 'comments.all');
             @endphp
             <li class="nav-item mt-2">
                 <h6 class="ps-4 ms-2 text-uppercase text-xs font-weight-bolder opacity-6">Quản lý</h6>
@@ -83,26 +83,32 @@
                                 <span class="nav-link-text ms-1">Danh sách truyện</span>
                             </a>
                         </li>
+
                         <li class="nav-item">
-                            <a class="nav-link {{ Route::currentRouteNamed('categories.*') ? 'active' : '' }}"
-                                href="{{ route('categories.index') }}" data-menu="categories">
+                            <a class="nav-link {{ Route::currentRouteNamed('comments.all') ? 'active' : '' }}"
+                                href="{{ route('comments.all') }}" data-menu="comments">
                                 <div
                                     class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fa-solid fa-book text-dark icon-sidebar"></i>
+                                    <i class="fa-solid fa-comments text-dark icon-sidebar"></i>
                                 </div>
-                                <span class="nav-link-text ms-1">Danh sách thể loại</span>
+                                <span class="nav-link-text ms-1">Quản lý Bình luận
+                                    @php
+                                        $pendingCommentsCount = \App\Models\Comment::where('approval_status', 'pending')
+                                            ->whereHas('user', function($q) {
+                                                $q->where('role', '!=', 'admin');
+                                            })
+                                            ->whereDoesntHave('story', function($q) {
+                                                $q->whereColumn('stories.user_id', 'comments.user_id');
+                                            })
+                                            ->count();
+                                    @endphp
+                                    @if ($pendingCommentsCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingCommentsCount }}</span>
+                                    @endif
+                                </span>
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ Route::currentRouteNamed('admin.story-transfer.*') ? 'active' : '' }}"
-                                href="{{ route('admin.story-transfer.index') }}" data-menu="story-transfer">
-                                <div
-                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fas fa-exchange-alt text-dark icon-sidebar"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Chuyển nhượng truyện</span>
-                            </a>
-                        </li>
+                       
                         <li class="nav-item">
                             <a class="nav-link {{ Route::currentRouteNamed('admin.story-reviews.*') ? 'active' : '' }}"
                                 href="{{ route('admin.story-reviews.index') }}" data-menu="story-reviews">
@@ -154,6 +160,28 @@
                                 </span>
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.story-transfer.*') ? 'active' : '' }}"
+                                href="{{ route('admin.story-transfer.index') }}" data-menu="story-transfer">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-exchange-alt text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Chuyển nhượng truyện</span>
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('categories.*') ? 'active' : '' }}"
+                                href="{{ route('categories.index') }}" data-menu="categories">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-book text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Danh sách thể loại</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
             </li>
@@ -171,7 +199,7 @@
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-money-bill-transfer text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Tài chính</span>
+                    <span class="nav-link-text ms-1">Chuyển Xu</span>
                     <i class="fas fa-chevron-down text-xs opacity-5"></i>
                 </a>
                 <div class="collapse mt-1 {{ $financeMenuActive ? 'show' : '' }}" id="financeSubmenu" style="margin-left: 15px">
@@ -266,7 +294,7 @@
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-coins text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Xu</span>
+                    <span class="nav-link-text ms-1">Quản lý xu</span>
                     <i class="fas fa-chevron-down text-xs opacity-5"></i>
                 </a>
                 <div class="collapse mt-1 {{ $coinMenuActive ? 'show' : '' }}" id="coinSubmenu" style="margin-left: 15px">
@@ -305,59 +333,15 @@
                 </div>
             </li>
 
-            {{-- Người dùng --}}
-            @php
-                $userMenuActive = Route::currentRouteNamed('users.*', 'comments.all');
-            @endphp
             <li class="nav-item">
-                <a class="nav-link {{ $userMenuActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" 
-                    href="#userSubmenu" role="button" aria-expanded="{{ $userMenuActive ? 'true' : 'false' }}" 
-                    aria-controls="userSubmenu">
+                <a class="nav-link {{ Route::currentRouteNamed('users.*') ? 'active' : '' }}"
+                    href="{{ route('users.index') }}" data-menu="users">
                     <div
                         class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fa-solid fa-users text-dark icon-sidebar"></i>
                     </div>
-                    <span class="nav-link-text ms-1">Người dùng</span>
-                    <i class="fas fa-chevron-down text-xs opacity-5"></i>
+                    <span class="nav-link-text ms-1">Danh sách User</span>
                 </a>
-                <div class="collapse mt-1 {{ $userMenuActive ? 'show' : '' }}" id="userSubmenu" style="margin-left: 15px">
-                    <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
-                        <li class="nav-item">
-                            <a class="nav-link {{ Route::currentRouteNamed('users.*') ? 'active' : '' }}"
-                                href="{{ route('users.index') }}" data-menu="users">
-                                <div
-                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fa-solid fa-users text-dark icon-sidebar"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Danh sách User</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {{ Route::currentRouteNamed('comments.all') ? 'active' : '' }}"
-                                href="{{ route('comments.all') }}" data-menu="comments">
-                                <div
-                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
-                                    <i class="fa-solid fa-comments text-dark icon-sidebar"></i>
-                                </div>
-                                <span class="nav-link-text ms-1">Quản lý Bình luận
-                                    @php
-                                        $pendingCommentsCount = \App\Models\Comment::where('approval_status', 'pending')
-                                            ->whereHas('user', function($q) {
-                                                $q->where('role', '!=', 'admin');
-                                            })
-                                            ->whereDoesntHave('story', function($q) {
-                                                $q->whereColumn('stories.user_id', 'comments.user_id');
-                                            })
-                                            ->count();
-                                    @endphp
-                                    @if ($pendingCommentsCount > 0)
-                                        <span class="badge bg-danger ms-2">{{ $pendingCommentsCount }}</span>
-                                    @endif
-                                </span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
             </li>
 
             {{-- Cài đặt --}}

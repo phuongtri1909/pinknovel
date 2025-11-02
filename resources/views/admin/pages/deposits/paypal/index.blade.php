@@ -100,12 +100,12 @@
                                             <span class="badge badge-sm {{ $deposit->status_badge }}">
                                                 {{ $deposit->status_text }}
                                             </span>
-                                            @if($deposit->note)
+                                            {{-- @if($deposit->note)
                                                 <button type="button" class="btn btn-link text-danger text-xs p-0 ms-1"
                                                         data-bs-toggle="modal" data-bs-target="#noteModal{{ $deposit->id }}">
                                                     <i class="fas fa-info-circle"></i>
                                                 </button>
-                                            @endif
+                                            @endif --}}
                                         </td>
                                         <td>
                                             <p class="text-xs font-weight-bold mb-0">{{ $deposit->created_at->format('d/m/Y H:i') }}</p>
