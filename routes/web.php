@@ -243,13 +243,9 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
 
             Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-            // Sử dụng middleware 'role' thay vì 'role.admin'
-            Route::group(['middleware' => 'role:admin'], function () {
-                Route::post('/comments/{comment}/pin', [CommentController::class, 'togglePin'])->name('comments.pin');
-            });
+            Route::post('/comments/{commentId}/pin', [CommentController::class, 'togglePin'])->name('comments.pin');
 
             Route::group(['prefix' => 'admin'], function () {
-                // Sử dụng middleware 'role' thay vì 'role.admin'
                 Route::group(['middleware' => 'role:admin'], function () {
                     Route::post('/users/{id}/banip', [UserController::class, 'banIp'])->name('users.banip');
                     Route::patch('/status/toggle', [StatusController::class, 'toggle'])->name('status.toggle');

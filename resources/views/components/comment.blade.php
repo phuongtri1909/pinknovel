@@ -64,30 +64,24 @@
                     let isSubmitting = false;
                     let lastSubmitTime = 0;
 
-                    // Modal initialization for comment deletion
                     let deleteModal;
                     const modalElement = document.getElementById('deleteModal');
                     if (modalElement) {
                         deleteModal = new bootstrap.Modal(modalElement);
                     }
 
-                    // Direct comment submission with debounce
                     $('#btn-comment').on('click', function(e) {
                         e.preventDefault(); // Prevent any default action
-                        console.log('click');
                         
                         const btn = $(this);
                         const comment = $('#comment-input').val().trim();
                         
-                        // Prevent empty comments and double submissions
                         if (!comment || isSubmitting) return;
                         
-                        // Debounce: prevent rapid multiple clicks
                         const now = Date.now();
-                        if (now - lastSubmitTime < 1000) return; // 1 second cooldown
+                        if (now - lastSubmitTime < 1000) return;
                         lastSubmitTime = now;
 
-                        // Disable button and show loading
                         isSubmitting = true;
                         btn.prop('disabled', true)
                             .html('<i class="fas fa-spinner fa-spin"></i>');
@@ -102,16 +96,12 @@
                             },
                             success: function(res) {
                                 if (res.status === 'success') {
-                                    // Clear the input field
                                     $('#comment-input').val('');
                                     
-                                    // If we have pinned comments, update the pinned section first
                                     if (res.pinnedComments) {
-                                        // Remove existing pinned section
                                         $('.pinned-comments').remove();
                                         $('.regular-comments-header').remove();
                                         
-                                        // Add the updated pinned comments at the top
                                         $('#comments-list').prepend(res.pinnedComments);
                                     }
                                     
@@ -123,7 +113,6 @@
                                 if (xhr.status === 401) {
                                     window.location.href = '{{ route('login') }}';
                                 } else if (xhr.status === 400) {
-                                    // Duplicate comment
                                     showToast(xhr.responseJSON.message ||
                                         'Bình luận này đã được gửi trước đó', 'warning');
                                 } else {
@@ -131,7 +120,6 @@
                                 }
                             },
                             complete: function() {
-                                // Re-enable button and restore original state after a short delay
                                 setTimeout(() => {
                                     isSubmitting = false;
                                     btn.prop('disabled', false)
@@ -141,16 +129,13 @@
                         });
                     });
 
-                    // Also handle Enter key in textarea to submit
                     $('#comment-input').on('keydown', function(e) {
-                        // Submit on Enter without Shift key
                         if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
                             $('#btn-comment').trigger('click');
                         }
                     });
 
-                    // Load more comments
                     $('#load-more-comments').on('click', function() {
                         const btn = $(this);
                         btn.html('<i class="fas fa-spinner fa-spin"></i> Đang tải...');
@@ -162,19 +147,16 @@
                                 page: page
                             },
                             success: function(res) {
-                                // Only append regular comments container (exclude pinned comments)
                                 const $html = $(res.html);
                                 const $regularContainer = $html.find('.regular-comments-container');
                                 
                                 if ($regularContainer.length > 0) {
-                                    // Only append regular comments items
                                     $regularContainer.find('li').each(function() {
                                         const $comment = $(this).hide();
                                         $('#comments-list').append($comment);
                                         $comment.slideDown(300);
                                     });
                                 } else {
-                                    // Fallback: append all if structure is different
                                     const $newComments = $html.hide();
                                     $('#comments-list').append($newComments);
                                     $newComments.slideDown(300);
@@ -190,7 +172,6 @@
                                         );
                                 }
 
-                                // Make sure event handlers are attached to new elements
                                 bindCommentEvents();
                             },
                             error: function(xhr) {
@@ -200,13 +181,10 @@
                         });
                     });
 
-                    // Always use document for event delegation
-                    // Reply button click
                     $(document).on('click', '.reply-btn', function(e) {
                         e.preventDefault();
                         const commentId = $(this).data('id');
 
-                        // Remove any existing reply forms first
                         $('.reply-form').slideUp(200, function() {
                             $(this).remove();
                         });
@@ -227,13 +205,11 @@
                         $(this).closest('.post-comments').append(replyForm);
                         $(this).hide();
 
-                        // Focus on the textarea
                         setTimeout(() => {
                             $(this).closest('.post-comments').find('.reply-form textarea').focus();
                         }, 100);
                     });
 
-                    // Cancel reply
                     $(document).on('click', '.cancel-reply', function() {
                         const replyForm = $(this).closest('.reply-form');
                         const replyBtn = replyForm.closest('.post-comments').find('.reply-btn');
@@ -243,7 +219,6 @@
                         });
                     });
 
-                    // Submit reply with debounce
                     $(document).on('click', '.submit-reply', function(e) {
                         e.preventDefault();
                         
@@ -253,12 +228,11 @@
 
                         if (!reply || btn.prop('disabled')) return;
                         
-                        // Debounce: prevent rapid multiple clicks
+                     
                         const now = Date.now();
-                        if (now - lastSubmitTime < 1000) return; // 1 second cooldown
+                        if (now - lastSubmitTime < 1000) return;
                         lastSubmitTime = now;
 
-                        // Disable button and show loading
                         btn.prop('disabled', true)
                             .html('<i class="fas fa-spinner fa-spin"></i>');
 
@@ -273,12 +247,10 @@
                             },
                             success: function(res) {
                                 if (res.status === 'success') {
-                                    // Only show reply if it's approved (has HTML)
                                     if (res.html) {
                                         let replyContainer = btn.closest('.post-comments').find(
                                             'ul.comments');
 
-                                        // Create replies container if it doesn't exist
                                         if (replyContainer.length === 0) {
                                             btn.closest('.post-comments').append(
                                                 '<ul class="comments mt-3"></ul>');
@@ -286,12 +258,10 @@
                                                 'ul.comments');
                                         }
 
-                                        // Add with animation
                                         const newReply = $(res.html).hide();
                                         replyContainer.append(newReply);
                                         newReply.slideDown(300);
                                         
-                                        // Bind events to the new reply
                                         bindCommentEvents();
                                     }
                                     
@@ -299,20 +269,17 @@
                                         $(this).remove();
                                     });
 
-                                    // Re-enable reply button
                                     btn.closest('.post-comments').find('.reply-btn').show();
                                     showToast(res.message, 'success');
                                 }
                             },
                             error: function(xhr) {
                                 if (xhr.status === 400) {
-                                    // Duplicate comment
                                     showToast(xhr.responseJSON.message ||
                                         'Bình luận này đã được gửi trước đó', 'warning');
                                 } else {
                                     showToast(xhr.responseJSON.message || 'Có lỗi xảy ra', 'error');
                                 }
-                                // Re-enable button on error after a short delay
                                 setTimeout(() => {
                                     btn.prop('disabled', false).text('Gửi');
                                 }, 500);
@@ -320,13 +287,11 @@
                         });
                     });
 
-                    // Reaction button (like/dislike)
                     $(document).on('click', '.reaction-btn', function() {
                         const btn = $(this);
                         const commentId = btn.data('id');
                         const type = btn.data('type');
 
-                        // Visual feedback
                         btn.addClass('animate__animated animate__pulse');
 
                         $.ajax({
@@ -338,7 +303,6 @@
                             },
                             success: function(response) {
                                 if (response.status === 'success') {
-                                    // Update count with animation
                                     const countElement = btn.find(type === 'like' ? '.likes-count' :
                                         '.dislikes-count');
                                     const currentCount = parseInt(countElement.text());
@@ -355,7 +319,6 @@
                                     countElement.text(newCount);
                                     btn.toggleClass('active');
 
-                                    // If user likes and already disliked, or vice versa
                                     const otherType = type === 'like' ? 'dislike' : 'like';
                                     const otherBtn = btn.siblings(`[data-type="${otherType}"]`);
                                     if (btn.hasClass('active') && otherBtn.hasClass('active')) {
@@ -387,7 +350,9 @@
                         const btn = $(this);
                         const commentId = btn.data('id');
 
-                        if (btn.prop('disabled')) return;
+                        if (btn.prop('disabled')) {
+                            return;
+                        }
 
                         btn.prop('disabled', true)
                             .find('i').addClass('fa-spin');
@@ -398,18 +363,49 @@
                             data: {
                                 _token: '{{ csrf_token() }}'
                             },
+                            dataType: 'json',
                             success: function(res) {
-                                if (res.status === 'success') {
+                                if (res && res.status === 'success') {
                                     // Update list with fade effect
                                     $('#comments-list').fadeOut(200, function() {
-                                        $(this).html(res.html).fadeIn(200);
+                                        $(this).html(res.html || '').fadeIn(200);
                                         bindCommentEvents();
                                     });
-                                    showToast(res.message, 'success');
+                                    showToast(res.message || 'Thành công', 'success');
+                                } else {
+                                    showToast(res?.message || 'Có lỗi xảy ra', 'error');
                                 }
                             },
-                            error: function(xhr) {
-                                showToast(xhr.responseJSON.message || 'Có lỗi xảy ra', 'error');
+                            error: function(xhr, status, error) {
+                                let errorMessage = 'Có lỗi xảy ra';
+                                
+                                // Try to parse error response
+                                if (xhr.responseJSON && xhr.responseJSON.message) {
+                                    errorMessage = xhr.responseJSON.message;
+                                } else if (xhr.responseText) {
+                                    try {
+                                        const parsed = JSON.parse(xhr.responseText);
+                                        if (parsed.message) {
+                                            errorMessage = parsed.message;
+                                        }
+                                    } catch (e) {
+                                        if (xhr.responseText.includes('<!DOCTYPE') || xhr.responseText.includes('<html')) {
+                                            errorMessage = 'Lỗi server: Trang lỗi HTML được trả về';
+                                        }
+                                    }
+                                }
+                                
+                                if (xhr.status === 403) {
+                                    errorMessage = 'Bạn không có quyền thực hiện hành động này';
+                                } else if (xhr.status === 400) {
+                                    errorMessage = errorMessage || 'Không thể thực hiện thao tác này';
+                                } else if (xhr.status === 500) {
+                                    errorMessage = errorMessage || 'Lỗi server. Vui lòng thử lại sau.';
+                                } else if (xhr.status === 419) {
+                                    errorMessage = 'Token hết hạn. Vui lòng refresh trang và thử lại.';
+                                }
+                                
+                                showToast(errorMessage, 'error');
                             },
                             complete: function() {
                                 btn.prop('disabled', false)
@@ -968,6 +964,165 @@
 
             body.dark-mode .pinned-comment .pinned-badge {
                 color: #ffc107 !important;
+            }
+
+            /* Comments Item Styles */
+            .role-badge {
+                font-weight: bold;
+                padding: 0 3px;
+                transition: all 0.3s ease;
+            }
+
+            .admin-badge {
+                color: #dc3545;
+            }
+
+            .mod-badge {
+                color: #198754;
+            }
+
+            .vip-badge {
+                color: #0d6efd;
+            }
+
+            .comment-content {
+                font-size: 14px;
+                line-height: 1.5;
+                word-break: break-word;
+            }
+
+            .comment-time {
+                font-size: 12px;
+                color: #777;
+            }
+
+            .comment-actions {
+                transition: all 0.3s ease;
+            }
+
+            .pin-btn {
+                background: transparent;
+                border: none;
+                padding: 0;
+                margin: 0;
+                color: #777;
+                transition: all 0.3s ease;
+            }
+
+            .pin-btn:hover {
+                color: #ffc107;
+                transform: rotate(45deg);
+            }
+
+            .delete-comment {
+                opacity: 0.7;
+                transition: all 0.3s ease;
+            }
+
+            .delete-comment:hover {
+                opacity: 1;
+            }
+
+            .reply-btn {
+                opacity: 0.8;
+                transition: all 0.3s ease;
+            }
+
+            .reply-btn:hover {
+                opacity: 1;
+                text-decoration: underline !important;
+            }
+
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.05);
+                }
+
+                100% {
+                    transform: scale(1);
+                }
+            }
+
+            .pinned-badge {
+                animation: pulse 2s infinite;
+            }
+
+            .clickable-name {
+                cursor: pointer;
+                text-decoration: underline;
+            }
+
+            .clickable-name:hover {
+                opacity: 0.8;
+            }
+
+            /* Comments List Styles */
+            .pinned-comments {
+                position: relative;
+            }
+
+            .pinned-header {
+                position: relative;
+            }
+
+            .pinned-title {
+                font-weight: 600;
+                color: #555;
+                display: inline-block;
+                background: #fffbea;
+                padding: 5px 15px;
+                border-radius: 20px;
+                box-shadow: 0 2px 5px rgba(255, 193, 7, 0.2);
+            }
+
+            .regular-comments-header {
+                position: relative;
+                display: flex;
+                align-items: center;
+                gap: 15px;
+            }
+
+            .regular-comments-header h6 {
+                font-weight: 600;
+                margin-bottom: 0;
+                white-space: nowrap;
+            }
+
+            .header-line {
+                flex-grow: 1;
+                height: 1px;
+                background: #e0e0e0;
+            }
+
+            .empty-comments {
+                color: #888;
+                padding: 30px;
+                background: #f9f9f9;
+                border-radius: 10px;
+                box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.05);
+            }
+
+            .empty-comments i {
+                opacity: 0.7;
+            }
+
+            @media (max-width: 768px) {
+                .pinned-title {
+                    font-size: 14px;
+                    padding: 3px 10px;
+                }
+
+                .empty-comments {
+                    padding: 20px;
+                }
+
+                .empty-comments i {
+                    font-size: 2em;
+                }
             }
         </style>
     @endpush

@@ -73,7 +73,12 @@
                         </span>
                     @endif
 
-                    @if ($level == 0 && auth()->user()->role === 'admin')
+                    @php
+                        $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+                        $isAuthor = auth()->check() && $comment->story && auth()->user()->id === $comment->story->user_id;
+                        $canPin = $level == 0 && ($isAdmin || $isAuthor);
+                    @endphp
+                    @if ($canPin)
                         <button class="btn btn-sm pin-btn pin-comment ms-2" data-id="{{ $comment->id }}">
                             @if ($isPinned)
                                 <i class="fas fa-thumbtack text-warning" title="Bỏ ghim"></i>
@@ -132,94 +137,3 @@
         @endif
     </div>
 </li>
-
-@once
-    @push('styles')
-        <style>
-            .role-badge {
-                font-weight: bold;
-                padding: 0 3px;
-                transition: all 0.3s ease;
-            }
-
-            .admin-badge {
-                color: #dc3545;
-            }
-
-            .mod-badge {
-                color: #198754;
-            }
-
-            .vip-badge {
-                color: #0d6efd;
-            }
-            
-            .comment-content {
-                font-size: 14px;
-                line-height: 1.5;
-                word-break: break-word;
-            }
-            
-            .comment-time {
-                font-size: 12px;
-                color: #777;
-            }
-            
-            .comment-actions {
-                transition: all 0.3s ease;
-            }
-            
-            .pin-btn {
-                background: transparent;
-                border: none;
-                padding: 0;
-                margin: 0;
-                color: #777;
-                transition: all 0.3s ease;
-            }
-            
-            .pin-btn:hover {
-                color: #ffc107;
-                transform: rotate(45deg);
-            }
-            
-            .delete-comment {
-                opacity: 0.7;
-                transition: all 0.3s ease;
-            }
-            
-            .delete-comment:hover {
-                opacity: 1;
-            }
-            
-            .reply-btn {
-                opacity: 0.8;
-                transition: all 0.3s ease;
-            }
-            
-            .reply-btn:hover {
-                opacity: 1;
-                text-decoration: underline !important;
-            }
-            
-            @keyframes pulse {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.05); }
-                100% { transform: scale(1); }
-            }
-            
-            .pinned-badge {
-                animation: pulse 2s infinite;
-            }
-
-            .clickable-name {
-                cursor: pointer;
-                text-decoration: underline;
-            }
-
-            .clickable-name:hover {
-                opacity: 0.8;
-            }
-        </style>
-    @endpush
-@endonce

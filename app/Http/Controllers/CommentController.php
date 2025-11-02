@@ -73,7 +73,7 @@ class CommentController extends Controller
 
     public function loadComments(Request $request, $storyId)
     {
-        $regularComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
+        $regularComments = Comment::with(['user', 'story', 'approvedReplies.user', 'reactions'])
             ->where('story_id', $storyId)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
@@ -82,15 +82,13 @@ class CommentController extends Controller
             ->paginate(10);
 
         if ($request->ajax()) {
-            // If page > 1, only return regular comments (load more)
             if ($request->has('page') && $request->page > 1) {
                 $html = view('components.comments-list', [
                     'pinnedComments' => collect(),
                     'regularComments' => $regularComments
                 ])->render();
             } else {
-                // First load, include pinned comments
-                $pinnedComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
+                $pinnedComments = Comment::with(['user', 'story', 'approvedReplies.user', 'reactions'])
                     ->where('story_id', $storyId)
                     ->whereNull('reply_id')
                     ->where('is_pinned', true)
@@ -121,28 +119,52 @@ class CommentController extends Controller
 
     public function togglePin($commentId)
     {
-        $comment = Comment::findOrFail($commentId);
-
-        if (auth()->user()->role !== 'admin' || $comment->level !== 0) {
-            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
-        }
-
-        if (!$comment->is_pinned) {
-            $pinnedCount = Comment::where('is_pinned', true)->count();
-            if ($pinnedCount >= 3) {
+        try {
+            if (!auth()->check()) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => 'Đã đạt giới hạn số bình luận được ghim'
-                ], 400);
+                    'message' => 'Vui lòng đăng nhập để thực hiện'
+                ], 401, ['Content-Type' => 'application/json']);
             }
-        }
 
-        $comment->is_pinned = !$comment->is_pinned;
-        $comment->pinned_at = $comment->is_pinned ? now() : null;
-        $comment->save();
+            $comment = Comment::findOrFail($commentId);
+            $story = Story::findOrFail($comment->story_id);
+            
+            $isAdmin = auth()->user()->role === 'admin';
+            $isAuthor = $story->user_id && (int)auth()->user()->id === (int)$story->user_id;
+            
+            if ($comment->level !== 0) {
+                return response()->json([
+                    'status' => 'error', 
+                    'message' => 'Chỉ có thể ghim bình luận cấp 1'
+                ], 400, ['Content-Type' => 'application/json']);
+            }
+            
+            if (!$isAdmin && !$isAuthor) {
+                return response()->json([
+                    'status' => 'error', 
+                    'message' => 'Bạn không có quyền ghim bình luận này. Chỉ admin hoặc tác giả của truyện mới có thể ghim.'
+                ], 403, ['Content-Type' => 'application/json']);
+            }
+
+            if (!$comment->is_pinned) {
+                $pinnedCount = Comment::where('story_id', $comment->story_id)
+                    ->where('is_pinned', true)
+                    ->count();
+                if ($pinnedCount >= 3) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Đã đạt giới hạn số bình luận được ghim (tối đa 3 bình luận mỗi truyện)'
+                    ], 400, ['Content-Type' => 'application/json']);
+                }
+            }
+
+            $comment->is_pinned = !$comment->is_pinned;
+            $comment->pinned_at = $comment->is_pinned ? now() : null;
+            $comment->save();
 
         // Get updated comments
-        $pinnedComments = Comment::with(['user', 'replies.user', 'reactions'])
+        $pinnedComments = Comment::with(['user', 'story', 'replies.user', 'reactions'])
             ->where('story_id', $comment->story_id)
             ->whereNull('reply_id')
             ->where('is_pinned', true)
@@ -150,7 +172,7 @@ class CommentController extends Controller
             ->latest('pinned_at')
             ->get();
 
-        $regularComments = Comment::with(['user', 'replies.user', 'reactions'])
+        $regularComments = Comment::with(['user', 'story', 'replies.user', 'reactions'])
             ->where('story_id', $comment->story_id)
             ->whereNull('reply_id')
             ->where('is_pinned', false)
@@ -158,14 +180,26 @@ class CommentController extends Controller
             ->latest()
             ->paginate(10);
 
-        $html = view('components.comments-list', compact('pinnedComments', 'regularComments'))->render();
+            $html = view('components.comments-list', compact('pinnedComments', 'regularComments'))->render();
 
-        return response()->json([
-            'status' => 'success',
-            'message' => $comment->is_pinned ? 'Đã ghim bình luận' : 'Đã bỏ ghim bình luận',
-            'is_pinned' => $comment->is_pinned,
-            'html' => $html
-        ]);
+            return response()->json([
+                'status' => 'success',
+                'message' => $comment->is_pinned ? 'Đã ghim bình luận' : 'Đã bỏ ghim bình luận',
+                'is_pinned' => $comment->is_pinned,
+                'html' => $html
+            ], 200, ['Content-Type' => 'application/json']);
+        } catch (\Exception $e) {
+            Log::error('Pin comment error: ' . $e->getMessage(), [
+                'comment_id' => $commentId,
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Có lỗi xảy ra: ' . $e->getMessage()
+            ], 500, ['Content-Type' => 'application/json']);
+        }
     }
 
     public function deleteComment($comment)
