@@ -62,12 +62,96 @@ class Chapter extends Model
         return $query->where('status', 'draft');
     }
 
+    /**
+     * Mã hóa mật khẩu chương sử dụng key riêng
+     */
+    private function encryptPassword($password)
+    {
+        $key = config('chapter.password_key');
+        if (empty($key)) {
+            throw new \Exception('CHAPTER_PASSWORD_KEY chưa được cấu hình trong .env');
+        }
+        
+        $cipher = config('chapter.cipher', 'AES-256-CBC');
+        $ivLength = openssl_cipher_iv_length($cipher);
+        $iv = openssl_random_pseudo_bytes($ivLength);
+        $encrypted = openssl_encrypt($password, $cipher, $key, 0, $iv);
+        
+        return base64_encode($iv . $encrypted);
+    }
+    
+    /**
+     * Giải mã mật khẩu chương
+     */
+    private function decryptPassword($encrypted)
+    {
+        $key = config('chapter.password_key');
+        if (empty($key)) {
+            throw new \Exception('CHAPTER_PASSWORD_KEY chưa được cấu hình trong .env');
+        }
+        
+        $cipher = config('chapter.cipher', 'AES-256-CBC');
+        
+        try {
+            $data = base64_decode($encrypted);
+            if ($data === false) {
+                // Có thể là mật khẩu cũ chưa được encrypt (plain text)
+                return $encrypted;
+            }
+            
+            $ivLength = openssl_cipher_iv_length($cipher);
+            if (strlen($data) < $ivLength) {
+                // Có thể là mật khẩu cũ chưa được encrypt (plain text)
+                return $encrypted;
+            }
+            
+            $iv = substr($data, 0, $ivLength);
+            $encryptedData = substr($data, $ivLength);
+            $decrypted = openssl_decrypt($encryptedData, $cipher, $key, 0, $iv);
+            
+            if ($decrypted === false) {
+                // Giải mã thất bại, có thể là mật khẩu cũ (plain text)
+                return $encrypted;
+            }
+            
+            return $decrypted;
+        } catch (\Exception $e) {
+            // Giải mã lỗi, trả về nguyên bản (có thể là plain text)
+            return $encrypted;
+        }
+    }
+    
     public function checkPassword($password)
     {
         if (empty($this->password)) {
             return false;
         }
-        return Hash::check($password, $this->password);
+        
+        try {
+            // Giải mã mật khẩu đã lưu và so sánh
+            $decryptedPassword = $this->decryptPassword($this->password);
+            return $password === $decryptedPassword;
+        } catch (\Exception $e) {
+            // Nếu giải mã lỗi (có thể là mật khẩu cũ chưa được encrypt), fallback về so sánh trực tiếp
+            return $password === $this->password;
+        }
+    }
+    
+    /**
+     * Lấy mật khẩu đã giải mã
+     */
+    public function getDecryptedPassword()
+    {
+        if (empty($this->password)) {
+            return null;
+        }
+        
+        try {
+            return $this->decryptPassword($this->password);
+        } catch (\Exception $e) {
+            // Nếu giải mã lỗi (có thể là mật khẩu cũ chưa được encrypt), trả về nguyên bản
+            return $this->password;
+        }
     }
 
     public function purchases()

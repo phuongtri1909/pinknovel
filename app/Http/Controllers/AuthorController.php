@@ -18,6 +18,65 @@ use Illuminate\Support\Facades\Storage;
 
 class AuthorController extends Controller
 {
+    /**
+     * Mã hóa mật khẩu chương sử dụng key riêng
+     */
+    private function encryptChapterPassword($password)
+    {
+        $key = config('chapter.password_key');
+        if (empty($key)) {
+            throw new \Exception('CHAPTER_PASSWORD_KEY chưa được cấu hình trong .env');
+        }
+        
+        $cipher = config('chapter.cipher', 'AES-256-CBC');
+        $ivLength = openssl_cipher_iv_length($cipher);
+        $iv = openssl_random_pseudo_bytes($ivLength);
+        $encrypted = openssl_encrypt($password, $cipher, $key, 0, $iv);
+        
+        return base64_encode($iv . $encrypted);
+    }
+    
+    /**
+     * Giải mã mật khẩu chương
+     */
+    private function decryptChapterPassword($encrypted)
+    {
+        $key = config('chapter.password_key');
+        if (empty($key)) {
+            throw new \Exception('CHAPTER_PASSWORD_KEY chưa được cấu hình trong .env');
+        }
+        
+        $cipher = config('chapter.cipher', 'AES-256-CBC');
+        
+        try {
+            $data = base64_decode($encrypted);
+            if ($data === false) {
+                // Có thể là mật khẩu cũ chưa được encrypt (plain text)
+                return $encrypted;
+            }
+            
+            $ivLength = openssl_cipher_iv_length($cipher);
+            if (strlen($data) < $ivLength) {
+                // Có thể là mật khẩu cũ chưa được encrypt (plain text)
+                return $encrypted;
+            }
+            
+            $iv = substr($data, 0, $ivLength);
+            $encryptedData = substr($data, $ivLength);
+            $decrypted = openssl_decrypt($encryptedData, $cipher, $key, 0, $iv);
+            
+            if ($decrypted === false) {
+                // Giải mã thất bại, có thể là mật khẩu cũ (plain text)
+                return $encrypted;
+            }
+            
+            return $decrypted;
+        } catch (\Exception $e) {
+            // Giải mã lỗi, trả về nguyên bản (có thể là plain text)
+            return $encrypted;
+        }
+    }
+    
     // Hiển thị danh sách truyện của tác giả
     public function index()
     {
@@ -731,7 +790,7 @@ class AuthorController extends Controller
                 'updated_content_at' => now(),
                 'is_free' => $request->is_free,
                 'price' => !$request->is_free ? $request->price : null,
-                'password' => ($request->is_free && $request->has_password) ? bcrypt($request->password) : null,
+                'password' => ($request->is_free && $request->has_password) ? $this->encryptChapterPassword($request->password) : null,
                 'password_hint' => ($request->is_free && $request->has_password) ? $request->password_hint : null,
                 'scheduled_publish_at' => $scheduledPublishAt,
             ]);
@@ -884,7 +943,7 @@ class AuthorController extends Controller
             $userId = Auth::id();
             $isFree = $request->is_free;
             $hasPassword = $request->has_password;
-            $password = $hasPassword && $isFree ? bcrypt($request->password) : null;
+            $password = $hasPassword && $isFree ? $this->encryptChapterPassword($request->password) : null;
 
             $successCount = 0;
 
@@ -1071,9 +1130,9 @@ class AuthorController extends Controller
             $password = null;
 
             if ($passwordUpdate) {
-                // Nếu mật khẩu được nhập, mã hóa mật khẩu mới
+                // Nếu mật khẩu được nhập, mã hóa và lưu mật khẩu mới
                 if (!empty($request->password)) {
-                    $password = bcrypt($request->password);
+                    $password = $this->encryptChapterPassword($request->password);
                 }
                 // Nếu không nhập mật khẩu mới, giữ lại mật khẩu cũ
                 else if (!empty($chapter->password)) {

@@ -256,18 +256,15 @@
                             <label for="password" class="form-label">Mật khẩu chương <span
                                     class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                <input type="text" class="form-control @error('password') is-invalid @enderror"
                                     id="password" name="password"
-                                    placeholder="{{ !empty($chapter->password) ? '********' : '' }}">
-                                <span class="input-group-text toggle-password" onclick="togglePasswordVisibility()">
-                                    <i class="fas fa-eye"></i>
-                                </span>
+                                    value="{{ old('password', $chapter->getDecryptedPassword() ?? '') }}"
+                                    placeholder="{{ !empty($chapter->password) ? 'Nhập mật khẩu mới hoặc để giữ nguyên' : 'Nhập mật khẩu' }}">
                             </div>
                             @if (!empty($chapter->password))
                                 <div class="form-text text-muted">
-                                    <i class="fas fa-info-circle me-1"></i> Chương này đã có mật khẩu. Để giữ nguyên mật
-                                    khẩu hiện
-                                    tại, hãy để trống trường này.
+                                    <i class="fas fa-info-circle me-1"></i> Mật khẩu hiện tại: <strong>{{ $chapter->getDecryptedPassword() }}</strong>. 
+                                    Bạn có thể thay đổi hoặc giữ nguyên.
                                 </div>
                             @else
                                 <div class="form-text text-muted">Người đọc cần nhập đúng mật khẩu để xem chương này.</div>
@@ -404,20 +401,6 @@
             }
         }
 
-        function togglePasswordVisibility() {
-            var passwordField = document.getElementById('password');
-            var icon = document.querySelector('.toggle-password i');
-
-            if (passwordField.type === 'password') {
-                passwordField.type = 'text';
-                icon.classList.remove('fa-eye');
-                icon.classList.add('fa-eye-slash');
-            } else {
-                passwordField.type = 'password';
-                icon.classList.remove('fa-eye-slash');
-                icon.classList.add('fa-eye');
-            }
-        }
 
         function toggleScheduleField() {
             var enableSchedule = $('#enableSchedule').is(':checked');
