@@ -51,6 +51,7 @@ use App\Http\Controllers\Admin\AdminGuideController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+
 Route::get('/_test_cache', function () {
     return 'Time: ' . time() . ' | Path: ' . base_path();
 });
@@ -61,11 +62,7 @@ Route::get('/sitemap-stories.xml', [SitemapController::class, 'stories'])->name(
 Route::get('/sitemap-chapters.xml', [SitemapController::class, 'chapters'])->name('sitemap.chapters');
 Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories'])->name('sitemap.categories');
 
-Route::get('/contact', [PageController::class, 'contact'])->name('contact');
-Route::get('/privacy-policy', [PageController::class, 'privacyPolicy'])->name('privacy-policy');
-Route::get('/terms', [PageController::class, 'terms'])->name('terms');
-Route::get('/content-rules', [PageController::class, 'contentRules'])->name('content-rules');
-Route::get('/confidental', [PageController::class, 'confidental'])->name('confidental');
+
 
 
 Route::post('/card-deposit/callback', [CardDepositController::class, 'callback'])->name('card.deposit.callback');
@@ -74,9 +71,15 @@ Route::post('/card-deposit/callback', [CardDepositController::class, 'callback']
 // Route::get('/check-card', [CardDepositController::class, 'checkCardForm'])->name('check.card.form');
 // Route::post('/check-card', [CardDepositController::class, 'checkCard'])->name('check.card');
 
-Route::group(['middleware' => 'check.ip.ban'], function () {
+Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
     Route::middleware(['check.ban:ban_login'])->group(function () {
         Route::get('/', [HomeController::class, 'index'])->name('home');
+
+        Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+        Route::get('/privacy-policy', [PageController::class, 'privacyPolicy'])->name('privacy-policy');
+        Route::get('/terms', [PageController::class, 'terms'])->name('terms');
+        Route::get('/content-rules', [PageController::class, 'contentRules'])->name('content-rules');
+        Route::get('/confidental', [PageController::class, 'confidental'])->name('confidental');
 
         Route::get('/search', [HomeController::class, 'searchHeader'])->name('searchHeader');
         Route::get('/tac-gia', [HomeController::class, 'searchAuthor'])->name('search.author');
@@ -406,5 +409,3 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
         });
     });
 });
-
-

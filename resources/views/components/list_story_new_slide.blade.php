@@ -446,7 +446,6 @@
                             }
                         }
                     });
-                    console.log('Desktop Swiper initialized successfully');
                     } else {
                         console.log('Desktop Swiper element not found');
                     }

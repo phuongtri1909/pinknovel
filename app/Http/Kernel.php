@@ -41,7 +41,7 @@ class Kernel extends HttpKernel
 
         'api' => [
             // \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
         ],
     ];
@@ -69,11 +69,14 @@ class Kernel extends HttpKernel
         'check.ban' => \App\Http\Middleware\CheckBan::class,
         'chapter.api' => \App\Http\Middleware\ChapterApiKey::class,
         'affiliate.redirect' => \App\Http\Middleware\AffiliateRedirect::class,
-        
+
         // Các alias cũ giữ lại để tương thích ngược
         'role.admin' => \App\Http\Middleware\RoleAdmin::class,
-        'role.admin.user' => \App\Http\Middleware\RoleAdminUser::class, 
+        'role.admin.user' => \App\Http\Middleware\RoleAdminUser::class,
         'role.user' => \App\Http\Middleware\RoleUser::class,
         'role.admin.mod' => \App\Http\Middleware\RoleAdminMod::class,
+
+        'block.devtools' => \App\Http\Middleware\BlockDevTools::class,
+        'block.devtools.admin' => \App\Http\Middleware\BlockDevToolsAdmin::class,
     ];
 }
