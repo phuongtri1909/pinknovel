@@ -15,6 +15,8 @@ use App\Models\Socials;
 use App\Models\Category;
 use App\Models\StoryPurchase;
 use App\Models\ChapterPurchase;
+use App\Models\Guide;
+use App\Observers\GuideObserver;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
@@ -43,6 +45,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // Register Guide Observer
+        Guide::observe(GuideObserver::class);
 
         // Composer cho categories - chỉ load khi cần
         View::composer([

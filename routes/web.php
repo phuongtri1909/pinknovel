@@ -39,6 +39,7 @@ use App\Http\Controllers\Admin\BankController as AdminBankController;
 use App\Http\Controllers\Admin\CardDepositController as AdminCardDepositController;
 use App\Http\Controllers\Admin\PaypalDepositController as AdminPaypalDepositController;
 use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
+use App\Http\Controllers\Admin\AdminGuideController;
 
 /*
 |--------------------------------------------------------------------------
@@ -109,7 +110,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
         Route::get('/stories/{storyId}/comments', [CommentController::class, 'loadComments'])->name('comments.load');
 
         // Guide routes
-        Route::get('/huong-dan', [GuideController::class, 'show'])->name('guide.show');
+        Route::get('/huong-dan', [GuideController::class, 'index'])->name('guide.index');
+        Route::get('/huong-dan/{slug}', [GuideController::class, 'show'])->name('guide.show');
 
         Route::group(['prefix' => 'user', 'as' => 'user.', 'middleware' => 'auth'], function () {
             Route::get('profile', [UserController::class, 'userProfile'])->name('profile');
@@ -356,8 +358,8 @@ Route::group(['middleware' => 'check.ip.ban'], function () {
                         Route::post('/edit-requests/{editRequest}/reject', [AdminStoryEditRequestController::class, 'reject'])->name('edit-requests.reject');
 
                         // Guide management
-                        Route::get('/guide/edit', [GuideController::class, 'edit'])->name('guide.edit');
-                        Route::post('/guide/update', [GuideController::class, 'update'])->name('guide.update');
+                        Route::resource('guides', AdminGuideController::class);
+                        Route::post('/guides/upload-image', [AdminGuideController::class, 'uploadImage'])->name('guides.upload-image');
 
                         // Withdrawal management
                         Route::get('/withdrawals', [WithdrawalController::class, 'adminIndex'])->name('withdrawals.index');

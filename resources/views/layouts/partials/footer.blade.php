@@ -31,7 +31,7 @@
                         <a href="{{ route('terms') }}">Điều khoản sử dụng</a>
                         <a href="{{ route('content-rules') }}">Quy tắc nội dung</a>
                         <a href="{{ route('confidental') }}">Bảo mật thông tin</a>
-                        <a href="{{ route('guide.show') }}">Hướng Dẫn</a>
+                        <a href="{{ route('guide.index') }}">Hướng Dẫn</a>
                     </div>
 
                     <div class="py-3">

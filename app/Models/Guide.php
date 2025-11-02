@@ -11,6 +11,7 @@ class Guide extends Model
 
     protected $fillable = [
         'title',
+        'slug',
         'content',
         'meta_description',
         'meta_keywords',

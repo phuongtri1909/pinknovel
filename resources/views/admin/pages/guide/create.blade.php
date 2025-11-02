@@ -1,6 +1,6 @@
 @extends('admin.layouts.app')
 
-@section('title', 'Chỉnh sửa Hướng dẫn')
+@section('title', 'Thêm hướng dẫn mới')
 
 @section('content-auth')
     <div class="row">
@@ -8,7 +8,7 @@
             <div class="card mb-4">
                 <div class="card-header pb-0">
                     <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-                        <h6 class="mb-0">Chỉnh sửa hướng dẫn: <span class="d-none d-md-inline">{{ $guide->title }}</span><span class="d-md-none">{{ Str::limit($guide->title, 20) }}</span></h6>
+                        <h6 class="mb-0">Thêm hướng dẫn mới</h6>
                         <a href="{{ route('admin.guides.index') }}" class="btn btn-secondary btn-sm">
                             <i class="fas fa-arrow-left me-2"></i><span class="d-none d-md-inline">Quay lại</span><span class="d-md-none">Quay lại</span>
                         </a>
@@ -17,29 +17,19 @@
                 <div class="card-body">
                     @include('admin.pages.components.success-error')
 
-                    <form action="{{ route('admin.guides.update', $guide) }}" method="POST">
+                    <form action="{{ route('admin.guides.store') }}" method="POST">
                         @csrf
-                        @method('PUT')
                         <div class="form-group mb-3">
                             <label for="title" class="form-control-label">Tiêu đề <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title', $guide->title) }}" required>
+                            <input type="text" class="form-control @error('title') is-invalid @enderror" id="title" name="title" value="{{ old('title') }}" required>
                             @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         
                         <div class="form-group mb-3">
-                            <label for="slug" class="form-control-label">Slug</label>
-                            <input type="text" class="form-control @error('slug') is-invalid @enderror" id="slug" name="slug" value="{{ old('slug', $guide->slug) }}" placeholder="Để trống sẽ tự động tạo từ tiêu đề">
-                            @error('slug')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">URL thân thiện, để trống sẽ tự động tạo từ tiêu đề</small>
-                        </div>
-                        
-                        <div class="form-group mb-3">
                             <label for="content" class="form-control-label">Nội dung <span class="text-danger">*</span></label>
-                            <textarea id="content" name="content" class="form-control @error('content') is-invalid @enderror" required>{{ old('content', $guide->content) }}</textarea>
+                            <textarea id="content" name="content" class="form-control @error('content') is-invalid @enderror" required>{{ old('content') }}</textarea>
                             @error('content')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -47,7 +37,7 @@
                         
                         <div class="form-group mb-3">
                             <label for="meta_description" class="form-control-label">Mô tả meta (SEO)</label>
-                            <input type="text" class="form-control @error('meta_description') is-invalid @enderror" id="meta_description" name="meta_description" value="{{ old('meta_description', $guide->meta_description) }}">
+                            <input type="text" class="form-control @error('meta_description') is-invalid @enderror" id="meta_description" name="meta_description" value="{{ old('meta_description') }}">
                             @error('meta_description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -55,20 +45,20 @@
                         
                         <div class="form-group mb-3">
                             <label for="meta_keywords" class="form-control-label">Từ khóa meta (SEO)</label>
-                            <input type="text" class="form-control @error('meta_keywords') is-invalid @enderror" id="meta_keywords" name="meta_keywords" value="{{ old('meta_keywords', $guide->meta_keywords) }}">
+                            <input type="text" class="form-control @error('meta_keywords') is-invalid @enderror" id="meta_keywords" name="meta_keywords" value="{{ old('meta_keywords') }}">
                             @error('meta_keywords')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
                         
                         <div class="form-check mb-3">
-                            <input type="checkbox" class="form-check-input" id="is_published" name="is_published" {{ old('is_published', $guide->is_published) ? 'checked' : '' }}>
+                            <input type="checkbox" class="form-check-input" id="is_published" name="is_published" {{ old('is_published', true) ? 'checked' : '' }}>
                             <label class="form-check-label" for="is_published">Hiển thị</label>
                         </div>
 
                         <div class="d-flex flex-column flex-md-row justify-content-end gap-2 mt-4">
                             <button type="submit" class="btn bg-gradient-primary btn-sm">
-                                <i class="fas fa-save me-2"></i><span class="d-none d-md-inline">Cập nhật hướng dẫn</span><span class="d-md-none">Cập nhật</span>
+                                <i class="fas fa-save me-2"></i><span class="d-none d-md-inline">Lưu hướng dẫn</span><span class="d-md-none">Lưu</span>
                             </button>
                             <a href="{{ route('admin.guides.index') }}" class="btn btn-secondary btn-sm">
                                 <i class="fas fa-times me-2"></i><span class="d-none d-md-inline">Hủy</span><span class="d-md-none">Hủy</span>
@@ -157,4 +147,4 @@
     });
 </script>
 @endpush
- 
+

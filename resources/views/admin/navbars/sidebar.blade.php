@@ -433,8 +433,8 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('admin.guide.*') ? 'active' : '' }}"
-                                href="{{ route('admin.guide.edit') }}" data-menu="guide">
+                            <a class="nav-link {{ request()->routeIs('admin.guides.*') ? 'active' : '' }}"
+                                href="{{ route('admin.guides.index') }}" data-menu="guide">
                                 <div
                                     class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
                                     <i class="fa-solid fa-book text-dark icon-sidebar"></i>
