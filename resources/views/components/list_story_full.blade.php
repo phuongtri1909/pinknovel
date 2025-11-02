@@ -31,7 +31,7 @@
                 </div>
                 <div class="swiper-button-next"></div>
                 <div class="swiper-button-prev"></div>
-
+                <div class="swiper-pagination"></div>
             </div>
         </div>
     </div>
@@ -77,6 +77,15 @@
                 border-radius: 5px;
             }
 
+            .storyFullSwiper .swiper-pagination,
+            .storyFullSwiper.swiper-horizontal > .swiper-pagination-bullets,
+            .storyFullSwiper .swiper-pagination-bullets.swiper-pagination-horizontal,
+            .storyFullSwiper .swiper-pagination-custom,
+            .storyFullSwiper .swiper-pagination-fraction {
+                position: relative !important;
+                bottom: auto !important;
+            }
+
             .story-item {
                 opacity: 0;
                 transform: translateY(20px);
@@ -114,8 +123,8 @@
             new Swiper('.storyFullSwiper', {
                 slidesPerView: 1,
                 spaceBetween: 10,
-                loop: {{ count($completedStories) > 4 ? 'true' : 'false' }},
-                loopFillGroupWithBlank: {{ count($completedStories) > 4 ? 'true' : 'false' }},
+                loop: true,
+                loopFillGroupWithBlank: true,
                 pagination: {
                     el: '.swiper-pagination',
                     clickable: true,
@@ -143,10 +152,10 @@
                         spaceBetween: 20,
                     },
                 },
-                autoplay: {{ count($completedStories) > 1 ? 'true' : 'false' }} ? {
-                    delay: 300000,
+                autoplay: {
+                    delay: 3000,
                     disableOnInteraction: false,
-                } : false,
+                },
                 speed: 800,
                 effect: "slide",
             });

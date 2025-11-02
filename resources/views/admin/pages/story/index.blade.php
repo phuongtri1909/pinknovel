@@ -30,7 +30,7 @@
 
                         <!-- Featured filter -->
                         <select name="featured" class="form-select form-select-sm">
-                            <option value="">- Đề cử -</option>
+                            <option value="">- Tất cả -</option>
                             <option value="1" {{ request('featured') == '1' ? 'selected' : '' }}>Đề cử</option>
                             <option value="0" {{ request('featured') == '0' ? 'selected' : '' }}>Thường</option>
                         </select>

@@ -3,9 +3,9 @@
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center pt-1 pb-3 rounded-top-custom">
             <h2 class="fs-5 m-0 text-dark fw-bold title-dark"><i class="fa-solid fa-check-circle" style="color: #57f17d"></i> Đề xuất</h2>
-            <div>
+            {{-- <div>
                 <a class="color-3 text-decoration-none" href="">Xem tất cả <i class="fa-regular fa-square-plus"></i></a>
-            </div>
+            </div> --}}
         </div>
 
         <!-- Stories Slider -->
@@ -80,6 +80,15 @@
                 opacity: 0;
                 transform: translateY(20px);
                 animation: fadeInUp 0.6s ease forwards;
+            }
+
+            .storyFullSwiper .swiper-pagination,
+            .storyFullSwiper.swiper-horizontal > .swiper-pagination-bullets,
+            .storyFullSwiper .swiper-pagination-bullets.swiper-pagination-horizontal,
+            .storyFullSwiper .swiper-pagination-custom,
+            .storyFullSwiper .swiper-pagination-fraction {
+                position: relative !important;
+                bottom: auto !important;
             }
 
             /* Dark mode styles for list_story_de_xuat component */
