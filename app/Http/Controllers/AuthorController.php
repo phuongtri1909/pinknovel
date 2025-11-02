@@ -744,7 +744,7 @@ class AuthorController extends Controller
             'password' => 'nullable|required_if:has_password,1|string|max:50',
             'password_hint' => 'nullable|string|max:500',
             'has_password' => 'required_if:is_free,1|boolean',
-            'scheduled_publish_at' => 'nullable|date|after:now',
+            'scheduled_publish_at' => 'nullable|date',
             'status' => 'required|in:draft,published',
         ], [
             'title.required' => 'Tên chương không được để trống',
@@ -759,25 +759,23 @@ class AuthorController extends Controller
             'price.min' => 'Giá xu phải lớn hơn 0',
             'password.required_if' => 'Vui lòng nhập mật khẩu cho chương',
             'scheduled_publish_at.date' => 'Thời gian hẹn giờ không hợp lệ',
-            'scheduled_publish_at.after' => 'Thời gian hẹn giờ phải sau thời điểm hiện tại',
             'status.required' => 'Vui lòng chọn trạng thái chương',
         ]);
 
         try {
-            // Tạo slug dự kiến để kiểm tra trùng lặp
             $proposedSlug = 'chuong-' . $request->number . '-' . Str::slug(Str::limit($request->title, 100));
 
-            // Kiểm tra xem slug đã tồn tại chưa
             if ($story->chapters()->where('slug', $proposedSlug)->exists()) {
                 return redirect()->back()
                     ->with('error', 'Tiêu đề chương này tạo ra slug đã tồn tại. Vui lòng sử dụng tiêu đề khác.')
                     ->withInput();
             }
 
-            // Chỉ sử dụng scheduled_publish_at khi status là draft
             $scheduledPublishAt = null;
-            if ($request->status == 'draft' && $request->has('scheduled_publish_at')) {
-                $scheduledPublishAt = $request->scheduled_publish_at;
+            
+            if ($request->status == 'draft' && !empty($request->scheduled_publish_at)) {
+                $scheduledTime = Carbon::createFromFormat('Y-m-d\TH:i', $request->scheduled_publish_at, 'Asia/Ho_Chi_Minh');
+                $scheduledPublishAt = $scheduledTime->format('Y-m-d H:i:s');
             }
 
             $chapter = $story->chapters()->create([
@@ -879,17 +877,18 @@ class AuthorController extends Controller
                 ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
         }
 
+        $now = now('Asia/Ho_Chi_Minh');
         $request->validate([
             'batch_content' => 'required',
             'is_free' => 'required|boolean',
             'price' => 'required_if:is_free,0|nullable|integer|min:1',
             'password' => 'nullable|required_if:has_password,1|string|max:50',
             'has_password' => 'required_if:is_free,1|boolean',
-            'scheduled_publish_at' => 'nullable|date|after:now',
-            'hours_interval' => 'nullable|numeric|min:0|max:168', // Tối đa 1 tuần
+            'scheduled_publish_at' => 'nullable|date',
+            'hours_interval' => 'nullable|numeric|min:0|max:168',
             'status' => 'required|in:draft,published',
             'chapter_schedules' => 'nullable|array',
-            'chapter_schedules.*' => 'nullable|date|after:now',
+            'chapter_schedules.*' => 'nullable|date',
         ], [
             'batch_content.required' => 'Nội dung các chương không được để trống',
             'is_free.required' => 'Vui lòng chọn hình thức chương',
@@ -898,13 +897,11 @@ class AuthorController extends Controller
             'price.min' => 'Giá xu phải lớn hơn 0',
             'password.required_if' => 'Vui lòng nhập mật khẩu cho chương',
             'scheduled_publish_at.date' => 'Thời gian hẹn giờ không hợp lệ',
-            'scheduled_publish_at.after' => 'Thời gian hẹn giờ phải sau thời điểm hiện tại',
             'hours_interval.numeric' => 'Khoảng cách giờ phải là số',
             'hours_interval.min' => 'Khoảng cách giờ phải lớn hơn hoặc bằng 0',
             'hours_interval.max' => 'Khoảng cách giờ không được quá 168 giờ (1 tuần)',
             'status.required' => 'Vui lòng chọn trạng thái chương',
             'chapter_schedules.*.date' => 'Thời gian hẹn giờ không hợp lệ',
-            'chapter_schedules.*.after' => 'Thời gian hẹn giờ phải sau thời điểm hiện tại',
         ]);
 
         $chapters = $this->parseChaptersFromBatchContent($request->batch_content);
@@ -963,32 +960,26 @@ class AuthorController extends Controller
             foreach ($chapters as $index => $chapter) {
                 $slug = $this->generateUniqueSlug($story->id, $chapter['number'], $chapter['title'], $existingSlugs);
 
-                $scheduleDate = null;
-                $chapterStatus = $request->status;
-
-                // Kiểm tra xem chương có lịch riêng không
+                $finalScheduleDate = null;
+                
                 if (isset($chapterSchedules[$chapter['number']]) && !empty($chapterSchedules[$chapter['number']])) {
-                    // Có lịch riêng
-                    $scheduleDate = $chapterSchedules[$chapter['number']];
-                    $chapterStatus = 'draft';
+                    $scheduleTime = Carbon::createFromFormat('Y-m-d\TH:i', $chapterSchedules[$chapter['number']], 'Asia/Ho_Chi_Minh');
+                    $finalScheduleDate = $scheduleTime->format('Y-m-d H:i:s');
                 } elseif ($request->status == 'draft' && $baseScheduleTime) {
-                    // Không có lịch riêng, tính toán dựa trên thời gian cơ sở và khoảng cách
                     if ($hoursInterval && $hoursInterval > 0) {
-                        // Tìm vị trí của chương này trong danh sách các chương không có lịch riêng
                         $positionInList = array_search($chapter['number'], $chaptersWithoutCustomSchedule);
                         if ($positionInList !== false) {
-                            // Tính toán thời gian = thời gian cơ sở + (vị trí * khoảng cách giờ)
-                            $baseTime = new \DateTime($baseScheduleTime);
-                            $additionalHours = $positionInList * $hoursInterval;
-                            $baseTime->add(new \DateInterval('PT' . ($additionalHours * 60) . 'M'));
-                            $scheduleDate = $baseTime->format('Y-m-d H:i:s');
+                            $baseTime = Carbon::createFromFormat('Y-m-d\TH:i', $baseScheduleTime, 'Asia/Ho_Chi_Minh');
+                            $baseTime->addHours($positionInList * $hoursInterval);
+                            $scheduleTime = $baseTime;
                         } else {
-                            $scheduleDate = $baseScheduleTime;
+                            $scheduleTime = Carbon::createFromFormat('Y-m-d\TH:i', $baseScheduleTime, 'Asia/Ho_Chi_Minh');
                         }
                     } else {
-                        // Không có khoảng cách giờ, tất cả đều dùng thời gian cơ sở
-                        $scheduleDate = $baseScheduleTime;
+                        $scheduleTime = Carbon::createFromFormat('Y-m-d\TH:i', $baseScheduleTime, 'Asia/Ho_Chi_Minh');
                     }
+                    
+                    $finalScheduleDate = $scheduleTime->format('Y-m-d H:i:s');
                 }
 
                 $story->chapters()->create([
@@ -996,13 +987,13 @@ class AuthorController extends Controller
                     'title' => $chapter['title'],
                     'content' => $chapter['content'],
                     'number' => $chapter['number'],
-                    'status' => $chapterStatus,
+                    'status' => $request->status,
                     'user_id' => $userId,
                     'updated_content_at' => now(),
                     'is_free' => $isFree,
                     'price' => $isFree ? null : $request->price,
                     'password' => $password,
-                    'scheduled_publish_at' => $scheduleDate,
+                    'scheduled_publish_at' => $finalScheduleDate,
                 ]);
 
                 $existingNumbers[] = $chapter['number'];
@@ -1065,6 +1056,7 @@ class AuthorController extends Controller
 
         $chapter = $story->chapters()->findOrFail($chapterId);
 
+        $now = now('Asia/Ho_Chi_Minh');
         $request->validate([
             'title' => 'nullable|max:255',
             'content' => 'required',
@@ -1083,7 +1075,6 @@ class AuthorController extends Controller
             ],
             'is_free' => 'required|boolean',
             'price' => 'required_if:is_free,0|nullable|integer|min:1',
-            // Thay đổi validation rule cho mật khẩu
             'password' => [
                 'nullable',
                 function ($attribute, $value, $fail) use ($request, $chapter) {
@@ -1096,7 +1087,18 @@ class AuthorController extends Controller
             ],
             'password_hint' => 'nullable|string|max:500',
             'has_password' => 'required_if:is_free,1|boolean',
-            'scheduled_publish_at' => 'nullable|date|after:now',
+            'scheduled_publish_at' => [
+                'nullable',
+                'date',
+                function ($attribute, $value, $fail) use ($now) {
+                    if (!empty($value)) {
+                        $scheduledTime = Carbon::parse($value, 'Asia/Ho_Chi_Minh');
+                        if ($scheduledTime->lte($now)) {
+                            $fail('Thời gian hẹn giờ phải sau thời điểm hiện tại (' . $now->format('d/m/Y H:i') . ')');
+                        }
+                    }
+                },
+            ],
             'status' => 'required|in:draft,published',
         ], [
             'title.required' => 'Tên chương không được để trống',
@@ -1111,7 +1113,6 @@ class AuthorController extends Controller
             'price.min' => 'Giá xu phải lớn hơn 0',
             'password.required_if' => 'Vui lòng nhập mật khẩu cho chương',
             'scheduled_publish_at.date' => 'Thời gian hẹn giờ không hợp lệ',
-            'scheduled_publish_at.after' => 'Thời gian hẹn giờ phải sau thời điểm hiện tại',
             'status.required' => 'Vui lòng chọn trạng thái chương',
         ]);
 
@@ -1130,20 +1131,19 @@ class AuthorController extends Controller
             $password = null;
 
             if ($passwordUpdate) {
-                // Nếu mật khẩu được nhập, mã hóa và lưu mật khẩu mới
                 if (!empty($request->password)) {
                     $password = $this->encryptChapterPassword($request->password);
                 }
-                // Nếu không nhập mật khẩu mới, giữ lại mật khẩu cũ
                 else if (!empty($chapter->password)) {
                     $password = $chapter->password;
                 }
             }
 
-            // Chỉ sử dụng scheduled_publish_at khi status là draft
             $scheduledPublishAt = null;
-            if ($request->status == 'draft' && $request->has('scheduled_publish_at')) {
-                $scheduledPublishAt = $request->scheduled_publish_at;
+            
+            if ($request->status == 'draft' && !empty($request->scheduled_publish_at)) {
+                $scheduledTime = Carbon::createFromFormat('Y-m-d\TH:i', $request->scheduled_publish_at, 'Asia/Ho_Chi_Minh');
+                $scheduledPublishAt = $scheduledTime->format('Y-m-d H:i:s');
             }
 
             $chapter->update([
@@ -2116,3 +2116,4 @@ class AuthorController extends Controller
         return response()->json($storyRevenueStats);
     }
 }
+

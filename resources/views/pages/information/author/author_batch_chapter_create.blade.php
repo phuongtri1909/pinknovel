@@ -209,56 +209,91 @@ Nội dung chương 2 ở đây...
                     <h5 class="mb-3">Tùy chọn</h5>
 
                     <div class="row">
-                        <div class="col-12 col-md-4 row">
-                            <div class="col-12">
-                                <!-- Hình thức chương -->
+                        <!-- Cột trái: Hình thức chương + Giá/Mật khẩu -->
+                        <div class="col-12 col-md-6">
+                            <!-- Hình thức chương -->
+                            <div class="mb-3">
+                                <label class="form-label">Hình thức chương <span class="text-danger">*</span></label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_free" id="is_free_yes"
+                                        value="1" {{ old('is_free', '1') == '1' ? 'checked' : '' }}
+                                        onchange="togglePricingOptions()">
+                                    <label class="form-check-label" for="is_free_yes">
+                                        <i class="fas fa-unlock text-success me-1"></i> Miễn phí
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="is_free" id="is_free_no"
+                                        value="0" {{ old('is_free') == '0' ? 'checked' : '' }}
+                                        onchange="togglePricingOptions()">
+                                    <label class="form-check-label" for="is_free_no">
+                                        <i class="fas fa-coins text-warning me-1"></i> Có phí
+                                    </label>
+                                </div>
+                                @error('is_free')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <!-- Giá chương (hiển thị khi chọn Có phí) -->
+                            <div class="pricing-options mb-3" id="pricingOptions" style="display: none;">
+                                <label for="price" class="form-label">Giá chương (Xu) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control @error('price') is-invalid @enderror"
+                                    id="price" name="price" value="{{ old('price', 5) }}" min="1">
+                                <div class="form-text text-muted">Áp dụng cho tất cả chương.</div>
+                                @error('price')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            
+                            <!-- Mật khẩu (hiển thị khi chọn Miễn phí) -->
+                            <div id="passwordOptions">
                                 <div class="mb-3">
-                                    <label class="form-label">Hình thức chương <span class="text-danger">*</span></label>
+                                    <label class="form-label">Các chương có mật khẩu không?</label>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="is_free" id="is_free_yes"
-                                            value="1" {{ old('is_free', '1') == '1' ? 'checked' : '' }}
-                                            onchange="togglePricingOptions()">
-                                        <label class="form-check-label" for="is_free_yes">
-                                            <i class="fas fa-unlock text-success me-1"></i> Miễn phí
+                                        <input class="form-check-input" type="radio" name="has_password"
+                                            id="has_password_no" value="0"
+                                            {{ old('has_password', '0') == '0' ? 'checked' : '' }}
+                                            onchange="togglePasswordField()">
+                                        <label class="form-check-label" for="has_password_no">
+                                            <i class="fas fa-lock-open text-success me-1"></i> Không có mật khẩu
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="is_free" id="is_free_no"
-                                            value="0" {{ old('is_free') == '0' ? 'checked' : '' }}
-                                            onchange="togglePricingOptions()">
-                                        <label class="form-check-label" for="is_free_no">
-                                            <i class="fas fa-coins text-warning me-1"></i> Có phí
+                                        <input class="form-check-input" type="radio" name="has_password"
+                                            id="has_password_yes" value="1"
+                                            {{ old('has_password') == '1' ? 'checked' : '' }}
+                                            onchange="togglePasswordField()">
+                                        <label class="form-check-label" for="has_password_yes">
+                                            <i class="fas fa-lock text-warning me-1"></i> Có mật khẩu
                                         </label>
                                     </div>
-                                    @error('is_free')
+                                </div>
+
+                                <div class="mb-3" id="passwordField"
+                                    style="{{ old('has_password') == '1' ? '' : 'display: none;' }}">
+                                    <label for="password" class="form-label">Mật khẩu chương <span class="text-danger">*</span></label>
+                                    <div class="input-group">
+                                        <input type="password"
+                                            class="form-control @error('password') is-invalid @enderror"
+                                            id="password" name="password" value="{{ old('password') }}">
+                                        <span class="input-group-text toggle-password"
+                                            onclick="togglePasswordVisibility()">
+                                            <i class="fas fa-eye"></i>
+                                        </span>
+                                    </div>
+                                    <div class="form-text text-muted">Áp dụng cho tất cả các chương.</div>
+                                    @error('password')
                                         <div class="text-danger small mt-1">{{ $message }}</div>
                                     @enderror
                                 </div>
                             </div>
-
-                            <div class="col-12">
-                                <!-- Giá chương hàng loạt -->
-                                <div class="pricing-options" id="pricingOptions">
-                                    <div class="mb-3">
-                                        <label for="price" class="form-label">Giá chương (Xu) <span
-                                                class="text-danger">*</span></label>
-                                        <input type="number" class="form-control @error('price') is-invalid @enderror"
-                                            id="price" name="price" value="{{ old('price', 5) }}" min="1">
-                                        <div class="form-text text-muted">Áp dụng cho tất cả chương.
-                                        </div>
-                                        @error('price')
-                                            <div class="invalid-feedback">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-
-                        <!-- Tùy chọn xuất bản hàng loạt -->
-                        <div class="col-12 col-md-4">
+                        
+                        <!-- Cột phải: Xuất bản + Hẹn giờ -->
+                        <div class="col-12 col-md-6">
                             <div class="mb-3">
                                 <label class="form-label">Xuất bản chương <span class="text-danger">*</span></label>
-
                                 <div class="form-check mt-2">
                                     <input class="form-check-input" type="radio" name="status" id="status_published"
                                         value="published" {{ old('status','published') == 'published' ? 'checked' : '' }}
@@ -266,9 +301,7 @@ Nội dung chương 2 ở đây...
                                     <label class="form-check-label" for="status_published">
                                         <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
                                     </label>
-
                                 </div>
-
                                 <div class="form-check">
                                     <input class="form-check-input" type="radio" name="status" id="status_draft"
                                         value="draft" {{ old('status') == 'draft' ? 'checked' : '' }}
@@ -276,9 +309,7 @@ Nội dung chương 2 ở đây...
                                     <label class="form-check-label" for="status_draft">
                                         <i class="fas fa-edit text-secondary me-1"></i> Lưu nháp
                                     </label>
-
                                 </div>
-
                             </div>
 
                             <div class="mb-3" id="scheduleOptionsContainer"
@@ -291,25 +322,78 @@ Nội dung chương 2 ở đây...
                                 </label>
                                 <div id="scheduleField"
                                     style="{{ old('scheduled_publish_at') ? '' : 'display: none;' }}">
-                                    <input type="datetime-local"
-                                        class="form-control @error('scheduled_publish_at') is-invalid @enderror"
-                                        id="scheduled_publish_at" name="scheduled_publish_at"
+                                    <!-- Hidden input để lưu giá trị datetime -->
+                                    <input type="hidden" id="scheduled_publish_at" name="scheduled_publish_at"
                                         value="{{ old('scheduled_publish_at') }}">
-                                    <div class="form-text text-muted">Tất cả chương sẽ tự động xuất bản vào thời gian
-                                        đã chọn (trừ khi có lịch riêng).</div>
+                                    
+                                    <div class="mb-2 mt-2">
+                                        <label class="form-label small mb-1">Chương đầu</label>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <!-- Ngày -->
+                                            <select class="form-select form-select-sm" id="schedule_day" style="width: auto; min-width: 80px;">
+                                                <option value="">Ngày</option>
+                                            </select>
+                                            <!-- Tháng -->
+                                            <select class="form-select form-select-sm" id="schedule_month" style="width: auto; min-width: 100px;">
+                                                <option value="">Tháng</option>
+                                                @for($i = 1; $i <= 12; $i++)
+                                                    <option value="{{ $i }}" {{ old('schedule_month', date('n')) == $i ? 'selected' : '' }}>Tháng {{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            <!-- Năm -->
+                                            <select class="form-select form-select-sm" id="schedule_year" style="width: auto; min-width: 90px;">
+                                                <option value="">Năm</option>
+                                                @for($i = date('Y'); $i <= date('Y') + 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('schedule_year', date('Y')) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            <span class="small">lúc</span>
+                                            <!-- Giờ -->
+                                            <select class="form-select form-select-sm" id="schedule_hour" style="width: auto; min-width: 80px;">
+                                                <option value="">Giờ</option>
+                                                @for($i = 0; $i <= 23; $i++)
+                                                    <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}" {{ old('schedule_hour', date('H')) == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+                                                @endfor
+                                            </select>
+                                            <span>:</span>
+                                            <!-- Phút -->
+                                            <select class="form-select form-select-sm" id="schedule_minute" style="width: auto; min-width: 80px;">
+                                                <option value="">Phút</option>
+                                                @for($i = 0; $i <= 59; $i++)
+                                                    <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}" {{ old('schedule_minute', date('i')) == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-text text-muted mb-3">Tất cả chương sẽ tự động xuất bản vào thời gian đã chọn (trừ khi có lịch riêng).</div>
 
-                                    <!-- Thêm input cho khoảng cách giờ -->
-                                    <div class="mt-2">
-                                        <label for="hours_interval" class="form-label">
-                                            Khoảng cách giờ giữa các chương
-                                            <small class="text-muted">(tùy chọn)</small>
-                                        </label>
-                                        <input type="number"
-                                            class="form-control @error('hours_interval') is-invalid @enderror"
-                                            id="hours_interval" name="hours_interval"
-                                            value="{{ old('hours_interval') }}" min="0" step="0.5"
-                                            placeholder="Ví dụ: 2">
-
+                                    <!-- Khoảng cách giữa các chương -->
+                                    <div class="mt-3">
+                                        <label class="form-label small mb-1">Chương tiếp theo</label>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <!-- Hidden input để lưu tổng số giờ -->
+                                            <input type="hidden" id="hours_interval" name="hours_interval" value="{{ old('hours_interval', 0) }}">
+                                            
+                                            <!-- Input số -->
+                                            <input type="number" 
+                                                class="form-control form-control-sm" 
+                                                id="interval_value" 
+                                                style="width: auto; min-width: 100px; max-width: 120px;"
+                                                value="{{ old('interval_value', 0) }}" 
+                                                min="0" 
+                                                step="1"
+                                                placeholder="Nhập số">
+                                            
+                                            <!-- Dropdown đơn vị -->
+                                            <select class="form-select form-select-sm" id="interval_unit" style="width: auto; min-width: 100px;">
+                                                <option value="minute" {{ old('interval_unit', 'hour') == 'minute' ? 'selected' : '' }}>Phút</option>
+                                                <option value="hour" {{ old('interval_unit', 'hour') == 'hour' ? 'selected' : '' }}>Giờ</option>
+                                                <option value="day" {{ old('interval_unit') == 'day' ? 'selected' : '' }}>Ngày</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-text text-danger small mt-1">
+                                            Thời gian chương tiếp theo = Thời gian chương liền kề trước + thời gian này
+                                        </div>
                                         @error('hours_interval')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -320,59 +404,6 @@ Nội dung chương 2 ở đây...
                                 @enderror
                             </div>
                         </div>
-
-                        <!-- Mật khẩu hàng loạt -->
-                        <div class="col-12 col-md-4" id="passwordOptions">
-                            <div class="row">
-                                <div class="col-12">
-                                    <div class="mb-3">
-                                        <label class="form-label">Các chương có mật khẩu không?</label>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="has_password"
-                                                id="has_password_no" value="0"
-                                                {{ old('has_password', '0') == '0' ? 'checked' : '' }}
-                                                onchange="togglePasswordField()">
-                                            <label class="form-check-label" for="has_password_no">
-                                                <i class="fas fa-lock-open text-success me-1"></i> Không có mật khẩu
-                                            </label>
-                                        </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="has_password"
-                                                id="has_password_yes" value="1"
-                                                {{ old('has_password') == '1' ? 'checked' : '' }}
-                                                onchange="togglePasswordField()">
-                                            <label class="form-check-label" for="has_password_yes">
-                                                <i class="fas fa-lock text-warning me-1"></i> Có mật khẩu
-                                            </label>
-                                        </div>
-
-                                    </div>
-                                </div>
-
-                                <div class="col-12">
-                                    <div class="mb-3" id="passwordField"
-                                        style="{{ old('has_password') == '1' ? '' : 'display: none;' }}">
-                                        <label for="password" class="form-label">Mật khẩu chương <span
-                                                class="text-danger">*</span></label>
-                                        <div class="input-group">
-                                            <input type="password"
-                                                class="form-control @error('password') is-invalid @enderror"
-                                                id="password" name="password" value="{{ old('password') }}">
-                                            <span class="input-group-text toggle-password"
-                                                onclick="togglePasswordVisibility()">
-                                                <i class="fas fa-eye"></i>
-                                            </span>
-                                        </div>
-                                        <div class="form-text text-muted">Áp dụng cho tất cả các chương.
-                                        </div>
-                                        @error('password')
-                                            <div class="text-danger small mt-1">{{ $message }}</div>
-                                        @enderror
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                     </div>
 
                 </div>
@@ -457,9 +488,7 @@ Nội dung chương 2 ở đây...
                 }
             });
 
-            // Lắng nghe sự kiện thay đổi nội dung
             editor.on('change', function() {
-                // Cập nhật textarea ẩn với nội dung text thuần túy
                 updatePlainTextContent();
             });
 
@@ -487,7 +516,6 @@ Nội dung chương 2 ở đây...
                 @endforeach
             @endif
 
-            // Function để cập nhật nội dung text thuần túy
             function updatePlainTextContent() {
                 if (editor) {
                     const htmlContent = editor.getData();
@@ -497,37 +525,30 @@ Nội dung chương 2 ở đây...
                 }
             }
 
-            // Function để loại bỏ HTML tags và giữ lại text thuần túy
             function stripHtmlTags(html) {
                 if (!html) return '';
                 
-                // Tạo element tạm để parse HTML
                 const temp = document.createElement('div');
                 temp.innerHTML = html;
                 
-                // Lấy text content và chuẩn hóa
                 let text = temp.textContent || temp.innerText || '';
                 
-                // Chuẩn hóa line breaks và spaces
                 text = text.replace(/\r\n/g, '\n');
                 text = text.replace(/\r/g, '\n');
-                text = text.replace(/\n\s*\n\s*\n/g, '\n\n'); // Loại bỏ nhiều line breaks liên tiếp
-                text = text.replace(/[ \t]+/g, ' '); // Chuẩn hóa spaces
+                text = text.replace(/\n\s*\n\s*\n/g, '\n\n');
+                text = text.replace(/[ \t]+/g, ' ');
                 text = text.trim();
                 
                 return text;
             }
 
-            // Function để decode HTML entities
             function decodeHtmlEntities(text) {
                 const textarea = document.createElement('textarea');
                 textarea.innerHTML = text;
                 return textarea.value;
             }
 
-            // Xử lý xem trước các chương
             $('#btnPreviewChapters').click(function() {
-                // Lấy nội dung từ CKEditor và chuyển thành text thuần túy
                 updatePlainTextContent();
                 const batchContent = $('#batch_content').val();
 
@@ -536,11 +557,9 @@ Nội dung chương 2 ở đây...
                     return;
                 }
 
-                // Hiển thị loading
                 $('#btnPreviewChapters').html('<i class="fas fa-spinner fa-spin me-1"></i> Đang xử lý...');
                 $('#btnPreviewChapters').prop('disabled', true);
 
-                // Phân tích nội dung chương
                 const chapters = parseChaptersFromContent(batchContent);
 
                 if (chapters.length === 0) {
@@ -969,15 +988,31 @@ Nội dung chương 2 ở đây...
 
         function calculateScheduleTimes() {
             const baseTime = $('#scheduled_publish_at').val();
-            const hoursInterval = parseFloat($('#hours_interval').val()) || 0;
+            
+            const intervalValue = parseFloat($('#interval_value').val()) || 0;
+            const intervalUnit = $('#interval_unit').val();
+            
+            let totalIntervalMs = 0;
+            if (intervalValue > 0) {
+                switch(intervalUnit) {
+                    case 'minute':
+                        totalIntervalMs = intervalValue * 60 * 1000;
+                        break;
+                    case 'hour':
+                        totalIntervalMs = intervalValue * 60 * 60 * 1000;
+                        break;
+                    case 'day':
+                        totalIntervalMs = intervalValue * 24 * 60 * 60 * 1000;
+                        break;
+                }
+            }
 
-            if (!baseTime || hoursInterval <= 0) {
+            if (!baseTime || totalIntervalMs <= 0) {
                 $('.calculated-time').text('');
                 return;
             }
 
             const chapters = [];
-            // Lấy danh sách các chương từ preview table
             $('#chaptersPreviewContainer tbody tr').each(function() {
                 const chapterNumber = $(this).find('td:eq(1) strong').text().replace('Chương ', '');
                 const hasCustomSchedule = $(`#enableSchedule_${chapterNumber}`).is(':checked') &&
@@ -988,13 +1023,11 @@ Nội dung chương 2 ở đây...
                 }
             });
 
-            // Sắp xếp theo số chương
             chapters.sort((a, b) => a - b);
 
-            // Tính toán thời gian cho từng chương
             const baseDate = new Date(baseTime);
             chapters.forEach((chapterNumber, index) => {
-                const scheduleTime = new Date(baseDate.getTime() + (index * hoursInterval * 60 * 60 * 1000));
+                const scheduleTime = new Date(baseDate.getTime() + (index * totalIntervalMs));
                 const formattedTime = scheduleTime.toLocaleString('vi-VN', {
                     year: 'numeric',
                     month: '2-digit',
@@ -1008,16 +1041,32 @@ Nội dung chương 2 ở đây...
                 );
             });
         }
-
-        $('#scheduled_publish_at, #hours_interval').on('change input', function() {
-            calculateScheduleTimes();
-        });
+        
+        function updateIntervalHours() {
+            const intervalValue = parseFloat($('#interval_value').val()) || 0;
+            const intervalUnit = $('#interval_unit').val();
+            
+            let totalHours = 0;
+            if (intervalValue > 0) {
+                switch(intervalUnit) {
+                    case 'minute':
+                        totalHours = intervalValue / 60;
+                        break;
+                    case 'hour':
+                        totalHours = intervalValue;
+                        break;
+                    case 'day':
+                        totalHours = intervalValue * 24;
+                        break;
+                }
+            }
+            $('#hours_interval').val(totalHours);
+        }
 
         $(document).on('change', '.chapter-schedule-toggle', function() {
             calculateScheduleTimes();
         });
 
-        // Function to toggle individual chapter schedule
         function toggleChapterSchedule(chapterNumber) {
             const checkbox = $(`#enableSchedule_${chapterNumber}`);
             const scheduleField = $(`#scheduleField_${chapterNumber}`);
@@ -1032,7 +1081,6 @@ Nội dung chương 2 ở đây...
             }
         }
 
-        // Xử lý các hiển thị cho form
         function togglePricingOptions() {
             var isFree = $('#is_free_yes').is(':checked');
             if (isFree) {
@@ -1088,22 +1136,156 @@ Nội dung chương 2 ở đây...
             var enableSchedule = $('#enableSchedule').is(':checked');
             if (enableSchedule) {
                 $('#scheduleField').show();
+                updateScheduleDays();
+                updateScheduleDateTime();
             } else {
                 $('#scheduleField').hide();
+                $('#scheduled_publish_at').val('');
             }
         }
+        
+        function updateScheduleDays() {
+            var month = parseInt($('#schedule_month').val());
+            var year = parseInt($('#schedule_year').val());
+            var selectedDay = parseInt($('#schedule_day').val());
+            
+            if (month && year) {
+                var daysInMonth = new Date(year, month, 0).getDate();
+                var $daySelect = $('#schedule_day');
+                var currentValue = $daySelect.val();
+                
+                $daySelect.empty();
+                $daySelect.append('<option value="">Ngày</option>');
+                
+                for (var i = 1; i <= daysInMonth; i++) {
+                    var selected = (currentValue && i == parseInt(currentValue)) || (!currentValue && i == new Date().getDate()) ? 'selected' : '';
+                    $daySelect.append('<option value="' + String(i).padStart(2, '0') + '" ' + selected + '>' + String(i).padStart(2, '0') + '</option>');
+                }
+                
+                if (selectedDay && selectedDay > daysInMonth) {
+                    $daySelect.val('');
+                }
+            }
+        }
+        
+        function updateScheduleDateTime() {
+            var day = $('#schedule_day').val();
+            var month = $('#schedule_month').val();
+            var year = $('#schedule_year').val();
+            var hour = $('#schedule_hour').val();
+            var minute = $('#schedule_minute').val();
+            
+            if (day && month && year && hour !== '' && minute !== '') {
+                var datetime = year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0') + 'T' + String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+                
+                var selectedDate = new Date(datetime);
+                var now = new Date();
+                
+                if (selectedDate <= now) {
+                    now.setMinutes(now.getMinutes() + 1);
+                    var newYear = now.getFullYear();
+                    var newMonth = String(now.getMonth() + 1).padStart(2, '0');
+                    var newDay = String(now.getDate()).padStart(2, '0');
+                    var newHour = String(now.getHours()).padStart(2, '0');
+                    var newMinute = String(now.getMinutes()).padStart(2, '0');
+                    
+                    $('#schedule_day').val(newDay);
+                    $('#schedule_month').val(parseInt(newMonth));
+                    $('#schedule_year').val(newYear);
+                    $('#schedule_hour').val(newHour);
+                    $('#schedule_minute').val(newMinute);
+                    
+                    datetime = newYear + '-' + newMonth + '-' + newDay + 'T' + newHour + ':' + newMinute;
+                }
+                
+                $('#scheduled_publish_at').val(datetime);
+            } else {
+                $('#scheduled_publish_at').val('');
+            }
+        }
+        
+        $(document).ready(function() {
+            var oldDateTime = $('#scheduled_publish_at').val();
+            
+            if (oldDateTime) {
+                var parts = oldDateTime.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+                if (parts) {
+                    $('#schedule_month').val(parseInt(parts[2]));
+                    $('#schedule_year').val(parts[1]);
+                    updateScheduleDays();
+                    $('#schedule_day').val(parts[3]);
+                    $('#schedule_hour').val(parts[4]);
+                    $('#schedule_minute').val(parts[5]);
+                }
+            } else {
+                @php
+                    $now = now('Asia/Ho_Chi_Minh');
+                @endphp
+                $('#schedule_month').val('{{ $now->format('n') }}');
+                $('#schedule_year').val('{{ $now->format('Y') }}');
+                updateScheduleDays();
+                $('#schedule_day').val('{{ $now->format('d') }}');
+                $('#schedule_hour').val('{{ $now->format('H') }}');
+                $('#schedule_minute').val('{{ $now->format('i') }}');
+            }
+            
+            var oldHoursInterval = parseFloat($('#hours_interval').val()) || 0;
+            if (oldHoursInterval > 0) {
+                if (oldHoursInterval >= 24 && oldHoursInterval % 24 === 0) {
+                    $('#interval_value').val(oldHoursInterval / 24);
+                    $('#interval_unit').val('day');
+                }
+                else if (oldHoursInterval >= 1 && oldHoursInterval < 24) {
+                    $('#interval_value').val(Math.floor(oldHoursInterval));
+                    var minutes = Math.round((oldHoursInterval - Math.floor(oldHoursInterval)) * 60);
+                    if (minutes > 0) {
+                        $('#interval_value').val(Math.round(oldHoursInterval * 60));
+                        $('#interval_unit').val('minute');
+                    } else {
+                        $('#interval_unit').val('hour');
+                    }
+                }
+                else if (oldHoursInterval < 1) {
+                    $('#interval_value').val(Math.round(oldHoursInterval * 60));
+                    $('#interval_unit').val('minute');
+                }
+            }
+            
+            updateScheduleDays();
+            updateScheduleDateTime();
+            
+            $('#schedule_month, #schedule_year').on('change', function() {
+                updateScheduleDays();
+                updateScheduleDateTime();
+            });
+            
+            $('#schedule_day, #schedule_hour, #schedule_minute').on('change', function() {
+                updateScheduleDateTime();
+                calculateScheduleTimes();
+            });
+            
+            $('form').on('submit', function() {
+                if ($('#enableSchedule').is(':checked') && $('#status_draft').is(':checked')) {
+                    updateScheduleDateTime();
+                }
+            });
+            
+            $('#interval_value, #interval_unit').on('change input', function() {
+                updateIntervalHours();
+                calculateScheduleTimes();
+            });
+            
+            updateIntervalHours();
+        });
 
         $('#batchChapterForm').on('submit', function(e) {
-            // Cập nhật nội dung text thuần túy trước khi submit
             if (editor) {
                 const htmlContent = editor.getData();
                 const plainText = stripHtmlTags(htmlContent);
                 const decodedText = decodeHtmlEntities(plainText);
                 $('#batch_content').val(decodedText);
                 
-                // Kiểm tra nếu decodedText rỗng nhưng có HTML content
                 if (!decodedText.trim() && htmlContent.trim()) {
-                    // Fallback: sử dụng regex để loại bỏ HTML tags và decode entities
                     const fallbackText = htmlContent.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim();
                     const fallbackDecoded = decodeHtmlEntities(fallbackText);
                     $('#batch_content').val(fallbackDecoded);
@@ -1132,18 +1314,9 @@ Nội dung chương 2 ở đây...
                 return false;
             }
 
-            // Check if chapters were previewed
-            // if ($('#chaptersPreviewContainer').children().length === 0) {
-            //     e.preventDefault();
-            //     showToast('Vui lòng xem trước các chương trước khi lưu.', 'warning');
-            //     $('#btnPreviewChapters').focus();
-            //     return false;
-            // }
-
             return true;
         });
 
-        // Toggle guide visibility
         function toggleGuide() {
             const guideContent = $('#guideContent');
             const icon = $('#guideIcon');

@@ -133,7 +133,8 @@
                     <h5 class="mb-3">Tùy chọn</h5>
 
                     <div class="row">
-                        <div class="col-12 col-md-4">
+                        <!-- Cột trái: Hình thức chương + Giá/Mật khẩu -->
+                        <div class="col-12 col-md-6">
                             <!-- Hình thức chương -->
                             <div class="mb-3">
                                 <label class="form-label">Hình thức chương <span class="text-danger">*</span></label>
@@ -157,73 +158,19 @@
                                     <div class="text-danger small mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
+                            
                             <!-- Giá chương (hiển thị khi chọn Có phí) -->
-                            <div class="pricing-options" id="pricingOptions">
-                                <div class="mb-3">
-                                    <label for="price" class="form-label">Giá chương (Xu) <span
-                                            class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('price') is-invalid @enderror"
-                                        id="price" name="price" value="{{ old('price', 5) }}" min="1">
-                                   
-                                    @error('price')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                            <div class="pricing-options mb-3" id="pricingOptions" style="display: none;">
+                                <label for="price" class="form-label">Giá chương (Xu) <span class="text-danger">*</span></label>
+                                <input type="number" class="form-control @error('price') is-invalid @enderror"
+                                    id="price" name="price" value="{{ old('price', 5) }}" min="1">
+                                @error('price')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
-                        </div>
-                        <div class="col-12 col-md-4">
-                            <!-- Tùy chọn xuất bản -->
-                            <div class="">
-                                <div class="mb-3">
-                                    <label class="form-label">Xuất bản chương <span class="text-danger">*</span></label>
-
-                                    <div class="form-check mt-2">
-                                        <input class="form-check-input" type="radio" name="status"
-                                            id="status_published" value="published"
-                                            {{ old('status') == 'published' ? 'checked' : '' }}
-                                            onchange="toggleScheduleOptions()">
-                                        <label class="form-check-label" for="status_published">
-                                            <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
-                                        </label>
-                                    </div>
-
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="radio" name="status" id="status_draft"
-                                            value="draft" {{ old('status', 'draft') == 'draft' ? 'checked' : '' }}
-                                            onchange="toggleScheduleOptions()">
-                                        <label class="form-check-label" for="status_draft">
-                                            <i class="fas fa-edit text-secondary me-1"></i> Lưu nháp
-                                        </label>
-                                    </div>
-                                    
-                                </div>
-
-                                <div class="mb-3" id="scheduleOptionsContainer"
-                                    style="{{ old('status') == 'published' ? 'display: none;' : '' }}">
-                                    <label class="form-label d-flex align-items-center">
-                                        <input type="checkbox" class="form-check-input me-2" id="enableSchedule"
-                                            onchange="toggleScheduleField()"
-                                            {{ old('scheduled_publish_at') ? 'checked' : '' }}>
-                                        Hẹn giờ xuất bản
-                                    </label>
-                                    <div id="scheduleField"
-                                        style="{{ old('scheduled_publish_at') ? '' : 'display: none;' }}">
-                                        <input type="datetime-local"
-                                            class="form-control @error('scheduled_publish_at') is-invalid @enderror"
-                                            id="scheduled_publish_at" name="scheduled_publish_at"
-                                            value="{{ old('scheduled_publish_at') }}">
-                                        <div class="form-text text-muted">Tự động xuất bản vào thời gian đã chọn.
-                                        </div>
-                                    </div>
-                                    @error('scheduled_publish_at')
-                                        <div class="text-danger small mt-1">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-4">
+                            
                             <!-- Mật khẩu (hiển thị khi chọn Miễn phí) -->
-                            <div class="" id="passwordOptions">
+                            <div id="passwordOptions">
                                 <div class="mb-3">
                                     <label class="form-label">Chương có mật khẩu không?</label>
                                     <div class="form-check">
@@ -244,12 +191,10 @@
                                             <i class="fas fa-lock text-warning me-1"></i> Có mật khẩu
                                         </label>
                                     </div>
-                                    
                                 </div>
 
                                 <div class="mb-3" id="passwordField" style="display: none;">
-                                    <label for="password" class="form-label">Mật khẩu chương <span
-                                            class="text-danger">*</span></label>
+                                    <label for="password" class="form-label">Mật khẩu chương <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <input type="password"
                                             class="form-control @error('password') is-invalid @enderror" id="password"
@@ -275,7 +220,90 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                        
+                        <!-- Cột phải: Xuất bản + Hẹn giờ -->
+                        <div class="col-12 col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Xuất bản chương <span class="text-danger">*</span></label>
+                                <div class="form-check mt-2">
+                                    <input class="form-check-input" type="radio" name="status"
+                                        id="status_published" value="published"
+                                        {{ old('status') == 'published' ? 'checked' : '' }}
+                                        onchange="toggleScheduleOptions()">
+                                    <label class="form-check-label" for="status_published">
+                                        <i class="fas fa-check-circle text-success me-1"></i> Xuất bản ngay
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="status" id="status_draft"
+                                        value="draft" {{ old('status', 'draft') == 'draft' ? 'checked' : '' }}
+                                        onchange="toggleScheduleOptions()">
+                                    <label class="form-check-label" for="status_draft">
+                                        <i class="fas fa-edit text-secondary me-1"></i> Lưu nháp
+                                    </label>
+                                </div>
+                            </div>
 
+                            <div class="mb-3" id="scheduleOptionsContainer"
+                                style="{{ old('status') == 'published' ? 'display: none;' : '' }}">
+                                <label class="form-label d-flex align-items-center">
+                                    <input type="checkbox" class="form-check-input me-2" id="enableSchedule"
+                                        onchange="toggleScheduleField()"
+                                        {{ old('scheduled_publish_at') ? 'checked' : '' }}>
+                                    Hẹn giờ xuất bản
+                                </label>
+                                <div id="scheduleField"
+                                    style="{{ old('scheduled_publish_at') ? '' : 'display: none;' }}">
+                                    <!-- Hidden input để lưu giá trị datetime -->
+                                    <input type="hidden" id="scheduled_publish_at" name="scheduled_publish_at"
+                                        value="{{ old('scheduled_publish_at') }}">
+                                    
+                                    <div class="mb-2 mt-2">
+                                        <label class="form-label small mb-1">Chương đầu</label>
+                                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                                            <!-- Ngày -->
+                                            <select class="form-select form-select-sm" id="schedule_day" style="width: auto; min-width: 80px;">
+                                                <option value="">Ngày</option>
+                                            </select>
+                                            <!-- Tháng -->
+                                            <select class="form-select form-select-sm" id="schedule_month" style="width: auto; min-width: 100px;">
+                                                <option value="">Tháng</option>
+                                                @for($i = 1; $i <= 12; $i++)
+                                                    <option value="{{ $i }}" {{ old('schedule_month', date('n')) == $i ? 'selected' : '' }}>Tháng {{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            <!-- Năm -->
+                                            <select class="form-select form-select-sm" id="schedule_year" style="width: auto; min-width: 90px;">
+                                                <option value="">Năm</option>
+                                                @for($i = date('Y'); $i <= date('Y') + 5; $i++)
+                                                    <option value="{{ $i }}" {{ old('schedule_year', date('Y')) == $i ? 'selected' : '' }}>{{ $i }}</option>
+                                                @endfor
+                                            </select>
+                                            <span class="small">lúc</span>
+                                            <!-- Giờ -->
+                                            <select class="form-select form-select-sm" id="schedule_hour" style="width: auto; min-width: 80px;">
+                                                <option value="">Giờ</option>
+                                                @for($i = 0; $i <= 23; $i++)
+                                                    <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}" {{ old('schedule_hour', date('H')) == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+                                                @endfor
+                                            </select>
+                                            <span>:</span>
+                                            <!-- Phút -->
+                                            <select class="form-select form-select-sm" id="schedule_minute" style="width: auto; min-width: 80px;">
+                                                <option value="">Phút</option>
+                                                @for($i = 0; $i <= 59; $i++)
+                                                    <option value="{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}" {{ old('schedule_minute', date('i')) == str_pad($i, 2, '0', STR_PAD_LEFT) ? 'selected' : '' }}>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }}</option>
+                                                @endfor
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-text text-muted">Tự động xuất bản vào thời gian đã chọn.</div>
+                                </div>
+                                @error('scheduled_publish_at')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
                     </div>
 
@@ -299,59 +327,47 @@
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
     <script>
         $(document).ready(function() {
-            // Khởi tạo hiển thị tùy thuộc vào trạng thái ban đầu
             togglePricingOptions();
             togglePasswordField();
             toggleScheduleOptions();
 
-            // Kiểm tra trạng thái ban đầu của các trường mật khẩu
             if ($('#has_password_yes').is(':checked')) {
                 $('#passwordField').show();
             }
 
-            // Khởi tạo đếm từ và ký tự
             updateContentStats();
             
-            // Bind event listeners cho content textarea
             $('#content').on('input paste keyup', function() {
                 updateContentStats();
             });
         });
 
-        // Function to count words in Vietnamese text
         function countWords(text) {
             if (!text || typeof text !== 'string') return 0;
             
-            // Remove extra whitespace and normalize
             const normalizedText = text.replace(/\s+/g, ' ').trim();
             
             if (normalizedText === '') return 0;
             
-            // Count words by splitting on whitespace
             const words = normalizedText.split(' ').filter(word => word.length > 0);
             
             return words.length;
         }
 
-        // Function to update content statistics
         function updateContentStats() {
             const content = $('#content').val();
             const wordCount = countWords(content);
             const charCount = content.length;
             
-            // Update display with number formatting
             $('#wordCount').text(wordCount.toLocaleString());
             $('#charCount').text(charCount.toLocaleString());
             
-            // Add color coding based on content length
             const wordCountElement = $('#wordCount');
             const charCountElement = $('#charCount');
             
-            // Reset classes
             wordCountElement.removeClass('text-danger text-warning text-success');
             charCountElement.removeClass('text-danger text-warning text-success');
             
-            // Word count color coding
             if (wordCount === 0) {
                 wordCountElement.addClass('text-danger');
             } else if (wordCount < 100) {
@@ -360,7 +376,6 @@
                 wordCountElement.addClass('text-success');
             }
             
-            // Character count color coding
             if (charCount === 0) {
                 charCountElement.addClass('text-danger');
             } else if (charCount < 500) {
@@ -396,7 +411,6 @@
                 $('#scheduleOptionsContainer').show();
             } else {
                 $('#scheduleOptionsContainer').hide();
-                // Uncheck and reset schedule fields when publishing immediately
                 $('#enableSchedule').prop('checked', false);
                 $('#scheduleField').hide();
                 $('#scheduled_publish_at').val('');
@@ -422,9 +436,115 @@
             var enableSchedule = $('#enableSchedule').is(':checked');
             if (enableSchedule) {
                 $('#scheduleField').show();
+                updateScheduleDays();
+                updateScheduleDateTime();
             } else {
                 $('#scheduleField').hide();
+                $('#scheduled_publish_at').val('');
             }
         }
+        
+        function updateScheduleDays() {
+            var month = parseInt($('#schedule_month').val());
+            var year = parseInt($('#schedule_year').val());
+            var selectedDay = parseInt($('#schedule_day').val());
+            
+            if (month && year) {
+                var daysInMonth = new Date(year, month, 0).getDate();
+                var $daySelect = $('#schedule_day');
+                var currentValue = $daySelect.val();
+                
+                $daySelect.empty();
+                $daySelect.append('<option value="">Ngày</option>');
+                
+                for (var i = 1; i <= daysInMonth; i++) {
+                    var selected = (currentValue && i == parseInt(currentValue)) || (!currentValue && i == new Date().getDate()) ? 'selected' : '';
+                    $daySelect.append('<option value="' + String(i).padStart(2, '0') + '" ' + selected + '>' + String(i).padStart(2, '0') + '</option>');
+                }
+                
+                if (selectedDay && selectedDay > daysInMonth) {
+                    $daySelect.val('');
+                }
+            }
+        }
+        
+        function updateScheduleDateTime() {
+            var day = $('#schedule_day').val();
+            var month = $('#schedule_month').val();
+            var year = $('#schedule_year').val();
+            var hour = $('#schedule_hour').val();
+            var minute = $('#schedule_minute').val();
+            
+            if (day && month && year && hour !== '' && minute !== '') {
+                var datetime = year + '-' + String(month).padStart(2, '0') + '-' + String(day).padStart(2, '0') + 'T' + String(hour).padStart(2, '0') + ':' + String(minute).padStart(2, '0');
+                
+                var selectedDate = new Date(datetime);
+                var now = new Date();
+                
+                if (selectedDate <= now) {
+                    now.setMinutes(now.getMinutes() + 1);
+                    var newYear = now.getFullYear();
+                    var newMonth = String(now.getMonth() + 1).padStart(2, '0');
+                    var newDay = String(now.getDate()).padStart(2, '0');
+                    var newHour = String(now.getHours()).padStart(2, '0');
+                    var newMinute = String(now.getMinutes()).padStart(2, '0');
+                    
+                    $('#schedule_day').val(newDay);
+                    $('#schedule_month').val(parseInt(newMonth));
+                    $('#schedule_year').val(newYear);
+                    $('#schedule_hour').val(newHour);
+                    $('#schedule_minute').val(newMinute);
+                    
+                    datetime = newYear + '-' + newMonth + '-' + newDay + 'T' + newHour + ':' + newMinute;
+                }
+                
+                $('#scheduled_publish_at').val(datetime);
+            } else {
+                $('#scheduled_publish_at').val('');
+            }
+        }
+        
+        $(document).ready(function() {
+            var oldDateTime = $('#scheduled_publish_at').val();
+            
+            if (oldDateTime) {
+                var parts = oldDateTime.match(/(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+                if (parts) {
+                    $('#schedule_month').val(parseInt(parts[2]));
+                    $('#schedule_year').val(parts[1]);
+                    updateScheduleDays();
+                    $('#schedule_day').val(parts[3]);
+                    $('#schedule_hour').val(parts[4]);
+                    $('#schedule_minute').val(parts[5]);
+                }
+            } else {
+                @php
+                    $now = now('Asia/Ho_Chi_Minh');
+                @endphp
+                $('#schedule_month').val('{{ $now->format('n') }}');
+                $('#schedule_year').val('{{ $now->format('Y') }}');
+                updateScheduleDays();
+                $('#schedule_day').val('{{ $now->format('d') }}');
+                $('#schedule_hour').val('{{ $now->format('H') }}');
+                $('#schedule_minute').val('{{ $now->format('i') }}');
+            }
+            
+            updateScheduleDateTime();
+            
+            $('#schedule_month, #schedule_year').on('change', function() {
+                updateScheduleDays();
+                updateScheduleDateTime();
+            });
+            
+            $('#schedule_day, #schedule_hour, #schedule_minute').on('change', function() {
+                updateScheduleDateTime();
+            });
+            
+            $('form').on('submit', function() {
+                if ($('#enableSchedule').is(':checked') && $('#status_draft').is(':checked')) {
+                    updateScheduleDateTime();
+                }
+            });
+        });
     </script>
 @endpush
