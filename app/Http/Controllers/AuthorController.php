@@ -159,20 +159,16 @@ class AuthorController extends Controller
 
     public function stories(Request $request)
     {
-        // Trang danh sách truyện
         $query = auth()->user()->stories();
 
-        // Lọc theo trạng thái
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Lọc theo phê duyệt
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        // Tìm kiếm theo tên
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -181,16 +177,40 @@ class AuthorController extends Controller
             });
         }
 
+        // Add latest published chapter timestamp for ordering
+        $query->addSelect(['latest_published_chapter_at' => Chapter::select('created_at')
+            ->whereColumn('chapters.story_id', 'stories.id')
+            ->where('status', 'published')
+            ->orderByDesc('created_at')
+            ->limit(1)
+        ]);
+
+        // Sorting: default by in-progress first then latest published chapter; or by created time
+        $sort = $request->input('sort');
+        if ($sort === 'created_desc') {
+            $query->orderByDesc('stories.created_at');
+        } elseif ($sort === 'created_asc') {
+            $query->orderBy('stories.created_at', 'asc');
+        } else {
+            $query->orderBy('completed')
+                ->orderByDesc('latest_published_chapter_at')
+                ->orderByDesc('stories.updated_at');
+        }
+
         $stories = $query->with([
             'chapters' => function ($query) {
                 $query->select('id', 'story_id', 'views');
-            }
+            },
+            'activeAdminFeatured:id,story_id,featured_order,featured_until',
+            'activeAuthorFeatured:id,story_id,featured_until'
+        ])
+        ->withCount([
+            'activeAdminFeatured as admin_featured_active_count',
+            'activeAuthorFeatured as author_featured_active_count'
         ])
         ->withCount(['chapters', 'purchases as has_story_purchases', 'chapterPurchases as has_chapter_purchases'])
         ->withSum('chapters', 'views')
-        ->latest()
-        ->paginate(10);
-
+        ->paginate(25);
         $storyIds = $stories->pluck('id');
         
         $chapterRevenue = DB::table('chapter_purchases')

@@ -246,7 +246,7 @@
                             </div>
                             <div class="col-md-6 text-center">
                                 @if($deposit->image)
-                                    <img src="{{ asset('storage/' . $deposit->image) }}" class="img-fluid" alt="Chứng minh chuyển khoản">
+                        <img src="{{ asset('storage/' . $deposit->image) }}" class="img-fluid" alt="Chứng minh chuyển khoản">
                                 @else
                                     <span class="text-muted">Không có ảnh chứng minh</span>
                                 @endif

@@ -65,14 +65,14 @@
 
         .story-stats {
             display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 16px;
         }
 
         .stat-item {
             background: white;
-            border-radius: 10px;
-            padding: 15px;
+            border-radius: 8px;
+            padding: 10px 12px;
             text-align: center;
             flex: 1;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.03);
@@ -86,13 +86,13 @@
         }
 
         .stat-number {
-            font-size: 1.5rem;
+            font-size: 1.125rem;
             font-weight: 600;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
 
         .stat-label {
-            font-size: 0.9rem;
+            font-size: 0.8rem;
             color: #777;
         }
 
@@ -142,13 +142,12 @@
 @section('info_content')
     <div class="d-flex flex-wrap justify-content-between align-items-center mb-4">
         <div>
-            <a href="{{ route('user.author.index') }}" class="btn btn-sm btn-outline-secondary mb-3">
+            <a href="{{ route('user.author.index') }}" class="btn btn-sm btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Quay lại Dashboard
             </a>
-            <h4 class="fw-bold mb-0">Truyện của tôi</h4>
-            <p class="text-muted small mb-0">Quản lý tất cả truyện của bạn</p>
+          
         </div>
-        <a href="{{ route('user.author.stories.create') }}" class="btn btn-outline-primary">
+        <a href="{{ route('user.author.stories.create') }}" class="btn btn-sm btn-outline-primary">
             <i class="fas fa-plus me-1"></i> Truyện
         </a>
     </div>
@@ -193,6 +192,13 @@
                     <option value="">-- Tất cả phê duyệt --</option>
                     <option value="1" {{ request('approved') == '1' ? 'selected' : '' }}>Đã duyệt</option>
                     <option value="0" {{ request('approved') == '0' ? 'selected' : '' }}>Chờ duyệt</option>
+                </select>
+            </div>
+            <div class="col-md-3 col-lg-2">
+                <select name="sort" class="form-select">
+                    <option value="" {{ request('sort') == '' ? 'selected' : '' }}>Sắp xếp: đang cập nhật</option>
+                    <option value="created_desc" {{ request('sort') == 'created_desc' ? 'selected' : '' }}>Sắp xếp: đăng mới → cũ</option>
+                    <option value="created_asc" {{ request('sort') == 'created_asc' ? 'selected' : '' }}>Sắp xếp: đăng cũ → mới</option>
                 </select>
             </div>
             <div class="col-md-2">

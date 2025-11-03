@@ -3,16 +3,24 @@
 @if ($paginator->hasPages())
     <nav aria-label="Page navigation" class="pagination-container">
         <ul class="pagination pagination-sm flex-wrap justify-content-center gap-2">
+            @php
+                $queryString = http_build_query(request()->except('page'));
+                $appendQuery = function($url) use ($queryString) {
+                    if (!$url) return $url;
+                    if (empty($queryString)) return $url;
+                    return $url . (strpos($url, '?') !== false ? '&' : '?') . $queryString;
+                };
+            @endphp
             {{-- First Page Link --}}
             <li class="page-item {{ $paginator->onFirstPage() ? 'disabled' : '' }}">
-                <a class="page-link" href="{{ $paginator->url(1) }}" aria-label="First">
+                <a class="page-link" href="{{ $appendQuery($paginator->url(1)) }}" aria-label="First">
                     <i class="fas fa-angle-double-left"></i>
                 </a>
             </li>
 
             {{-- Previous Page Link --}}
             <li class="page-item {{ $paginator->onFirstPage() ? 'disabled' : '' }}">
-                <a class="page-link" href="{{ $paginator->previousPageUrl() }}" aria-label="Previous">
+                <a class="page-link" href="{{ $appendQuery($paginator->previousPageUrl()) }}" aria-label="Previous">
                     <i class="fas fa-angle-left"></i>
                 </a>
             </li>
@@ -27,7 +35,7 @@
             @for ($i = 1; $i <= $lastPage; $i++)
                 @if ($i == 1 || $i == $lastPage || ($i >= $currentPage - $delta && $i <= $currentPage + $delta))
                     <li class="page-item {{ $currentPage == $i ? 'active' : '' }}">
-                        <a class="page-link" href="{{ $paginator->url($i) }}">{{ $i }}</a>
+                        <a class="page-link" href="{{ $appendQuery($paginator->url($i)) }}">{{ $i }}</a>
                     </li>
                 @elseif ($i == $currentPage - $delta - 1 || $i == $currentPage + $delta + 1)
                     <li class="page-item disabled">
@@ -38,14 +46,14 @@
 
             {{-- Next Page Link --}}
             <li class="page-item {{ !$paginator->hasMorePages() ? 'disabled' : '' }}">
-                <a class="page-link" href="{{ $paginator->nextPageUrl() }}" aria-label="Next">
+                <a class="page-link" href="{{ $appendQuery($paginator->nextPageUrl()) }}" aria-label="Next">
                     <span aria-hidden="true">&raquo;</span>
                 </a>
             </li>
 
             {{-- Last Page Link --}}
             <li class="page-item {{ $currentPage == $lastPage ? 'disabled' : '' }}">
-                <a class="page-link" href="{{ $paginator->url($lastPage) }}" aria-label="Last">
+                <a class="page-link" href="{{ $appendQuery($paginator->url($lastPage)) }}" aria-label="Last">
                     <span aria-hidden="true">&raquo;&raquo;</span>
                 </a>
             </li>

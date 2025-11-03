@@ -116,9 +116,9 @@
                                         <td class="align-middle">
                                             <div class="d-flex justify-content-center gap-2">
                                                 <a href="#" data-bs-toggle="modal" data-bs-target="#viewModal{{ $deposit->id }}"
-                                                   class="btn btn-link text-info text-gradient px-3 mb-0">
+                                                       class="btn btn-link text-info text-gradient px-3 mb-0">
                                                     <i class="far fa-eye me-2"></i>Xem
-                                                </a>
+                                                    </a>
                                                 @if($deposit->status == 'rejected' && $deposit->note)
                                                     <button type="button" class="btn btn-link text-danger text-gradient px-3 mb-0"
                                                             data-bs-toggle="modal" data-bs-target="#noteModal{{ $deposit->id }}">
@@ -148,13 +148,13 @@
     @foreach($paypalDeposits as $deposit)
         <!-- Unified View Modal with actions -->
         <div class="modal fade" id="viewModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel{{ $deposit->id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
+                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
                         <h5 class="modal-title" id="viewModalLabel{{ $deposit->id }}">Chi tiết nạp PayPal</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
                     </div>
                     <div class="modal-body">
                         <div class="row g-3">
@@ -172,22 +172,22 @@
                                 @endif
                                 @if($deposit->status === 'rejected' && $deposit->note)
                                     <div class="alert alert-danger mt-2 mb-0"><strong>Lý do từ chối:</strong> {{ $deposit->note }}</div>
-                                @endif
+        @endif
 
-                                @if($deposit->status === 'processing')
+        @if($deposit->status === 'processing')
                                     <hr class="my-3">
                                     <div class="row g-2">
                                         <div class="col-6 d-grid">
                                             <button type="button" class="btn bg-gradient-success" id="approvePaypalAction{{ $deposit->id }}">
                                                 <i class="fas fa-check me-2"></i>Duyệt
-                                            </button>
-                                        </div>
+                            </button>
+                        </div>
                                         <div class="col-6 d-grid">
                                             <button type="button" class="btn bg-gradient-danger" id="rejectPaypalAction{{ $deposit->id }}">
                                                 <i class="fas fa-times me-2"></i>Từ chối
                                             </button>
-                                        </div>
-                                    </div>
+                                </div>
+                            </div>
 
                                     <!-- Hidden forms for actions -->
                                     <form action="{{ route('admin.paypal-deposits.approve', $deposit) }}" method="POST" class="d-none" id="approvePaypalForm{{ $deposit->id }}">
@@ -198,14 +198,14 @@
                                         </button>
                                     </form>
                                     <form action="{{ route('admin.paypal-deposits.reject', $deposit) }}" method="POST" class="d-none" id="rejectPaypalForm{{ $deposit->id }}">
-                                        @csrf
+                                @csrf
                                         <input type="hidden" name="note" id="rejectPaypalNote{{ $deposit->id }}">
                                         <button type="submit" id="rejectPaypalBtn{{ $deposit->id }}">
                                             <span class="btn-text">Từ chối</span>
-                                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                        </button>
-                                    </form>
-                                @endif
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </button>
+                            </form>
+        @endif
                             </div>
                             <div class="col-md-6 text-center">
                                 @if($deposit->image)

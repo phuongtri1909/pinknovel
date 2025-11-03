@@ -284,6 +284,12 @@ class Story extends Model
      */
     public function isCurrentlyAdminFeatured()
     {
+        if (array_key_exists('admin_featured_active_count', $this->attributes)) {
+            return (int) $this->attributes['admin_featured_active_count'] > 0;
+        }
+        if ($this->relationLoaded('activeAdminFeatured')) {
+            return !is_null($this->getRelation('activeAdminFeatured'));
+        }
         return $this->activeAdminFeatured()->exists();
     }
 
@@ -292,6 +298,12 @@ class Story extends Model
      */
     public function isCurrentlyAuthorFeatured()
     {
+        if (array_key_exists('author_featured_active_count', $this->attributes)) {
+            return (int) $this->attributes['author_featured_active_count'] > 0;
+        }
+        if ($this->relationLoaded('activeAuthorFeatured')) {
+            return !is_null($this->getRelation('activeAuthorFeatured'));
+        }
         return $this->activeAuthorFeatured()->exists();
     }
 
