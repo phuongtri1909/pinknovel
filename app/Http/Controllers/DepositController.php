@@ -145,6 +145,16 @@ class DepositController extends Controller
             $query->whereDate('created_at', $request->date);
         }
 
+        // Lọc theo từ khóa
+        if ($request->has('search') && !empty($request->search)) {
+            $search = $request->search;
+            $query->where('id', 'like', "%{$search}%")
+                ->orWhereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%");
+                });
+        }
+
         // Lọc theo người dùng
         if ($request->has('user_id') && !empty($request->user_id)) {
             $query->where('user_id', $request->user_id);
