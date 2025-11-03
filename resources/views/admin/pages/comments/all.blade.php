@@ -120,6 +120,7 @@
             </div>
             <div class="card-body px-0 pt-2 pb-2">
                 @include('admin.pages.components.success-error')
+                @include('components.sweetalert')
 
                 <div class="px-4">
                     @if($comments->count() > 0)
@@ -143,6 +144,7 @@
 @endsection
 
 @push('scripts-admin')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Toggle visibility of replies
@@ -169,12 +171,24 @@
             });
         });
         
-        // Confirm delete
+        // Confirm delete with SweetAlert
         document.querySelectorAll('.delete-comment-btn').forEach(button => {
             button.addEventListener('click', function(e) {
-                if (!confirm('Bạn có chắc chắn muốn xóa bình luận này?')) {
-                    e.preventDefault();
-                }
+                e.preventDefault();
+                const form = this.closest('form');
+                Swal.fire({
+                    title: 'Xóa bình luận?',
+                    text: 'Hành động này không thể hoàn tác.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xóa',
+                    cancelButtonText: 'Hủy',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed && form) {
+                        form.submit();
+                    }
+                });
             });
         });
         
@@ -191,7 +205,15 @@
                     return;
                 }
                 
-                if (confirm('Bạn có chắc chắn muốn duyệt bình luận này?')) {
+                Swal.fire({
+                    title: 'Duyệt bình luận?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Duyệt',
+                    cancelButtonText: 'Hủy',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
                     fetch(`/admin/comments/${commentId}/approve`, {
                         method: 'POST',
                         headers: {
@@ -218,7 +240,7 @@
                         console.error('Error:', error);
                         showToast('Có lỗi xảy ra khi duyệt bình luận: ' + error.message,'error');
                     });
-                }
+                });
             }
         });
         
@@ -235,7 +257,15 @@
                     return;
                 }
                 
-                if (confirm('Bạn có chắc chắn muốn từ chối bình luận này?')) {
+                Swal.fire({
+                    title: 'Từ chối bình luận?',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Từ chối',
+                    cancelButtonText: 'Hủy',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
                     fetch(`/admin/comments/${commentId}/reject`, {
                         method: 'POST',
                         headers: {
@@ -262,7 +292,59 @@
                         console.error('Error:', error);
                        showToast('Có lỗi xảy ra khi từ chối bình luận: ' + error.message,'error');
                     });
+                });
+            }
+        });
+
+        // Set comment back to pending
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.pending-comment-btn')) {
+                e.preventDefault();
+                const button = e.target.closest('.pending-comment-btn');
+                const commentId = button.dataset.commentId;
+                const csrfToken = document.querySelector('meta[name="csrf-token"]');
+                
+                if (!csrfToken) {
+                    showToast('Không tìm thấy CSRF token', 'error');
+                    return;
                 }
+                
+                Swal.fire({
+                    title: 'Chuyển về chờ duyệt?',
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'Xác nhận',
+                    cancelButtonText: 'Hủy',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (!result.isConfirmed) return;
+                    fetch(`/admin/comments/${commentId}/pending`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken.getAttribute('content'),
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        if (data.status === 'success') {
+                            showToast('Đã chuyển về chờ duyệt', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            showToast('Có lỗi xảy ra: ' + (data.message || 'Unknown error'),'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Có lỗi xảy ra khi chuyển trạng thái: ' + error.message,'error');
+                    });
+                });
             }
         });
     });

@@ -707,4 +707,27 @@ class CommentController extends Controller
             'message' => 'Đã từ chối bình luận'
         ]);
     }
+
+    /**
+     * Set comment back to pending
+     */
+    public function pending($commentId)
+    {
+        $comment = Comment::findOrFail($commentId);
+
+        if (auth()->user()->role !== 'admin' && auth()->user()->role !== 'mod') {
+            return response()->json(['status' => 'error', 'message' => 'Unauthorized'], 403);
+        }
+
+        $comment->update([
+            'approval_status' => 'pending',
+            'approved_at' => null,
+            'approved_by' => null,
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Đã chuyển bình luận về trạng thái chờ duyệt'
+        ]);
+    }
 }

@@ -128,17 +128,32 @@
         </div>
         
         <div class="d-flex gap-2">
-            @if($comment->approval_status === 'pending' && 
-                $comment->user && 
+            @if($comment->user && 
                 $comment->user->role !== 'admin' && 
                 $comment->story && 
                 $comment->story->user_id !== $comment->user_id)
-                <button class="btn btn-link text-success btn-sm p-0 approve-comment-btn" data-comment-id="{{ $comment->id }}">
-                    <i class="fa-solid fa-check"></i> Duyệt
-                </button>
-                <button class="btn btn-link text-danger btn-sm p-0 reject-comment-btn" data-comment-id="{{ $comment->id }}">
-                    <i class="fa-solid fa-times"></i> Từ chối
-                </button>
+                @if($comment->approval_status === 'pending')
+                    <button class="btn btn-link text-success btn-sm p-0 approve-comment-btn" data-comment-id="{{ $comment->id }}">
+                        <i class="fa-solid fa-check"></i> Duyệt
+                    </button>
+                    <button class="btn btn-link text-danger btn-sm p-0 reject-comment-btn" data-comment-id="{{ $comment->id }}">
+                        <i class="fa-solid fa-times"></i> Từ chối
+                    </button>
+                @elseif($comment->approval_status === 'approved')
+                    <button class="btn btn-link text-secondary btn-sm p-0 pending-comment-btn" data-comment-id="{{ $comment->id }}">
+                        <i class="fa-solid fa-rotate-left"></i> Chờ duyệt
+                    </button>
+                    <button class="btn btn-link text-danger btn-sm p-0 reject-comment-btn" data-comment-id="{{ $comment->id }}">
+                        <i class="fa-solid fa-times"></i> Từ chối
+                    </button>
+                @elseif($comment->approval_status === 'rejected')
+                    <button class="btn btn-link text-secondary btn-sm p-0 pending-comment-btn" data-comment-id="{{ $comment->id }}">
+                        <i class="fa-solid fa-rotate-left"></i> Chờ duyệt
+                    </button>
+                    <button class="btn btn-link text-success btn-sm p-0 approve-comment-btn" data-comment-id="{{ $comment->id }}">
+                        <i class="fa-solid fa-check"></i> Duyệt
+                    </button>
+                @endif
             @endif
             
             <form action="{{ route('comments.destroy', $comment->id) }}" method="POST" class="d-inline">

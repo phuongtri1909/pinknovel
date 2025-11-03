@@ -291,6 +291,7 @@ Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
                     Route::delete('delete-comments/{comment}', [CommentController::class, 'deleteComment'])->name('delete.comments');
                     Route::post('comments/{comment}/approve', [CommentController::class, 'approve'])->name('comments.approve')->middleware('role.admin.mod');
                     Route::post('comments/{comment}/reject', [CommentController::class, 'reject'])->name('comments.reject')->middleware('role.admin.mod');
+                    Route::post('comments/{comment}/pending', [CommentController::class, 'pending'])->name('comments.pending')->middleware('role.admin.mod');
 
                     Route::resource('banners', BannerController::class);
 
