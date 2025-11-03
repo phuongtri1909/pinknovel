@@ -137,13 +137,15 @@
                                     <tr>
                                         <td>{{ $story->id }}</td>
                                         <td>
-                                            <img src="{{ Storage::url($story->cover_thumbnail) }}"
+                                            <a href="{{ route('show.page.story', $story->slug) }}" target="_blank">
+                                                <img src="{{ Storage::url($story->cover_thumbnail) }}"
                                                 alt="{{ $story->title }}" class="img-thumbnail" style="max-width: 60px;">
+                                            </a>   
                                         </td>
                                         <td>
-                                            <div class="d-flex flex-column">
+                                            <a href="{{ route('show.page.story', $story->slug) }}" target="_blank" class="text-decoration-none text-dark">
                                                 <strong>{{ $story->title }}</strong>
-                                            </div>
+                                            </a>
                                         </td>
                                         <td>
                                             <div class="d-flex flex-column">

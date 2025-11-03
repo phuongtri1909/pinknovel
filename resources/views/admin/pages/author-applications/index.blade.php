@@ -104,11 +104,13 @@
                                     <tr>
                                         <td class="d-none d-md-table-cell">{{ $application->id }}</td>
                                         <td>
-                                            <div class="d-flex flex-column">
-                                                <strong>{{ $application->user->name }}</strong>
-                                                <small class="d-none d-md-inline">{{ $application->user->email }}</small>
-                                                <small class="d-md-none text-muted">{{ Str::limit($application->user->email, 20) }}</small>
-                                            </div>
+                                            <a href="{{ route('users.show', $application->user->id) }}" target="_blank" class="text-decoration-none text-dark">
+                                                <div class="d-flex flex-column">
+                                                    <strong>{{ $application->user->name }}</strong>
+                                                    <small class="d-none d-md-inline">{{ $application->user->email }}</small>
+                                                    <small class="d-md-none text-muted">{{ Str::limit($application->user->email, 20) }}</small>
+                                                </div>
+                                            </a>
                                         </td>
                                         <td class="d-none d-lg-table-cell">
                                             <a href="{{ $application->facebook_link }}" target="_blank"

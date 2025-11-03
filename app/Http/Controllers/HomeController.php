@@ -1236,24 +1236,47 @@ class HomeController extends Controller
         $cacheKey = "story_{$slug}";
         $cachedStory = \App\Http\Middleware\AffiliateRedirect::getCachedEntity($cacheKey);
         
+        $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+        
         if ($cachedStory && $cachedStory->status === 'published') {
             $story = $cachedStory;
         } else {
-            $story = Story::where('slug', $slug)
-                ->published()
-                ->with(['categories' => function ($query) {
+            $query = Story::where('slug', $slug);
+            
+            if (!$isAdmin) {
+                $query->published();
+            }
+            
+            $story = $query->with(['categories' => function ($query) {
                     $query->select('categories.id', 'categories.name', 'categories.slug');
                 }])
                 ->firstOrFail();
+            
+            $isAuthor = auth()->check() && $story->user_id == auth()->id();
+            
+            if (!$isAdmin && !$isAuthor && $story->status !== 'published') {
+                abort(404);
+            }
         }
+        
+        $isAuthor = auth()->check() && $story->user_id == auth()->id();
+        
+        $canSeeAllChapters = $isAdmin || $isAuthor;
 
-        $story->load(['chapters' => function ($query) {
-            $query->where('status', 'published')->select('id', 'story_id', 'views');
+        $story->load(['chapters' => function ($query) use ($canSeeAllChapters) {
+            if (!$canSeeAllChapters) {
+                $query->where('status', 'published');
+            }
+            $query->select('id', 'story_id', 'views');
         }]);
 
-        $chapters = Chapter::where('story_id', $story->id)
-            ->published()
-            ->with(['purchases' => function ($query) {
+        $chaptersQuery = Chapter::where('story_id', $story->id);
+        
+        if (!$canSeeAllChapters) {
+            $chaptersQuery->published();
+        }
+        
+        $chapters = $chaptersQuery->with(['purchases' => function ($query) {
                 if (auth()->check()) {
                     $query->where('user_id', auth()->id());
                 } else {
@@ -1365,11 +1388,16 @@ class HomeController extends Controller
     {
         $story = Story::findOrFail($storyId);
 
-        // Query base
-        $chaptersQuery = Chapter::where('story_id', $storyId)
-            ->published();
+        $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+        $isAuthor = auth()->check() && $story->user_id == auth()->id();
+        $canSeeAllChapters = $isAdmin || $isAuthor;
 
-        // Sắp xếp theo thứ tự yêu cầu
+        $chaptersQuery = Chapter::where('story_id', $storyId);
+        
+        if (!$canSeeAllChapters) {
+            $chaptersQuery->published();
+        }
+
         $sortOrder = $request->get('sort_order', 'asc');
         if ($sortOrder === 'asc') {
             $chaptersQuery->orderBy('number', 'asc');
@@ -1377,7 +1405,6 @@ class HomeController extends Controller
             $chaptersQuery->orderBy('number', 'desc');
         }
 
-        // Tìm kiếm nếu có
         if ($request->has('search') && $request->search !== '') {
             $search = $request->search;
             $searchNumber = preg_replace('/[^0-9]/', '', $search);
@@ -1423,28 +1450,24 @@ class HomeController extends Controller
 
     public function chapterByStory($storySlug, $chapterSlug)
     {
-        // First find the story by slug
         $story = Story::where('slug', $storySlug)->firstOrFail();
 
-        // Then find the chapter that belongs to this story
+        $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+        $isAuthor = auth()->check() && $story->user_id == auth()->id();
+
+        if ($story->status !== 'published' && !$isAdmin && !$isAuthor) {
+            abort(404);
+        }
+
         $query = Chapter::where('slug', $chapterSlug)
             ->where('story_id', $story->id);
 
-        // Apply permissions
-        if (auth()->check()) {
-            if (in_array(auth()->user()->role, ['admin', 'mod', 'author'])) {
-                // Admin, mod, and author can see all chapters
-                $chapter = $query->firstOrFail();
-            } else {
-                // Regular users can only see published chapters
-                $chapter = $query->where('status', 'published')->firstOrFail();
-            }
+        if ($isAdmin || $isAuthor) {
+            $chapter = $query->firstOrFail();
         } else {
-            // Guests can only see published chapters
             $chapter = $query->where('status', 'published')->firstOrFail();
         }
 
-        // Get client IP for view count
         $ip = request()->ip();
         $sessionKey = "chapter_view_{$chapter->id}_{$ip}";
 
@@ -1459,7 +1482,6 @@ class HomeController extends Controller
 
         $chapter->comments_count = Comment::where('story_id', $story->id)->count();
 
-        // Find next and previous chapters
         $nextChapterQuery = Chapter::where('story_id', $story->id)
             ->where('number', '>', $chapter->number)
             ->orderBy('number', 'asc');
@@ -1468,7 +1490,6 @@ class HomeController extends Controller
             ->where('number', '<', $chapter->number)
             ->orderBy('number', 'desc');
 
-        // Apply published filter for non-admin/mod users
         if (!auth()->check() || !in_array(auth()->user()->role, ['admin', 'mod', 'author'])) {
             $nextChapterQuery->where('status', 'published');
             $prevChapterQuery->where('status', 'published');
@@ -1477,7 +1498,6 @@ class HomeController extends Controller
         $nextChapter = $nextChapterQuery->first();
         $prevChapter = $prevChapterQuery->first();
 
-        // Get recent chapters from this story
         $recentChaptersQuery = Chapter::where('story_id', $story->id)
             ->where('id', '!=', $chapter->id)
             ->orderBy('number', 'desc')
@@ -1489,14 +1509,11 @@ class HomeController extends Controller
 
         $recentChapters = $recentChaptersQuery->get();
 
-        // Lưu tiến độ đọc
         $readingService = new ReadingHistoryService();
         $readingService->saveReadingProgress($story, $chapter);
 
-        // Lấy danh sách truyện đọc gần đây
         $recentReads = $readingService->getRecentReadings(5);
 
-        // Retrieve reading progress if exists
         $userReading = null;
         if (auth()->check()) {
             $userReading = UserReading::where('user_id', auth()->id())
@@ -1512,15 +1529,12 @@ class HomeController extends Controller
                 ->first();
         }
 
-        // Pass reading progress to view
         $readingProgress = $userReading ? $userReading->progress_percent : 0;
 
-        // Kiểm tra quyền truy cập nội dung
         $hasAccess = false;
         $hasPurchasedChapter = false;
         $hasPurchasedStory = false;
 
-        // Admin, mod, author và chủ sở hữu truyện luôn có quyền truy cập
         if (auth()->check()) {
             $user = auth()->user();
 
@@ -1530,12 +1544,10 @@ class HomeController extends Controller
             ) {
                 $hasAccess = true;
             } else {
-                // Kiểm tra nếu đã mua chương này
                 $hasPurchasedChapter = ChapterPurchase::where('user_id', $user->id)
                     ->where('chapter_id', $chapter->id)
                     ->exists();
 
-                // Kiểm tra nếu đã mua truyện này
                 $hasPurchasedStory = StoryPurchase::where('user_id', $user->id)
                     ->where('story_id', $story->id)
                     ->exists();
@@ -1544,7 +1556,6 @@ class HomeController extends Controller
             }
         }
 
-        // Nếu chương miễn phí
         if (!$chapter->price || $chapter->price == 0) {
             $hasAccess = true;
         }
@@ -1559,23 +1570,17 @@ class HomeController extends Controller
             }
         }
 
-        // Ẩn nội dung nếu không có quyền truy cập
         if (!$hasAccess) {
-            // Không xóa content hoàn toàn để có thể hiển thị phần preview nếu cần
             $originalContent = $chapter->content;
 
-            // Lấy một phần đầu của nội dung làm preview (ví dụ: 10% đầu tiên)
             $previewLength = min(300, intval(strlen($originalContent) * 0.1));
             $chapter->preview_content = substr($originalContent, 0, $previewLength) . '...';
         }
 
-        // Xử lý nội dung dựa trên quyền truy cập
         if (!$hasAccess || !$hasPasswordAccess) {
-            // Xóa hoàn toàn nội dung để đảm bảo bảo mật
             $chapter->content = '';
         }
 
-        // Get comments
         $pinnedComments = Comment::with(['user', 'approvedReplies.user', 'reactions'])
             ->where('story_id', $story->id)
             ->whereNull('reply_id')

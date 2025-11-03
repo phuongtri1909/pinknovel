@@ -98,17 +98,19 @@
                                 </td>
                                 <td class="text-center">{{ $story->id }}</td>
                                 <td>
-                                    <div class="position-relative">
+                                    <a href="{{ route('show.page.story', $story->slug) }}" target="_blank" class="position-relative">
                                         <img src="{{ Storage::url($story->cover) }}" class="img-fluid" style="width: 70px; height: 100px;">
                                         @if($story->is_featured)
                                             <span class="position-absolute top-0 start-0 badge bg-gradient-warning" style="font-size: 0.65em;">
                                                 #{{ $story->featured_order }}
                                             </span>
                                         @endif
-                                    </div>
+                                    </a>
                                 </td>
                                 <td class="text-start">
-                                    {{ $story->title }}
+                                    <a href="{{ route('show.page.story', $story->slug) }}" target="_blank" class="text-decoration-none text-dark">
+                                        {{ $story->title }}
+                                    </a>
                                     @if($story->is_featured)
                                         <i class="fas fa-star text-warning ms-1" title="Truyện đề cử"></i>
                                     @endif

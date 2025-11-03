@@ -126,9 +126,11 @@
                                         <td>{{ $editRequest->id }}</td>
                                         <td>
                                             @if ($editRequest->cover_thumbnail)
-                                                <img src="{{ Storage::url($editRequest->cover_thumbnail) }}"
-                                                    alt="{{ $editRequest->title }}" class="img-thumbnail"
-                                                    style="max-width: 60px;">
+                                                <a href="{{ route('show.page.story', $editRequest->story->slug) }}" target="_blank">
+                                                    <img src="{{ Storage::url($editRequest->cover_thumbnail) }}"
+                                                        alt="{{ $editRequest->title }}" class="img-thumbnail"
+                                                        style="max-width: 60px;">
+                                                </a>
                                             @else
                                                 <img src="{{ asset('assets/images/story_default.png') }}"
                                                     alt="default cover" class="img-thumbnail" style="max-width: 60px;">
@@ -136,8 +138,10 @@
                                         </td>
                                         <td>
                                             <div class="d-flex flex-column">
-                                                <strong>{{ $editRequest->title }}</strong>
-                                                <small>{{ Str::limit($editRequest->title, 30) }}</small>
+                                                <a href="{{ route('show.page.story', $editRequest->story->slug) }}" target="_blank" class="text-decoration-none text-dark">
+                                                    <strong>{{ $editRequest->title }}</strong>
+                                                </a>
+                                                <small class="text-muted">{{ Str::limit($editRequest->title, 30) }}</small>
                                             </div>
                                         </td>
                                         <td>
