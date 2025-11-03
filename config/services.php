@@ -36,4 +36,10 @@ return [
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
+
+    'casso' => [
+        'api_key' => env('CASSO_API_KEY'),
+        'webhook_secret' => env('CASSO_WEBHOOK_SECRET'),
+        'api_url' => env('CASSO_API_URL', 'https://api.casso.vn'),
+    ],
 ];
