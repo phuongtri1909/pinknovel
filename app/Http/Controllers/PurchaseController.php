@@ -158,7 +158,7 @@ class PurchaseController extends Controller
                     $chapter->price,
                     $authorEarnings,
                     \App\Models\CoinHistory::TYPE_CHAPTER_PURCHASE,
-                    "Mua chương: {$chapter->title}",
+                    "Mua chương: {$chapter->title} ({$chapter->number}) - {$story->title}",
                     $purchase
                 );
                 DB::commit();
