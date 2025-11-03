@@ -51,7 +51,7 @@ class BankAutoDepositController extends Controller
             'success' => BankAutoDeposit::where('status', 'success')->count(),
             'failed' => BankAutoDeposit::where('status', 'failed')->count(),
             'total_amount' => BankAutoDeposit::where('status', 'success')->sum('amount'),
-            'total_coins' => BankAutoDeposit::where('status', 'success')->sum('total_coins'),
+            'total_coins' => BankAutoDeposit::where('status', 'success')->sum('coins'),
         ];
 
         return view('admin.pages.bank-auto-deposits.index', compact('deposits', 'stats'));
