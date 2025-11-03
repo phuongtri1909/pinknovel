@@ -41,6 +41,7 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <small class="form-text text-muted">Ví dụ: BIDV, VCB, TPB, MB, ...</small>
+                                    <a class="btn btn-sm btn-primary btn-sm mt-1" href="https://api.vietqr.io/v2/banks" target="_blank">Lấy code ngân hàng</a>
                                 </div>
                             </div>
                         </div>

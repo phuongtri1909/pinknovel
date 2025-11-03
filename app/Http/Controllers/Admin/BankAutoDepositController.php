@@ -17,12 +17,12 @@ class BankAutoDepositController extends Controller
     {
         $query = BankAutoDeposit::with(['user', 'bankAuto']);
 
-        // Filter by status
         if ($request->has('status') && $request->status !== '') {
             $query->where('status', $request->status);
+        } else {
+            $query->whereIn('status', [BankAutoDeposit::STATUS_SUCCESS, BankAutoDeposit::STATUS_FAILED]);
         }
 
-        // Filter by date range
         if ($request->has('date_from') && $request->date_from) {
             $query->whereDate('created_at', '>=', $request->date_from);
         }
@@ -30,7 +30,6 @@ class BankAutoDepositController extends Controller
             $query->whereDate('created_at', '<=', $request->date_to);
         }
 
-        // Search by transaction code or user
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -42,16 +41,13 @@ class BankAutoDepositController extends Controller
             });
         }
 
-        $deposits = $query->orderBy('created_at', 'desc')->paginate(20);
+        $deposits = $query->orderBy('created_at', 'desc')->paginate(25);
 
-        // Get statistics
         $stats = [
-            'total' => BankAutoDeposit::count(),
-            'pending' => BankAutoDeposit::where('status', 'pending')->count(),
+            'total' => BankAutoDeposit::whereIn('status', [BankAutoDeposit::STATUS_SUCCESS, BankAutoDeposit::STATUS_FAILED])->count(),
             'success' => BankAutoDeposit::where('status', 'success')->count(),
             'failed' => BankAutoDeposit::where('status', 'failed')->count(),
             'total_amount' => BankAutoDeposit::where('status', 'success')->sum('amount'),
-            'total_coins' => BankAutoDeposit::where('status', 'success')->sum('coins'),
         ];
 
         return view('admin.pages.bank-auto-deposits.index', compact('deposits', 'stats'));

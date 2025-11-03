@@ -76,13 +76,13 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="numbers">
-                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Chờ duyệt</p>
-                                <h5 class="font-weight-bolder mb-0 text-warning">{{ number_format($stats['pending']) }}</h5>
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Thành công</p>
+                                <h5 class="font-weight-bolder mb-0 text-success">{{ number_format($stats['success']) }}</h5>
                             </div>
                         </div>
                         <div class="col-4 text-end">
-                            <div class="icon icon-shape icon-md bg-gradient-warning shadow text-center border-radius-md">
-                                <i class="fas fa-clock text-white opacity-10" aria-hidden="true"></i>
+                            <div class="icon icon-shape icon-md bg-gradient-success shadow text-center border-radius-md">
+                                <i class="fas fa-check text-white opacity-10" aria-hidden="true"></i>
                             </div>
                         </div>
                     </div>
@@ -95,13 +95,13 @@
                     <div class="row">
                         <div class="col-8">
                             <div class="numbers">
-                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Thành công</p>
-                                <h5 class="font-weight-bolder mb-0 text-success">{{ number_format($stats['success']) }}</h5>
+                                <p class="text-sm mb-0 text-capitalize font-weight-bold">Thất bại</p>
+                                <h5 class="font-weight-bolder mb-0 text-danger">{{ number_format($stats['failed']) }}</h5>
                             </div>
                         </div>
                         <div class="col-4 text-end">
-                            <div class="icon icon-shape icon-md bg-gradient-success shadow text-center border-radius-md">
-                                <i class="fas fa-check text-white opacity-10" aria-hidden="true"></i>
+                            <div class="icon icon-shape icon-md bg-gradient-danger shadow text-center border-radius-md">
+                                <i class="fas fa-times text-white opacity-10" aria-hidden="true"></i>
                             </div>
                         </div>
                     </div>
@@ -292,7 +292,7 @@
 
             <!-- Pagination -->
             <div class="d-flex justify-content-center mt-4">
-                {{ $deposits->appends(request()->query())->links() }}
+                <x-pagination :paginator="$deposits" />
             </div>
         </div>
     </div>

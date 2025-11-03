@@ -409,6 +409,114 @@
             </div>
         </div>
     </div>
+
+    <!-- Transaction History -->
+    <div class="transaction-history mt-4">
+        <div class="deposit-card">
+            <div class="deposit-card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Lịch sử nạp tự động
+                </h5>
+            </div>
+            <div class="deposit-card-body">
+                @if ($deposits->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20%">Mã giao dịch</th>
+                                    <th style="width: 15%">Ngân hàng</th>
+                                    <th style="width: 15%">Số tiền</th>
+                                    <th style="width: 15%">Xu</th>
+                                    <th style="width: 20%">Ngày tạo</th>
+                                    <th style="width: 15%">Trạng thái</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($deposits as $deposit)
+                                    <tr>
+                                        <td class="align-middle">
+                                            <small class="text-muted">{{ $deposit->transaction_code }}</small>
+                                        </td>
+                                        <td class="align-middle">
+                                            {{ $deposit->bankAuto->name ?? 'N/A' }}
+                                        </td>
+                                        <td class="align-middle">{{ number_format($deposit->amount) }} VNĐ</td>
+                                        <td class="align-middle">{{ number_format($deposit->coins) }} xu</td>
+                                        <td class="align-middle">
+                                            <div>{{ $deposit->created_at->format('d/m/Y H:i') }}</div>
+                                            <small class="text-muted">{{ $deposit->created_at->diffForHumans() }}</small>
+                                        </td>
+                                        <td class="align-middle">
+                                            @if ($deposit->status == 'pending')
+                                                <span class="badge bg-warning text-dark">
+                                                    <i class="fas fa-clock me-1"></i> Đang xử lý
+                                                </span>
+                                            @elseif($deposit->status == 'success')
+                                                <span class="badge bg-success">
+                                                    <i class="fas fa-check me-1"></i> Thành công
+                                                </span>
+                                                @if($deposit->processed_at)
+                                                    <div class="small text-muted mt-1">
+                                                        {{ $deposit->processed_at->format('d/m/Y H:i') }}
+                                                    </div>
+                                                @endif
+                                            @elseif($deposit->status == 'failed')
+                                                <span class="badge bg-danger">
+                                                    <i class="fas fa-times me-1"></i> Thất bại
+                                                </span>
+                                                @if ($deposit->note)
+                                                    <div class="mt-1">
+                                                        <a href="#" class="small text-danger show-reason-btn"
+                                                            data-reason="{{ $deposit->note }}">
+                                                            <i class="fas fa-info-circle"></i> Xem lý do
+                                                        </a>
+                                                    </div>
+                                                @endif
+                                            @else
+                                                <span class="badge bg-secondary">
+                                                    <i class="fas fa-ban me-1"></i> Đã hủy
+                                                </span>
+                                            @endif
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-center mt-4">
+                        <x-pagination :paginator="$deposits" />
+                    </div>
+                @else
+                    <div class="empty-transactions text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">Chưa có giao dịch nào</p>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Reason Modal -->
+    <div class="modal fade" id="reasonModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Thông tin chi tiết</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="reason-content p-3">
+                        <p id="reasonText" class="mb-0"></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @once
@@ -824,6 +932,14 @@
                 const toastInstance = new bootstrap.Toast(toastElement[0]);
                 toastInstance.show();
             }
+
+            // Handle show reason button
+            $(document).on('click', '.show-reason-btn', function(e) {
+                e.preventDefault();
+                const reason = $(this).data('reason');
+                $('#reasonText').text(reason || 'Không có lý do');
+                $('#reasonModal').modal('show');
+            });
         </script>
     @endpush
 @endonce

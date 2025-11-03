@@ -37,11 +37,18 @@ class BankAutoController extends Controller
         $coinBankAutoPercent = $this->coinBankAutoPercent;
         $minBankAutoDepositAmount = $this->minBankAutoDepositAmount;
 
+        $deposits = BankAutoDeposit::where('user_id', $user->id)
+            ->whereIn('status', [BankAutoDeposit::STATUS_SUCCESS, BankAutoDeposit::STATUS_FAILED])
+            ->with('bankAuto')
+            ->latest()
+            ->paginate(10);
+
         return view('pages.information.deposit.bank_auto', compact(
             'banks', 
             'coinExchangeRate',
             'coinBankAutoPercent',
             'minBankAutoDepositAmount',
+            'deposits',
         ));
     }
 

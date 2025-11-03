@@ -1,5 +1,23 @@
 @extends('admin.layouts.app')
 
+@push('styles-admin')
+    <style>
+        .action-icon {
+            width: 32px;
+            height: 32px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            color: #fff;
+            transition: all .2s;
+        }
+
+        .action-icon.edit-icon {
+            background-color: #17a2b8;
+        }
+    </style>
+@endpush
 @section('content-auth')
     <div class="row">
         <div class="col-12">
@@ -37,8 +55,9 @@
                                             <p class="text-xs font-weight-bold mb-0">{{ $bankAuto->id }}</p>
                                         </td>
                                         <td>
-                                            @if($bankAuto->logo)
-                                                <img src="{{ Storage::url($bankAuto->logo) }}" alt="{{ $bankAuto->name }}" class="img-fluid" style="max-height: 40px;">
+                                            @if ($bankAuto->logo)
+                                                <img src="{{ Storage::url($bankAuto->logo) }}" alt="{{ $bankAuto->name }}"
+                                                    class="img-fluid" style="max-height: 40px;">
                                             @else
                                                 <div class="text-center bg-light p-2 rounded">
                                                     <i class="fas fa-robot text-muted"></i>
@@ -58,8 +77,9 @@
                                             <p class="text-xs font-weight-bold mb-0">{{ $bankAuto->account_name }}</p>
                                         </td>
                                         <td class="text-center">
-                                            @if($bankAuto->qr_code)
-                                                <a href="{{ Storage::url($bankAuto->qr_code) }}" target="_blank" class="btn btn-sm btn-info">
+                                            @if ($bankAuto->qr_code)
+                                                <a href="{{ Storage::url($bankAuto->qr_code) }}" target="_blank"
+                                                    class="btn btn-sm btn-info">
                                                     <i class="fas fa-qrcode"></i>
                                                 </a>
                                             @else
@@ -67,7 +87,7 @@
                                             @endif
                                         </td>
                                         <td class="text-center">
-                                            @if($bankAuto->status)
+                                            @if ($bankAuto->status)
                                                 <span class="badge badge-sm bg-gradient-success">Hoạt động</span>
                                             @else
                                                 <span class="badge badge-sm bg-gradient-secondary">Vô hiệu</span>
@@ -76,19 +96,25 @@
                                         <td class="text-center">
                                             <div class="d-flex flex-wrap justify-content-center">
                                                 <div class="d-flex flex-column align-items-center mb-2 me-2">
-                                                    <a title="Xem chi tiết" href="{{ route('admin.bank-autos.show', $bankAuto->id) }}" class="text-info action-icon view-icon" title="Xem chi tiết">
+                                                    <a title="Xem chi tiết"
+                                                        href="{{ route('admin.bank-autos.show', $bankAuto->id) }}"
+                                                        class="text-info action-icon view-icon" title="Xem chi tiết">
                                                         <i class="fas fa-eye text-white"></i>
                                                     </a>
                                                 </div>
                                                 <div class="d-flex flex-column align-items-center mb-2 me-2">
-                                                    <a title="Sửa" href="{{ route('admin.bank-autos.edit', $bankAuto->id) }}" class="action-icon edit-icon" title="Sửa">
+                                                    <a title="Sửa"
+                                                        href="{{ route('admin.bank-autos.edit', $bankAuto->id) }}"
+                                                        class="action-icon edit-icon" title="Sửa">
                                                         <i class="fas fa-pencil-alt text-white"></i>
                                                     </a>
                                                 </div>
                                                 <div class="d-flex flex-column align-items-center mb-2">
                                                     @include('admin.pages.components.delete-form', [
                                                         'id' => $bankAuto->id,
-                                                        'route' => route('admin.bank-autos.destroy', $bankAuto->id)
+                                                        'route' => route(
+                                                            'admin.bank-autos.destroy',
+                                                            $bankAuto->id),
                                                     ])
                                                 </div>
                                             </div>
