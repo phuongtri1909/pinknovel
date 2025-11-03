@@ -320,10 +320,17 @@
                                         class="btn btn-sm btn-outline-info">
                                         <i class="fas fa-edit me-1"></i> Sửa
                                     </a>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                        data-bs-target="#deleteModal{{ $story->id }}">
-                                        <i class="fas fa-trash-alt me-1"></i> Xóa
-                                    </button>
+                                    @if (($story->has_story_purchases ?? 0) > 0 || ($story->has_chapter_purchases ?? 0) > 0)
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" disabled
+                                            title="Không thể xóa truyện đã có người mua VIP">
+                                            <i class="fas fa-lock me-1"></i> Xóa
+                                        </button>
+                                    @else
+                                        <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                            data-bs-target="#deleteModal{{ $story->id }}">
+                                            <i class="fas fa-trash-alt me-1"></i> Xóa
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

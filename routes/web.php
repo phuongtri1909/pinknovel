@@ -210,6 +210,8 @@ Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
                 Route::get('/stories/{story}/chapters/bulk-price', [AuthorController::class, 'bulkPriceForm'])->name('stories.chapters.bulk-price');
                 Route::put('/stories/{story}/chapters/bulk-price/update', [AuthorController::class, 'bulkPriceUpdate'])->name('stories.chapters.bulk-price.update');
 
+                Route::get('/stories/{story}/chapters/by-range', [AuthorController::class, 'getChaptersByRange'])->name('stories.chapters.by-range');
+
                 Route::delete('/stories/{story}/chapters/bulk-delete/delete', [AuthorController::class, 'bulkDeleteChapters'])
                     ->name('stories.chapters.bulk-delete');
 

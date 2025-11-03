@@ -93,11 +93,11 @@
             </div>
 
             <!-- Selection Toolbar -->
-            <div class="selection-toolbar">
+            <div class="selection-toolbar" data-story-id="{{ $story->id }}">
                 <div class="row align-items-center">
                     <div class="col-md-6">
                         <h6 class="mb-2">Chọn chương:</h6>
-                        <div class="btn-group" role="group">
+                        <div class="btn-group mb-2" role="group">
                             <button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAll()">
                                 <i class="fas fa-check-double me-1"></i> Chọn tất cả
                             </button>
@@ -108,6 +108,7 @@
                                 <i class="fas fa-coins me-1"></i> Chỉ chương có phí
                             </button>
                         </div>
+
                     </div>
                     <div class="col-md-6 text-md-end">
                         <div class="form-check form-switch d-inline-block">
@@ -115,6 +116,26 @@
                             <label class="form-check-label" for="showPriceOnly">
                                 Chỉ hiện chương có phí
                             </label>
+                        </div>
+                    </div>
+                    <div class="col-md-12">
+                        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 mt-2">
+                            <div class="vr d-none d-md-block"></div>
+                            <label class="small mb-0 me-2">Chọn từ đến:</label>
+                            <div class="d-flex align-items-center gap-2 flex-grow-1 flex-md-grow-0">
+                                <input type="number" class="form-control form-control-sm" id="rangeFrom"
+                                    placeholder="Từ chương" min="1" style="min-width: 80px; max-width: 120px;">
+                                <span class="small text-nowrap">đến</span>
+                                <input type="number" class="form-control form-control-sm" id="rangeTo"
+                                    placeholder="Đến chương" min="1" style="min-width: 80px; max-width: 120px;">
+                            </div>
+                            <div class="d-flex align-items-center gap-2 flex-grow-1 flex-md-grow-0">
+                                <input type="number" class="form-control form-control-sm" id="rangePrice" placeholder="Giá xu"
+                                    min="0" step="1" style="min-width: 80px; max-width: 120px;">
+                                <button type="button" class="btn btn-outline-primary btn-sm text-nowrap" onclick="updatePriceByRange()">
+                                    <i class="fas fa-coins me-1"></i> Chỉnh xu
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -140,8 +161,8 @@
                                     <label for="all_price" class="form-label">Giá áp dụng (xu):</label>
                                     <input type="number"
                                         class="form-control price-input mx-auto @error('all_price') is-invalid @enderror"
-                                        id="all_price" name="all_price" value="{{ old('all_price', '') }}" min="0"
-                                        step="1" placeholder="Để trống = miễn phí">
+                                        id="all_price" name="all_price" value="{{ old('all_price', '') }}"
+                                        min="0" step="1" placeholder="Để trống = miễn phí">
                                     <small class="form-text text-muted">Để trống hoặc nhập 0 để đặt chương miễn phí</small>
                                     @error('all_price')
                                         <div class="invalid-feedback">{{ $message }}</div>
@@ -176,7 +197,8 @@
                 <h5 class="mb-3">Danh sách chương:</h5>
                 <div class="row g-1" id="chaptersContainer">
                     @foreach ($chapters as $chapter)
-                        <div class="col-12 chapter-item" data-is-free="{{ $chapter->is_free ? 'true' : 'false' }}">
+                        <div class="col-12 chapter-item" data-is-free="{{ $chapter->is_free ? 'true' : 'false' }}"
+                            data-chapter-number="{{ $chapter->number }}">
                             <div class="chapter-card card h-100" onclick="toggleChapter({{ $chapter->id }})">
                                 <div class="card-body d-flex justify-content-between align-items-center py-2 ">
                                     <div class="form-check d-flex align-items-center">
@@ -382,8 +404,144 @@
             updateSelectedCount();
         }
 
+        // Update price by range
+        function updatePriceByRange() {
+            const from = parseInt($('#rangeFrom').val());
+            const to = parseInt($('#rangeTo').val());
+            const price = $('#rangePrice').val() === '' ? null : parseInt($('#rangePrice').val());
+
+            if (!from || !to) {
+                showToast('Vui lòng nhập đầy đủ số chương từ và đến.', 'warning');
+                return;
+            }
+
+            if (from > to) {
+                showToast('Số chương bắt đầu phải nhỏ hơn hoặc bằng số chương kết thúc.', 'warning');
+                return;
+            }
+
+            if (price === null && $('#rangePrice').val() !== '') {
+                showToast('Vui lòng nhập giá hợp lệ (số nguyên ≥ 0) hoặc để trống cho miễn phí.', 'warning');
+                return;
+            }
+
+            const storyId = $('.selection-toolbar').data('story-id');
+            if (!storyId) {
+                showToast('Không tìm thấy thông tin truyện.', 'error');
+                return;
+            }
+
+            const apiUrl = `/user/author/stories/${storyId}/chapters/by-range?from=${from}&to=${to}`;
+
+            Swal.fire({
+                title: 'Đang tải...',
+                text: 'Đang kiểm tra danh sách chương',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            $.ajax({
+                url: apiUrl,
+                method: 'GET',
+                success: function(data) {
+                    if (!data.success) {
+                        throw new Error(data.error || 'Có lỗi xảy ra');
+                    }
+
+                    const allChapterIds = Object.values(data.chapters);
+
+                    if (allChapterIds.length === 0) {
+                        Swal.fire({
+                            title: 'Không tìm thấy',
+                            text: `Không tìm thấy chương nào từ chương ${from} đến chương ${to}.`,
+                            icon: 'warning',
+                            confirmButtonText: 'Đã hiểu'
+                        });
+                        return;
+                    }
+
+                    const priceText = price === null || price === 0 ? 'miễn phí' : `${price} xu`;
+                    let confirmMessage = `Bạn có chắc muốn cập nhật giá <strong>${priceText}</strong> cho <strong>${allChapterIds.length}</strong> chương từ chương ${from} đến chương ${to}?`;
+
+                    Swal.fire({
+                        title: 'Xác nhận cập nhật?',
+                        html: confirmMessage,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Cập nhật',
+                        cancelButtonText: 'Hủy',
+                        confirmButtonColor: '#28a745',
+                        cancelButtonColor: '#6c757d'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Remove existing hidden inputs if any
+                            $('#bulkPriceForm input[name="selected_chapters_by_range"]').remove();
+                            $('#bulkPriceForm input[name="update_type"][value="all_same"]').not(
+                                ':first').remove();
+
+                            // Set form values
+                            let hiddenInput = $('#bulkPriceForm').find(
+                                'input[name="selected_chapters_by_range"]');
+                            if (hiddenInput.length === 0) {
+                                hiddenInput = $('<input>', {
+                                    type: 'hidden',
+                                    name: 'selected_chapters_by_range'
+                                });
+                                $('#bulkPriceForm').append(hiddenInput);
+                            }
+                            hiddenInput.val(JSON.stringify(allChapterIds));
+
+                            // Set update type to all_same
+                            $('input[name="update_type"][value="all_same"]').prop('checked', true);
+                            selectUpdateType('all_same');
+                            $('#all_price').val(price === null ? '' : price);
+
+                            // Clear checkbox selections
+                            $('.chapter-checkbox').prop('checked', false);
+                            updateChapterCard($('.chapter-checkbox')[0]);
+                            updateSelectedCount();
+
+                            // Submit form directly (bypass validation for range selection)
+                            Swal.close();
+
+                            Swal.fire({
+                                title: 'Đang cập nhật...',
+                                text: 'Vui lòng đợi trong giây lát',
+                                allowOutsideClick: false,
+                                didOpen: () => Swal.showLoading()
+                            });
+
+                            // Temporarily disable form validation
+                            $('#bulkPriceForm').off('submit').submit();
+                        } else {
+                            // Clear inputs
+                            $('#rangeFrom').val('');
+                            $('#rangeTo').val('');
+                            $('#rangePrice').val('');
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    const errorMessage = xhr.responseJSON?.error ||
+                        'Có lỗi xảy ra khi kiểm tra danh sách chương.';
+                    Swal.fire({
+                        title: 'Lỗi',
+                        text: errorMessage,
+                        icon: 'error',
+                        confirmButtonText: 'Đã hiểu'
+                    });
+                }
+            });
+        }
+
         // Form validation
         $('#bulkPriceForm').submit(function(e) {
+            // If using range selection, allow direct submit
+            if ($('input[name="selected_chapters_by_range"]').length && $(
+                    'input[name="selected_chapters_by_range"]').val()) {
+                return true; // Allow submit
+            }
+
             e.preventDefault();
 
             const selectedCount = $('.chapter-checkbox:checked').length;
@@ -431,7 +589,7 @@
             Swal.fire({
                 title: 'Xác nhận cập nhật?',
                 html: `
-                    <p>Cập nhật giá cho <strong>${selectedCount}</strong> chương được chọn</p>
+                    <p>Cập nhật giá cho <strong>${selectedCount || 'các chương đã chọn'}</strong> chương</p>
                     <small class="text-muted">
                         • Để trống hoặc nhập 0: Chương miễn phí<br>
                         • Nhập giá > 0: Chương có phí

@@ -222,7 +222,6 @@
             padding: 1.5rem;
             margin-top: 1.5rem;
         }
-
     </style>
 @endpush
 
@@ -233,434 +232,500 @@
         </a>
     </div>
 
-    <div class="story-info-card">
-        <div class="story-info-header">
-            <h4 class="mb-0">{{ $story->title }}</h4>
-            @if ($story->status == 'draft')
-                <span class="status-badge status-badge-draft">
-                    <i class="fas fa-edit"></i> Bản nháp
-                </span>
-            @elseif($story->status == 'pending')
-                <span class="status-badge status-badge-pending">
-                    <i class="fas fa-clock"></i> Đang chờ duyệt
-                </span>
-            @elseif($story->status == 'published')
-                <span class="status-badge status-badge-published">
-                    <i class="fas fa-check-circle"></i> Đã xuất bản
-                </span>
-            @elseif($story->status == 'rejected')
-                <span class="status-badge status-badge-rejected">
-                    <i class="fas fa-times-circle"></i> Đã bị từ chối
-                </span>
-            @endif
-        </div>
-        <div class="story-info-body">
-            <ul class="nav nav-tabs mb-4" id="storyTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit"
-                        type="button" role="tab" aria-controls="edit" aria-selected="true">
-                        <i class="fas fa-edit me-1"></i> Thông tin truyện
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="chapters-tab" data-bs-toggle="tab" data-bs-target="#chapters"
-                        type="button" role="tab" aria-controls="chapters" aria-selected="false">
-                        <i class="fas fa-list-ol me-1"></i> Quản lý chương
-                        <span class="badge bg-secondary ms-1">{{ $story->chapters->count() }}</span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="featured-tab" data-bs-toggle="tab" data-bs-target="#featured"
-                        type="button" role="tab" aria-controls="featured" aria-selected="false">
-                        <i class="fas fa-star me-1"></i> Đề cử truyện
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button"
-                        role="tab" aria-controls="review" aria-selected="false">
-                        <i class="fas fa-check-circle me-1"></i> Yêu cầu duyệt
-                    </button>
-                </li>
-            </ul>
 
-            <div class="tab-content" id="storyTabContent">
-                <!-- Tab Thông tin truyện -->
-                <div class="tab-pane fade show active" id="edit" role="tabpanel" aria-labelledby="edit-tab">
-                    <form action="{{ route('user.author.stories.update', $story->id) }}" method="POST"
-                        enctype="multipart/form-data">
-                        @csrf
-                        @method('PUT')
-                        <div class="row">
-                            <div class="col-md-8">
+    <div class="story-info-header">
+        <h4 class="mb-0">{{ $story->title }}</h4>
+        @if ($story->status == 'draft')
+            <span class="status-badge status-badge-draft">
+                <i class="fas fa-edit"></i> Bản nháp
+            </span>
+        @elseif($story->status == 'pending')
+            <span class="status-badge status-badge-pending">
+                <i class="fas fa-clock"></i> Đang chờ duyệt
+            </span>
+        @elseif($story->status == 'published')
+            <span class="status-badge status-badge-published">
+                <i class="fas fa-check-circle"></i> Đã xuất bản
+            </span>
+        @elseif($story->status == 'rejected')
+            <span class="status-badge status-badge-rejected">
+                <i class="fas fa-times-circle"></i> Đã bị từ chối
+            </span>
+        @endif
+    </div>
+    <div class="">
+        <ul class="nav nav-tabs mb-4" id="storyTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="edit-tab" data-bs-toggle="tab" data-bs-target="#edit" type="button"
+                    role="tab" aria-controls="edit" aria-selected="true">
+                    <i class="fas fa-edit me-1"></i> Thông tin truyện
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="chapters-tab" data-bs-toggle="tab" data-bs-target="#chapters" type="button"
+                    role="tab" aria-controls="chapters" aria-selected="false">
+                    <i class="fas fa-list-ol me-1"></i> Quản lý chương
+                    <span class="badge bg-secondary ms-1">{{ $story->chapters->count() }}</span>
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="featured-tab" data-bs-toggle="tab" data-bs-target="#featured" type="button"
+                    role="tab" aria-controls="featured" aria-selected="false">
+                    <i class="fas fa-star me-1"></i> Đề cử truyện
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button"
+                    role="tab" aria-controls="review" aria-selected="false">
+                    <i class="fas fa-check-circle me-1"></i> Yêu cầu duyệt
+                </button>
+            </li>
+        </ul>
 
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold">Ảnh bìa
-                                        {{ $story->cover ? '' : '<span class="text-danger">*</span>' }}</label>
+        <div class="tab-content" id="storyTabContent">
+            <!-- Tab Thông tin truyện -->
+            <div class="tab-pane fade show active" id="edit" role="tabpanel" aria-labelledby="edit-tab">
+                <form action="{{ route('user.author.stories.update', $story->id) }}" method="POST"
+                    enctype="multipart/form-data" id="editStoryForm">
+                    @csrf
+                    @method('PUT')
+                    <div class="row">
+                        <div class="col-md-8">
 
-                                    <input type="file" id="cover" name="cover" accept="image/*"
-                                        {{ $story->cover ? '' : 'required' }}>
-                                    @error('cover')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Ảnh bìa
+                                    {{ $story->cover ? '' : '<span class="text-danger">*</span>' }}</label>
 
-                                    @if ($story->cover)
-                                        <!-- Preview Area for existing cover -->
-                                        <div class="cover-preview mt-3" id="previewArea">
-                                            <div class="cover-preview-container">
-                                                <img src="{{ Storage::url($story->cover) }}" class="preview-cover"
-                                                    id="coverPreview" alt="Cover">
-                                                <div class="cover-overlay">
-                                                    <div class="cover-actions">
-                                                        <button type="button" class="cover-action-btn change"
-                                                            id="changeCover" title="Thay đổi ảnh">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button type="button" class="cover-action-btn remove"
-                                                            id="removeCover" title="Xóa ảnh">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
+                                <input type="file" id="cover" name="cover" accept="image/*"
+                                    {{ $story->cover ? '' : 'required' }}>
+                                @error('cover')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+
+                                @if ($story->cover)
+                                    <!-- Preview Area for existing cover -->
+                                    <div class="cover-preview mt-3" id="previewArea">
+                                        <div class="cover-preview-container">
+                                            <img src="{{ Storage::url($story->cover) }}" class="preview-cover"
+                                                id="coverPreview" alt="Cover">
+                                            <div class="cover-overlay">
+                                                <div class="cover-actions">
+                                                    <button type="button" class="cover-action-btn change" id="changeCover"
+                                                        title="Thay đổi ảnh">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="cover-action-btn remove"
+                                                        id="removeCover" title="Xóa ảnh">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
+                                    </div>
 
-                                        <!-- Upload Area (hidden initially) -->
-                                        <div class="cover-upload-area d-none" id="uploadArea">
-                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                            <div class="upload-text">Chọn ảnh bìa mới</div>
-                                            <div class="upload-hint">Kéo thả ảnh vào đây hoặc click để chọn</div>
-                                            <div class="upload-hint mt-2">
-                                                <small>Tỷ lệ ảnh tốt nhất: 2:3 | Kích thước tối thiểu: 300x450px</small>
-                                            </div>
+                                    <!-- Upload Area (hidden initially) -->
+                                    <div class="cover-upload-area d-none" id="uploadArea">
+                                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                        <div class="upload-text">Chọn ảnh bìa mới</div>
+                                        <div class="upload-hint">Kéo thả ảnh vào đây hoặc click để chọn</div>
+                                        <div class="upload-hint mt-2">
+                                            <small>Tỷ lệ ảnh tốt nhất: 2:3 | Kích thước tối thiểu: 300x450px</small>
                                         </div>
-                                    @else
-                                        <!-- Upload Area for new cover -->
-                                        <div class="cover-upload-area" id="uploadArea">
-                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                            <div class="upload-text">Chọn ảnh bìa truyện</div>
-                                            <div class="upload-hint">Kéo thả ảnh vào đây hoặc click để chọn</div>
-                                            <div class="upload-hint mt-2">
-                                                <small>Tỷ lệ ảnh tốt nhất: 2:3 | Kích thước tối thiểu: 300x450px</small>
-                                            </div>
+                                    </div>
+                                @else
+                                    <!-- Upload Area for new cover -->
+                                    <div class="cover-upload-area" id="uploadArea">
+                                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                        <div class="upload-text">Chọn ảnh bìa truyện</div>
+                                        <div class="upload-hint">Kéo thả ảnh vào đây hoặc click để chọn</div>
+                                        <div class="upload-hint mt-2">
+                                            <small>Tỷ lệ ảnh tốt nhất: 2:3 | Kích thước tối thiểu: 300x450px</small>
                                         </div>
+                                    </div>
 
-                                        <!-- Preview Area (hidden initially) -->
-                                        <div class="cover-preview d-none mt-3" id="previewArea">
-                                            <div class="cover-preview-container">
-                                                <img src="" class="preview-cover" id="coverPreview"
-                                                    alt="Preview">
-                                                <div class="cover-overlay">
-                                                    <div class="cover-actions">
-                                                        <button type="button" class="cover-action-btn change"
-                                                            id="changeCover" title="Thay đổi ảnh">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button type="button" class="cover-action-btn remove"
-                                                            id="removeCover" title="Xóa ảnh">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                    </div>
+                                    <!-- Preview Area (hidden initially) -->
+                                    <div class="cover-preview d-none mt-3" id="previewArea">
+                                        <div class="cover-preview-container">
+                                            <img src="" class="preview-cover" id="coverPreview" alt="Preview">
+                                            <div class="cover-overlay">
+                                                <div class="cover-actions">
+                                                    <button type="button" class="cover-action-btn change"
+                                                        id="changeCover" title="Thay đổi ảnh">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button type="button" class="cover-action-btn remove"
+                                                        id="removeCover" title="Xóa ảnh">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
-                                    @endif
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="title" class="form-label">Tiêu đề truyện <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('title') is-invalid @enderror"
-                                        id="title" name="title" value="{{ old('title', $story->title) }}" required>
-                                    @error('title')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="category_input" class="form-label">Thể loại <span
-                                            class="text-danger">*</span></label>
-
-                                    <div class="category-input-container @error('category_input') is-invalid @enderror"
-                                        id="categoryContainer">
-                                        <div class="category-tags" id="categoryTags"></div>
-                                        <input type="text" class="category-input" id="categoryInput"
-                                            autocomplete="off">
-                                        <div class="category-suggestions d-none" id="categorySuggestions"></div>
                                     </div>
-
-                                    <!-- Hidden input to store selected categories -->
-                                    <input type="hidden" name="category_input" id="categoryInputHidden"
-                                        value="{{ old('category_input', $categoryNames) }}">
-
-                                    <div class="form-text text-muted">
-                                        Nhập thể loại hoặc dán nhiều thể loại cách nhau bằng dấu phẩy...
-                                    </div>
-
-                                    @error('category_input')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="description" class="form-label">Mô tả <span
-                                            class="text-danger">*</span></label>
-                                    <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
-                                        rows="6">{{ old('description', $story->description) }}</textarea>
-                                    @error('description')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                @endif
                             </div>
 
-                            <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Tiêu đề truyện <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('title') is-invalid @enderror"
+                                    id="title" name="title" value="{{ old('title', $story->title) }}" required>
+                                @error('title')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
 
+                            <div class="mb-3">
+                                <label for="category_input" class="form-label">Thể loại <span
+                                        class="text-danger">*</span></label>
 
-
-                                <div class="mb-3">
-                                    <label for="author_name" class="form-label">Tên tác giả <span
-                                            class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('author_name') is-invalid @enderror"
-                                        id="author_name" name="author_name"
-                                        value="{{ old('author_name', $story->author_name) }}" required>
-                                    @error('author_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                <div class="category-input-container @error('category_input') is-invalid @enderror"
+                                    id="categoryContainer">
+                                    <div class="category-tags" id="categoryTags"></div>
+                                    <input type="text" class="category-input" id="categoryInput" autocomplete="off">
+                                    <div class="category-suggestions d-none" id="categorySuggestions"></div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label for="story_type" class="form-label">Loại truyện <span
-                                            class="text-danger">*</span></label>
-                                    <select class="form-select @error('story_type') is-invalid @enderror" id="story_type"
-                                        name="story_type" required>
-                                        <option value="">-- Chọn loại truyện --</option>
-                                        <option value="original"
-                                            {{ old('story_type', $story->story_type) == 'original' ? 'selected' : '' }}>
-                                            Sáng tác</option>
-                                        <option value="translated"
-                                            {{ old('story_type', $story->story_type) == 'translated' ? 'selected' : '' }}>
-                                            Dịch/Edit</option>
-                                        <option value="collected"
-                                            {{ old('story_type', $story->story_type) == 'collected' ? 'selected' : '' }}>
-                                            Sưu tầm</option>
-                                    </select>
-                                    @error('story_type')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
+                                <!-- Hidden input to store selected categories -->
+                                <input type="hidden" name="category_input" id="categoryInputHidden"
+                                    value="{{ old('category_input', $categoryNames) }}">
+
+                                <div class="form-text text-muted">
+                                    Nhập thể loại hoặc dán nhiều thể loại cách nhau bằng dấu phẩy...
                                 </div>
 
+                                @error('category_input')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
 
-                                <div class="mb-3">
-                                    <label for="translator_name" class="form-label">Chuyển ngữ <span
-                                            class="text-muted">(nếu có)</span></label>
-                                    <input type="text"
-                                        class="form-control @error('translator_name') is-invalid @enderror"
-                                        id="translator_name" name="translator_name"
-                                        value="{{ old('translator_name', $story->translator_name) }}">
-                                    <div class="form-text text-muted">Điền tên người dịch/edit truyện</div>
-                                    @error('translator_name')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="source_link" class="form-label">Link nguồn <span class="text-danger">*</span></label>
-                                    <input required type="url" class="form-control @error('source_link') is-invalid @enderror" id="source_link"
-                                        name="source_link" value="{{ old('source_link', $story->source_link) }}" placeholder="https://example.com">
-                                    @error('source_link')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="is_monopoly" class="form-label mb-0">Truyện độc quyền <span
-                                            class="text-muted">(nếu có)</span></label>
-                                    <input type="checkbox" class="form-check-input" id="is_monopoly" name="is_monopoly"
-                                        value="1" {{ old('is_monopoly', $story->is_monopoly) ? 'checked' : '' }}>
-                                    <div class="form-text text-muted">
-                                        Chọn nếu truyện chỉ đăng duy nhất tại Pink Novel
-                                    </div>
-                                    @error('is_monopoly')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="mb-3 mt-4">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="is_18_plus"
-                                            name="is_18_plus" value="1"
-                                            {{ old('is_18_plus', $story->is_18_plus) ? 'checked' : '' }}>
-                                        <label class="form-check-label fw-bold" for="is_18_plus">
-                                            <span class="badge bg-danger me-1"><i class="fas fa-exclamation-triangle"></i>
-                                                18+</span>
-                                            Truyện có nội dung người lớn
-                                        </label>
-                                        <div class="form-text text-danger">
-                                            Chọn nếu truyện có nội dung nhạy cảm, bạo lực hoặc tình dục không phù hợp với
-                                            độc giả dưới 18 tuổi.
-                                        </div>
-                                    </div>
-                                </div>
-
-
-
-                                @if ($story->status == 'pending')
-                                    <div class="alert alert-warning mt-4">
-                                        <div class="mb-2"><i class="fas fa-info-circle me-2"></i> <strong>Lưu
-                                                ý:</strong>
-                                        </div>
-                                        <p>Truyện của bạn đang chờ phê duyệt. Nếu bạn cập nhật thông tin, truyện sẽ quay lại
-                                            trạng thái nháp và cần gửi yêu cầu phê duyệt lại.</p>
-                                    </div>
-                                @endif
-
-                                @if ($story->status == 'published')
-                                    @if ($story->completed == 1)
-                                        {{-- Truyện đã hoàn thành --}}
-                                        <div class="alert alert-warning mt-4">
-                                            <div class="mb-2"><i class="fas fa-lock me-2"></i> <strong>Truyện đã hoàn
-                                                    thành:</strong>
-                                            </div>
-                                            <p>Truyện của bạn đã được đánh dấu là hoàn thành. Khi bạn chỉnh sửa thông tin,
-                                                hệ thống sẽ gửi yêu cầu duyệt cho admin và những thay đổi sẽ được áp dụng
-                                                sau khi admin phê duyệt.</p>
-                                            <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê
-                                                duyệt.</p>
-                                        </div>
-                                    @else
-                                        {{-- Truyện chưa hoàn thành --}}
-                                        <div class="alert alert-success mt-4">
-                                            <div class="mb-2"><i class="fas fa-edit me-2"></i> <strong>Truyện chưa hoàn
-                                                    thành:</strong>
-                                            </div>
-                                            <p>Truyện của bạn đang được xuất bản nhưng chưa hoàn thành. Bạn có thể chỉnh sửa
-                                                thông tin tự do mà không cần phê duyệt admin.</p>
-                                            <p>Khi nào đánh dấu truyện là hoàn thành thì việc chỉnh sửa sẽ cần phê duyệt.
-                                            </p>
-                                        </div>
-                                    @endif
-                                @endif
-
-                                @if ($story->status == 'published' && $hasPendingEditRequest)
-                                    <div class="alert alert-warning mt-4">
-                                        <div class="mb-2"><i class="fas fa-clock me-2"></i> <strong>Đang chờ
-                                                duyệt:</strong>
-                                        </div>
-                                        <p>Bạn đã gửi yêu cầu chỉnh sửa thông tin truyện này và đang chờ admin phê duyệt.
-                                        </p>
-                                        <p>Bạn không thể thực hiện thêm thay đổi cho đến khi yêu cầu hiện tại được xử lý.
-                                        </p>
-                                        <p><small>Thời gian gửi yêu cầu:
-                                                {{ $latestPendingEditRequest->submitted_at->format('H:i:s d/m/Y') }}</small>
-                                        </p>
-                                    </div>
-                                @endif
-
-                                @if ($story->status == 'rejected')
-                                    <div class="alert alert-danger mt-4">
-                                        <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ
-                                                chối:</strong>
-                                        </div>
-                                        <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản
-                                            trị viên.</p>
-
-                                        @if ($story->admin_note)
-                                            <div class="mt-2">
-                                                <strong>Lý do từ chối:</strong>
-                                                <div class="p-2 bg-light rounded border border-danger mt-1">
-                                                    {{ $story->admin_note }}</div>
-                                            </div>
-                                        @endif
-
-                                        <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để
-                                            gửi lại yêu cầu.</p>
-                                    </div>
-                                @endif
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Mô tả <span
+                                        class="text-danger">*</span></label>
+                                <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
+                                    rows="6">{{ old('description', $story->description) }}</textarea>
+                                @error('description')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
-                        <div class="d-flex justify-content-end mt-4">
-                            <a href="{{ route('user.author.stories') }}" class="btn btn-outline-danger me-2">Hủy</a>
+                        <div class="col-md-4">
+
+
+
+                            <div class="mb-3">
+                                <label for="author_name" class="form-label">Tên tác giả <span
+                                        class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('author_name') is-invalid @enderror"
+                                    id="author_name" name="author_name"
+                                    value="{{ old('author_name', $story->author_name) }}" required>
+                                @error('author_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="story_type" class="form-label">Loại truyện <span
+                                        class="text-danger">*</span></label>
+                                <select class="form-select @error('story_type') is-invalid @enderror" id="story_type"
+                                    name="story_type" required>
+                                    <option value="">-- Chọn loại truyện --</option>
+                                    <option value="original"
+                                        {{ old('story_type', $story->story_type) == 'original' ? 'selected' : '' }}>
+                                        Sáng tác</option>
+                                    <option value="translated"
+                                        {{ old('story_type', $story->story_type) == 'translated' ? 'selected' : '' }}>
+                                        Dịch/Edit</option>
+                                    <option value="collected"
+                                        {{ old('story_type', $story->story_type) == 'collected' ? 'selected' : '' }}>
+                                        Sưu tầm</option>
+                                </select>
+                                @error('story_type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+
+                            <div class="mb-3">
+                                <label for="translator_name" class="form-label">Chuyển ngữ <span class="text-muted">(nếu
+                                        có)</span></label>
+                                <input type="text" class="form-control @error('translator_name') is-invalid @enderror"
+                                    id="translator_name" name="translator_name"
+                                    value="{{ old('translator_name', $story->translator_name) }}">
+                                <div class="form-text text-muted">Điền tên người dịch/edit truyện</div>
+                                @error('translator_name')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="source_link" class="form-label">Link nguồn <span
+                                        class="text-danger">*</span></label>
+                                <input required type="url"
+                                    class="form-control @error('source_link') is-invalid @enderror" id="source_link"
+                                    name="source_link" value="{{ old('source_link', $story->source_link) }}"
+                                    placeholder="https://example.com">
+                                @error('source_link')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="is_monopoly" class="form-label mb-0">Truyện độc quyền <span
+                                        class="text-muted">(nếu có)</span></label>
+                                <input type="checkbox" class="form-check-input" id="is_monopoly" name="is_monopoly"
+                                    value="1" {{ old('is_monopoly', $story->is_monopoly) ? 'checked' : '' }}>
+                                <div class="form-text text-muted">
+                                    Chọn nếu truyện chỉ đăng duy nhất tại Pink Novel
+                                </div>
+                                @error('is_monopoly')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="mb-3 mt-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="is_18_plus" name="is_18_plus"
+                                        value="1" {{ old('is_18_plus', $story->is_18_plus) ? 'checked' : '' }}>
+                                    <label class="form-check-label fw-bold" for="is_18_plus">
+                                        <span class="badge bg-danger me-1"><i class="fas fa-exclamation-triangle"></i>
+                                            18+</span>
+                                        Truyện có nội dung người lớn
+                                    </label>
+                                    <div class="form-text text-danger">
+                                        Chọn nếu truyện có nội dung nhạy cảm, bạo lực hoặc tình dục không phù hợp với
+                                        độc giả dưới 18 tuổi.
+                                    </div>
+                                </div>
+                            </div>
+
+
+
+                            @if ($story->status == 'pending')
+                                <div class="alert alert-warning mt-4">
+                                    <div class="mb-2"><i class="fas fa-info-circle me-2"></i> <strong>Lưu
+                                            ý:</strong>
+                                    </div>
+                                    <p>Truyện của bạn đang chờ phê duyệt. Nếu bạn cập nhật thông tin, truyện sẽ quay lại
+                                        trạng thái nháp và cần gửi yêu cầu phê duyệt lại.</p>
+                                </div>
+                            @endif
+
+                            @if ($story->status == 'published')
+                                <div class="alert alert-info mt-4">
+                                    <div class="mb-2"><i class="fas fa-info-circle me-2"></i> <strong>Truyện đã được
+                                            duyệt:</strong>
+                                    </div>
+                                    <p>Bạn có thể chỉnh sửa thông tin truyện. Khi nhấn "Gửi yêu cầu chỉnh sửa", hệ thống sẽ
+                                        gửi các thay đổi cho admin phê duyệt. Truyện vẫn tiếp tục hiển thị với thông tin
+                                        hiện tại cho đến khi được phê duyệt.</p>
+                                </div>
+                            @endif
 
                             @if ($story->status == 'published' && $hasPendingEditRequest)
-                                <button type="button" class="btn btn-secondary" disabled>
-                                    <i class="fas fa-clock me-1"></i> Đang chờ duyệt
-                                </button>
-                            @elseif($story->status == 'published' && $story->completed == 1)
-                                {{-- Truyện đã hoàn thành, cần phê duyệt --}}
-                                <button type="button" class="btn btn-warning" data-bs-toggle="modal"
-                                    data-bs-target="#confirmEditModal">
-                                    <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu chỉnh sửa
-                                </button>
+                                <div class="alert alert-warning mt-4">
+                                    <div class="mb-2"><i class="fas fa-clock me-2"></i> <strong>Đang chờ
+                                            duyệt:</strong>
+                                    </div>
+                                    <p>Bạn đã gửi yêu cầu chỉnh sửa thông tin truyện này và đang chờ admin phê duyệt.
+                                    </p>
+                                    <p>Bạn không thể thực hiện thêm thay đổi cho đến khi yêu cầu hiện tại được xử lý.
+                                    </p>
+                                    <p><small>Thời gian gửi yêu cầu:
+                                            {{ $latestPendingEditRequest->submitted_at->format('H:i:s d/m/Y') }}</small>
+                                    </p>
+                                </div>
+                            @endif
 
-                                <!-- Modal xác nhận chỉnh sửa -->
-                                <div class="modal fade" id="confirmEditModal" tabindex="-1" aria-hidden="true">
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <div class="modal-header">
-                                                <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Xác nhận
-                                                    chỉnh sửa</h5>
-                                                <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                    aria-label="Close"></button>
+                            @if ($story->status == 'rejected')
+                                <div class="alert alert-danger mt-4">
+                                    <div class="mb-2"><i class="fas fa-times-circle me-2"></i> <strong>Truyện bị từ
+                                            chối:</strong>
+                                    </div>
+                                    <p>Truyện của bạn đã bị từ chối phê duyệt. Vui lòng chỉnh sửa theo phản hồi của quản
+                                        trị viên.</p>
+
+                                    @if ($story->admin_note)
+                                        <div class="mt-2">
+                                            <strong>Lý do từ chối:</strong>
+                                            <div class="p-2 bg-light rounded border border-danger mt-1">
+                                                {{ $story->admin_note }}</div>
+                                        </div>
+                                    @endif
+
+                                    <p class="mt-2 mb-0">Sau khi chỉnh sửa, vui lòng chuyển đến tab "Yêu cầu duyệt" để
+                                        gửi lại yêu cầu.</p>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <a href="{{ route('user.author.stories') }}" class="btn btn-outline-danger me-2">Hủy</a>
+
+                        @if ($story->status == 'published' && $hasPendingEditRequest)
+                            <button type="button" class="btn btn-secondary" disabled>
+                                <i class="fas fa-clock me-1"></i> Đang chờ duyệt
+                            </button>
+                        @elseif($story->status == 'published')
+                            {{-- Truyện đã được approved, cần phê duyệt khi edit --}}
+                            <button type="button" class="btn btn-warning" id="btnSubmitEditRequest"
+                                data-bs-toggle="modal" data-bs-target="#confirmEditModal">
+                                <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu chỉnh sửa
+                            </button>
+                            <button type="submit" class="btn btn-outline-dark d-none" id="btnActualSubmit">
+                                Lưu thông tin
+                            </button>
+
+                            <!-- Modal xác nhận chỉnh sửa -->
+                            <div class="modal fade" id="confirmEditModal" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"><i class="fas fa-info-circle me-2"></i>Xác nhận
+                                                chỉnh sửa</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                                <strong>Truyện đã được duyệt</strong>
                                             </div>
-                                            <div class="modal-body">
-                                                <div class="alert alert-warning">
-                                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                                    <strong>Truyện đã hoàn thành</strong>
+
+                                            <p>Truyện của bạn đã được admin phê duyệt.</p>
+                                            <p>Khi bạn chỉnh sửa thông tin cơ bản (tên truyện, tên tác giả, thể loại,
+                                                tag...), hệ thống sẽ gửi yêu cầu duyệt cho admin và những thay đổi sẽ được
+                                                áp dụng sau khi admin phê duyệt.</p>
+                                            <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê
+                                                duyệt.</p>
+
+                                            <div class="mt-3">
+                                                <h6>Các thay đổi sẽ được gửi:</h6>
+                                                <div id="changesListContainer" class="border p-3 mt-2"
+                                                    style="max-height: 200px; overflow-y: auto;">
+                                                    <ul id="changesList" class="mb-0"></ul>
                                                 </div>
-
-                                                <p>Truyện của bạn đã được đánh dấu là hoàn thành.</p>
-                                                <p>Khi bạn chỉnh sửa thông tin, hệ thống sẽ gửi yêu cầu duyệt cho admin và
-                                                    những thay đổi sẽ được áp dụng sau khi admin phê duyệt.</p>
-                                                <p>Truyện vẫn tiếp tục hiển thị với thông tin hiện tại cho đến khi được phê
-                                                    duyệt.</p>
-
-                                                <div class="mt-3">
-                                                    <h6>Các thay đổi sẽ được gửi:</h6>
-                                                    <div id="changesListContainer" class="border p-3 mt-2"
-                                                        style="max-height: 200px; overflow-y: auto;">
-                                                        <ul id="changesList" class="mb-0"></ul>
-                                                    </div>
-                                                </div>
-
-                                                <p class="mt-3">Bạn có muốn tiếp tục?</p>
                                             </div>
-                                            <div class="modal-footer">
-                                                <button type="button" class="btn btn-outline-danger"
-                                                    data-bs-dismiss="modal">Hủy bỏ</button>
-                                                <button type="submit" class="btn btn-warning">
-                                                    <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu duyệt
-                                                </button>
-                                            </div>
+
+                                            <p class="mt-3">Bạn có muốn tiếp tục?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-outline-danger"
+                                                data-bs-dismiss="modal">Hủy bỏ</button>
+                                            <button type="submit" class="btn btn-warning">
+                                                <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu duyệt
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            @else
-                                {{-- Truyện chưa hoàn thành hoặc chưa xuất bản, có thể sửa tự do --}}
-                                <button type="submit" class="btn btn-outline-dark">
-                                    Lưu thông tin
-                                </button>
-                            @endif
-                        </div>
-                    </form>
+                            </div>
+                        @else
+                            {{-- Truyện chưa hoàn thành hoặc chưa xuất bản, có thể sửa tự do --}}
+                            <button type="submit" class="btn btn-outline-dark">
+                                Lưu thông tin
+                            </button>
+                        @endif
+                    </div>
+                </form>
+            </div>
+
+            <!-- Tab Quản lý chương -->
+            <div class="tab-pane fade" id="chapters" role="tabpanel" aria-labelledby="chapters-tab">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        @if ($story->chapters->count() < 3)
+                            <span class="chapter-count-badge warning">
+                                <i class="fas fa-exclamation-triangle"></i> {{ $story->chapters->count() }}/3 chương
+                                tối thiểu
+                            </span>
+                        @else
+                            <span class="chapter-count-badge success">
+                                <i class="fas fa-check-circle"></i> {{ $story->chapters->count() }} chương (Đủ điều
+                                kiện)
+                            </span>
+                        @endif
+                    </div>
+                    <div>
+                        <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
+                            class="btn btn-outline-dark me-2">
+                            <i class="fas fa-plus me-1"></i> Thêm nhiều chương
+                        </a>
+                        <a href="{{ route('user.author.stories.chapters.create', $story->id) }}" class="btn btn-dark">
+                            <i class="fas fa-plus me-1"></i> Thêm một chương
+                        </a>
+                    </div>
                 </div>
 
-                <!-- Tab Quản lý chương -->
-                <div class="tab-pane fade" id="chapters" role="tabpanel" aria-labelledby="chapters-tab">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <div>
-                            @if ($story->chapters->count() < 3)
-                                <span class="chapter-count-badge warning">
-                                    <i class="fas fa-exclamation-triangle"></i> {{ $story->chapters->count() }}/3 chương
-                                    tối thiểu
-                                </span>
-                            @else
-                                <span class="chapter-count-badge success">
-                                    <i class="fas fa-check-circle"></i> {{ $story->chapters->count() }} chương (Đủ điều
-                                    kiện)
-                                </span>
-                            @endif
-                        </div>
-                        <div>
+                @if ($story->chapters->count() > 0)
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th width="60">Số</th>
+                                    <th>Tên chương</th>
+                                    <th width="100">Trạng thái</th>
+                                    <th width="100">Hình thức</th>
+                                    <th width="150">Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach ($story->chapters->sortBy('number') as $chapter)
+                                    <tr>
+                                        <td>{{ $chapter->number }}</td>
+                                        <td>
+                                            {{ $chapter->title }}
+                                            @if ($chapter->scheduled_publish_at && $chapter->scheduled_publish_at > now())
+                                                <span class="badge bg-info ms-1"
+                                                    title="Hẹn giờ đăng: {{ $chapter->scheduled_publish_at->format('H:i d/m/Y') }}">
+                                                    <i class="fas fa-clock"></i>
+                                                </span>
+                                            @endif
+                                            @if (!empty($chapter->password))
+                                                <span class="badge bg-warning ms-1" title="Chương có mật khẩu">
+                                                    <i class="fas fa-lock"></i>
+                                                </span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($chapter->status == 'published')
+                                                <span class="badge bg-success">Đã đăng</span>
+                                            @else
+                                                <span class="badge bg-secondary">Nháp</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($chapter->is_free)
+                                                <span class="badge bg-success">Miễn phí</span>
+                                            @else
+                                                <span
+                                                    class="badge bg-warning text-dark">{{ number_format($chapter->price) }}
+                                                    xu</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{{ route('user.author.stories.chapters.edit', ['story' => $story->id, 'chapter' => $chapter->id]) }}"
+                                                    class="btn btn-outline-dark">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-outline-danger"
+                                                    data-bs-toggle="modal"
+                                                    data-bs-target="#deleteChapterModal{{ $chapter->id }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <p>Truyện chưa có chương nào. Vui lòng thêm ít nhất 3 chương trước khi gửi yêu cầu duyệt.</p>
+                        <div class="mt-3">
                             <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
                                 class="btn btn-outline-dark me-2">
                                 <i class="fas fa-plus me-1"></i> Thêm nhiều chương
@@ -671,354 +736,269 @@
                             </a>
                         </div>
                     </div>
+                @endif
 
-                    @if ($story->chapters->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th width="60">Số</th>
-                                        <th>Tên chương</th>
-                                        <th width="100">Trạng thái</th>
-                                        <th width="100">Hình thức</th>
-                                        <th width="150">Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($story->chapters->sortBy('number') as $chapter)
-                                        <tr>
-                                            <td>{{ $chapter->number }}</td>
-                                            <td>
-                                                {{ $chapter->title }}
-                                                @if ($chapter->scheduled_publish_at && $chapter->scheduled_publish_at > now())
-                                                    <span class="badge bg-info ms-1"
-                                                        title="Hẹn giờ đăng: {{ $chapter->scheduled_publish_at->format('H:i d/m/Y') }}">
-                                                        <i class="fas fa-clock"></i>
-                                                    </span>
-                                                @endif
-                                                @if (!empty($chapter->password))
-                                                    <span class="badge bg-warning ms-1" title="Chương có mật khẩu">
-                                                        <i class="fas fa-lock"></i>
-                                                    </span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($chapter->status == 'published')
-                                                    <span class="badge bg-success">Đã đăng</span>
-                                                @else
-                                                    <span class="badge bg-secondary">Nháp</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                @if ($chapter->is_free)
-                                                    <span class="badge bg-success">Miễn phí</span>
-                                                @else
-                                                    <span
-                                                        class="badge bg-warning text-dark">{{ number_format($chapter->price) }}
-                                                        xu</span>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                <div class="btn-group btn-group-sm">
-                                                    <a href="{{ route('user.author.stories.chapters.edit', ['story' => $story->id, 'chapter' => $chapter->id]) }}"
-                                                        class="btn btn-outline-dark">
-                                                        <i class="fas fa-edit"></i>
-                                                    </a>
-                                                    <button type="button" class="btn btn-outline-danger"
-                                                        data-bs-toggle="modal"
-                                                        data-bs-target="#deleteChapterModal{{ $chapter->id }}">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @else
-                        <div class="alert alert-info text-center">
-                            <i class="fas fa-info-circle fa-2x mb-3"></i>
-                            <p>Truyện chưa có chương nào. Vui lòng thêm ít nhất 3 chương trước khi gửi yêu cầu duyệt.</p>
-                            <div class="mt-3">
-                                <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
-                                    class="btn btn-outline-dark me-2">
-                                    <i class="fas fa-plus me-1"></i> Thêm nhiều chương
-                                </a>
-                                <a href="{{ route('user.author.stories.chapters.create', $story->id) }}"
-                                    class="btn btn-dark">
-                                    <i class="fas fa-plus me-1"></i> Thêm một chương
-                                </a>
+                <!-- Modal xóa chương -->
+                @foreach ($story->chapters as $chapter)
+                    <div class="modal fade" id="deleteChapterModal{{ $chapter->id }}" tabindex="-1"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title">Xác nhận xóa chương</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Bạn có chắc chắn muốn xóa chương "{{ $chapter->title }}" không?</p>
+                                    <p class="text-danger mb-0"><i class="fas fa-exclamation-triangle me-1"></i> Hành
+                                        động này không thể hoàn tác.</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                                    <form
+                                        action="{{ route('user.author.stories.chapters.destroy', ['story' => $story->id, 'chapter' => $chapter->id]) }}"
+                                        method="POST" class="d-inline">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-danger">Xóa chương</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    @endif
+                    </div>
+                @endforeach
+            </div>
 
-                    <!-- Modal xóa chương -->
-                    @foreach ($story->chapters as $chapter)
-                        <div class="modal fade" id="deleteChapterModal{{ $chapter->id }}" tabindex="-1"
-                            aria-hidden="true">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">Xác nhận xóa chương</h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
+
+            <!-- Tab Đề cử truyện -->
+            <div class="tab-pane fade" id="featured" role="tabpanel" aria-labelledby="featured-tab">
+                <div class=" mb-4">
+
+                    <div class="card-body">
+                        {{-- Sử dụng biến từ controller để tránh duplicate queries --}}
+
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Thông tin đề cử:</h6>
+                            <ul class="mb-0 mt-2">
+                                <li class="mb-1">Chi phí đề cử: <strong>{{ number_format($featuredPrice) }}
+                                        xu</strong></li>
+                                <li class="mb-1">Thời gian đề cử: <strong>{{ $featuredDuration }} ngày</strong></li>
+                                <li class="mb-1">Truyện sẽ xuất hiện ở vị trí nổi bật trên trang chủ</li>
+                                <li>Đề cử của admin sẽ có ưu tiên cao hơn đề cử của tác giả</li>
+                            </ul>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Số xu hiện tại</h6>
+                                        <h4 class="text-primary">{{ number_format(Auth::user()->coins) }} xu</h4>
                                     </div>
-                                    <div class="modal-body">
-                                        <p>Bạn có chắc chắn muốn xóa chương "{{ $chapter->title }}" không?</p>
-                                        <p class="text-danger mb-0"><i class="fas fa-exclamation-triangle me-1"></i> Hành
-                                            động này không thể hoàn tác.</p>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-bs-dismiss="modal">Hủy</button>
-                                        <form
-                                            action="{{ route('user.author.stories.chapters.destroy', ['story' => $story->id, 'chapter' => $chapter->id]) }}"
-                                            method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger">Xóa chương</button>
-                                        </form>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-light">
+                                    <div class="card-body text-center">
+                                        <h6 class="card-title">Chi phí đề cử</h6>
+                                        <h4 class="text-warning">{{ number_format($featuredPrice) }} xu</h4>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
-                </div>
 
-
-                <!-- Tab Đề cử truyện -->
-                <div class="tab-pane fade" id="featured" role="tabpanel" aria-labelledby="featured-tab">
-                    <div class=" mb-4">
-
-                        <div class="card-body">
-                            {{-- Sử dụng biến từ controller để tránh duplicate queries --}}
-
-                            <div class="alert alert-info">
-                                <h6><i class="fas fa-info-circle me-2"></i>Thông tin đề cử:</h6>
-                                <ul class="mb-0 mt-2">
-                                    <li class="mb-1">Chi phí đề cử: <strong>{{ number_format($featuredPrice) }}
-                                            xu</strong></li>
-                                    <li class="mb-1">Thời gian đề cử: <strong>{{ $featuredDuration }} ngày</strong></li>
-                                    <li class="mb-1">Truyện sẽ xuất hiện ở vị trí nổi bật trên trang chủ</li>
-                                    <li>Đề cử của admin sẽ có ưu tiên cao hơn đề cử của tác giả</li>
-                                </ul>
+                        @if ($story->is_featured || $story->isCurrentlyAdminFeatured())
+                            <div class="alert alert-warning">
+                                <i class="fas fa-crown me-2"></i>
+                                <strong>Truyện đã được admin đề cử:</strong> Truyện của bạn đã được admin đề cử.
+                                @php
+                                    $adminFeatured = $story->activeAdminFeatured;
+                                    $order = $adminFeatured ? $adminFeatured->featured_order : $story->featured_order;
+                                @endphp
+                                @if ($order)
+                                    <br>Thứ tự: #{{ $order }}
+                                @endif
+                                <br>Đề cử của admin có ưu tiên cao hơn đề cử của tác giả.
                             </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="card border-0 bg-light">
-                                        <div class="card-body text-center">
-                                            <h6 class="card-title">Số xu hiện tại</h6>
-                                            <h4 class="text-primary">{{ number_format(Auth::user()->coins) }} xu</h4>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="card border-0 bg-light">
-                                        <div class="card-body text-center">
-                                            <h6 class="card-title">Chi phí đề cử</h6>
-                                            <h4 class="text-warning">{{ number_format($featuredPrice) }} xu</h4>
-                                        </div>
-                                    </div>
-                                </div>
+                        @elseif($story->isCurrentlyAuthorFeatured())
+                            <div class="alert alert-success">
+                                <i class="fas fa-star me-2"></i>
+                                <strong>Đang được đề cử:</strong> Truyện của bạn đang được đề cử bởi tác giả.
+                                @php
+                                    $authorFeatured = $story->activeAuthorFeatured;
+                                @endphp
+                                @if ($authorFeatured)
+                                    <br>
+                                    <small class="text-muted">
+                                        Đề cử từ: {{ $authorFeatured->featured_at->format('d/m/Y H:i') }}<br>
+                                        Hết hạn: {{ $authorFeatured->featured_until->format('d/m/Y H:i') }}
+                                        (Còn {{ $authorFeatured->days_remaining }} ngày)
+                                    </small>
+                                @endif
                             </div>
-
-                            @if ($story->is_featured || $story->isCurrentlyAdminFeatured())
+                        @else
+                            @if ($story->status !== 'published')
                                 <div class="alert alert-warning">
-                                    <i class="fas fa-crown me-2"></i>
-                                    <strong>Truyện đã được admin đề cử:</strong> Truyện của bạn đã được admin đề cử.
-                                    @php
-                                        $adminFeatured = $story->activeAdminFeatured;
-                                        $order = $adminFeatured
-                                            ? $adminFeatured->featured_order
-                                            : $story->featured_order;
-                                    @endphp
-                                    @if ($order)
-                                        <br>Thứ tự: #{{ $order }}
-                                    @endif
-                                    <br>Đề cử của admin có ưu tiên cao hơn đề cử của tác giả.
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Chưa thể đề cử:</strong> Truyện phải được xuất bản trước khi có thể đề cử.
                                 </div>
-                            @elseif($story->isCurrentlyAuthorFeatured())
-                                <div class="alert alert-success">
-                                    <i class="fas fa-star me-2"></i>
-                                    <strong>Đang được đề cử:</strong> Truyện của bạn đang được đề cử bởi tác giả.
-                                    @php
-                                        $authorFeatured = $story->activeAuthorFeatured;
-                                    @endphp
-                                    @if ($authorFeatured)
-                                        <br>
-                                        <small class="text-muted">
-                                            Đề cử từ: {{ $authorFeatured->featured_at->format('d/m/Y H:i') }}<br>
-                                            Hết hạn: {{ $authorFeatured->featured_until->format('d/m/Y H:i') }}
-                                            (Còn {{ $authorFeatured->days_remaining }} ngày)
-                                        </small>
-                                    @endif
+                            @elseif(Auth::user()->coins < $featuredPrice)
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <strong>Không đủ xu:</strong> Bạn cần ít nhất {{ number_format($featuredPrice) }}
+                                    xu để đề cử truyện.
+                                    <br>
+                                    <a href="{{ route('user.deposit') }}" class="btn btn-sm btn-outline-primary mt-2">
+                                        <i class="fas fa-coins me-1"></i> Nạp xu ngay
+                                    </a>
                                 </div>
                             @else
-                                @if ($story->status !== 'published')
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                        <strong>Chưa thể đề cử:</strong> Truyện phải được xuất bản trước khi có thể đề cử.
-                                    </div>
-                                @elseif(Auth::user()->coins < $featuredPrice)
-                                    <div class="alert alert-danger">
-                                        <i class="fas fa-exclamation-circle me-2"></i>
-                                        <strong>Không đủ xu:</strong> Bạn cần ít nhất {{ number_format($featuredPrice) }}
-                                        xu để đề cử truyện.
-                                        <br>
-                                        <a href="{{ route('user.deposit') }}"
-                                            class="btn btn-sm btn-outline-primary mt-2">
-                                            <i class="fas fa-coins me-1"></i> Nạp xu ngay
-                                        </a>
-                                    </div>
-                                @else
-                                    <form action="{{ route('user.author.stories.featured', $story->id) }}" method="POST"
-                                        id="featuredForm">
-                                        @csrf
-                                        <div class="alert alert-success">
-                                            <i class="fas fa-check-circle me-2"></i>
-                                            <strong>Có thể đề cử:</strong> Truyện của bạn đủ điều kiện để đề cử lên trang
-                                            chủ.
-                                        </div>
-
-                                        <div class="d-grid">
-                                            <button type="button" class="btn btn-warning btn-lg" data-bs-toggle="modal"
-                                                data-bs-target="#confirmFeaturedModal">
-                                                <i class="fas fa-star me-2"></i>Đề cử truyện
-                                                ({{ number_format($featuredPrice) }} xu)
-                                            </button>
-                                        </div>
-                                    </form>
-                                @endif
-                            @endif
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tab Yêu cầu duyệt -->
-                <div class="tab-pane fade" id="review" role="tabpanel" aria-labelledby="review-tab">
-                    <div class="alert alert-info">
-                        <h5><i class="fas fa-info-circle me-2"></i>Yêu cầu để truyện được duyệt:</h5>
-                        <ul class="mb-0 mt-2">
-                            <li class="mb-2">Truyện phải có đầy đủ thông tin cơ bản (tiêu đề, mô tả, thể loại, tác giả)
-                            </li>
-                            <li class="mb-2">Truyện phải có ít nhất 3 chương</li>
-                            <li class="mb-2">Nội dung phải tuân thủ các quy định của trang web</li>
-                            <li>Truyện không vi phạm bản quyền (nếu là truyện dịch/sưu tầm)</li>
-                        </ul>
-                    </div>
-
-                    <div class="card mb-4">
-                        <div class="card-header">
-                            <h5 class="mb-0">Trạng thái yêu cầu</h5>
-                        </div>
-                        <div class="card-body">
-                            @if ($story->status == 'draft')
-                                @if ($story->chapters->count() < 3)
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                        <strong>Chưa đủ điều kiện:</strong> Truyện cần có ít nhất 3 chương trước khi gửi yêu
-                                        cầu duyệt.
-                                    </div>
-                                @else
+                                <form action="{{ route('user.author.stories.featured', $story->id) }}" method="POST"
+                                    id="featuredForm">
+                                    @csrf
                                     <div class="alert alert-success">
                                         <i class="fas fa-check-circle me-2"></i>
-                                        <strong>Đủ điều kiện:</strong> Bạn có thể gửi yêu cầu duyệt truyện ngay bây giờ.
+                                        <strong>Có thể đề cử:</strong> Truyện của bạn đủ điều kiện để đề cử lên trang
+                                        chủ.
                                     </div>
 
-                                    <form action="{{ route('user.author.stories.submit.for.review', $story->id) }}"
-                                        method="POST" class="review-form">
-                                        @csrf
-                                        <div class="mb-3">
-                                            <label for="review_note" class="form-label">Ghi chú cho quản trị viên (không
-                                                bắt buộc)</label>
-                                            <textarea class="form-control" id="review_note" name="review_note" rows="4"
-                                                placeholder="Nhập ghi chú hoặc thông tin bổ sung cho quản trị viên...">{{ old('review_note') }}</textarea>
-                                            <div class="form-text">Bạn có thể để lại ghi chú cho quản trị viên về truyện
-                                                của mình.</div>
-                                        </div>
+                                    <div class="d-grid">
+                                        <button type="button" class="btn btn-warning btn-lg" data-bs-toggle="modal"
+                                            data-bs-target="#confirmFeaturedModal">
+                                            <i class="fas fa-star me-2"></i>Đề cử truyện
+                                            ({{ number_format($featuredPrice) }} xu)
+                                        </button>
+                                    </div>
+                                </form>
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            </div>
 
-                                        <div class="d-grid">
-                                            <button type="submit" class="btn btn-outline-dark">
-                                                <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu duyệt
-                                            </button>
-                                        </div>
-                                    </form>
-                                @endif
-                            @elseif($story->status == 'pending')
+            <!-- Tab Yêu cầu duyệt -->
+            <div class="tab-pane fade" id="review" role="tabpanel" aria-labelledby="review-tab">
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-info-circle me-2"></i>Yêu cầu để truyện được duyệt:</h5>
+                    <ul class="mb-0 mt-2">
+                        <li class="mb-2">Truyện phải có đầy đủ thông tin cơ bản (tiêu đề, mô tả, thể loại, tác giả)
+                        </li>
+                        <li class="mb-2">Truyện phải có ít nhất 3 chương</li>
+                        <li class="mb-2">Nội dung phải tuân thủ các quy định của trang web</li>
+                        <li>Truyện không vi phạm bản quyền (nếu là truyện dịch/sưu tầm)</li>
+                    </ul>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Trạng thái yêu cầu</h5>
+                    </div>
+                    <div class="card-body">
+                        @if ($story->status == 'draft')
+                            @if ($story->chapters->count() < 3)
                                 <div class="alert alert-warning">
-                                    <i class="fas fa-clock me-2"></i>
-                                    <strong>Đang chờ duyệt:</strong> Truyện của bạn đã được gửi đi và đang chờ quản trị viên
-                                    phê duyệt.
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Chưa đủ điều kiện:</strong> Truyện cần có ít nhất 3 chương trước khi gửi yêu
+                                    cầu duyệt.
                                 </div>
-
-                                @if ($story->submitted_at)
-                                    <div class="d-flex align-items-center mt-3">
-                                        <div class="text-muted me-3">Đã gửi yêu cầu vào:</div>
-                                        <div class="fw-bold">
-                                            {{ \Carbon\Carbon::parse($story->submitted_at)->format('H:i:s d/m/Y') }}</div>
-                                    </div>
-                                @endif
-
-                                @if ($story->review_note)
-                                    <div class="mt-3">
-                                        <div class="text-muted mb-2">Ghi chú của bạn:</div>
-                                        <div class="p-3 bg-light rounded">{{ $story->review_note }}</div>
-                                    </div>
-                                @endif
-                            @elseif($story->status == 'published')
+                            @else
                                 <div class="alert alert-success">
                                     <i class="fas fa-check-circle me-2"></i>
-                                    <strong>Đã được duyệt:</strong> Truyện của bạn đã được phê duyệt và xuất bản thành công.
-                                </div>
-                            @elseif($story->status == 'rejected')
-                                <div class="alert alert-danger">
-                                    <i class="fas fa-times-circle me-2"></i>
-                                    <strong>Đã bị từ chối:</strong> Truyện của bạn không được duyệt.
+                                    <strong>Đủ điều kiện:</strong> Bạn có thể gửi yêu cầu duyệt truyện ngay bây giờ.
                                 </div>
 
-                                @if ($story->admin_note)
-                                    <div class="mt-3">
-                                        <div class="fw-bold text-danger mb-2">Lý do từ chối:</div>
-                                        <div class="p-3 bg-light rounded border border-danger">{{ $story->admin_note }}
-                                        </div>
+                                <form action="{{ route('user.author.stories.submit.for.review', $story->id) }}"
+                                    method="POST" class="review-form">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label for="review_note" class="form-label">Ghi chú cho quản trị viên (không
+                                            bắt buộc)</label>
+                                        <textarea class="form-control" id="review_note" name="review_note" rows="4"
+                                            placeholder="Nhập ghi chú hoặc thông tin bổ sung cho quản trị viên...">{{ old('review_note') }}</textarea>
+                                        <div class="form-text">Bạn có thể để lại ghi chú cho quản trị viên về truyện
+                                            của mình.</div>
                                     </div>
-                                @endif
 
-                                <div class="alert alert-info mt-3">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    <strong>Hướng dẫn:</strong> Vui lòng chỉnh sửa truyện theo phản hồi của quản trị viên,
-                                    sau đó bạn có thể gửi lại yêu cầu duyệt.
-                                </div>
-
-                                @if ($story->chapters->count() >= 3)
-                                    <form action="{{ route('user.author.stories.submit.for.review', $story->id) }}"
-                                        method="POST" class="review-form">
-                                        @csrf
-                                        <div class="mb-3">
-                                            <label for="review_note" class="form-label">Ghi chú cho quản trị viên</label>
-                                            <textarea class="form-control" id="review_note" name="review_note" rows="4"
-                                                placeholder="Giải thích những thay đổi bạn đã thực hiện để khắc phục vấn đề...">{{ old('review_note') }}</textarea>
-                                            <div class="form-text">Vui lòng giải thích những thay đổi bạn đã thực hiện để
-                                                khắc phục vấn đề.</div>
-                                        </div>
-
-                                        <div class="d-grid">
-                                            <button type="submit" class="btn btn-primary">
-                                                <i class="fas fa-paper-plane me-1"></i> Gửi lại yêu cầu duyệt
-                                            </button>
-                                        </div>
-                                    </form>
-                                @else
-                                    <div class="alert alert-warning mt-3">
-                                        <i class="fas fa-exclamation-triangle me-2"></i>
-                                        <strong>Chưa đủ điều kiện:</strong> Truyện cần có ít nhất 3 chương trước khi gửi lại
-                                        yêu cầu duyệt.
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-outline-dark">
+                                            <i class="fas fa-paper-plane me-1"></i> Gửi yêu cầu duyệt
+                                        </button>
                                     </div>
-                                @endif
+                                </form>
                             @endif
-                        </div>
+                        @elseif($story->status == 'pending')
+                            <div class="alert alert-warning">
+                                <i class="fas fa-clock me-2"></i>
+                                <strong>Đang chờ duyệt:</strong> Truyện của bạn đã được gửi đi và đang chờ quản trị viên
+                                phê duyệt.
+                            </div>
+
+                            @if ($story->submitted_at)
+                                <div class="d-flex align-items-center mt-3">
+                                    <div class="text-muted me-3">Đã gửi yêu cầu vào:</div>
+                                    <div class="fw-bold">
+                                        {{ \Carbon\Carbon::parse($story->submitted_at)->format('H:i:s d/m/Y') }}</div>
+                                </div>
+                            @endif
+
+                            @if ($story->review_note)
+                                <div class="mt-3">
+                                    <div class="text-muted mb-2">Ghi chú của bạn:</div>
+                                    <div class="p-3 bg-light rounded">{{ $story->review_note }}</div>
+                                </div>
+                            @endif
+                        @elseif($story->status == 'published')
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                <strong>Đã được duyệt:</strong> Truyện của bạn đã được phê duyệt và xuất bản thành công.
+                            </div>
+                        @elseif($story->status == 'rejected')
+                            <div class="alert alert-danger">
+                                <i class="fas fa-times-circle me-2"></i>
+                                <strong>Đã bị từ chối:</strong> Truyện của bạn không được duyệt.
+                            </div>
+
+                            @if ($story->admin_note)
+                                <div class="mt-3">
+                                    <div class="fw-bold text-danger mb-2">Lý do từ chối:</div>
+                                    <div class="p-3 bg-light rounded border border-danger">{{ $story->admin_note }}
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Hướng dẫn:</strong> Vui lòng chỉnh sửa truyện theo phản hồi của quản trị viên,
+                                sau đó bạn có thể gửi lại yêu cầu duyệt.
+                            </div>
+
+                            @if ($story->chapters->count() >= 3)
+                                <form action="{{ route('user.author.stories.submit.for.review', $story->id) }}"
+                                    method="POST" class="review-form">
+                                    @csrf
+                                    <div class="mb-3">
+                                        <label for="review_note" class="form-label">Ghi chú cho quản trị viên</label>
+                                        <textarea class="form-control" id="review_note" name="review_note" rows="4"
+                                            placeholder="Giải thích những thay đổi bạn đã thực hiện để khắc phục vấn đề...">{{ old('review_note') }}</textarea>
+                                        <div class="form-text">Vui lòng giải thích những thay đổi bạn đã thực hiện để
+                                            khắc phục vấn đề.</div>
+                                    </div>
+
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane me-1"></i> Gửi lại yêu cầu duyệt
+                                        </button>
+                                    </div>
+                                </form>
+                            @else
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <strong>Chưa đủ điều kiện:</strong> Truyện cần có ít nhất 3 chương trước khi gửi lại
+                                    yêu cầu duyệt.
+                                </div>
+                            @endif
+                        @endif
                     </div>
                 </div>
             </div>
@@ -1181,11 +1161,24 @@
                 on: {
                     change: function(evt) {
                         this.updateElement();
+                    },
+                    instanceReady: function(evt) {
+                        // Lưu description gốc sau khi CKEditor load xong
+                        window.originalDescription = normalizeHtml(CKEDITOR.instances.description
+                            .getData());
                     }
                 },
                 height: 200,
                 removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
             });
+
+            // Normalize HTML helper function
+            function normalizeHtml(html) {
+                if (!html) return '';
+                return html.replace(/\s+/g, ' ')
+                    .replace(/>\s+</g, '><')
+                    .trim();
+            }
 
             // Tab handling and other existing functionality
             @if ($errors->has('review_note'))
@@ -1208,14 +1201,24 @@
             // Change detection functionality
             function detectChanges() {
                 let changes = [];
+
+                // Get current description from CKEditor
+                const currentDescription = CKEDITOR.instances.description ? CKEDITOR.instances.description
+                .getData() : '';
+                // Use original description saved when CKEditor loaded, or fallback to JSON
+                const originalDescription = window.originalDescription || normalizeHtml(
+                    @json($story->description));
+
                 const originalData = {
                     title: @json($story->title),
-                    description: CKEDITOR.instances.description.getData() !== @json($story->description),
+                    description: originalDescription,
                     author_name: @json($story->author_name),
-                    translator_name: @json($story->translator_name),
+                    translator_name: @json($story->translator_name ?? ''),
                     story_type: @json($story->story_type),
+                    source_link: @json($story->source_link ?? ''),
                     categories: @json($categoryNames),
-                    is_18_plus: @json($story->is_18_plus),
+                    is_18_plus: !!@json($story->is_18_plus),
+                    is_monopoly: !!@json($story->is_monopoly),
                     cover: $('#cover').val() ? true : false
                 };
 
@@ -1232,7 +1235,7 @@
                         '</span> → <span class="text-success">' + $('#title').val() + '</span></li>');
                 }
 
-                if (originalData.description) {
+                if (normalizeHtml(currentDescription) !== normalizeHtml(originalData.description)) {
                     changes.push('<li>Mô tả đã được thay đổi</li>');
                 }
 
@@ -1263,8 +1266,9 @@
                     changes.push('<li>Ảnh bìa được thay đổi</li>');
                 }
 
-                if ($('#is_18_plus').is(':checked') !== originalData.is_18_plus) {
-                    if ($('#is_18_plus').is(':checked')) {
+                const currentIs18Plus = $('#is_18_plus').is(':checked');
+                if (currentIs18Plus !== originalData.is_18_plus) {
+                    if (currentIs18Plus) {
                         changes.push('<li>Đánh dấu truyện là <span class="text-danger">nội dung 18+</span></li>');
                     } else {
                         changes.push(
@@ -1273,8 +1277,45 @@
                     }
                 }
 
+                const currentIsMonopoly = $('#is_monopoly').is(':checked');
+                if (currentIsMonopoly !== originalData.is_monopoly) {
+                    if (currentIsMonopoly) {
+                        changes.push('<li>Đánh dấu truyện là <span class="text-success">độc quyền</span></li>');
+                    } else {
+                        changes.push(
+                            '<li>Bỏ đánh dấu truyện là <span class="text-danger">không độc quyền</span></li>'
+                        );
+                    }
+                }
+
+                if ($('#source_link').val() !== originalData.source_link) {
+                    changes.push('<li>Link nguồn: <span class="text-danger">' + (originalData.source_link ||
+                            '(không có)') +
+                        '</span> → <span class="text-success">' + ($('#source_link').val() || '(không có)') +
+                        '</span></li>');
+                }
+
                 return changes;
             }
+
+            $('#btnSubmitEditRequest').on('click', function(e) {
+                e.preventDefault();
+
+                const changes = detectChanges();
+                const changesList = $('#changesList');
+
+                changesList.empty();
+
+                if (changes.length === 0) {
+                    changesList.append('<li class="text-muted">Không có thay đổi nào được phát hiện</li>');
+                    $('#confirmEditModal button[type="submit"]').prop('disabled', true);
+                } else {
+                    changes.forEach(change => {
+                        changesList.append(change);
+                    });
+                    $('#confirmEditModal button[type="submit"]').prop('disabled', false);
+                }
+            });
 
             $('#confirmEditModal').on('show.bs.modal', function(e) {
                 const changes = detectChanges();
@@ -1283,7 +1324,7 @@
                 changesList.empty();
 
                 if (changes.length === 0) {
-                    changesList.append('<li>Không có thay đổi nào được phát hiện</li>');
+                    changesList.append('<li class="text-muted">Không có thay đổi nào được phát hiện</li>');
                     $('#confirmEditModal button[type="submit"]').prop('disabled', true);
                 } else {
                     changes.forEach(change => {
@@ -1291,6 +1332,20 @@
                     });
                     $('#confirmEditModal button[type="submit"]').prop('disabled', false);
                 }
+            });
+
+            // Khi xác nhận trong modal, submit form thực sự
+            $('#confirmEditModal button[type="submit"]').on('click', function(e) {
+                e.preventDefault();
+                $('#confirmEditModal').modal('hide');
+                setTimeout(function() {
+                    const editForm = $('#editStoryForm');
+                    if (editForm.length > 0) {
+                        editForm.submit();
+                    } else {
+                        console.error('Edit story form not found');
+                    }
+                }, 300);
             });
 
         });

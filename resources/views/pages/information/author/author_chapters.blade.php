@@ -213,20 +213,34 @@
 
     @if ($chapters->count() > 0)
         {{-- Bulk Actions Controls --}}
-        <div class="card mb-3 border-0 shadow-sm">
+        <div class="card mb-3 border-0 shadow-sm" data-story-id="{{ $story->id }}">
             <div class="card-body py-2">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="selectAllChapters">
-                        <label class="form-check-label" for="selectAllChapters">
-                            <small class="text-muted">Chọn tất cả</small>
-                        </label>
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAllChapters">
+                                <label class="form-check-label" for="selectAllChapters">
+                                    <small class="text-muted">Chọn tất cả</small>
+                                </label>
+                            </div>
+                            <div class="vr"></div>
+                            <div class="d-flex align-items-center gap-2">
+                                <input type="number" class="form-control form-control-sm" id="rangeFrom" placeholder="Từ chương" min="1" style="width: 100px;">
+                                <span class="small">đến</span>
+                                <input type="number" class="form-control form-control-sm" id="rangeTo" placeholder="Đến chương" min="1" style="width: 100px;">
+                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteByRange()">
+                                    <i class="fas fa-trash-alt me-1"></i> Xóa
+                                </button>
+                            </div>
+                        </div>
                     </div>
-
-                    <div id="bulkActionsContainer" style="display: none;">
-                        <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
-                            <i class="fas fa-trash-alt me-1"></i>Xóa đã chọn (<span id="bulkSelectedCount">0</span>)
-                        </button>
+                    <div class="col-md-4 text-md-end">
+                        <div id="bulkActionsContainer" style="display: none;">
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#bulkDeleteModal">
+                                <i class="fas fa-trash-alt me-1"></i>Xóa đã chọn (<span id="bulkSelectedCount">0</span>)
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -252,10 +266,21 @@
                         </thead>
                         <tbody>
                             @foreach ($chapters as $chapter)
-                                <tr class="chapter-row" data-chapter-id="{{ $chapter->id }}">
+                                @php
+                                    // Check if chapter can be deleted
+                                    $hasDirectPurchases = $chapter->purchases_count > 0;
+                                    $hasStoryPurchases = isset($storyHasPurchases) && $storyHasPurchases && !$chapter->is_free;
+                                    $canDelete = !$hasDirectPurchases && !$hasStoryPurchases;
+                                @endphp
+                                <tr class="chapter-row" data-chapter-id="{{ $chapter->id }}" data-chapter-number="{{ $chapter->number }}">
                                     <td class="text-center">
-                                        <input type="checkbox" name="selected_chapters[]" value="{{ $chapter->id }}"
-                                               class="form-check-input chapter-checkbox">
+                                        @if ($canDelete)
+                                            <input type="checkbox" name="selected_chapters[]" value="{{ $chapter->id }}"
+                                                   class="form-check-input chapter-checkbox">
+                                        @else
+                                            <input type="checkbox" name="selected_chapters[]" value="{{ $chapter->id }}"
+                                                   class="form-check-input chapter-checkbox" disabled title="{{ $hasStoryPurchases ? 'Truyện đã có người mua combo, không thể xóa chương VIP' : 'Chương đã có người mua, không thể xóa' }}">
+                                        @endif
                                     </td>
                                     <td class="fw-bold">{{ $chapter->number }}</td>
                                     <td>
@@ -321,10 +346,18 @@
                                                 class="btn btn-sm btn-outline-info" title="Chỉnh sửa">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                                data-bs-target="#deleteModal{{ $chapter->id }}" title="Xóa">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </button>
+                                            @php
+                                                // Check if chapter can be deleted
+                                                $hasDirectPurchases = $chapter->purchases_count > 0;
+                                                $hasStoryPurchases = isset($storyHasPurchases) && $storyHasPurchases && !$chapter->is_free;
+                                                $canDelete = !$hasDirectPurchases && !$hasStoryPurchases;
+                                            @endphp
+                                            @if ($canDelete)
+                                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                                                    data-bs-target="#deleteModal{{ $chapter->id }}" title="Xóa">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -781,15 +814,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 const chaptersToDelete = document.getElementById('chaptersToDelete');
                 const deleteCount = document.getElementById('deleteCount');
                 const selectedChaptersInputs = document.getElementById('selectedChaptersInputs');
+                const storyIdElement = document.querySelector('[data-story-id]');
+                const storyId = storyIdElement ? storyIdElement.getAttribute('data-story-id') : null;
 
                 // Clear previous content
                 chaptersToDelete.innerHTML = '';
                 selectedChaptersInputs.innerHTML = '';
 
-                // Update count
-                deleteCount.textContent = selectedCheckboxes.length;
+                // Check if there are chapters selected by range from localStorage
+                let selectedChapterIdsByRange = null;
+                if (storyId) {
+                    const storedIds = localStorage.getItem(`selectedChaptersByRange_${storyId}`);
+                    if (storedIds) {
+                        try {
+                            selectedChapterIdsByRange = JSON.parse(storedIds);
+                        } catch (e) {
+                            console.error('Error parsing stored chapter IDs:', e);
+                        }
+                    }
+                }
 
-                // Create list of chapters to delete
+                // Use chapter IDs from range if available, otherwise use checked checkboxes
+                let chapterIdsToDelete = [];
+                if (selectedChapterIdsByRange && selectedChapterIdsByRange.length > 0) {
+                    chapterIdsToDelete = selectedChapterIdsByRange;
+                } else {
+                    selectedCheckboxes.forEach(checkbox => {
+                        chapterIdsToDelete.push(parseInt(checkbox.value));
+                    });
+                }
+
+                // Update count
+                deleteCount.textContent = chapterIdsToDelete.length;
+
+                // Display chapters to delete (only show ones visible on current page for display)
                 selectedCheckboxes.forEach(checkbox => {
                     const row = checkbox.closest('tr');
                     const chapterNumber = row.children[1].textContent.trim();
@@ -807,14 +865,25 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     `;
                     chaptersToDelete.appendChild(listItem);
-
-                    // Add hidden input
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = 'selected_chapters[]';
-                    hiddenInput.value = checkbox.value;
-                    selectedChaptersInputs.appendChild(hiddenInput);
                 });
+
+                // Add warning if using range selection
+                if (selectedChapterIdsByRange && selectedChapterIdsByRange.length > selectedCheckboxes.length) {
+                    const warningDiv = document.createElement('div');
+                    warningDiv.className = 'alert alert-info mt-2';
+                    warningDiv.innerHTML = `
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Lưu ý:</strong> Đang xóa <strong>${chapterIdsToDelete.length}</strong> chương từ phạm vi đã chọn (bao gồm cả chương ở các trang khác).
+                    `;
+                    chaptersToDelete.appendChild(warningDiv);
+                }
+
+                // Add hidden input with all chapter IDs (from range if available)
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = 'selected_chapters_by_range';
+                hiddenInput.value = JSON.stringify(chapterIdsToDelete);
+                selectedChaptersInputs.appendChild(hiddenInput);
             });
         }
 
@@ -845,5 +914,170 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Delete chapters by range
+function deleteByRange() {
+    const fromInput = document.getElementById('rangeFrom');
+    const toInput = document.getElementById('rangeTo');
+    
+    if (!fromInput || !toInput) {
+        console.error('Range inputs not found');
+        return;
+    }
+    
+    const from = parseInt(fromInput.value);
+    const to = parseInt(toInput.value);
+
+    if (!from || !to) {
+        Swal.fire({
+            title: 'Thiếu thông tin',
+            text: 'Vui lòng nhập đầy đủ số chương từ và đến.',
+            icon: 'warning',
+            confirmButtonText: 'Đã hiểu'
+        });
+        return;
+    }
+
+    if (from > to) {
+        Swal.fire({
+            title: 'Dữ liệu không hợp lệ',
+            text: 'Số chương bắt đầu phải nhỏ hơn hoặc bằng số chương kết thúc.',
+            icon: 'warning',
+            confirmButtonText: 'Đã hiểu'
+        });
+        return;
+    }
+
+    const storyIdElement = document.querySelector('[data-story-id]');
+    if (!storyIdElement) {
+        Swal.fire({
+            title: 'Lỗi',
+            text: 'Không tìm thấy thông tin truyện.',
+            icon: 'error',
+            confirmButtonText: 'Đã hiểu'
+        });
+        return;
+    }
+
+    const storyId = storyIdElement.getAttribute('data-story-id');
+    const apiUrl = `/user/author/stories/${storyId}/chapters/by-range?from=${from}&to=${to}`;
+
+    Swal.fire({
+        title: 'Đang tải...',
+        text: 'Đang kiểm tra danh sách chương',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    fetch(apiUrl)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                throw new Error(data.error || 'Có lỗi xảy ra');
+            }
+
+            const allChapterIds = Object.values(data.chapters);
+            const chaptersWithPurchases = data.chapters_with_purchases || [];
+            const chaptersWithPurchasesIds = chaptersWithPurchases.map(c => c.id);
+            const deletableChapterIds = allChapterIds.filter(id => !chaptersWithPurchasesIds.includes(id));
+
+            if (deletableChapterIds.length === 0) {
+                let message = `Tất cả ${allChapterIds.length} chương từ chương ${from} đến chương ${to} đều đã có người mua và không thể xóa.`;
+                if (data.story_has_purchases) {
+                    message += '<br><small class="text-muted">Truyện này đã có người mua combo, tất cả chương VIP không thể xóa.</small>';
+                }
+                Swal.fire({
+                    title: 'Không thể xóa',
+                    html: message,
+                    icon: 'warning',
+                    confirmButtonText: 'Đã hiểu'
+                });
+                return;
+            }
+
+            let confirmMessage = `Bạn có chắc muốn xóa <strong>${deletableChapterIds.length}</strong> chương từ chương ${from} đến chương ${to}?`;
+            if (data.story_has_purchases) {
+                confirmMessage += `<br><small class="text-warning">• Truyện này đã có người mua combo, các chương VIP không thể xóa.</small>`;
+            }
+            if (chaptersWithPurchases.length > 0) {
+                confirmMessage += `<br><br><small class="text-danger">• ${chaptersWithPurchases.length} chương đã có người mua sẽ không được xóa:</small><ul class="text-start small">`;
+                chaptersWithPurchases.forEach(c => {
+                    const reason = c.reason ? ` <span class="text-muted">(${c.reason})</span>` : '';
+                    confirmMessage += `<li>Chương ${c.number}: ${c.title}${reason}</li>`;
+                });
+                confirmMessage += `</ul>`;
+            }
+
+            Swal.fire({
+                title: 'Xác nhận xóa?',
+                html: confirmMessage,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Xóa',
+                cancelButtonText: 'Hủy',
+                confirmButtonColor: '#dc3545',
+                cancelButtonColor: '#6c757d'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Submit delete form
+                    const form = document.getElementById('bulkDeleteForm') || document.createElement('form');
+                    if (!form.id) {
+                        form.id = 'bulkDeleteForm';
+                        form.method = 'POST';
+                        form.action = `/user/author/stories/${storyId}/chapters/bulk-delete/delete`;
+                        document.body.appendChild(form);
+                    }
+
+                    // Add CSRF token
+                    let csrfInput = form.querySelector('input[name="_token"]');
+                    if (!csrfInput) {
+                        csrfInput = document.createElement('input');
+                        csrfInput.type = 'hidden';
+                        csrfInput.name = '_token';
+                        csrfInput.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+                        form.appendChild(csrfInput);
+                    }
+
+                    // Add method override
+                    let methodInput = form.querySelector('input[name="_method"]');
+                    if (!methodInput) {
+                        methodInput = document.createElement('input');
+                        methodInput.type = 'hidden';
+                        methodInput.name = '_method';
+                        methodInput.value = 'DELETE';
+                        form.appendChild(methodInput);
+                    }
+
+                    // Add chapter IDs
+                    let chaptersInput = form.querySelector('input[name="selected_chapters_by_range"]');
+                    if (!chaptersInput) {
+                        chaptersInput = document.createElement('input');
+                        chaptersInput.type = 'hidden';
+                        chaptersInput.name = 'selected_chapters_by_range';
+                        form.appendChild(chaptersInput);
+                    }
+                    chaptersInput.value = JSON.stringify(deletableChapterIds);
+
+                    // Clear inputs
+                    fromInput.value = '';
+                    toInput.value = '';
+
+                    // Submit form
+                    form.submit();
+                } else {
+                    fromInput.value = '';
+                    toInput.value = '';
+                }
+            });
+        })
+        .catch(error => {
+            Swal.fire({
+                title: 'Lỗi',
+                text: error.message || 'Có lỗi xảy ra khi kiểm tra danh sách chương.',
+                icon: 'error',
+                confirmButtonText: 'Đã hiểu'
+            });
+        });
+}
 </script>
 @endpush

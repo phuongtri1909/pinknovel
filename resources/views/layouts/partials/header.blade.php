@@ -392,20 +392,27 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Existing header transition code...
 
-            // Search form handling
-            const searchForm = document.querySelector('.search-container form');
-            const searchInput = searchForm.querySelector('input[name="query"]');
+            // Search form handling for all search forms
+            const searchForms = document.querySelectorAll('.search-container form');
+            searchForms.forEach(function(searchForm) {
+                const searchInput = searchForm.querySelector('input[name="query"]');
+                if (searchInput) {
+                    searchForm.addEventListener('submit', function(e) {
+                        if (!searchInput.value || searchInput.value.trim() === '') {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            searchInput.focus();
+                            return false;
+                        }
+                    });
 
-            searchForm.addEventListener('submit', function(e) {
-                if (searchInput.value.trim() === '') {
-                    e.preventDefault();
-                    searchInput.focus();
+                    const searchContainer = searchForm.closest('.search-container');
+                    if (searchContainer) {
+                        searchContainer.addEventListener('click', function() {
+                            searchInput.focus();
+                        });
+                    }
                 }
-            });
-
-            // Auto-focus search input when clicking on the search container
-            document.querySelector('.search-container').addEventListener('click', function() {
-                searchInput.focus();
             });
         });
 
@@ -426,19 +433,26 @@
             handleScroll();
 
             // Search form handling for desktop
-            const searchForm = document.querySelector(".search-container form");
-            if (searchForm) {
-                const searchInput = searchForm.querySelector('input[name="query"]');
+            const searchForms = document.querySelectorAll(".search-container form");
+            if (searchForms.length > 0) {
+                searchForms.forEach(function(searchForm) {
+                    const searchInput = searchForm.querySelector('input[name="query"]');
+                    if (searchInput) {
+                        searchForm.addEventListener("submit", function(e) {
+                            if (!searchInput.value || searchInput.value.trim() === "") {
+                                e.preventDefault();
+                                searchInput.focus();
+                                return false;
+                            }
+                        });
 
-                searchForm.addEventListener("submit", function(e) {
-                    if (searchInput.value.trim() === "") {
-                        e.preventDefault();
-                        searchInput.focus();
+                        const searchContainer = searchForm.closest('.search-container');
+                        if (searchContainer) {
+                            searchContainer.addEventListener("click", function() {
+                                searchInput.focus();
+                            });
+                        }
                     }
-                });
-
-                document.querySelector(".search-container").addEventListener("click", function() {
-                    searchInput.focus();
                 });
             }
 

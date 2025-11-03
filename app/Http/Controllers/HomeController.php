@@ -30,6 +30,10 @@ class HomeController extends Controller
     {
         $query = trim((string) $request->input('query'));
 
+        if (empty($query)) {
+            return redirect()->route('home');
+        }
+
         $storiesQuery = Story::query()
             ->published()
             ->where(function ($q) use ($query) {

@@ -186,7 +186,7 @@ class AuthorController extends Controller
                 $query->select('id', 'story_id', 'views');
             }
         ])
-        ->withCount(['chapters'])
+        ->withCount(['chapters', 'purchases as has_story_purchases', 'chapterPurchases as has_chapter_purchases'])
         ->withSum('chapters', 'views')
         ->latest()
         ->paginate(10);
@@ -431,9 +431,7 @@ class AuthorController extends Controller
 
         DB::beginTransaction();
         try {
-            // UPDATED LOGIC: Check if story is published AND completed
-            if ($story->status === 'published' && $story->completed == 1) {
-                // Nếu story đã xuất bản VÀ đã hoàn thành, tạo edit request
+            if ($story->status === 'published') {
 
                 // Kiểm tra xem đã có edit request nào đang chờ duyệt chưa
                 if ($story->hasPendingEditRequest()) {
@@ -441,10 +439,8 @@ class AuthorController extends Controller
                         ->with('error', 'Truyện này đã có yêu cầu chỉnh sửa đang chờ duyệt. Vui lòng chờ admin xử lý trước khi gửi yêu cầu mới.');
                 }
 
-                // Kiểm tra xem có thay đổi thực sự nào không
                 $hasChanges = false;
 
-                // Kiểm tra các trường văn bản có thay đổi không
                 if (
                     $story->title !== $request->title ||
                     $story->description !== $request->description ||
@@ -458,12 +454,10 @@ class AuthorController extends Controller
                     $hasChanges = true;
                 }
 
-                // Kiểm tra thay đổi ở ảnh
                 if ($request->hasFile('cover')) {
                     $hasChanges = true;
                 }
 
-                // Kiểm tra thay đổi ở thể loại
                 $currentCategoryIds = $story->categories->pluck('id')->toArray();
                 sort($currentCategoryIds);
                 sort($categoryIds);
@@ -471,7 +465,6 @@ class AuthorController extends Controller
                     $hasChanges = true;
                 }
 
-                // Nếu không có thay đổi thực sự, thông báo và quay lại
                 if (!$hasChanges) {
                     return redirect()->back()
                         ->with('info', 'Không có thay đổi nào được phát hiện.');
@@ -494,7 +487,6 @@ class AuthorController extends Controller
                     'is_monopoly' => $request->has('is_monopoly'),
                 ];
 
-                // Xử lý ảnh bìa nếu có upload mới
                 if ($request->hasFile('cover')) {
                     $coverPaths = $this->processAndSaveImage($request->file('cover'));
 
@@ -503,15 +495,13 @@ class AuthorController extends Controller
                     $editRequestData['cover_thumbnail'] = $coverPaths['thumbnail'];
                 }
 
-                // Tạo yêu cầu chỉnh sửa mới
                 $editRequest = StoryEditRequest::create($editRequestData);
 
                 DB::commit();
 
                 return redirect()->route('user.author.stories.edit', $story->id)
-                    ->with('success', 'Truyện đã hoàn thành nên yêu cầu chỉnh sửa đã được gửi đi và đang chờ admin phê duyệt.');
+                    ->with('success', 'Yêu cầu chỉnh sửa đã được gửi đi và đang chờ admin phê duyệt.');
             } else {
-                // UPDATED: Nếu story chưa hoàn thành hoặc chưa xuất bản, cập nhật trực tiếp
                 $data = [
                     'title' => $request->title,
                     'slug' => Str::slug($request->title),
@@ -524,21 +514,17 @@ class AuthorController extends Controller
                     'is_monopoly' => $request->has('is_monopoly'),
                 ];
 
-                // Chỉ thay đổi status thành draft nếu đang pending
                 if ($story->status === 'pending') {
                     $data['status'] = 'draft';
                 }
 
-                // Xử lý ảnh bìa nếu có upload mới
                 if ($request->hasFile('cover')) {
-                    // Lưu lại paths ảnh cũ để xóa sau
                     $oldImages = [
                         $story->cover,
                         $story->cover_medium,
                         $story->cover_thumbnail
                     ];
 
-                    // Xử lý ảnh mới
                     $coverPaths = $this->processAndSaveImage($request->file('cover'));
 
                     $data['cover'] = $coverPaths['original'];
@@ -552,14 +538,12 @@ class AuthorController extends Controller
 
                 DB::commit();
 
-                // Xóa ảnh cũ nếu có upload mới
                 if (isset($oldImages) && isset($coverPaths)) {
                     Storage::disk('public')->delete($oldImages);
                 }
 
                 $message = 'Truyện đã được cập nhật thành công.';
 
-                // Thông báo khác nhau tùy theo trạng thái
                 if ($story->status === 'published' && $story->completed == 0) {
                     $message .= ' Truyện chưa hoàn thành nên có thể chỉnh sửa tự do mà không cần phê duyệt.';
                 } elseif ($story->status !== 'published') {
@@ -572,7 +556,6 @@ class AuthorController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // Xóa ảnh mới nếu có lỗi và đã upload
             if (isset($coverPaths)) {
                 Storage::disk('public')->delete([
                     $coverPaths['original'],
@@ -590,24 +573,28 @@ class AuthorController extends Controller
     // Xử lý xóa truyện
     public function destroy(Story $story)
     {
-        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền xóa truyện này.');
         }
 
+        $hasStoryPurchases = $story->purchases()->exists();
+        $hasChapterPurchases = $story->chapterPurchases()->exists();
+        
+        if ($hasStoryPurchases || $hasChapterPurchases) {
+            return redirect()->route('user.author.stories')
+                ->with('error', 'Không thể xóa truyện này vì đã có người mua VIP. Vui lòng liên hệ admin nếu cần hỗ trợ.');
+        }
+
         DB::beginTransaction();
         try {
-            // Xóa các mối quan hệ
             $story->categories()->detach();
             $story->chapters()->delete();
 
-            // Xóa truyện
             $story->delete();
 
             DB::commit();
 
-            // Xóa các ảnh liên quan
             Storage::disk('public')->delete([
                 $story->cover,
                 $story->cover_medium,
@@ -626,13 +613,11 @@ class AuthorController extends Controller
 
     public function markComplete(Story $story)
     {
-        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền thực hiện hành động này.');
         }
 
-        // Truyện phải đang được xuất bản
         if ($story->status !== 'published') {
             return redirect()->route('user.author.stories.chapters', $story->id)
                 ->with('error', 'Chỉ những truyện đã được xuất bản mới có thể đánh dấu hoàn thành.');
@@ -651,16 +636,16 @@ class AuthorController extends Controller
         }
     }
 
-    // Hiển thị danh sách các chương của truyện
     public function showChapters(Story $story)
     {
-        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền xem các chương của truyện này.');
         }
 
-        // Chỉ select những trường cần thiết để tối ưu performance
+        // Check if story has been purchased (combo purchase)
+        $storyHasPurchases = $story->purchases()->exists();
+
         $chapters = $story->chapters()
             ->select([
                 'id',
@@ -677,16 +662,15 @@ class AuthorController extends Controller
                 'updated_at',
                 'scheduled_publish_at'
             ])
+            ->withCount('purchases')
             ->orderBy('number', 'desc')
             ->paginate(20);
 
-        return view('pages.information.author.author_chapters', compact('story', 'chapters'));
+        return view('pages.information.author.author_chapters', compact('story', 'chapters', 'storyHasPurchases'));
     }
 
-    // Hiển thị form tạo chương mới
     public function createChapter(Story $story)
     {
-        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
@@ -698,10 +682,8 @@ class AuthorController extends Controller
         return view('pages.information.author.author_chapter_create', compact('story', 'nextChapterNumber'));
     }
 
-    // Hiển thị form tạo nhiều chương cùng lúc
     public function createBatchChapters(Story $story)
     {
-        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
@@ -713,16 +695,13 @@ class AuthorController extends Controller
         return view('pages.information.author.author_batch_chapter_create', compact('story', 'nextChapterNumber'));
     }
 
-    // Xử lý lưu chương mới
     public function storeChapter(Request $request, Story $story)
     {
-        // Kiểm tra nếu truyện không thuộc về người dùng hiện tại
         if ($story->user_id != Auth::id()) {
             return redirect()->route('user.author.index')
                 ->with('error', 'Bạn không có quyền thêm chương cho truyện này.');
         }
 
-        // Kiểm tra nếu là nhiều chương (route cũ - để hỗ trợ ngược)
         if ($request->upload_type === 'multiple') {
             return $this->storeBatchChapters($request, $story);
         }
@@ -1177,30 +1156,68 @@ class AuthorController extends Controller
                 ->with('error', 'Bạn không có quyền truy cập truyện này.');
         }
 
-        $request->validate([
-            'selected_chapters' => 'required|array|min:1',
-            'selected_chapters.*' => 'exists:chapters,id',
-            'current_page' => 'nullable|integer|min:1',
-        ], [
-            'selected_chapters.required' => 'Vui lòng chọn ít nhất một chương để xóa.',
-            'selected_chapters.min' => 'Vui lòng chọn ít nhất một chương để xóa.',
-        ]);
+        // Ưu tiên sử dụng selected_chapters_by_range nếu có (từ chọn theo phạm vi)
+        if ($request->has('selected_chapters_by_range')) {
+            $selectedChapterIdsJson = $request->selected_chapters_by_range;
+            $selectedChapterIds = json_decode($selectedChapterIdsJson, true);
+            
+            if (!is_array($selectedChapterIds) || empty($selectedChapterIds)) {
+                return redirect()->back()
+                    ->with('error', 'Danh sách chương được chọn không hợp lệ.');
+            }
+        } else {
+            $request->validate([
+                'selected_chapters' => 'required|array|min:1',
+                'selected_chapters.*' => 'exists:chapters,id',
+            ], [
+                'selected_chapters.required' => 'Vui lòng chọn ít nhất một chương để xóa.',
+                'selected_chapters.min' => 'Vui lòng chọn ít nhất một chương để xóa.',
+            ]);
 
-        $selectedChapterIds = $request->selected_chapters;
+            $selectedChapterIds = $request->selected_chapters;
+        }
+
+        // Check if story has been purchased (combo purchase)
+        $storyHasPurchases = $story->purchases()->exists();
+
+        // Validate all chapter IDs exist and filter out chapters with purchases
+        $validChapters = Chapter::whereIn('id', $selectedChapterIds)
+            ->where('story_id', $story->id)
+            ->withCount('purchases')
+            ->get();
+
+        // Filter out chapters that have purchases (direct or via story combo)
+        $deletableChapters = $validChapters->filter(function($chapter) use ($storyHasPurchases) {
+            $hasDirectPurchases = $chapter->purchases_count > 0;
+            // If story has purchases (combo) and chapter is VIP, it cannot be deleted
+            $hasStoryPurchases = $storyHasPurchases && !$chapter->is_free;
+            return !$hasDirectPurchases && !$hasStoryPurchases;
+        });
+
+        $chaptersWithPurchases = $validChapters->filter(function($chapter) use ($storyHasPurchases) {
+            $hasDirectPurchases = $chapter->purchases_count > 0;
+            $hasStoryPurchases = $storyHasPurchases && !$chapter->is_free;
+            return $hasDirectPurchases || $hasStoryPurchases;
+        });
+
+        if ($deletableChapters->isEmpty()) {
+            $message = 'Không tìm thấy chương nào để xóa.';
+            if ($chaptersWithPurchases->isNotEmpty()) {
+                if ($storyHasPurchases) {
+                    $message = 'Tất cả các chương VIP được chọn đều không thể xóa vì truyện này đã có người mua combo.';
+                } else {
+                    $message = 'Tất cả các chương được chọn đều đã có người mua và không thể xóa.';
+                }
+            }
+            return redirect()->back()
+                ->with('error', $message);
+        }
+
+        $selectedChapterIds = $deletableChapters->pluck('id')->toArray();
         $currentPage = $request->current_page ?? 1;
 
         try {
             DB::beginTransaction();
-
-            $chaptersToDelete = Chapter::whereIn('id', $selectedChapterIds)
-                ->where('story_id', $story->id)
-                ->select('id', 'number', 'title')
-                ->get();
-
-            if ($chaptersToDelete->isEmpty()) {
-                return redirect()->route('user.author.stories.chapters', ['story' => $story->id, 'page' => $currentPage])
-                    ->with('error', 'Không tìm thấy chương nào để xóa.');
-            }
 
             $totalChaptersBeforeDelete = $story->chapters()->count();
 
@@ -1216,9 +1233,13 @@ class AuthorController extends Controller
 
             DB::commit();
 
+            $successMessage = "Đã xóa thành công {$deletedCount} chương.";
+            if ($chaptersWithPurchases->isNotEmpty()) {
+                $successMessage .= " ({$chaptersWithPurchases->count()} chương đã có người mua không được xóa)";
+            }
 
             return redirect()->route('user.author.stories.chapters', ['story' => $story->id, 'page' => $redirectPage])
-                ->with('success', "Đã xóa thành công {$deletedCount} chương.");
+                ->with('success', $successMessage);
         } catch (\Exception $e) {
             DB::rollBack();
 
@@ -1243,6 +1264,13 @@ class AuthorController extends Controller
 
         $chapter = $story->chapters()->findOrFail($chapterId);
         $currentPage = $request->input('page', 1);
+
+        // Kiểm tra xem chương đã có người mua VIP chưa
+        $hasPurchases = $chapter->purchases()->exists();
+        if ($hasPurchases) {
+            return redirect()->route('user.author.stories.chapters', ['story' => $story->id, 'page' => $currentPage])
+                ->with('error', 'Không thể xóa chương này vì đã có người mua VIP. Vui lòng liên hệ admin nếu cần hỗ trợ.');
+        }
 
         try {
             $chapterNumber = $chapter->number;
@@ -1885,29 +1913,80 @@ class AuthorController extends Controller
                 ->with('error', 'Bạn không có quyền truy cập truyện này.');
         }
 
-        $request->validate([
-            'update_type' => 'required|in:all_same,individual',
-            'all_price' => 'required_if:update_type,all_same|nullable|numeric|min:0',
-            'chapter_prices' => 'required_if:update_type,individual|array',
-            'chapter_prices.*' => 'nullable|numeric|min:0',
-            'selected_chapters' => 'required|array|min:1',
-            'selected_chapters.*' => 'exists:chapters,id',
-        ], [
-            'update_type.required' => 'Vui lòng chọn loại cập nhật.',
-            'all_price.required_if' => 'Vui lòng nhập giá áp dụng cho tất cả.',
-            'all_price.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
-            'chapter_prices.required_if' => 'Vui lòng nhập giá cho từng chương.',
-            'chapter_prices.*.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
-            'selected_chapters.required' => 'Vui lòng chọn ít nhất một chương.',
-            'selected_chapters.min' => 'Vui lòng chọn ít nhất một chương.',
-        ]);
+        // Ưu tiên sử dụng selected_chapters_by_range nếu có (từ chọn theo phạm vi)
+        if ($request->has('selected_chapters_by_range')) {
+            $selectedChapterIdsJson = $request->selected_chapters_by_range;
+            $selectedChapterIds = json_decode($selectedChapterIdsJson, true);
+            
+            if (!is_array($selectedChapterIds) || empty($selectedChapterIds)) {
+                return redirect()->back()
+                    ->with('error', 'Danh sách chương được chọn không hợp lệ.');
+            }
 
-        $selectedChapterIds = $request->selected_chapters;
+            // Validate all chapter IDs exist (allow update even if purchased)
+            $validChapterIds = Chapter::whereIn('id', $selectedChapterIds)
+                ->where('story_id', $story->id)
+                ->where('status', 'published')
+                ->pluck('id')
+                ->toArray();
+
+            if (empty($validChapterIds)) {
+                return redirect()->back()
+                    ->with('error', 'Không tìm thấy chương nào để cập nhật giá.');
+            }
+
+            $selectedChapterIds = $validChapterIds;
+            
+            // Validate all_price is provided (for range selection, always use all_same mode)
+            $request->validate([
+                'all_price' => 'nullable|numeric|min:0',
+            ], [
+                'all_price.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
+            ]);
+        } else {
+            $request->validate([
+                'update_type' => 'required|in:all_same,individual',
+                'all_price' => 'required_if:update_type,all_same|nullable|numeric|min:0',
+                'chapter_prices' => 'required_if:update_type,individual|array',
+                'chapter_prices.*' => 'nullable|numeric|min:0',
+                'selected_chapters' => 'required|array|min:1',
+                'selected_chapters.*' => 'exists:chapters,id',
+            ], [
+                'update_type.required' => 'Vui lòng chọn loại cập nhật.',
+                'all_price.required_if' => 'Vui lòng nhập giá áp dụng cho tất cả.',
+                'all_price.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
+                'chapter_prices.required_if' => 'Vui lòng nhập giá cho từng chương.',
+                'chapter_prices.*.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
+                'selected_chapters.required' => 'Vui lòng chọn ít nhất một chương.',
+                'selected_chapters.min' => 'Vui lòng chọn ít nhất một chương.',
+            ]);
+
+            $selectedChapterIds = $request->selected_chapters;
+        }
+
+        // Only validate update_type if not using range selection
+        if (!$request->has('selected_chapters_by_range')) {
+            $request->validate([
+                'update_type' => 'required|in:all_same,individual',
+                'all_price' => 'required_if:update_type,all_same|nullable|numeric|min:0',
+                'chapter_prices' => 'required_if:update_type,individual|array',
+                'chapter_prices.*' => 'nullable|numeric|min:0',
+            ], [
+                'update_type.required' => 'Vui lòng chọn loại cập nhật.',
+                'all_price.required_if' => 'Vui lòng nhập giá áp dụng cho tất cả.',
+                'all_price.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
+                'chapter_prices.required_if' => 'Vui lòng nhập giá cho từng chương.',
+                'chapter_prices.*.min' => 'Giá tối thiểu là 0 xu (miễn phí).',
+            ]);
+        }
 
         try {
             DB::beginTransaction();
 
-            if ($request->update_type === 'all_same') {
+            // If using selected_chapters_by_range, automatically use 'all_same' mode
+            $updateType = $request->has('selected_chapters_by_range') ? 'all_same' : $request->update_type;
+
+            if ($updateType === 'all_same') {
                 // Cập nhật tất cả chapters được chọn với cùng giá
                 $allPrice = $request->all_price;
                 $isFree = empty($allPrice) || $allPrice == 0;
@@ -2114,6 +2193,44 @@ class AuthorController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json($storyRevenueStats);
+    }
+
+    /**
+     * Get chapter IDs by range with purchase check
+     */
+    public function getChaptersByRange(Request $request, Story $story)
+    {
+        if ($story->user_id != Auth::id()) {
+            return response()->json(['error' => 'Bạn không có quyền thực hiện hành động này.'], 403);
+        }
+
+        $request->validate([
+            'from' => 'required|integer|min:1',
+            'to' => 'required|integer|min:1|gte:from'
+        ]);
+
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        // Check if story has been purchased (combo purchase)
+        $storyHasPurchases = $story->purchases()->exists();
+
+        $chapters = $story->chapters()
+            ->whereBetween('number', [$from, $to])
+            ->orderBy('number', 'desc')
+            ->get();
+
+        $chapterData = [];
+        
+        foreach ($chapters as $chapter) {
+            $chapterData[$chapter->number] = $chapter->id;
+        }
+
+        return response()->json([
+            'success' => true,
+            'chapters' => $chapterData,
+            'count' => count($chapterData)
+        ]);
     }
 }
 
