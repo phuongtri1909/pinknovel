@@ -20,6 +20,7 @@ use App\Models\ChapterPurchase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+use App\Models\Config;
 use App\Services\ReadingHistoryService;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -858,6 +859,11 @@ class HomeController extends Controller
             });
         }
 
+        // Hide 18+ if configured
+        if ((int) Config::getConfig('hide_story_18_plus', 0) === 1) {
+            $query->where('is_18_plus', 0);
+        }
+
         $featuredStories = $query
             ->orderBy('is_featured', 'desc')
             ->orderBy('featured_order', 'asc')
@@ -917,6 +923,11 @@ class HomeController extends Controller
                     ->whereColumn('ratings.story_id', 'stories.id');
             }, 'average_rating')
             ->where('updated_at', '>=', now()->subDays(30));
+
+        // Hide 18+ if configured
+        if ((int) Config::getConfig('hide_story_18_plus', 0) === 1) {
+            $query->where('is_18_plus', 0);
+        }
 
         // Filter by category if requested
         if ($request && $request->category_id) {
@@ -1017,6 +1028,11 @@ class HomeController extends Controller
             })
             ->where('reviewed_at', '>=', now()->subMonth());
             
+        // Hide 18+ if configured
+        if ((int) Config::getConfig('hide_story_18_plus', 0) === 1) {
+            $query->where('is_18_plus', 0);
+        }
+
         return $query->orderByDesc('reviewed_at')
             ->take(20)
             ->get();
@@ -1037,7 +1053,7 @@ class HomeController extends Controller
             ->groupBy('story_id');
 
         // Use withSubquery to avoid GROUP BY issues
-        return Story::select(
+        $query = Story::select(
             'stories.id',
             'stories.title',
             'stories.user_id',
@@ -1063,13 +1079,18 @@ class HomeController extends Controller
             })
             ->addSelect('latest_chapters.chapters_count', 'latest_chapters.latest_chapter_time')
             ->orderByDesc('latest_chapters.latest_chapter_time')
-            ->limit(20)
-            ->get();
+            ->limit(20);
+
+        if ((int) Config::getConfig('hide_story_18_plus', 0) === 1) {
+            $query->where('is_18_plus', 0);
+        }
+
+        return $query->get();
     }
 
     public function getRatingStories()
     {
-        return Story::select([
+        $query = Story::select([
             'id',
             'title',
             'slug',
@@ -1112,8 +1133,13 @@ class HomeController extends Controller
             }, 'total_views')
             ->orderByDesc('average_rating')
             ->orderByRaw('COALESCE(stories.reviewed_at, stories.created_at) ASC')
-            ->limit(10)
-            ->get();
+            ->limit(10);
+
+        if ((int) Config::getConfig('hide_story_18_plus', 0) === 1) {
+            $query->where('is_18_plus', 0);
+        }
+
+        return $query->get();
     }
 
 
@@ -1125,7 +1151,7 @@ class HomeController extends Controller
             ->groupBy('story_id')
             ->having('total_views', '>', 0);
 
-        return Story::select([
+        $query = Story::select([
             'stories.id',
             'stories.title',
             'stories.slug',
@@ -1164,13 +1190,18 @@ class HomeController extends Controller
             })
             ->addSelect('story_views.total_views')
             ->orderByDesc('story_views.total_views')
-            ->limit(10)
-            ->get();
+            ->limit(10);
+
+        if ((int) Config::getConfig('hide_story_18_plus', 0) === 1) {
+            $query->where('is_18_plus', 0);
+        }
+
+        return $query->get();
     }
 
     public function topFollowedStories()
     {
-        return Story::select([
+        $query = Story::select([
             'id',
             'title',
             'slug',
@@ -1191,8 +1222,13 @@ class HomeController extends Controller
             ])
             ->having('bookmarks_count', '>', 0)
             ->orderByDesc('bookmarks_count')
-            ->limit(10)
-            ->get();
+            ->limit(10);
+
+        if ((int) Config::getConfig('hide_story_18_plus', 0) === 1) {
+            $query->where('is_18_plus', 0);
+        }
+
+        return $query->get();
     }
 
     public function showStory(Request $request, $slug)

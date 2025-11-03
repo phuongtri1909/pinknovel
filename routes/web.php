@@ -328,8 +328,8 @@ Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
                         // Quản lý ngân hàng
                         Route::resource('banks', AdminBankController::class);
 
-                        // Quản lý cấu hình hệ thống
-                        Route::resource('configs', ConfigController::class);
+                        // Quản lý cấu hình hệ thống: chỉ xem danh sách, sửa, cập nhật
+                        Route::resource('configs', ConfigController::class)->only(['index','edit','update']);
 
                         // Quản lý Card Deposit
                         Route::get('/card-deposits', [AdminCardDepositController::class, 'adminIndex'])->name('card-deposits.index');

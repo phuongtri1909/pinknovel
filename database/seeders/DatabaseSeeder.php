@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
             WithdrawalConfigSeeder::class,
             ConfigTaskSeeder::class,
             DailyTaskSeeder::class,
+            HideStory18PlusSeeder::class,
         ]);
     }
 }
