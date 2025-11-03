@@ -24,8 +24,7 @@ class BankAutoController extends Controller
     public function __construct()
     {
         $this->coinBankAutoPercent = Config::getConfig('coin_bank_auto_percentage', 20);
-        // TEMP: lower min amount to 2,000 for testing
-        $this->minBankAutoDepositAmount = 2000;
+        $this->minBankAutoDepositAmount = Config::getConfig('min_bank_auto_deposit_amount', 100000);
         $this->coinExchangeRate = Config::getConfig('coin_exchange_rate', 100);
     }
 

@@ -275,7 +275,7 @@
 
                                     <span class="input-group-text">VNĐ</span>
                                 </div>
-                                <div class="form-text">Số tiền tối thiểu: {{ number_format($minBankAutoDepositAmount) }} VNĐ</div>
+                                <div class="form-text">Số tiền tối thiểu: {{ number_format($minBankAutoDepositAmount) }} VNĐ , phải là bội số của 10.000</div>
                                 <div class="invalid-feedback amount-error">Vui lòng nhập số tiền hợp lệ</div>
 
                                 <!-- Coin Preview after fee only -->
@@ -481,6 +481,8 @@
                         const minAmount = {{ (int) $minBankAutoDepositAmount }};
 
                         if (rawValue > 0) {
+                            // Round to nearest 10,000
+                            rawValue = Math.round(rawValue / 10000) * 10000;
                             if (rawValue < minAmount) rawValue = minAmount;
 
                             const formatted = formatVndCurrency(rawValue.toString());
@@ -491,7 +493,7 @@
                             // Toast if auto adjusted
                             if (originalRaw !== rawValue && window.showToast) {
                                 const adjustedText = formatVndCurrency(rawValue.toString());
-                                window.showToast(`Số tiền đã được tự động điều chỉnh: ${adjustedText} VNĐ (tối thiểu ${formatVndCurrency(minAmount.toString())})`, 'info');
+                                window.showToast(`Số tiền đã được tự động điều chỉnh: ${adjustedText} VNĐ (bội số 10.000, tối thiểu ${formatVndCurrency(minAmount.toString())})`, 'info');
                             }
                         } else {
                             input.val(formatVndCurrency(minAmount.toString()));
@@ -508,7 +510,7 @@
                         const amount = parseInt($('#amount').data('raw')) || 0;
 
                         const minAmount = {{ (int) $minBankAutoDepositAmount }};
-                        if (amount > 0 && amount >= minAmount) {
+                        if (amount > 0 && amount >= minAmount && amount % 10000 === 0) {
                             $.ajax({
                                 url: '{{ route('user.bank.auto.deposit.calculate') }}',
                                 type: 'POST',
@@ -563,6 +565,9 @@
                     const minAmount = {{ (int) $minBankAutoDepositAmount }};
                     if (amount < minAmount) {
                         $('.amount-error').show().text('Số tiền tối thiểu là ' + minAmount.toLocaleString('vi-VN') + ' VNĐ');
+                        valid = false;
+                    } else if (amount % 10000 !== 0) {
+                        $('.amount-error').show().text('Số tiền phải là bội số của 10.000 VNĐ (ví dụ: 50.000, 60.000, 70.000...)');
                         valid = false;
                     } else if (amount > 99999999) {
                         $('.amount-error').show().text('Số tiền tối đa là 99.999.999 VNĐ');
@@ -651,7 +656,9 @@
                     const input = $(this);
                     let raw = input.data('raw');
                     if (raw) {
-                        if (raw < 2000) raw = 2000;
+                        raw = Math.round(raw / 10000) * 10000;
+                        const minAmount = {{ (int) $minBankAutoDepositAmount }};
+                        if (raw < minAmount) raw = minAmount;
                         input.data('raw', raw);
                         input.val(formatVndCurrency(raw));
                     }
