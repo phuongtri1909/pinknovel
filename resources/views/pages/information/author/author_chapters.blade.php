@@ -8,41 +8,40 @@
 @section('info_section_desc', 'Truyện: ' . $story->title)
 
 @section('info_content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <div>
             <a href="{{ route('user.author.stories') }}" class="btn btn-sm btn-outline-secondary">
                 <i class="fas fa-arrow-left me-1"></i> Quay lại
             </a>
         </div>
 
-        <div class="text-end">
+        <div class="d-flex align-items-center flex-wrap gap-2">
             @if ($story->chapters->count() < 3 && $story->status == 'draft')
-                <span class="badge bg-warning text-dark me-2">
+                <span class="badge bg-warning text-dark">
                     <i class="fas fa-exclamation-triangle me-1"></i> Cần thêm {{ 3 - $story->chapters->count() }} chương nữa
-                    để đủ điều kiện duyệt
                 </span>
             @endif
 
             @if ($story->completed)
                 @if ($story->hasCombo())
-                    <a href="{{ route('user.author.stories.combo.edit', $story->id) }}" class="btn btn-outline-primary me-2">
+                    <a href="{{ route('user.author.stories.combo.edit', $story->id) }}" class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-tags me-1"></i> Chỉnh sửa combo
                     </a>
                 @else
                     <a href="{{ route('user.author.stories.combo.create', $story->id) }}"
-                        class="btn btn-outline-primary btn-sm me-2">
+                        class="btn btn-sm btn-outline-primary">
                         <i class="fas fa-tags me-1"></i> Tạo combo
                     </a>
                 @endif
             @endif
 
-            <div class="mb-2">
+            <div class="btn-group" role="group">
                 <a href="{{ route('user.author.stories.chapters.create', $story->id) }}"
-                    class="btn btn-outline-success btn-sm">
+                    class="btn btn-sm btn-outline-success">
                     <i class="fas fa-plus me-1"></i> Chương
                 </a>
                 <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
-                    class="btn btn-outline-success btn-sm">
+                    class="btn btn-sm btn-outline-success">
                     <i class="fas fa-plus me-1"></i> Nhiều Chương
                 </a>
             </div>
@@ -75,14 +74,31 @@
                             {{ $story->getTotalChapterPriceAttribute() }} <i class="fa-solid fa-sack-dollar"></i>
                         </span>
                     </div>
-                    <div>
-                        @foreach ($story->categories as $category)
+                    <div class="category-container">
+                        @php
+                            $categories = $story->categories;
+                            $maxDisplay = 3;
+                            $showMore = $categories->count() > $maxDisplay;
+                        @endphp
+                        @foreach ($categories->take($maxDisplay) as $category)
                             <span class="badge bg-secondary me-1">{{ $category->name }}</span>
                         @endforeach
+                        @if ($showMore)
+                            <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none text-muted category-toggle" 
+                                    data-show-more="true" style="font-size: 0.875rem;">
+                                <span class="show-text">+{{ $categories->count() - $maxDisplay }} xem thêm</span>
+                                <span class="hide-text d-none">Ẩn bớt</span>
+                            </button>
+                            <div class="category-remaining d-none">
+                                @foreach ($categories->skip($maxDisplay) as $category)
+                                    <span class="badge bg-secondary me-1">{{ $category->name }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    <div class="mb-2">
+                    <div class="d-flex flex-wrap justify-content-md-end gap-2 align-items-center mb-3">
                         @if ($story->status == 'published')
                             <span class="badge bg-success">Đã xuất bản</span>
                         @elseif($story->status == 'draft')
@@ -98,27 +114,25 @@
                         @endif
                     </div>
 
-                    <div>
+                    <div class="d-flex flex-wrap justify-content-md-end gap-2">
                         @if (!$story->completed && $story->status == 'published')
-                            <button type="button" class="btn btn-sm btn-outline-info me-1" data-bs-toggle="modal"
+                            <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
                                 data-bs-target="#markCompleteModal">
-                                <i class="fas fa-check-double me-1"></i> Đánh dấu hoàn thành
+                                <i class="fas fa-check-double me-1"></i> Hoàn thành
                             </button>
                         @endif
 
                         @if ($story->status == 'draft')
                             <a href="{{ route('user.author.stories.edit', $story->id) }}#review"
-                                class="btn btn-sm btn-outline-primary me-1">
+                                class="btn btn-sm btn-outline-primary">
                                 <i class="fas fa-check-circle me-1"></i> Yêu cầu duyệt
                             </a>
                         @elseif ($story->status == 'pending')
                             <a href="{{ route('user.author.stories.edit', $story->id) }}#review"
-                                class="btn btn-sm btn-outline-secondary me-1">
+                                class="btn btn-sm btn-outline-secondary">
                                 <i class="fas fa-check-circle me-1"></i> Đang chờ duyệt
                             </a>
                         @endif
-
-                        <div class="mb-2"></div>
 
                         <a href="{{ route('user.author.stories.edit', $story->id) }}"
                             class="btn btn-sm btn-outline-primary">
@@ -127,21 +141,19 @@
 
                         @if ($story->chapters()->where('status', 'published')->count() > 0)
                             <a href="{{ route('user.author.stories.chapters.bulk-price', $story->id) }}"
-                                class="btn btn-outline-warning btn-sm">
+                                class="btn btn-sm btn-outline-warning">
                                 <i class="fas fa-coins me-1"></i> Cập nhật giá
                             </a>
                         @endif
                     </div>
 
-                    <div class="mb-2"></div>
-
-                    <div>
+                    <div class="d-flex flex-wrap justify-content-md-end gap-2 mt-2">
                         <a href="{{ route('user.author.stories.chapters.create', $story->id) }}"
-                            class="btn btn-outline-success btn-sm">
+                            class="btn btn-sm btn-outline-success">
                             <i class="fas fa-plus me-1"></i> Chương
                         </a>
                         <a href="{{ route('user.author.stories.chapters.batch.create', $story->id) }}"
-                            class="btn btn-outline-success btn-sm">
+                            class="btn btn-sm btn-outline-success">
                             <i class="fas fa-plus me-1"></i> Nhiều Chương
                         </a>
                     </div>
@@ -217,19 +229,19 @@
             <div class="card-body py-2">
                 <div class="row align-items-center">
                     <div class="col-md-8">
-                        <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
+                        <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center gap-2 mb-2">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="selectAllChapters">
                                 <label class="form-check-label" for="selectAllChapters">
                                     <small class="text-muted">Chọn tất cả</small>
                                 </label>
                             </div>
-                            <div class="vr"></div>
-                            <div class="d-flex align-items-center gap-2">
-                                <input type="number" class="form-control form-control-sm" id="rangeFrom" placeholder="Từ chương" min="1" style="width: 100px;">
-                                <span class="small">đến</span>
-                                <input type="number" class="form-control form-control-sm" id="rangeTo" placeholder="Đến chương" min="1" style="width: 100px;">
-                                <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteByRange()">
+                            <div class="vr d-none d-md-block"></div>
+                            <div class="d-flex align-items-center gap-2 flex-grow-1 flex-md-grow-0">
+                                <input type="number" class="form-control form-control-sm" id="rangeFrom" placeholder="Từ chương" min="1" style="min-width: 80px; max-width: 120px;">
+                                <span class="small text-nowrap">đến</span>
+                                <input type="number" class="form-control form-control-sm" id="rangeTo" placeholder="Đến chương" min="1" style="min-width: 80px; max-width: 120px;">
+                                <button type="button" class="btn btn-outline-danger btn-sm text-nowrap" onclick="deleteByRange()">
                                     <i class="fas fa-trash-alt me-1"></i> Xóa
                                 </button>
                             </div>
@@ -913,6 +925,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Category "Xem thêm" toggle
+    const categoryToggle = document.querySelector('.category-toggle');
+    if (categoryToggle) {
+        categoryToggle.addEventListener('click', function() {
+            const showMore = this.getAttribute('data-show-more') === 'true';
+            const remainingDiv = document.querySelector('.category-remaining');
+            const showText = this.querySelector('.show-text');
+            const hideText = this.querySelector('.hide-text');
+            
+            if (showMore) {
+                remainingDiv.classList.remove('d-none');
+                showText.classList.add('d-none');
+                hideText.classList.remove('d-none');
+                this.setAttribute('data-show-more', 'false');
+            } else {
+                remainingDiv.classList.add('d-none');
+                showText.classList.remove('d-none');
+                hideText.classList.add('d-none');
+                this.setAttribute('data-show-more', 'true');
+            }
+        });
+    }
 });
 
 // Delete chapters by range
