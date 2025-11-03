@@ -8,9 +8,6 @@
 
 @push('styles')
     <style>
-        /* Loại bỏ các CSS không cần thiết cho card-type-option */
-        /* Giữ lại chỉ những styles cần thiết */
-
         .amount-option {
             border: 2px solid #e9ecef;
             border-radius: 8px;
@@ -300,7 +297,7 @@
             <!-- Card Info Section -->
             <div class="card-info-section mb-3">
                 <div class="deposit-card-header">
-                    <h5 class="mb-0">Nạp xu bằng thẻ cào</h5>
+                    <P class="mb-0"> Vui lòng liên hệ về <a class="text-danger fw-bold text-decoration-none" href="https://www.facebook.com/profile.php?id=100094042439181" target="_blank">fanpage</a> để được hỗ trợ nếu có vấn đề về nạp xu</P>
                 </div>
             </div>
 

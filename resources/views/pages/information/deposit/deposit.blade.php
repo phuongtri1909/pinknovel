@@ -1,10 +1,10 @@
 @extends('layouts.information')
 
-@section('info_title', 'Nạp xu')
+@section('info_title', 'Nạp xu qua chuyển khoản ngân hàng')
 @section('info_description', 'Nạp xu vào tài khoản của bạn trên ' . request()->getHost())
 @section('info_keyword', 'nạp xu, thanh toán, ' . request()->getHost())
-@section('info_section_title', 'Nạp xu')
-@section('info_section_desc', 'Nạp xu vào tài khoản để sử dụng các dịch vụ cao cấp')
+@section('info_section_title', 'Nạp xu qua chuyển khoản ngân hàng')
+@section('info_section_desc', 'Nạp xu vào tài khoản để sử dụng mua các truyện vip')
 
 @push('styles')
     <style>
@@ -249,7 +249,7 @@
             <div class="col-lg-8">
                 <div class="">
                     <div class="deposit-card-header">
-                        <h5 class="mb-0">Nạp xu qua chuyển khoản ngân hàng</h5>
+                        <P class="mb-0"> Vui lòng liên hệ về <a class="text-danger fw-bold text-decoration-none" href="https://www.facebook.com/profile.php?id=100094042439181" target="_blank">fanpage</a> để được hỗ trợ nếu có vấn đề về nạp xu</P>
                     </div>
                     <div class="deposit-card-body">
                         <!-- Debug info (remove in production) -->
@@ -262,7 +262,7 @@
                             @csrf
 
                             <div class="mb-4">
-                                <label class="form-label fw-bold mb-3">Chọn ngân hàng</label>
+                                <label class="form-label fw-bold mb-3">Chuyển khoản đến ngân hàng</label>
                                 <div class="row">
                                     @foreach ($banks as $bank)
                                         <div class="col-6">
@@ -324,7 +324,7 @@
                                 </div>
 
                                 <button type="button" id="proceedToPaymentBtn" class="btn payment-btn w-100">
-                                    <i class="fas fa-wallet"></i> Tiến hành thanh toán
+                                    <i class="fas fa-wallet"></i> Thanh toán và tải bill
                                 </button>
                             </div>
                         </form>
@@ -477,7 +477,7 @@
 
                     <div class="payment-confirmation">
                         <button type="button" class="confirm-payment-btn" id="confirmPaymentBtn">
-                            <i class="fas fa-check-circle me-2"></i> Tôi đã chuyển khoản
+                            <i class="fas fa-check-circle me-2"></i> Tải bill để nhận xu
                         </button>
                     </div>
 
@@ -689,6 +689,12 @@
                 try {
                     const amount = parseInt($('#amount').data('raw')) || 0;
 
+                    const isValid = amount >= 50000 && amount % 10000 === 0;
+                    if (!isValid) {
+                        $('#coinsPreview').text('-');
+                        return;
+                    }
+
                     const feeAmount = (amount * window.coinBankPercent) / 100;
                     const amountAfterFee = amount - feeAmount;
                     const baseCoins = Math.floor(amountAfterFee / window.coinExchangeRate);
@@ -697,7 +703,7 @@
                     $('#coinsPreview').text(totalCoins.toLocaleString('vi-VN'));
                 } catch (error) {
                     console.error("Error updating coin preview:", error);
-                    $('#coinsPreview').text('0');
+                    $('#coinsPreview').text('-');
                 }
             }
 
@@ -1153,7 +1159,7 @@
                     // Hiển thị xác nhận hủy bằng SweetAlert2
                     window.showConfirm(
                         'Xác nhận hủy thanh toán',
-                        'Bạn có chắc chắn muốn hủy giao dịch này? Thông tin giao dịch sẽ không được lưu lại.',
+                        'Nếu đã thanh toán bạn cần phải tải bill để xác nhận thanh toán, nếu không sẽ không được nhận xu.',
                         function() {
                             // Đánh dấu modal để cho phép đóng
                             $('#paymentModal').data('force-close', true);
@@ -1170,7 +1176,7 @@
                             }, 300);
 
                             // Hiển thị thông báo đã hủy
-                            showNotification('Đã hủy giao dịch thanh toán', 'info');
+                            showNotification('Đã hủy thanh toán', 'info');
                         }
                     );
                 });
@@ -1253,6 +1259,7 @@
                     try {
                         const input = $(this);
                         let rawValue = input.data('raw') || 0;
+                        const originalRaw = rawValue;
                         
                         // Làm tròn về bội số của 10.000 gần nhất
                         if (rawValue > 0) {
@@ -1263,6 +1270,16 @@
                             input.val(formatted);
                             input.data('raw', rawValue);
                             updateCoinPreview();
+
+                            // Thông báo nếu có điều chỉnh
+                            if (originalRaw !== rawValue) {
+                                try {
+                                    const adjustedText = formatVndCurrency(rawValue.toString());
+                                    if (window.showToast) {
+                                        window.showToast(`Số tiền đã được tự động điều chỉnh: ${adjustedText} VNĐ (bội số 10.000, tối thiểu 50.000)`, 'info');
+                                    }
+                                } catch (e) {}
+                            }
                         }
                     } catch (error) {
                         console.error('Error in blur handler:', error);
@@ -1273,19 +1290,21 @@
                     try {
                         const amount = parseInt($('#amount').data('raw')) || 0;
 
-                        if (amount > 0) {
+                        const isValid = amount >= 50000 && amount % 10000 === 0;
+                        if (!isValid) {
+                            $('#coinsPreview').text('-');
+                            return;
+                        }
+
                             const feeAmount = (amount * window.coinBankPercent) / 100;
                             const amountAfterFee = amount - feeAmount;
                             const baseCoins = Math.floor(amountAfterFee / window.coinExchangeRate);
                             const totalCoins = baseCoins;
 
                             $('#coinsPreview').text(totalCoins.toLocaleString('vi-VN'));
-                        } else {
-                            $('#coinsPreview').text('0');
-                        }
                     } catch (error) {
                         console.error("Error updating coin preview:", error);
-                        $('#coinsPreview').text('0');
+                        $('#coinsPreview').text('-');
                     }
                 }
 

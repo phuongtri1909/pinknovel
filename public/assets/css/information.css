@@ -1178,7 +1178,7 @@ label.form-label {
 }
 
 .payment-btn {
-    background: linear-gradient(45deg, var(--primary-color-2), var(--primary-color-3));
+    background: #4caf50;
     border: none;
     color: white;
     border-radius: 30px;
@@ -1194,6 +1194,8 @@ label.form-label {
 }
 
 .payment-btn:hover {
+    background: #3d8b40;
+    color: white;
     transform: translateY(-3px);
     box-shadow: 0 6px 16px rgba(var(--primary-rgb), 0.3);
 }

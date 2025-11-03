@@ -214,7 +214,7 @@
                             </div>
                         </div>
                     </div>
-
+                    
                     <!-- Story notice comparison -->
                     <div class="story-detail">
                         <h6 class="mb-3">Thông báo truyện</h6>

@@ -115,22 +115,14 @@
                                         </td>
                                         <td class="align-middle">
                                             <div class="d-flex justify-content-center gap-2">
-                                                @if($deposit->image)
-                                                    <a href="#" data-bs-toggle="modal" data-bs-target="#viewImageModal{{ $deposit->id }}"
-                                                       class="btn btn-link text-info text-gradient px-3 mb-0">
-                                                        <i class="far fa-eye me-2"></i>Xem ảnh
-                                                    </a>
-                                                @endif
-
-                                                @if($deposit->status === 'processing')
-                                                    <button type="button" class="btn btn-link text-success text-gradient px-3 mb-0"
-                                                            data-bs-toggle="modal" data-bs-target="#approveModal{{ $deposit->id }}">
-                                                        <i class="fas fa-check me-2"></i>Duyệt
-                                                    </button>
-
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#viewModal{{ $deposit->id }}"
+                                                   class="btn btn-link text-info text-gradient px-3 mb-0">
+                                                    <i class="far fa-eye me-2"></i>Xem
+                                                </a>
+                                                @if($deposit->status == 'rejected' && $deposit->note)
                                                     <button type="button" class="btn btn-link text-danger text-gradient px-3 mb-0"
-                                                            data-bs-toggle="modal" data-bs-target="#rejectModal{{ $deposit->id }}">
-                                                        <i class="fas fa-times me-2"></i>Từ chối
+                                                            data-bs-toggle="modal" data-bs-target="#noteModal{{ $deposit->id }}">
+                                                        <i class="fas fa-info-circle me-2"></i>Lý do
                                                     </button>
                                                 @endif
                                             </div>
@@ -154,100 +146,82 @@
 
     <!-- Modals -->
     @foreach($paypalDeposits as $deposit)
-        <!-- Image Modal -->
-        @if($deposit->image)
-            <div class="modal fade" id="viewImageModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="viewImageModalLabel{{ $deposit->id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="viewImageModalLabel{{ $deposit->id }}">Ảnh chứng minh PayPal</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <img src="{{ Storage::url($deposit->image) }}" class="img-fluid" alt="Chứng minh PayPal">
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Đóng</button>
-                        </div>
+        <!-- Unified View Modal with actions -->
+        <div class="modal fade" id="viewModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel{{ $deposit->id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="viewModalLabel{{ $deposit->id }}">Chi tiết nạp PayPal</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
                     </div>
-                </div>
-            </div>
-        @endif
+                    <div class="modal-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-2"><strong>Mã giao dịch:</strong> {{ $deposit->transaction_code }}</div>
+                                <div class="mb-2"><strong>Người dùng:</strong> {{ $deposit->user->name }} ({{ $deposit->user->email }})</div>
+                                <div class="mb-2"><strong>Email PayPal:</strong> {{ $deposit->paypal_email }}</div>
+                                <div class="mb-2"><strong>Số tiền USD:</strong> {{ $deposit->usd_amount_formatted }}</div>
+                                <div class="mb-2"><strong>Số tiền VND:</strong> {{ $deposit->vnd_amount_formatted }}</div>
+                                <div class="mb-2"><strong>Số xu:</strong> {{ $deposit->coins_formatted }} xu</div>
+                                <div class="mb-2"><strong>Trạng thái:</strong> {{ $deposit->status_text }}</div>
+                                <div class="mb-2"><strong>Thời gian:</strong> {{ $deposit->created_at->format('d/m/Y H:i') }}</div>
+                                @if($deposit->processed_at)
+                                    <div class="mb-2"><strong>Xử lý lúc:</strong> {{ $deposit->processed_at->format('d/m/Y H:i') }}</div>
+                                @endif
+                                @if($deposit->status === 'rejected' && $deposit->note)
+                                    <div class="alert alert-danger mt-2 mb-0"><strong>Lý do từ chối:</strong> {{ $deposit->note }}</div>
+                                @endif
 
-        <!-- Approve Modal -->
-        @if($deposit->status === 'processing')
-            <div class="modal fade" id="approveModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel{{ $deposit->id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="approveModalLabel{{ $deposit->id }}">Xác nhận duyệt giao dịch PayPal</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="row mb-3">
-                                <div class="col-12">
-                                    <h6 class="text-sm">Mã giao dịch: <span class="text-dark">{{ $deposit->transaction_code }}</span></h6>
-                                    <h6 class="text-sm">Người dùng: <span class="text-dark">{{ $deposit->user->name }}</span></h6>
-                                    <h6 class="text-sm">Số tiền: <span class="text-dark">{{ $deposit->usd_amount_formatted }}</span></h6>
-                                    <h6 class="text-sm">Số xu: <span class="text-dark">{{ $deposit->coins_formatted }} xu</span></h6>
-                                    <h6 class="text-sm">Email PayPal: <span class="text-dark">{{ $deposit->paypal_email }}</span></h6>
-                                </div>
-                            </div>
-                            <div class="alert alert-info text-white text-sm">
-                                Bạn có chắc chắn muốn duyệt giao dịch này? Người dùng sẽ được cộng {{ $deposit->coins_formatted }} xu vào tài khoản.
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Hủy</button>
-                            <form action="{{ route('admin.paypal-deposits.approve', $deposit) }}" method="POST" class="m-0" id="approvePaypalForm{{ $deposit->id }}">
-                                @csrf
-                                <button type="submit" class="btn bg-gradient-success" id="approvePaypalBtn{{ $deposit->id }}">
-                                    <span class="btn-text">Xác nhận duyệt</span>
-                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        @endif
+                                @if($deposit->status === 'processing')
+                                    <hr class="my-3">
+                                    <div class="row g-2">
+                                        <div class="col-6 d-grid">
+                                            <button type="button" class="btn bg-gradient-success" id="approvePaypalAction{{ $deposit->id }}">
+                                                <i class="fas fa-check me-2"></i>Duyệt
+                                            </button>
+                                        </div>
+                                        <div class="col-6 d-grid">
+                                            <button type="button" class="btn bg-gradient-danger" id="rejectPaypalAction{{ $deposit->id }}">
+                                                <i class="fas fa-times me-2"></i>Từ chối
+                                            </button>
+                                        </div>
+                                    </div>
 
-        <!-- Reject Modal -->
-        @if($deposit->status === 'processing')
-            <div class="modal fade" id="rejectModal{{ $deposit->id }}" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel{{ $deposit->id }}" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="rejectModalLabel{{ $deposit->id }}">Từ chối giao dịch PayPal</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                                <span aria-hidden="true">&times;</span>
-                            </button>
+                                    <!-- Hidden forms for actions -->
+                                    <form action="{{ route('admin.paypal-deposits.approve', $deposit) }}" method="POST" class="d-none" id="approvePaypalForm{{ $deposit->id }}">
+                                        @csrf
+                                        <button type="submit" id="approvePaypalBtn{{ $deposit->id }}">
+                                            <span class="btn-text">Duyệt</span>
+                                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                        </button>
+                                    </form>
+                                    <form action="{{ route('admin.paypal-deposits.reject', $deposit) }}" method="POST" class="d-none" id="rejectPaypalForm{{ $deposit->id }}">
+                                        @csrf
+                                        <input type="hidden" name="note" id="rejectPaypalNote{{ $deposit->id }}">
+                                        <button type="submit" id="rejectPaypalBtn{{ $deposit->id }}">
+                                            <span class="btn-text">Từ chối</span>
+                                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
+                            <div class="col-md-6 text-center">
+                                @if($deposit->image)
+                                    <img src="{{ Storage::url($deposit->image) }}" class="img-fluid" alt="Chứng minh PayPal">
+                                @else
+                                    <span class="text-muted">Không có ảnh chứng minh</span>
+                                @endif
+                            </div>
                         </div>
-                        <form action="{{ route('admin.paypal-deposits.reject', $deposit) }}" method="POST">
-                            @csrf
-                            <div class="modal-body">
-                                <div class="form-group">
-                                    <label for="note{{ $deposit->id }}" class="form-control-label">Lý do từ chối</label>
-                                    <textarea class="form-control" id="note{{ $deposit->id }}" name="note" rows="4" required></textarea>
-                                    <small class="form-text text-muted">Thông tin này sẽ được gửi đến người dùng</small>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Hủy</button>
-                                <button type="submit" class="btn bg-gradient-danger" id="rejectPaypalBtn{{ $deposit->id }}">
-                                    <span class="btn-text">Từ chối giao dịch</span>
-                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
-                                </button>
-                            </div>
-                        </form>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-between">
+                        <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Đóng</button>
                     </div>
                 </div>
             </div>
-        @endif
+        </div>
 
         <!-- Note Modal -->
         @if($deposit->note)
@@ -287,30 +261,70 @@
 
 @push('scripts-admin')
     <script>
+        // Ensure SweetAlert2 is available in admin pages
+        (function ensureSwal(){
+            if (typeof Swal === 'undefined') {
+                var s=document.createElement('script');
+                s.src='https://cdn.jsdelivr.net/npm/sweetalert2@11';
+                document.head.appendChild(s);
+            }
+        })();
         $(document).ready(function() {
-            $('[id^="approvePaypalForm"]').on('submit', function(e) {
-                const formId = $(this).attr('id');
-                const depositId = formId.replace('approvePaypalForm', '');
-                const button = $('#approvePaypalBtn' + depositId);
-                const btnText = button.find('.btn-text');
-                const spinner = button.find('.spinner-border');
-
-                // Disable button and show spinner
-                button.prop('disabled', true);
-                btnText.text('Đang xử lý...');
-                spinner.removeClass('d-none');
+            // Approve action with Swal (PayPal)
+            $(document).on('click', '[id^="approvePaypalAction"]', function() {
+                const id = $(this).attr('id').replace('approvePaypalAction', '');
+                const form = document.getElementById('approvePaypalForm' + id);
+                const button = $('#approvePaypalAction' + id);
+                const targetEl = document.getElementById('viewModal' + id) || document.body;
+                Swal.fire({
+                    icon: 'question',
+                    title: 'Xác nhận duyệt giao dịch PayPal?',
+                    text: 'Người dùng sẽ được cộng xu vào tài khoản.',
+                    showCancelButton: true,
+                    confirmButtonText: 'Duyệt',
+                    cancelButtonText: 'Hủy',
+                    target: targetEl,
+                    didOpen: () => {
+                        const input = Swal.getInput();
+                        if (input) input.blur();
+                    }
+                }).then(res => {
+                    if (res.isConfirmed) {
+                        button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Đang xử lý...');
+                        form.submit();
+                    }
+                });
             });
 
-            $('form[action*="paypal-deposits"][action*="reject"]').on('submit', function(e) {
-                const form = $(this);
-                const depositId = form.find('button[type="submit"]').attr('id').replace('rejectPaypalBtn', '');
-                const button = $('#rejectPaypalBtn' + depositId);
-                const btnText = button.find('.btn-text');
-                const spinner = button.find('.spinner-border');
-
-                button.prop('disabled', true);
-                btnText.text('Đang xử lý...');
-                spinner.removeClass('d-none');
+            // Reject action with Swal + input (PayPal)
+            $(document).on('click', '[id^="rejectPaypalAction"]', function() {
+                const id = $(this).attr('id').replace('rejectPaypalAction', '');
+                const form = document.getElementById('rejectPaypalForm' + id);
+                const noteInput = document.getElementById('rejectPaypalNote' + id);
+                const button = $('#rejectPaypalAction' + id);
+                const targetEl = document.getElementById('viewModal' + id) || document.body;
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Từ chối giao dịch PayPal?',
+                    input: 'text',
+                    inputLabel: 'Lý do từ chối',
+                    inputPlaceholder: 'Nhập lý do từ chối...',
+                    inputValidator: (value) => { if (!value) return 'Vui lòng nhập lý do'; },
+                    showCancelButton: true,
+                    confirmButtonText: 'Từ chối',
+                    cancelButtonText: 'Hủy',
+                    target: targetEl,
+                    didOpen: () => {
+                        const input = Swal.getInput();
+                        if (input) input.focus();
+                    }
+                }).then(res => {
+                    if (res.isConfirmed) {
+                        noteInput.value = res.value;
+                        button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Đang xử lý...');
+                        form.submit();
+                    }
+                });
             });
         });
     </script>

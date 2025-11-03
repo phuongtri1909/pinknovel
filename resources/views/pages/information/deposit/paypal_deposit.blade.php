@@ -374,6 +374,13 @@
     <!-- PayPal Form -->
     <div class="row">
         <div class="col-lg-8">
+
+            <div class="card-info-section mb-3">
+                <div class="deposit-card-header">
+                    <P class="mb-0"> Vui lòng liên hệ về <a class="text-danger fw-bold text-decoration-none" href="https://www.facebook.com/profile.php?id=100094042439181" target="_blank">fanpage</a> để được hỗ trợ nếu có vấn đề về nạp xu</P>
+                </div>
+            </div>
+
             <div class="paypal-form">
                 <div class="text-center mb-4">
                     <i class="fab fa-paypal fa-4x mb-3"></i>
@@ -854,11 +861,25 @@
 
             $('#usdAmount').on('blur', function() {
                 let value = parseFloat($(this).val()) || 0;
+                const original = value;
                 if (value > 0) {
                     value = Math.round(value / 5) * 5;
                     if (value < 5) value = 5;
                     $(this).val(value);
                     updatePreview();
+
+                    // Thông báo nếu có điều chỉnh
+                    if (original !== value) {
+                        if (window.Swal && window.Swal.fire) {
+                            window.Swal.fire({
+                                icon: 'info',
+                                title: 'Đã điều chỉnh số tiền',
+                                text: `Số tiền đã được tự động điều chỉnh: $${value.toFixed(2)} (bội số 5, tối thiểu $5)`,
+                                timer: 1800,
+                                showConfirmButton: false
+                            });
+                        }
+                    }
                 }
             });
 
@@ -880,18 +901,23 @@
                     $('#paymentMethodFeeRow').removeClass('show');
                 }
 
-                // Calculate coins based on base amount (not total)
+                // Update preview base/total/method
+                $('#previewBaseUSD').text('$' + baseUsdAmount.toFixed(2));
+                $('#previewMethodFee').text('$' + methodFee.toFixed(2));
+                $('#previewTotalUSD').text('$' + totalUsdAmount.toFixed(2));
+                $('#previewPaymentMethod').text(paymentMethodText);
+
+                // Show coins only when amount is valid (>= 5 and multiple of 5)
+                const isValid = baseUsdAmount >= 5 && baseUsdAmount % 5 === 0;
+                if (!isValid) {
+                    $('#previewCoins').text('-');
+                } else {
                 const vndAmount = baseUsdAmount * coinPaypalRate;
                 const feeAmount = (vndAmount * coinPaypalPercent) / 100;
                 const amountAfterFee = vndAmount - feeAmount;
                 const coins = Math.floor(amountAfterFee / coinExchangeRate);
-
-                // Update preview
-                $('#previewBaseUSD').text('$' + baseUsdAmount.toFixed(2));
-                $('#previewMethodFee').text('$' + methodFee.toFixed(2));
-                $('#previewTotalUSD').text('$' + totalUsdAmount.toFixed(2));
                 $('#previewCoins').text(coins.toLocaleString('vi-VN') + ' xu');
-                $('#previewPaymentMethod').text(paymentMethodText);
+                }
 
                 // Highlight total amount if there's a method fee
                 if (methodFee > 0) {
