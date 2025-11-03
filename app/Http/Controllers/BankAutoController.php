@@ -171,6 +171,7 @@ class BankAutoController extends Controller
      */
     public function callback(Request $request)
     {
+        return response()->json(['success' => true, 'message' => 'Callback received'], 200);
         $payload = $request->getContent();
         $signature = $request->header('X-Casso-Signature');
         
