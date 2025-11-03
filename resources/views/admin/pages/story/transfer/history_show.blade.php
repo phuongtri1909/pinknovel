@@ -165,7 +165,7 @@
                                     <div class="d-flex">
                                         @if($history->oldAuthor)
                                             <div class="me-3">
-                                                <img src="{{ $history->oldAuthor->avatar ? asset('storage/' . $history->oldAuthor->avatar) : asset('assets/img/default-avatar.png') }}"
+                                                <img src="{{ $history->oldAuthor->avatar ? asset('storage/' . $history->oldAuthor->avatar) : asset('assets/images/avatar_default.jpg') }}"
                                                      class="avatar avatar-lg" alt="Old Author Avatar">
                                             </div>
                                             <div>
@@ -206,7 +206,7 @@
                                     <div class="d-flex">
                                         @if($history->newAuthor)
                                             <div class="me-3">
-                                                <img src="{{ $history->newAuthor->avatar ? asset('storage/' . $history->newAuthor->avatar) : asset('assets/img/default-avatar.png') }}"
+                                                <img src="{{ $history->newAuthor->avatar ? asset('storage/' . $history->newAuthor->avatar) : asset('assets/images/avatar_default.jpg') }}"
                                                      class="avatar avatar-lg" alt="New Author Avatar">
                                             </div>
                                             <div>

@@ -132,8 +132,8 @@
                         </div>
 
                         <div class="user-nav-item">
-                            <a href="{{ route('user.deposit') }}"
-                                class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.deposit*') ? 'active' : '' }}">
+                            <a href="{{ route('user.bank.auto.deposit') }}"
+                                class="user-nav-link text-decoration-none hover-color-3 {{ request()->routeIs('user.deposit*', 'user.bank.auto.deposit*') ? 'active' : '' }}">
                                 <i class="fa-solid fa-coins user-nav-icon"></i>
                                 <span class="user-nav-text">Nạp xu</span>
                             </a>

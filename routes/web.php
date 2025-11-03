@@ -19,6 +19,8 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\DepositController;
 use App\Http\Controllers\ReadingController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\BankAutoController;
+use App\Http\Controllers\Admin\BankAutoController as AdminBankAutoController;
 use App\Http\Controllers\BookmarkController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LogoSiteController;
@@ -31,15 +33,16 @@ use App\Http\Controllers\Admin\SocialController;
 use App\Http\Controllers\PaypalDepositController;
 use App\Http\Controllers\RequestPaymentController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\AdminGuideController;
 use App\Http\Controllers\Admin\StoryReviewController;
 use App\Http\Controllers\AuthorApplicationController;
 use App\Http\Controllers\Admin\StoryTransferController;
 use App\Http\Controllers\Admin\AdminDailyTaskController;
+use App\Http\Controllers\Admin\BankAutoDepositController;
 use App\Http\Controllers\Admin\BankController as AdminBankController;
 use App\Http\Controllers\Admin\CardDepositController as AdminCardDepositController;
 use App\Http\Controllers\Admin\PaypalDepositController as AdminPaypalDepositController;
 use App\Http\Controllers\Admin\StoryEditRequestController as AdminStoryEditRequestController;
-use App\Http\Controllers\Admin\AdminGuideController;
 
 /*
 |--------------------------------------------------------------------------
@@ -66,6 +69,7 @@ Route::get('/sitemap-categories.xml', [SitemapController::class, 'categories'])-
 
 
 Route::post('/card-deposit/callback', [CardDepositController::class, 'callback'])->name('card.deposit.callback');
+Route::post('/bank-auto-deposit/callback', [BankAutoController::class, 'callback'])->name('user.bank.auto.deposit.callback');
 
 
 // Route::get('/check-card', [CardDepositController::class, 'checkCardForm'])->name('check.card.form');
@@ -161,6 +165,11 @@ Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
             Route::post('/paypal-deposit', [PaypalDepositController::class, 'store'])->name('paypal.deposit.store');
             Route::post('/paypal-deposit/confirm', [PaypalDepositController::class, 'confirm'])->name('paypal.deposit.confirm');
             Route::get('/paypal-deposit/status/{transactionCode}', [PaypalDepositController::class, 'checkStatus'])->name('paypal.deposit.status');
+
+            Route::get('/bank-auto-deposit', [BankAutoController::class, 'index'])->name('bank.auto.deposit');
+            Route::post('/bank-auto-deposit', [BankAutoController::class, 'store'])->name('bank.auto.deposit.store');
+            Route::post('/bank-auto-deposit/calculate', [BankAutoController::class, 'calculatePreview'])->name('bank.auto.deposit.calculate');
+            Route::get('/bank-auto-deposit/sse', [BankAutoController::class, 'sseTransactionUpdates'])->name('bank.auto.sse');
 
             // Routes cho tác giả - sử dụng middleware 'role' mới
             Route::group(['middleware' => 'role:author,admin', 'prefix' => 'author', 'as' => 'author.'], function () {
@@ -329,7 +338,7 @@ Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
                         Route::resource('banks', AdminBankController::class);
 
                         // Quản lý cấu hình hệ thống: chỉ xem danh sách, sửa, cập nhật
-                        Route::resource('configs', ConfigController::class)->only(['index','edit','update']);
+                        Route::resource('configs', ConfigController::class)->only(['index', 'edit', 'update']);
 
                         // Quản lý Card Deposit
                         Route::get('/card-deposits', [AdminCardDepositController::class, 'adminIndex'])->name('card-deposits.index');
@@ -382,6 +391,11 @@ Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
                         Route::post('daily-tasks/{dailyTask}/toggle-active', [AdminDailyTaskController::class, 'toggleActive'])->name('daily-tasks.toggle-active');
                         Route::get('daily-tasks/dt/user-progress', [AdminDailyTaskController::class, 'userProgress'])->name('daily-tasks.user-progress');
                         Route::get('daily-tasks/dt/statistics', [AdminDailyTaskController::class, 'statistics'])->name('daily-tasks.statistics');
+
+
+                        Route::resource('bank-autos', AdminBankAutoController::class);
+                        Route::get('/bank-auto-deposits', [BankAutoDepositController::class, 'index'])->name('bank-auto-deposits.index');
+                        Route::get('/bank-auto-deposits/{bankAutoDeposit}', [BankAutoDepositController::class, 'show'])->name('bank-auto-deposits.show');
                     });
                 });
             });

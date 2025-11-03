@@ -90,7 +90,7 @@
                                 <div class="card-body">
                                     <div class="d-flex">
                                         <div>
-                                            <img src="{{ $story->user->avatar ? asset('storage/' . $story->user->avatar) : asset('assets/img/default-avatar.png') }}" 
+                                            <img src="{{ $story->user->avatar ? asset('storage/' . $story->user->avatar) : asset('assets/images/avatar_default.jpg') }}" 
                                                  class="avatar avatar-lg me-3" alt="author avatar">
                                         </div>
                                         <div>

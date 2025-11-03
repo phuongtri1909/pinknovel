@@ -281,6 +281,11 @@
 
     <!-- Deposit Tabs -->
     <div class="deposit-tabs d-flex mb-4">
+
+        <a href="{{ route('user.bank.auto.deposit') }}" class="deposit-tab">
+            <i class="fas fa-robot me-2"></i>Bank auto
+        </a>
+
         <a href="{{ route('user.deposit') }}" class="deposit-tab ">
             <i class="fas fa-university me-2"></i>Bank
         </a>

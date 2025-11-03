@@ -12,6 +12,7 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        'card-deposit/callback'
+        'card-deposit/callback',
+        'bank-auto-deposit/callback'
     ];
 }

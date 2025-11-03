@@ -248,6 +248,29 @@
                                 </span>
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.bank-auto-deposits.*') ? 'active' : '' }}"
+                                href="{{ route('admin.bank-auto-deposits.index') }}">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-exchange-alt text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">Nạp xu - Bank auto
+                                    @php
+                                        try {
+                                            $pendingBankAutoCount = \App\Models\BankAutoDeposit::where('status', 'pending')->count();
+                                        } catch (\Exception $e) {
+                                            $pendingBankAutoCount = 0;
+                                        }
+                                    @endphp
+                                    @if ($pendingBankAutoCount > 0)
+                                        <span class="badge bg-danger ms-2">{{ $pendingBankAutoCount }}</span>
+                                    @endif
+                                </span>
+                            </a>
+                        </li>
+
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('admin.withdrawals.*') ? 'active' : '' }}"
                                 href="{{ route('admin.withdrawals.index') }}" data-menu="withdrawals">
@@ -278,6 +301,19 @@
                                 <span class="nav-link-text ms-1">Quản lý Ngân hàng</span>
                             </a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::currentRouteNamed('admin.bank-autos.*') ? 'active' : '' }}"
+                                href="{{ route('admin.bank-autos.index') }}">
+                                <div
+                                    class="icon icon-shape icon-sm shadow border-radius-md bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fa-solid fa-robot text-dark icon-sidebar"></i>
+                                </div>
+                                <span class="nav-link-text ms-1">QL Ngân hàng (Tự động)</span>
+                            </a>
+                        </li>
+            
+                        
                     </ul>
                 </div>
             </li>

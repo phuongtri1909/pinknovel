@@ -1032,7 +1032,7 @@ class HomeController extends Controller
         if ((int) Config::getConfig('hide_story_18_plus', 0) === 1) {
             $query->where('is_18_plus', 0);
         }
-
+            
         return $query->orderByDesc('reviewed_at')
             ->take(20)
             ->get();
