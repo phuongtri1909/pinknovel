@@ -177,7 +177,7 @@
                                         @endif
                                     </div>
 
-                                    @if($story->source_link)
+                                    @if( auth()->check() && auth()->user()->role == 'admin' && $story->source_link)
                                         <div class="stat-item text-dark mt-2 d-flex justify-content-center">
                                             <a href="{{ $story->source_link }}" target="_blank" rel="noopener noreferrer" 
                                                class="action-button d-flex flex-column align-items-center text-decoration-none"
