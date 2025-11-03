@@ -18,7 +18,7 @@
                 <tr>
                     <td>{{ $story->id }}</td>
                     <td>
-                        <div class="d-flex align-items-center">
+                        <a href="{{ route('show.page.story', $story->slug) }}" class="d-flex align-items-center">
                             @if($story->cover)
                                 <img src="{{ Storage::url($story->cover) }}" 
                                      alt="{{ $story->title }}" 
@@ -29,7 +29,7 @@
                                 <h6 class="mb-0" style="line-height: 1.4; word-wrap: break-word;">{{ $story->title }}</h6>
                                 <small class="text-muted d-block text-truncate" style="max-width: 100%;" title="{{ $story->slug }}">{{ $story->slug }}</small>
                             </div>
-                        </div>
+                        </a>
                     </td>
                     <td>
                         @if($story->status === 'published')
