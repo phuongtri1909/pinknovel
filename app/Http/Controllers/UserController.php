@@ -28,19 +28,16 @@ class UserController extends Controller
         $authUser = auth()->user();
         $user = User::findOrFail($id);
 
-        // Check permissions
         if ($authUser->role === 'mod') {
             if ($user->role === 'admin' || $user->role === 'mode') {
                 abort(403, 'Unauthorized action.');
             }
         }
 
-        // Only show active users
         if ($user->active !== 'active') {
             abort(404);
         }
 
-        // Get financial statistics - optimized to avoid N+1 queries
         $stats = [
             'total_deposits' => $user->total_deposits,
             'total_spent' => $user->total_chapter_spending + $user->total_story_spending,
@@ -55,65 +52,59 @@ class UserController extends Controller
             })->sum('amount_received') : 0,
         ];
 
-        // Get deposits with pagination
         $deposits = $user->deposits()
             ->with('bank')
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'deposits_page');
 
-        // Get PayPal deposits with pagination
         $paypalDeposits = $user->paypalDeposits()
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'paypal_deposits_page');
 
-        // Get card deposits with pagination
         $cardDeposits = $user->cardDeposits()
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'card_deposits_page');
 
-        // Get chapter purchases with pagination
         $chapterPurchases = $user->chapterPurchases()
             ->with(['chapter.story'])
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'chapter_page');
 
-        // Get story purchases with pagination
         $storyPurchases = $user->storyPurchases()
             ->with(['story'])
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'story_page');
 
-        // Get bookmarks with pagination
         $bookmarks = $user->bookmarks()
             ->with(['story', 'lastChapter'])
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'bookmarks_page');
 
-        // Get coin transactions with pagination
         $coinTransactions = $user->coinTransactions()
             ->with('admin')
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'coin_page');
 
-        // Get user daily tasks with pagination
         $userDailyTasks = $user->userDailyTasks()
             ->with('dailyTask')
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'daily_tasks_page');
 
-        // Get withdrawal requests with pagination
         $withdrawalRequests = $user->withdrawalRequests()
             ->with('processedBy')
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'withdrawals_page');
 
-        // Get author earnings (if user is author)
         $authorChapterEarnings = collect();
         $authorStoryEarnings = collect();
         $authorFeaturedStories = collect();
+        $authorStories = collect();
         
         if ($user->role === 'author') {
-            // Get chapter earnings
+            $authorStories = \App\Models\Story::where('user_id', $user->id)
+                ->orderByDesc('created_at')
+                ->paginate(5, ['*'], 'author_stories_page');
+
             $authorChapterEarnings = \App\Models\ChapterPurchase::whereHas('chapter.story', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
@@ -121,7 +112,6 @@ class UserController extends Controller
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'author_chapter_earnings_page');
 
-            // Get story earnings
             $authorStoryEarnings = \App\Models\StoryPurchase::whereHas('story', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
@@ -129,7 +119,6 @@ class UserController extends Controller
             ->orderByDesc('created_at')
             ->paginate(5, ['*'], 'author_story_earnings_page');
 
-            // Get featured stories (author's own featured stories)
             $authorFeaturedStories = \App\Models\StoryFeatured::where('user_id', $user->id)
                 ->where('type', \App\Models\StoryFeatured::TYPE_AUTHOR)
                 ->with(['story'])
@@ -137,13 +126,10 @@ class UserController extends Controller
                 ->paginate(5, ['*'], 'author_featured_stories_page');
         }
 
-        // Get coin history with pagination
         $coinHistories = $user->coinHistories()
             ->orderByDesc('created_at')
             ->paginate(10, ['*'], 'coin_histories_page');
 
-        // Count totals for tabs - optimized to avoid N+1 queries
-        // Use single query with selectRaw to get all counts at once
         $counts = DB::select("
             SELECT 
                 (SELECT COUNT(*) FROM deposits WHERE user_id = ?) as deposits,
@@ -157,6 +143,7 @@ class UserController extends Controller
                 (SELECT COUNT(*) FROM withdrawal_requests WHERE user_id = ?) as withdrawal_requests,
                 (SELECT COUNT(*) FROM coin_histories WHERE user_id = ?) as coin_histories,
                 (SELECT COUNT(*) FROM story_featureds WHERE user_id = ? AND type = 'author') as author_featured_stories,
+                (SELECT COUNT(*) FROM stories WHERE user_id = ?) as author_stories,
                 (SELECT COUNT(*) FROM chapter_purchases cp 
                  JOIN chapters c ON cp.chapter_id = c.id 
                  JOIN stories s ON c.story_id = s.id 
@@ -167,7 +154,7 @@ class UserController extends Controller
         ", [
             $user->id, $user->id, $user->id, $user->id, $user->id, 
             $user->id, $user->id, $user->id, $user->id, $user->id,
-            $user->id, $user->id, $user->id
+            $user->id, $user->id, $user->id, $user->id
         ])[0];
 
         $counts = (array) $counts;
@@ -187,6 +174,7 @@ class UserController extends Controller
             'authorChapterEarnings',
             'authorStoryEarnings',
             'authorFeaturedStories',
+            'authorStories',
             'coinHistories',
             'counts'
         ));
@@ -199,7 +187,6 @@ class UserController extends Controller
 
 
         if ($request->has('delete_avatar') && $authUser->role === 'admin') {
-            // Check if target user is admin or mod
             if (in_array($user->role, ['admin', 'mod'])) {
                 return response()->json([
                     'status' => 'error',
@@ -207,7 +194,6 @@ class UserController extends Controller
                 ], 403);
             }
 
-            // Delete avatar using Storage facade instead of File facade
             if ($user->avatar) {
                 Storage::disk('public')->delete($user->avatar);
             }
@@ -221,13 +207,10 @@ class UserController extends Controller
             ]);
         }
 
-        // Special case for admin@gmail.com (super admin)
-        // Get super admin emails from env
         $superAdminEmails = explode(',', env('SUPER_ADMIN_EMAILS', 'admin@gmail.com'));
         $isSuperAdmin = in_array($authUser->email, $superAdminEmails);
 
         if ($request->has('role')) {
-            // Prevent changing super admin's role
             if (in_array($user->email, $superAdminEmails)) {
                 return response()->json([
                     'status' => 'error',
@@ -235,7 +218,6 @@ class UserController extends Controller
                 ], 403);
             }
 
-            // Only super admin can change admin roles
             if ($user->role === 'admin' && !$isSuperAdmin) {
                 return response()->json([
                     'status' => 'error',
@@ -253,7 +235,6 @@ class UserController extends Controller
             $user->role = $request->role;
         }
 
-        // Check permissions
         if ($authUser->role === 'mod') {
             if ($user->role === 'admin' || $user->id === $authUser->id) {
                 return response()->json([
@@ -263,7 +244,6 @@ class UserController extends Controller
             }
         }
 
-        // Handle ban toggles
         $banTypes = ['login', 'comment', 'rate', 'read'];
         foreach ($banTypes as $type) {
             $field = "ban_$type";
@@ -921,6 +901,11 @@ class UserController extends Controller
                     ->with(['story'])
                     ->orderByDesc('created_at')
                     ->paginate(5, ['*'], 'author_featured_stories_page', $page);
+                break;
+            case 'author-stories':
+                $data = \App\Models\Story::where('user_id', $user->id)
+                    ->orderByDesc('created_at')
+                    ->paginate(5, ['*'], 'author_stories_page', $page);
                 break;
             case 'coin-histories':
                 $data = $user->coinHistories()
