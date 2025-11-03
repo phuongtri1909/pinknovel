@@ -50,49 +50,62 @@ class AffiliateRedirect
                 $entity = self::$entityCache[$cacheKey];
             }
         } elseif ($type === 'chapter') {
-            // For chapter route: story/{storySlug}/{chapterSlug}
+            $storySlug = $request->route('storySlug');
             $chapterSlug = $request->route('chapterSlug');
-            if ($chapterSlug) {
-                $cacheKey = "chapter_{$chapterSlug}";
+            
+            if ($storySlug && $chapterSlug) {
+                $cacheKey = "chapter_{$storySlug}_{$chapterSlug}";
                 if (!isset(self::$entityCache[$cacheKey])) {
-                    self::$entityCache[$cacheKey] = Chapter::where('slug', $chapterSlug)->first();
+                    $storyCacheKey = "story_{$storySlug}";
+                    if (!isset(self::$entityCache[$storyCacheKey])) {
+                        self::$entityCache[$storyCacheKey] = Story::where('slug', $storySlug)->first();
+                    }
+                    $story = self::$entityCache[$storyCacheKey];
+                    
+                    if ($story) {
+                        self::$entityCache[$cacheKey] = Chapter::where('slug', $chapterSlug)
+                            ->where('story_id', $story->id)
+                            ->first();
+                    }
                 }
                 $entity = self::$entityCache[$cacheKey];
             }
         } elseif ($type === 'banner') {
-            // For banner route: banner/{banner}
-            $bannerId = $request->route('banner');
+            $bannerParam = $request->route('banner');
            
-            if ($bannerId) {
-                $cacheKey = "banner_{$bannerId->id}";
-                if (!isset(self::$entityCache[$cacheKey])) {
-                    self::$entityCache[$cacheKey] = Banner::where('id', $bannerId->id)->first();
+            if ($bannerParam) {
+                if (is_object($bannerParam) && $bannerParam instanceof Banner) {
+                    $bannerId = $bannerParam->id;
+                    $cacheKey = "banner_{$bannerId}";
+                    if (!isset(self::$entityCache[$cacheKey])) {
+                        self::$entityCache[$cacheKey] = $bannerParam;
+                    }
+                    $entity = self::$entityCache[$cacheKey];
+                } else {
+                    $bannerId = is_numeric($bannerParam) ? (int)$bannerParam : $bannerParam;
+                    $cacheKey = "banner_{$bannerId}";
+                    
+                    if (!isset(self::$entityCache[$cacheKey])) {
+                        self::$entityCache[$cacheKey] = Banner::where('id', $bannerId)->first();
+                    }
+                    $entity = self::$entityCache[$cacheKey];
                 }
-                $entity = self::$entityCache[$cacheKey];
             }
         }
        
-        // If we have an entity with affiliate link
         if ($entity && !empty($entity->link_aff)) {
             $entityId = $entity->id;
             $entityType = $type;
             $sessionKey = "aff_{$entityType}_{$entityId}_last_visit";
             
-            // Check if we have a session entry and when it was last accessed
             if (Session::has($sessionKey)) {
                 $lastVisit = Carbon::parse(Session::get($sessionKey));
                 $now = Carbon::now();
-                
-                // If more than 5 minutes have passed since last visit
                 if ($now->diffInMinutes($lastVisit) >= env('AFFILIATE_REDIRECT_INTERVAL', 5)) {
-                    // Update the timestamp
                     Session::put($sessionKey, $now);
-                    
-                    // Redirect to affiliate link
                     return redirect($entity->link_aff);
                 }
             } else {
-                // First visit, store timestamp and redirect
                 Session::put($sessionKey, Carbon::now());
                 return redirect($entity->link_aff);
             }
