@@ -407,6 +407,15 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <div class="mb-3">
+                                <label for="story_notice" class="form-label">Thông báo truyện <span class="text-muted">(không bắt buộc)</span></label>
+                                <textarea class="form-control @error('story_notice') is-invalid @enderror" id="story_notice" name="story_notice" rows="5">{{ old('story_notice', $story->story_notice ?? '') }}</textarea>
+                                <small class="text-muted">Thông báo sẽ hiển thị dưới nội dung mỗi chương của truyện. Có thể chèn ảnh, link và định dạng văn bản.</small>
+                                @error('story_notice')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         <div class="col-md-4">
@@ -1156,7 +1165,7 @@
                 allCategories: allCategories
             });
 
-            // CKEditor
+            // CKEditor for description
             CKEDITOR.replace('description', {
                 on: {
                     change: function(evt) {
@@ -1170,6 +1179,63 @@
                 },
                 height: 200,
                 removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
+            });
+
+            // CKEditor for story notice
+            CKEDITOR.replace('story_notice', {
+                extraPlugins: 'image2,uploadimage,justify',
+                uploadUrl: '{{ route('user.author.stories.upload-image') }}',
+                filebrowserUploadMethod: 'form',
+                height: 200,
+                image2_alignClasses: ['image-align-left', 'image-align-center', 'image-align-right'],
+                toolbarGroups: [
+                    { name: 'clipboard', groups: [ 'clipboard', 'undo' ] },
+                    { name: 'basicstyles', groups: [ 'basicstyles', 'cleanup' ] },
+                    { name: 'paragraph', groups: [ 'list', 'indent', 'blocks', 'align', 'paragraph' ] },
+                    { name: 'links', groups: [ 'links' ] },
+                    { name: 'insert', groups: [ 'insert', 'image2' ] },
+                    { name: 'styles', groups: [ 'styles' ] },
+                    { name: 'colors', groups: [ 'colors' ] },
+                    { name: 'tools', groups: [ 'tools' ] }
+                ],
+                removeButtons: 'Save,NewPage,ExportPdf,Preview,Print,Templates,Form,Checkbox,Radio,TextField,Textarea,Select,Button,ImageButton,HiddenField,Language,BidiRtl,BidiLtr,Anchor,Flash,Smiley,SpecialChar,PageBreak,Iframe,ShowBlocks,About,Image'
+            });
+
+            // Handle CKEditor upload request - Add CSRF token
+            CKEDITOR.instances.story_notice.on('fileUploadRequest', function(evt) {
+                var fileLoader = evt.data.fileLoader;
+                var csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+                
+                if (fileLoader.formData === undefined) {
+                    fileLoader.formData = new FormData();
+                    fileLoader.formData.append('upload', fileLoader.file);
+                }
+                fileLoader.formData.append('_token', csrfToken);
+                fileLoader.xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+            });
+
+            // Handle CKEditor upload response
+            CKEDITOR.instances.story_notice.on('fileUploadResponse', function(evt) {
+                var fileLoader = evt.data.fileLoader;
+                var xhr = fileLoader.xhr;
+                
+                evt.stop();
+                
+                var response = {};
+                try {
+                    response = JSON.parse(xhr.responseText);
+                } catch (e) {
+                    fileLoader.message = 'Lỗi khi upload hình ảnh: ' + xhr.responseText;
+                    return;
+                }
+                
+                if (response.uploaded === true) {
+                    fileLoader.url = response.url;
+                    fileLoader.uploaded = true;
+                } else {
+                    fileLoader.uploaded = false;
+                    fileLoader.message = response.error ? response.error.message : 'Có lỗi xảy ra khi upload hình ảnh.';
+                }
             });
 
             // Normalize HTML helper function
@@ -1209,9 +1275,14 @@
                 const originalDescription = window.originalDescription || normalizeHtml(
                     @json($story->description));
 
+                // Get current story_notice from CKEditor
+                const currentStoryNotice = CKEDITOR.instances.story_notice ? CKEDITOR.instances.story_notice.getData() : '';
+                const originalStoryNotice = normalizeHtml(@json($story->story_notice ?? ''));
+
                 const originalData = {
                     title: @json($story->title),
                     description: originalDescription,
+                    story_notice: originalStoryNotice,
                     author_name: @json($story->author_name),
                     translator_name: @json($story->translator_name ?? ''),
                     story_type: @json($story->story_type),
@@ -1237,6 +1308,10 @@
 
                 if (normalizeHtml(currentDescription) !== normalizeHtml(originalData.description)) {
                     changes.push('<li>Mô tả đã được thay đổi</li>');
+                }
+
+                if (normalizeHtml(currentStoryNotice) !== normalizeHtml(originalData.story_notice)) {
+                    changes.push('<li>Thông báo truyện đã được thay đổi</li>');
                 }
 
                 if ($('#author_name').val() !== originalData.author_name) {

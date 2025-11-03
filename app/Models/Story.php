@@ -13,6 +13,7 @@ class Story extends Model
         'title',
         'slug',
         'description',
+        'story_notice',
         'status',
         'cover',
         'cover_jpeg',
@@ -91,7 +92,6 @@ class Story extends Model
 
     public function getTotalViewsAttribute()
     {
-        // Sử dụng computed field từ database nếu có, fallback về relationship
         if (isset($this->attributes['total_views'])) {
             return $this->attributes['total_views'];
         }
@@ -103,7 +103,6 @@ class Story extends Model
 
     public function getAverageViewsAttribute()
     {
-        // Sử dụng computed fields từ database nếu có
         $chaptersCount = $this->attributes['chapters_count'] ?? $this->chapters_count;
         $totalViews = $this->attributes['total_views'] ?? $this->total_views;
         
@@ -163,7 +162,6 @@ class Story extends Model
      */
     public function getCanCreateComboAttribute()
     {
-        // Sử dụng computed field từ database nếu có, fallback về query
         if (isset($this->attributes['chapters_count'])) {
             return $this->completed && $this->attributes['chapters_count'] > 0;
         }
@@ -183,7 +181,6 @@ class Story extends Model
      */
     public function getTotalChapterPriceAttribute()
     {
-        // Sử dụng computed field từ database nếu có, fallback về query
         if (isset($this->attributes['total_chapter_price'])) {
             return $this->attributes['total_chapter_price'];
         }
@@ -341,7 +338,6 @@ class Story extends Model
      */
     public function getCurrentFeaturedAttribute()
     {
-        // Ưu tiên admin featured
         if ($this->isCurrentlyAdminFeatured()) {
             return $this->activeAdminFeatured;
         } elseif ($this->isCurrentlyAuthorFeatured()) {

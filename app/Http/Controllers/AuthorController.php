@@ -269,12 +269,13 @@ class AuthorController extends Controller
             // Xử lý ảnh bìa
             $coverPaths = $this->processAndSaveImage($request->file('cover'));
 
-            // Tạo truyện mới
+            $storyNotice = $this->processStoryNoticeImages($request->story_notice);
             $story = Story::create([
                 'user_id' => Auth::id(),
                 'title' => $request->title,
                 'slug' => Str::slug($request->title),
                 'description' => $request->description,
+                'story_notice' => $storyNotice,
                 'status' => 'draft',
                 'cover' => $coverPaths['original'],
                 'cover_medium' => $coverPaths['medium'],
@@ -286,6 +287,13 @@ class AuthorController extends Controller
                 'is_18_plus' => $request->has('is_18_plus'),
                 'is_monopoly' => $request->has('is_monopoly'),
             ]);
+
+            if ($storyNotice && $story->id) {
+                $finalStoryNotice = $this->processStoryNoticeImages($storyNotice, $story->id);
+                if ($finalStoryNotice !== $storyNotice) {
+                    $story->update(['story_notice' => $finalStoryNotice]);
+                }
+            }
 
             // Xử lý categories
             $categoryNames = explode(',', $request->category_input);
@@ -444,6 +452,7 @@ class AuthorController extends Controller
                 if (
                     $story->title !== $request->title ||
                     $story->description !== $request->description ||
+                    $story->story_notice !== $request->story_notice ||
                     $story->author_name !== $request->author_name ||
                     $story->translator_name !== $request->translator_name ||
                     $story->source_link !== $request->source_link ||
@@ -470,12 +479,15 @@ class AuthorController extends Controller
                         ->with('info', 'Không có thay đổi nào được phát hiện.');
                 }
 
+                $storyNotice = $this->processStoryNoticeImages($request->story_notice, $story->id);
+
                 $editRequestData = [
                     'story_id' => $story->id,
                     'user_id' => Auth::id(),
                     'title' => $request->title,
                     'slug' => Str::slug($request->title),
                     'description' => $request->description,
+                    'story_notice' => $storyNotice,
                     'author_name' => $request->author_name,
                     'story_type' => $request->story_type,
                     'is_18_plus' => $request->has('is_18_plus'),
@@ -502,10 +514,21 @@ class AuthorController extends Controller
                 return redirect()->route('user.author.stories.edit', $story->id)
                     ->with('success', 'Yêu cầu chỉnh sửa đã được gửi đi và đang chờ admin phê duyệt.');
             } else {
+                $oldStoryNotice = $story->story_notice;
+                $oldImages = $this->extractStoryNoticeImages($oldStoryNotice);
+                if (!$request->has('story_notice')) {
+                    $storyNotice = $oldStoryNotice;
+                    $newImages = $oldImages;
+                } else {
+                    $storyNotice = $this->processStoryNoticeImages($request->story_notice, $story->id);
+                    $newImages = $this->extractStoryNoticeImages($storyNotice);
+                }
+
                 $data = [
                     'title' => $request->title,
                     'slug' => Str::slug($request->title),
                     'description' => $request->description,
+                    'story_notice' => $storyNotice,
                     'author_name' => $request->author_name,
                     'story_type' => $request->story_type,
                     'translator_name' => $request->translator_name,
@@ -537,6 +560,8 @@ class AuthorController extends Controller
                 $story->categories()->sync($categoryIds);
 
                 DB::commit();
+
+                $this->deleteUnusedStoryNoticeImages($oldImages, $newImages);
 
                 if (isset($oldImages) && isset($coverPaths)) {
                     Storage::disk('public')->delete($oldImages);
@@ -2231,6 +2256,133 @@ class AuthorController extends Controller
             'chapters' => $chapterData,
             'count' => count($chapterData)
         ]);
+    }
+
+    /**
+     * Upload image for story notice (used in CKEditor)
+     */
+    public function uploadImage(Request $request)
+    {
+        $request->validate([
+            'upload' => 'required|image|max:5120',
+        ]);
+
+        try {
+            $image = $request->file('upload');
+            $now = \Carbon\Carbon::now();
+            $yearMonth = $now->format('Y/m');
+            $timestamp = $now->format('YmdHis');
+            $randomString = Str::random(8);
+            $fileName = "{$timestamp}_{$randomString}";
+
+            Storage::disk('public')->makeDirectory("stories/temp/{$yearMonth}");
+
+            $img = Image::make($image->getRealPath());
+            
+            if ($img->width() > 1200 || $img->height() > 1200) {
+                $img->resize(1200, 1200, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+            }
+
+            $img->encode('webp', 80);
+            
+            $tempPath = "stories/temp/{$yearMonth}/{$fileName}.webp";
+            Storage::disk('public')->put($tempPath, $img->stream());
+
+            $url = Storage::url($tempPath);
+            $fullUrl = asset($url);
+
+            return response()->json([
+                'uploaded' => true,
+                'url' => $fullUrl,
+                'tempPath' => $tempPath
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'uploaded' => false,
+                'error' => [
+                    'message' => 'Có lỗi xảy ra khi upload hình ảnh: ' . $e->getMessage()
+                ]
+            ], 500);
+        }
+    }
+
+    private function processStoryNoticeImages($storyNotice, $storyId = null)
+    {
+        if (empty($storyNotice)) {
+            return $storyNotice;
+        }
+
+        preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $storyNotice, $matches);
+        
+        if (empty($matches[1])) {
+            return $storyNotice;
+        }
+
+        $now = \Carbon\Carbon::now();
+        $yearMonth = $now->format('Y/m');
+        $storyFolder = $storyId ? "stories/{$storyId}/notice" : "stories/{$now->format('YmdHis')}/notice";
+
+        foreach ($matches[1] as $imageUrl) {
+            if (strpos($imageUrl, '/storage/stories/temp/') !== false) {
+                $tempPath = str_replace(asset('/storage/'), '', $imageUrl);
+                $tempPath = str_replace('/storage/', '', $tempPath);
+
+                if (Storage::disk('public')->exists($tempPath)) {
+                    Storage::disk('public')->makeDirectory("{$storyFolder}/{$yearMonth}");
+                    
+                    $fileName = basename($tempPath);
+                    $newPath = "{$storyFolder}/{$yearMonth}/{$fileName}";
+                    
+                    Storage::disk('public')->move($tempPath, $newPath);
+                    
+                    $newUrl = Storage::url($newPath);
+                    $storyNotice = str_replace($imageUrl, asset($newUrl), $storyNotice);
+                }
+            }
+        }
+
+        return $storyNotice;
+    }
+
+    private function extractStoryNoticeImages($storyNotice)
+    {
+        if (empty($storyNotice)) {
+            return [];
+        }
+
+        preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $storyNotice, $matches);
+        
+        $images = [];
+        foreach ($matches[1] as $url) {
+            if (strpos($url, '/storage/') !== false) {
+                $path = str_replace(asset('/storage/'), '', $url);
+                $path = str_replace('/storage/', '', $path);
+                if (!empty($path)) {
+                    $images[] = $path;
+                }
+            }
+        }
+        
+        return $images;
+    }
+
+    private function deleteUnusedStoryNoticeImages($oldImages, $newImages)
+    {
+        $imagesToDelete = array_diff($oldImages, $newImages);
+        
+        foreach ($imagesToDelete as $imagePath) {
+            if (strpos($imagePath, 'stories/temp/') === false && Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+                
+                $dir = dirname($imagePath);
+                if (count(Storage::disk('public')->files($dir)) === 0 && count(Storage::disk('public')->directories($dir)) === 0) {
+                    Storage::disk('public')->deleteDirectory($dir);
+                }
+            }
+        }
     }
 }
 

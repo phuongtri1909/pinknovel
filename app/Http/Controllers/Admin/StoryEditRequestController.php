@@ -123,7 +123,6 @@ class StoryEditRequestController extends Controller
         // Begin transaction
         DB::beginTransaction();
         try {
-            // Store old cover paths if we're updating them
             $oldCovers = null;
             if ($editRequest->cover) {
                 $oldCovers = [
@@ -133,11 +132,11 @@ class StoryEditRequestController extends Controller
                 ];
             }
             
-            // Update story with edit request data
             $story->update([
                 'title' => $editRequest->title,
                 'slug' => $editRequest->slug,
                 'description' => $editRequest->description,
+                'story_notice' => $editRequest->story_notice ?? $story->story_notice,
                 'author_name' => $editRequest->author_name,
                 'story_type' => $editRequest->story_type,
                 'cover' => $editRequest->cover ?? $story->cover,
@@ -148,13 +147,11 @@ class StoryEditRequestController extends Controller
                 'is_18_plus' => $editRequest->is_18_plus ?? $story->is_18_plus,
             ]);
             
-            // Update categories
             if ($editRequest->categories_data) {
                 $categoryIds = collect(json_decode($editRequest->categories_data, true))->pluck('id')->toArray();
                 $story->categories()->sync($categoryIds);
             }
             
-            // Update edit request status
             $editRequest->update([
                 'status' => 'approved',
                 'admin_note' => $request->admin_note,
@@ -163,12 +160,10 @@ class StoryEditRequestController extends Controller
             
             DB::commit();
             
-            // Delete old covers if they were replaced
             if ($oldCovers && $editRequest->cover) {
                 Storage::disk('public')->delete($oldCovers);
             }
             
-            // Send notification to the author
             $editRequest->user->notify(new EditRequestStatusChanged($editRequest));
             
             return redirect()->route('admin.edit-requests.index')
@@ -187,32 +182,27 @@ class StoryEditRequestController extends Controller
      */
     public function reject(Request $request, StoryEditRequest $editRequest)
     {
-        // Check if user is admin
         if (!Auth::check() || Auth::user()->role !== 'admin') {
             return redirect()->route('home')->with('error', 'Bạn không có quyền thực hiện hành động này.');
         }
         
-        // Validate request
         $request->validate([
             'admin_note' => 'required|string|max:1000',
         ], [
             'admin_note.required' => 'Vui lòng cung cấp lý do từ chối yêu cầu chỉnh sửa.'
         ]);
         
-        // Check if the edit request is pending
         if ($editRequest->status !== 'pending') {
             return redirect()->back()->with('error', 'Yêu cầu chỉnh sửa này đã được xử lý.');
         }
         
         DB::beginTransaction();
         try {
-            // Update edit request status
             $editRequest->update([
                 'status' => 'rejected',
                 'admin_note' => $request->admin_note,
             ]);
             
-            // If there were new cover images, delete them
             if ($editRequest->cover) {
                 Storage::disk('public')->delete([
                     $editRequest->cover,
@@ -223,7 +213,6 @@ class StoryEditRequestController extends Controller
             
             DB::commit();
             
-            // Send notification to the author
             $editRequest->user->notify(new EditRequestStatusChanged($editRequest));
             
             return redirect()->route('admin.edit-requests.index')

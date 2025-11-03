@@ -15,6 +15,7 @@ class StoryEditRequest extends Model
         'title',
         'slug',
         'description',
+        'story_notice',
         'cover',
         'cover_medium',
         'cover_thumbnail',

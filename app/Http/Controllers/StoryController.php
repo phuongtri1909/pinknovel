@@ -208,11 +208,14 @@ class StoryController extends Controller
                 }
             }
 
+            $storyNotice = $this->processStoryNoticeImages($request->story_notice);
+
             $story = Story::create([
                 'user_id' => auth()->id(),
                 'title' => $request->title,
                 'slug' => Str::slug($request->title),
                 'description' => $request->description,
+                'story_notice' => $storyNotice,
                 'status' => $request->status,
                 'cover' => $coverPaths['original'],
                 'cover_jpeg' => $coverPaths['original_jpeg'],
@@ -226,9 +229,16 @@ class StoryController extends Controller
                 'story_type' => $request->story_type,
                 'is_18_plus' => $request->has('is_18_plus'),
                 'is_monopoly' => $request->has('is_monopoly'),
-                'is_featured' => $isFeatured, // NEW
-                'featured_order' => $featuredOrder, // NEW
+                'is_featured' => $isFeatured,
+                'featured_order' => $featuredOrder,
             ]);
+
+            if ($storyNotice && $story->id) {
+                $finalStoryNotice = $this->processStoryNoticeImages($storyNotice, $story->id);
+                if ($finalStoryNotice !== $storyNotice) {
+                    $story->update(['story_notice' => $finalStoryNotice]);
+                }
+            }
 
             $story->categories()->attach($request->categories);
             DB::commit();
@@ -272,7 +282,7 @@ class StoryController extends Controller
             'author_name' => 'nullable|string|max:100',
             'translator_name' => 'nullable|string|max:100',
             'story_type' => 'nullable|string|in:original,translated,rewritten',
-            'featured_order' => 'nullable|integer|min:1', // NEW
+            'featured_order' => 'nullable|integer|min:1',
         ], [
             'title.required' => 'Tiêu đề không được để trống.',
             'title.unique' => 'Tiêu đề đã tồn tại.',
@@ -298,17 +308,14 @@ class StoryController extends Controller
 
         DB::beginTransaction();
         try {
-            // Set has_combo based on checkbox
             $hasCombo = $request->has('has_combo');
             $comboPrice = $hasCombo ? $request->combo_price : 0;
 
-            // Handle featured - NEW
             $isFeatured = $request->has('is_featured');
-            $featuredOrder = $story->featured_order; // Keep current order by default
+            $featuredOrder = $story->featured_order; 
 
             if ($isFeatured) {
                 if ($request->featured_order && $request->featured_order != $story->featured_order) {
-                    // Check if new order already exists
                     $existingStory = Story::where('featured_order', $request->featured_order)
                         ->where('is_featured', true)
                         ->where('id', '!=', $story->id)
@@ -318,18 +325,28 @@ class StoryController extends Controller
                     }
                     $featuredOrder = $request->featured_order;
                 } elseif (!$story->is_featured) {
-                    // Story becoming featured for first time
                     $featuredOrder = $request->featured_order ?: Story::getNextFeaturedOrder();
                 }
             } else {
-                // Story no longer featured
                 $featuredOrder = null;
+            }
+
+            $oldStoryNotice = $story->story_notice;
+            $oldNoticeImages = $this->extractStoryNoticeImages($oldStoryNotice);
+
+            if (!$request->has('story_notice')) {
+                $storyNotice = $oldStoryNotice;
+                $newNoticeImages = $oldNoticeImages;
+            } else {
+                $storyNotice = $this->processStoryNoticeImages($request->story_notice, $story->id);
+                $newNoticeImages = $this->extractStoryNoticeImages($storyNotice);
             }
 
             $data = [
                 'title' => $request->title,
                 'slug' => Str::slug($request->title),
                 'description' => $request->description,
+                'story_notice' => $storyNotice,
                 'status' => $request->status,
                 'completed' => $request->has('completed'),
                 'link_aff' => $request->link_aff,
@@ -340,13 +357,12 @@ class StoryController extends Controller
                 'story_type' => $request->story_type,
                 'is_18_plus' => $request->has('is_18_plus'),
                 'is_monopoly' => $request->has('is_monopoly'),
-                'is_featured' => $isFeatured, // NEW
-                'featured_order' => $featuredOrder, // NEW
+                'is_featured' => $isFeatured,
+                'featured_order' => $featuredOrder,
             ];
 
             if ($request->hasFile('cover')) {
-                // Delete old images
-                $oldImages = [
+                $oldCoverImages = [
                     $story->cover,
                     $story->cover_medium,
                     $story->cover_thumbnail
@@ -364,9 +380,11 @@ class StoryController extends Controller
             $story->update($data);
             $story->categories()->sync($request->categories);
 
+            $this->deleteUnusedStoryNoticeImages($oldNoticeImages, $newNoticeImages);
+
             DB::commit();
-            if (isset($oldImages)) {
-                Storage::disk('public')->delete($oldImages);
+            if (isset($oldCoverImages)) {
+                Storage::disk('public')->delete($oldCoverImages);
             }
             return redirect()->route('stories.index')
                 ->with('success', 'Truyện đã được cập nhật thành công.');
@@ -390,14 +408,12 @@ class StoryController extends Controller
         DB::beginTransaction();
         try {
             if ($story->is_featured) {
-                // Remove from featured
                 $story->update([
                     'is_featured' => false,
                     'featured_order' => null
                 ]);
                 $message = "Đã bỏ đề cử truyện '{$story->title}'.";
             } else {
-                // Add to featured
                 $story->update([
                     'is_featured' => true,
                     'featured_order' => Story::getNextFeaturedOrder()
@@ -431,7 +447,6 @@ class StoryController extends Controller
         DB::beginTransaction();
         try {
             if ($request->action === 'feature') {
-                // Feature selected stories
                 $nextOrder = Story::getNextFeaturedOrder();
 
                 foreach ($request->story_ids as $storyId) {
@@ -443,7 +458,6 @@ class StoryController extends Controller
 
                 $message = 'Đã đặt ' . count($request->story_ids) . ' truyện làm truyện đề cử.';
             } else {
-                // Unfeature selected stories
                 Story::whereIn('id', $request->story_ids)->update([
                     'is_featured' => false,
                     'featured_order' => null
@@ -466,18 +480,15 @@ class StoryController extends Controller
 
     public function show(Story $story)
     {
-        // Load story with relationships
         $story->load(['user', 'categories']);
         $story->loadCount('chapters');
 
-        // Get story purchase data
         $story_purchases = $story->purchases()
             ->with('user')
             ->latest()
             ->paginate(10, ['*'], 'story_page');
         $story_purchases_count = $story->purchases()->count();
 
-        // Get chapter purchase data for this story's chapters
         $chapter_purchases = \App\Models\ChapterPurchase::whereHas('chapter', function ($query) use ($story) {
             $query->where('story_id', $story->id);
         })->with(['user', 'chapter'])
@@ -487,14 +498,12 @@ class StoryController extends Controller
             $query->where('story_id', $story->id);
         })->count();
 
-        // Get bookmark data
         $bookmarks = $story->bookmarks()
             ->with(['user', 'lastChapter'])
             ->latest()
             ->paginate(10, ['*'], 'bookmark_page');
         $bookmarks_count = $story->bookmarks()->count();
 
-        // Calculate total revenue (story purchases + chapter purchases)
         $story_revenue = $story->purchases()->sum('amount_paid');
         $chapter_revenue = \App\Models\ChapterPurchase::whereHas('chapter', function ($query) use ($story) {
             $query->where('story_id', $story->id);
@@ -518,13 +527,10 @@ class StoryController extends Controller
         DB::beginTransaction();
 
         try {
-            // Delete related banners first
             $story->banners()->delete();
 
-            // Now delete other relationships
             $story->categories()->detach();
 
-            // Finally delete the story
             $story->delete();
 
             DB::commit();
@@ -543,5 +549,81 @@ class StoryController extends Controller
 
         return redirect()->route('stories.index')
             ->with('success', 'Truyện đã được xóa thành công.');
+    }
+
+    private function processStoryNoticeImages($storyNotice, $storyId = null)
+    {
+        if (empty($storyNotice)) {
+            return $storyNotice;
+        }
+
+        preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $storyNotice, $matches);
+        
+        if (empty($matches[1])) {
+            return $storyNotice;
+        }
+
+        $now = \Carbon\Carbon::now();
+        $yearMonth = $now->format('Y/m');
+        $storyFolder = $storyId ? "stories/{$storyId}/notice" : "stories/{$now->format('YmdHis')}/notice";
+
+        foreach ($matches[1] as $imageUrl) {
+            if (strpos($imageUrl, '/storage/stories/temp/') !== false) {
+                $tempPath = str_replace(asset('/storage/'), '', $imageUrl);
+                $tempPath = str_replace('/storage/', '', $tempPath);
+
+                if (Storage::disk('public')->exists($tempPath)) {
+                    Storage::disk('public')->makeDirectory("{$storyFolder}/{$yearMonth}");
+                    
+                    $fileName = basename($tempPath);
+                    $newPath = "{$storyFolder}/{$yearMonth}/{$fileName}";
+                    
+                    Storage::disk('public')->move($tempPath, $newPath);
+                    
+                    $newUrl = Storage::url($newPath);
+                    $storyNotice = str_replace($imageUrl, asset($newUrl), $storyNotice);
+                }
+            }
+        }
+
+        return $storyNotice;
+    }
+
+    private function extractStoryNoticeImages($storyNotice)
+    {
+        if (empty($storyNotice)) {
+            return [];
+        }
+
+        preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $storyNotice, $matches);
+        
+        $images = [];
+        foreach ($matches[1] as $url) {
+            if (strpos($url, '/storage/') !== false) {
+                $path = str_replace(asset('/storage/'), '', $url);
+                $path = str_replace('/storage/', '', $path);
+                if (!empty($path)) {
+                    $images[] = $path;
+                }
+            }
+        }
+        
+        return $images;
+    }
+
+    private function deleteUnusedStoryNoticeImages($oldImages, $newImages)
+    {
+        $imagesToDelete = array_diff($oldImages, $newImages);
+        
+        foreach ($imagesToDelete as $imagePath) {
+            if (strpos($imagePath, 'stories/temp/') === false && Storage::disk('public')->exists($imagePath)) {
+                Storage::disk('public')->delete($imagePath);
+                
+                $dir = dirname($imagePath);
+                if (count(Storage::disk('public')->files($dir)) === 0 && count(Storage::disk('public')->directories($dir)) === 0) {
+                    Storage::disk('public')->deleteDirectory($dir);
+                }
+            }
+        }
     }
 }

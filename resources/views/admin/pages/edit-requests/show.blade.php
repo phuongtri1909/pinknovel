@@ -214,6 +214,25 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Story notice comparison -->
+                    <div class="story-detail">
+                        <h6 class="mb-3">Thông báo truyện</h6>
+                        <div class="comparison-container">
+                            <div class="comparison-column">
+                                <div class="comparison-header">Hiện tại</div>
+                                <div class="value {{ ($story->story_notice ?? '') != ($editRequest->story_notice ?? '') ? 'changed' : '' }}">
+                                    {!! $story->story_notice ?? '' !!}
+                                </div>
+                            </div>
+                            <div class="comparison-column">
+                                <div class="comparison-header">Yêu cầu thay đổi</div>
+                                <div class="value {{ ($story->story_notice ?? '') != ($editRequest->story_notice ?? '') ? 'changed' : '' }}">
+                                    {!! $editRequest->story_notice ?? '' !!}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Author name comparison -->
                     <div class="story-detail">

@@ -200,6 +200,8 @@ Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
                 Route::put('/stories/{story}/chapters/{chapter}', [AuthorController::class, 'updateChapter'])->name('stories.chapters.update');
                 Route::delete('/stories/{story}/chapters/{chapter}', [AuthorController::class, 'destroyChapter'])->name('stories.chapters.destroy');
 
+                Route::post('/stories/upload-image', [AuthorController::class, 'uploadImage'])->name('stories.upload-image');
+
                 // cho việc thêm nhiều chương
                 Route::get('/stories/{story}/chapters/batch/create', [AuthorController::class, 'createBatchChapters'])->name('stories.chapters.batch.create');
                 Route::post('/stories/{story}/chapters/batch', [AuthorController::class, 'storeBatchChapters'])->name('stories.chapters.batch.store');

@@ -244,6 +244,17 @@
                     @endif
                 </div>
 
+                <!-- Story Notice -->
+                @if (!empty($story->story_notice))
+                    <div class="story-notice-card card mb-4 mt-4">
+                        <div class="card-body">
+                            <div class="story-notice-content">
+                                {!! $story->story_notice !!}
+                            </div>
+                        </div>
+                    </div>
+                @endif
+
                 <!-- Chapter Navigation Bottom -->
                 <div
                     class="chapter-nav d-flex justify-content-center align-items-center my-4 animate__animated animate__fadeIn animate__delay-1s">
@@ -660,6 +671,53 @@
 
         body.dark-mode .text-danger {
             color: #f1aeb5 !important;
+        }
+
+        /* Story Notice Styles */
+        .story-notice-card {
+            border-left: 4px solid var(--primary-color-3);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .story-notice-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .story-notice-content {
+            line-height: 1.8;
+        }
+
+        .story-notice-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+
+        .story-notice-content a {
+            color: var(--primary-color-3);
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+        .story-notice-content a:hover {
+            color: var(--primary-color-4);
+            text-decoration: underline;
+        }
+
+        body.dark-mode .story-notice-card {
+            background-color: #2d2d2d !important;
+            border-left-color: var(--primary-color-1) !important;
+            color: #e0e0e0 !important;
+        }
+
+        body.dark-mode .story-notice-content a {
+            color: var(--primary-color-1);
+        }
+
+        body.dark-mode .story-notice-content a:hover {
+            color: var(--primary-color-2);
         }
     </style>
 @endpush

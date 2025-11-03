@@ -47,7 +47,6 @@ class AdminGuideController extends Controller
             'meta_keywords.max' => 'Từ khóa meta không được vượt quá 255 ký tự.',
         ]);
 
-        // Generate slug from title
         $slug = Str::slug($validated['title']);
         $originalSlug = $slug;
         $counter = 1;
@@ -59,7 +58,6 @@ class AdminGuideController extends Controller
 
         $validated['is_published'] = $request->has('is_published');
 
-        // Process images in content - move from temp to main folder
         $content = $this->processContentImages($validated['content']);
         $validated['content'] = $content;
 
@@ -109,7 +107,6 @@ class AdminGuideController extends Controller
             'meta_keywords.max' => 'Từ khóa meta không được vượt quá 255 ký tự.',
         ]);
         
-        // Generate slug if not provided
         if (empty($validated['slug'])) {
             $slug = Str::slug($validated['title']);
             $originalSlug = $slug;
@@ -123,18 +120,15 @@ class AdminGuideController extends Controller
 
         $validated['is_published'] = $request->has('is_published');
 
-        // Process images in content - move from temp to main folder
         $content = $this->processContentImages($validated['content'], $guide->id);
         $validated['content'] = $content;
 
-        // Get old images before update
         $oldContent = $guide->content;
         $oldImages = $this->extractImagesFromContent($oldContent);
         $newImages = $this->extractImagesFromContent($validated['content']);
 
         $guide->update($validated);
 
-        // Delete unused images
         $this->deleteUnusedImages($oldImages, $newImages);
 
         return redirect()->route('admin.guides.index')->with('success', 'Hướng dẫn đã được cập nhật thành công.');
@@ -147,7 +141,6 @@ class AdminGuideController extends Controller
     {
         $guide = Guide::findOrFail($id);
         
-        // Extract images from content and delete them
         $images = $this->extractImagesFromContent($guide->content);
         foreach ($images as $imagePath) {
             if (Storage::disk('public')->exists($imagePath)) {
@@ -177,22 +170,18 @@ class AdminGuideController extends Controller
             $randomString = Str::random(8);
             $fileName = "{$timestamp}_{$randomString}";
 
-            // Create directories if they don't exist
             Storage::disk('public')->makeDirectory("guides/temp/{$yearMonth}");
 
-            // Process and save image with reduced quality
             $img = Image::make($image->getRealPath());
             
-            // Resize if too large (max width 1200px)
-            if ($img->width() > 1200) {
-                $img->resize(1200, null, function ($constraint) {
+            if ($img->width() > 1200 || $img->height() > 1200) {
+                $img->resize(1200, 1200, function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
                 });
             }
 
-            // Convert to WebP with 85% quality
-            $img->encode('webp', 85);
+            $img->encode('webp', 80);
             
             $tempPath = "guides/temp/{$yearMonth}/{$fileName}.webp";
             Storage::disk('public')->put($tempPath, $img->stream());
@@ -215,12 +204,8 @@ class AdminGuideController extends Controller
         }
     }
 
-    /**
-     * Process content images - move from temp to main folder
-     */
     private function processContentImages($content, $guideId = null)
     {
-        // Extract all image URLs from content
         preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $content, $matches);
         
         if (empty($matches[1])) {
@@ -232,25 +217,18 @@ class AdminGuideController extends Controller
         $guideFolder = $guideId ? "guides/{$guideId}" : "guides/{$now->format('YmdHis')}";
 
         foreach ($matches[1] as $imageUrl) {
-            // Check if image is in temp folder
             if (strpos($imageUrl, '/storage/guides/temp/') !== false) {
-                // Extract temp path
                 $tempPath = str_replace(asset('/storage/'), '', $imageUrl);
                 $tempPath = str_replace('/storage/', '', $tempPath);
-                $tempFullPath = storage_path('app/public/' . $tempPath);
 
                 if (Storage::disk('public')->exists($tempPath)) {
-                    // Create main directory
                     Storage::disk('public')->makeDirectory("{$guideFolder}/{$yearMonth}");
                     
-                    // Get filename from temp path
                     $fileName = basename($tempPath);
                     $newPath = "{$guideFolder}/{$yearMonth}/{$fileName}";
                     
-                    // Move image from temp to main folder
                     Storage::disk('public')->move($tempPath, $newPath);
                     
-                    // Update content with new URL
                     $newUrl = Storage::url($newPath);
                     $content = str_replace($imageUrl, asset($newUrl), $content);
                 }
@@ -260,16 +238,12 @@ class AdminGuideController extends Controller
         return $content;
     }
 
-    /**
-     * Extract image paths from content
-     */
     private function extractImagesFromContent($content)
     {
         preg_match_all('/<img[^>]+src=["\']([^"\']+)["\'][^>]*>/i', $content, $matches);
         
         $images = [];
         foreach ($matches[1] as $url) {
-            // Extract path from URL
             if (strpos($url, '/storage/') !== false) {
                 $path = str_replace(asset('/storage/'), '', $url);
                 $path = str_replace('/storage/', '', $path);
@@ -282,19 +256,14 @@ class AdminGuideController extends Controller
         return $images;
     }
 
-    /**
-     * Delete unused images
-     */
     private function deleteUnusedImages($oldImages, $newImages)
     {
         $imagesToDelete = array_diff($oldImages, $newImages);
         
         foreach ($imagesToDelete as $imagePath) {
-            // Don't delete temp images
             if (strpos($imagePath, 'guides/temp/') === false && Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
                 
-                // Try to delete parent directory if empty
                 $dir = dirname($imagePath);
                 if (count(Storage::disk('public')->files($dir)) === 0 && count(Storage::disk('public')->directories($dir)) === 0) {
                     Storage::disk('public')->deleteDirectory($dir);
