@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use App\Services\TelegramService;
 
 class AuthorController extends Controller
 {
@@ -530,6 +531,14 @@ class AuthorController extends Controller
                 $editRequest = StoryEditRequest::create($editRequestData);
 
                 DB::commit();
+
+                $editRequest->load(['story', 'user']);
+
+                try {
+                    TelegramService::notifyStoryEditRequest($editRequest);
+                } catch (\Exception $telegramError) {
+                    Log::error('Failed to send Telegram notification for story edit request: ' . $telegramError->getMessage());
+                }
 
                 return redirect()->route('user.author.stories.edit', $story->id)
                     ->with('success', 'Yêu cầu chỉnh sửa đã được gửi đi và đang chờ admin phê duyệt.');
@@ -1372,6 +1381,12 @@ class AuthorController extends Controller
                 'review_note' => $request->review_note,
                 'submitted_at' => now(),
             ]);
+
+            try {
+                TelegramService::notifyStoryReviewRequest($story);
+            } catch (\Exception $telegramError) {
+                Log::error('Failed to send Telegram notification for story review: ' . $telegramError->getMessage());
+            }
 
             return redirect()->route('user.author.stories.edit', $story->id)
                 ->with('success', 'Truyện đã được gửi đi và đang chờ phê duyệt.');

@@ -11,11 +11,12 @@
             <div class="col-12">
                 <div class="comment-form-container">
                     <div class="form-floating submit-comment animate__animated animate__fadeIn">
-                        <textarea class="form-control" id="comment-input" placeholder="Nhập bình luận..." rows="2" maxlength="700"></textarea>
+                        <textarea class="form-control" id="comment-input" placeholder="Nhập bình luận (tối thiểu 20 ký tự)..." rows="2" minlength="20" maxlength="700"></textarea>
                         <label for="comment-input">Bình luận</label>
                         <button class="btn btn-sm btn-primary btn-send-comment" id="btn-comment">
                             <i class="fa-regular fa-paper-plane"></i>
                         </button>
+                        <small class="text-muted comment-length-indicator" id="comment-length-indicator" style="position: absolute; bottom: 45px; right: 15px; font-size: 11px;">0/700</small>
                     </div>
                 </div>
 
@@ -70,6 +71,23 @@
                         deleteModal = new bootstrap.Modal(modalElement);
                     }
 
+                    $('#comment-input').on('input', function() {
+                        const length = $(this).val().length;
+                        const minLength = 20;
+                        const maxLength = 700;
+                        const indicator = $('#comment-length-indicator');
+                        
+                        indicator.text(`${length}/${maxLength}`);
+                        
+                        if (length < minLength) {
+                            indicator.removeClass('text-success').addClass('text-danger');
+                        } else if (length >= maxLength) {
+                            indicator.removeClass('text-danger').addClass('text-warning');
+                        } else {
+                            indicator.removeClass('text-danger text-warning').addClass('text-muted');
+                        }
+                    });
+
                     $('#btn-comment').on('click', function(e) {
                         e.preventDefault(); // Prevent any default action
                         
@@ -77,6 +95,11 @@
                         const comment = $('#comment-input').val().trim();
                         
                         if (!comment || isSubmitting) return;
+                        
+                        if (comment.length < 20) {
+                            showToast('Bình luận phải có ít nhất 20 ký tự', 'warning');
+                            return;
+                        }
                         
                         const now = Date.now();
                         if (now - lastSubmitTime < 1000) return;
@@ -112,6 +135,13 @@
                             error: function(xhr) {
                                 if (xhr.status === 401) {
                                     window.location.href = '{{ route('login') }}';
+                                } else if (xhr.status === 422) {
+                                    const errors = xhr.responseJSON.errors;
+                                    if (errors && errors.comment) {
+                                        showToast(errors.comment[0], 'warning');
+                                    } else {
+                                        showToast(xhr.responseJSON.message || 'Dữ liệu không hợp lệ', 'warning');
+                                    }
                                 } else if (xhr.status === 400) {
                                     showToast(xhr.responseJSON.message ||
                                         'Bình luận này đã được gửi trước đó', 'warning');
@@ -192,9 +222,10 @@
 
                         const replyForm = `
                         <div class="reply-form mt-2 animate__animated animate__fadeIn">
-                            <div class="form-floating">
-                                <textarea class="form-control" placeholder="Nhập trả lời..." maxlength="700"></textarea>
+                            <div class="form-floating" style="position: relative;">
+                                <textarea class="form-control reply-textarea" placeholder="Nhập trả lời (tối thiểu 20 ký tự)..." minlength="20" maxlength="700" style="padding-bottom: 25px;"></textarea>
                                 <label>Trả lời</label>
+                                <small class="text-muted reply-length-indicator" style="position: absolute; bottom: 5px; right: 15px; font-size: 11px; background-color: rgba(255, 255, 255, 0.9); padding: 2px 6px; border-radius: 4px; z-index: 10;">0/700</small>
                             </div>
                             <div class="d-flex justify-content-end gap-2 mt-2">
                                 <button class="btn btn-sm btn-light cancel-reply">Hủy</button>
@@ -219,6 +250,23 @@
                         });
                     });
 
+                    $(document).on('input', '.reply-textarea', function() {
+                        const length = $(this).val().length;
+                        const minLength = 20;
+                        const maxLength = 700;
+                        const indicator = $(this).closest('.form-floating').find('.reply-length-indicator');
+                        
+                        indicator.text(`${length}/${maxLength}`);
+                        
+                        if (length < minLength) {
+                            indicator.removeClass('text-success').addClass('text-danger');
+                        } else if (length >= maxLength) {
+                            indicator.removeClass('text-danger').addClass('text-warning');
+                        } else {
+                            indicator.removeClass('text-danger text-warning').addClass('text-muted');
+                        }
+                    });
+
                     $(document).on('click', '.submit-reply', function(e) {
                         e.preventDefault();
                         
@@ -227,6 +275,11 @@
                         const reply = btn.closest('.reply-form').find('textarea').val().trim();
 
                         if (!reply || btn.prop('disabled')) return;
+                        
+                        if (reply.length < 20) {
+                            showToast('Phản hồi phải có ít nhất 20 ký tự', 'warning');
+                            return;
+                        }
                         
                      
                         const now = Date.now();
@@ -274,7 +327,14 @@
                                 }
                             },
                             error: function(xhr) {
-                                if (xhr.status === 400) {
+                                if (xhr.status === 422) {
+                                    const errors = xhr.responseJSON.errors;
+                                    if (errors && errors.comment) {
+                                        showToast(errors.comment[0], 'warning');
+                                    } else {
+                                        showToast(xhr.responseJSON.message || 'Dữ liệu không hợp lệ', 'warning');
+                                    }
+                                } else if (xhr.status === 400) {
                                     showToast(xhr.responseJSON.message ||
                                         'Bình luận này đã được gửi trước đó', 'warning');
                                 } else {
@@ -602,6 +662,18 @@
                 border: 1px solid #e0e0e0;
                 transition: all 0.3s ease;
                 padding-right: 40px;
+                padding-bottom: 25px;
+            }
+            
+            .comment-length-indicator {
+                background-color: rgba(255, 255, 255, 0.9);
+                padding: 2px 6px;
+                border-radius: 4px;
+                z-index: 10;
+            }
+            
+            body.dark-mode .comment-length-indicator {
+                background-color: rgba(45, 45, 45, 0.9);
             }
 
             .submit-comment textarea:focus {

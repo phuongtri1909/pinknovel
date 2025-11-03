@@ -270,6 +270,21 @@
             }
         })();
         $(document).ready(function() {
+            // Auto-open modal from Telegram link
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewId = urlParams.get('view');
+            if (viewId) {
+                const modalId = 'viewModal' + viewId;
+                const modalElement = document.getElementById(modalId);
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement);
+                    modal.show();
+                    // Remove query parameter from URL after opening modal
+                    const newUrl = window.location.pathname + window.location.search.replace(/[?&]view=[^&]*/, '').replace(/^&/, '?');
+                    window.history.replaceState({}, '', newUrl || window.location.pathname);
+                }
+            }
+
             // Approve action with Swal (PayPal)
             $(document).on('click', '[id^="approvePaypalAction"]', function() {
                 const id = $(this).attr('id').replace('approvePaypalAction', '');

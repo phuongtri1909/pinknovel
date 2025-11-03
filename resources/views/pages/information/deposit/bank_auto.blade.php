@@ -420,19 +420,19 @@
             </div>
             <div class="deposit-card-body">
                 @if ($deposits->count() > 0)
-                    <div class="table-responsive">
+                        <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead>
-                                <tr>
+                                <thead>
+                                    <tr>
                                     <th style="width: 20%">Mã giao dịch</th>
                                     <th style="width: 15%">Ngân hàng</th>
                                     <th style="width: 15%">Số tiền</th>
                                     <th style="width: 15%">Xu</th>
                                     <th style="width: 20%">Ngày tạo</th>
                                     <th style="width: 15%">Trạng thái</th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                                    </tr>
+                                </thead>
+                                <tbody>
                                 @foreach ($deposits as $deposit)
                                     <tr>
                                         <td class="align-middle">
@@ -479,11 +479,11 @@
                                                 </span>
                                             @endif
                                         </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
 
                     <div class="d-flex justify-content-center mt-4">
                         <x-pagination :paginator="$deposits" />

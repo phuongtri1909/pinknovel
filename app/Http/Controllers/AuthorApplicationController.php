@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use App\Models\AuthorApplication;
 use App\Notifications\AuthorApplicationStatusChanged;
+use App\Services\TelegramService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -81,6 +82,13 @@ class AuthorApplicationController extends Controller
                 'status' => 'pending',
                 'submitted_at' => now(),
             ]);
+            
+            try {
+                TelegramService::notifyNewAuthorApplication($application);
+            } catch (\Exception $telegramError) {
+                // Log but don't fail the request
+                Log::error('Failed to send Telegram notification: ' . $telegramError->getMessage());
+            }
             
             return redirect()->route('user.author.application')
                 ->with('success', 'Đơn đăng ký của bạn đã được gửi thành công và đang chờ xét duyệt.');

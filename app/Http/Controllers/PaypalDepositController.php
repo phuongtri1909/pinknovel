@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Services\TelegramService;
 
 class PaypalDepositController extends Controller
 {
@@ -261,6 +262,16 @@ class PaypalDepositController extends Controller
             $requestPayment->save();
 
             DB::commit();
+
+            // Reload relationships for Telegram notification
+            $paypalDeposit->load(['user', 'requestPaymentPaypal']);
+
+            // Send Telegram notification (non-blocking)
+            try {
+                TelegramService::notifyPaypalDepositConfirmation($paypalDeposit);
+            } catch (\Exception $telegramError) {
+                Log::error('Failed to send Telegram notification for PayPal deposit confirmation: ' . $telegramError->getMessage());
+            }
 
             return response()->json([
                 'success' => true,

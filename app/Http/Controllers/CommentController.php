@@ -7,6 +7,7 @@ use App\Models\Comment;
 use Illuminate\Http\Request;
 use App\Models\CommentReaction;
 use Illuminate\Support\Facades\Log;
+use App\Services\TelegramService;
 
 class CommentController extends Controller
 {
@@ -333,9 +334,13 @@ class CommentController extends Controller
 
         // Validate the request
         $validated = $request->validate([
-            'comment' => 'required|max:700',
+            'comment' => 'required|min:20|max:700',
             'story_id' => 'required|exists:stories,id',
             'reply_id' => 'nullable|exists:comments,id'
+        ], [
+            'comment.required' => 'Bình luận không được để trống',
+            'comment.min' => 'Bình luận phải có ít nhất 20 ký tự',
+            'comment.max' => 'Bình luận không được quá 700 ký tự',
         ]);
 
         $user = auth()->user();
@@ -410,8 +415,15 @@ class CommentController extends Controller
                 'approved_by' => $approvalStatus === 'approved' ? $user->id : null,
             ]);
 
-            // Load relations for the view
-            $comment->load(['user', 'reactions']);
+            $comment->load(['user', 'reactions', 'story']);
+
+            if ($approvalStatus === 'pending') {
+                try {
+                    TelegramService::notifyNewComment($comment);
+                } catch (\Exception $telegramError) {
+                    Log::error('Failed to send Telegram notification for new comment: ' . $telegramError->getMessage());
+                }
+            }
 
             // Complete daily task for commenting
             \App\Models\UserDailyTask::completeTask(

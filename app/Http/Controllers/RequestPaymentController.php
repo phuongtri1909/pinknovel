@@ -12,10 +12,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\DepositNotificationMail;
 use Intervention\Image\Facades\Image;
 use Illuminate\Support\Facades\Storage;
+use App\Services\TelegramService;
 
 class RequestPaymentController extends Controller
 {
@@ -210,16 +209,20 @@ class RequestPaymentController extends Controller
                 'status' => 'pending',
             ]);
 
-            // Load relationships for email
+            // Load relationships for Telegram notification
             $deposit->load(['user', 'bank']);
 
             // Đánh dấu yêu cầu thanh toán là đã hoàn thành
             $requestPayment->markAsCompleted($deposit->id);
 
-            // Gửi email thông báo cho super admin
-            $this->sendDepositNotificationToAdmin($deposit);
-
             DB::commit();
+
+            // Send Telegram notification (non-blocking)
+            try {
+                TelegramService::notifyBankDepositConfirmation($deposit);
+            } catch (\Exception $telegramError) {
+                Log::error('Failed to send Telegram notification for bank deposit confirmation: ' . $telegramError->getMessage());
+            }
 
             return response()->json([
                 'success' => true,
@@ -243,37 +246,6 @@ class RequestPaymentController extends Controller
         }
     }
 
-    /**
-     * Gửi email thông báo yêu cầu nạp tiền cho super admin
-     */
-    private function sendDepositNotificationToAdmin(Deposit $deposit)
-    {
-        try {
-            // Lấy email super admin từ .env
-            $superAdminEmails = env('SUPER_ADMIN_EMAILS');
-
-            if (empty($superAdminEmails)) {
-                Log::warning('SUPER_ADMIN_EMAILS not configured in .env file');
-                return;
-            }
-
-            // Chuyển đổi string thành array nếu có nhiều email
-            $emailArray = explode(',', $superAdminEmails);
-            $emailArray = array_map('trim', $emailArray); // Loại bỏ khoảng trắng
-            $emailArray = array_filter($emailArray); // Loại bỏ email rỗng
-
-            foreach ($emailArray as $email) {
-                if (filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    Mail::to($email)->send(new DepositNotificationMail($deposit));
-                } else {
-                    Log::warning("Invalid email address in SUPER_ADMIN_EMAILS: {$email}");
-                }
-            }
-        } catch (\Exception $e) {
-            // Log lỗi nhưng không throw exception để không ảnh hưởng đến luồng chính
-            Log::error('Failed to send deposit notification email: ' . $e->getMessage());
-        }
-    }
 
     // Hiển thị danh sách yêu cầu thanh toán cho admin
     public function adminIndex(Request $request)
