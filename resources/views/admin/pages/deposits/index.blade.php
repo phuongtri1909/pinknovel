@@ -193,8 +193,8 @@
                                 <div class="mb-2"><strong>Mã giao dịch:</strong> {{ $deposit->transaction_code }}</div>
                                 <div class="mb-2"><strong>Người dùng:</strong> {{ $deposit->user->name }} ({{ $deposit->user->email }})</div>
                                 <div class="mb-2"><strong>Ngân hàng:</strong> {{ $deposit->bank->name }} - {{ $deposit->bank->account_number }}</div>
-                                <div class="mb-2"><strong>Số tiền:</strong> {{ number_format($deposit->amount, 0, ',', '.') }} VNĐ</div>
-                                <div class="mb-2"><strong>Số xu:</strong> {{ number_format($deposit->coins, 0, ',', '.') }} xu</div>
+                                <div class="mb-2"><strong>Số tiền:</strong> <span class="text-danger fw-bold">{{ number_format($deposit->amount, 0, ',', '.') }} VNĐ</span></div>
+                                <div class="mb-2"><strong>Số xu:</strong> <span class="text-danger fw-bold">{{ number_format($deposit->coins, 0, ',', '.') }} xu</span></div>
                                 @php
                                     $__statusText = [
                                         'pending' => 'Chờ duyệt',
@@ -215,15 +215,16 @@
                                     <hr class="my-3">
                                     <div class="row g-2">
                                         <div class="col-6 d-grid">
-                                            <button type="button" class="btn bg-gradient-success" id="approveAction{{ $deposit->id }}">
-                                                <i class="fas fa-check me-2"></i>Duyệt
-                                            </button>
-                                        </div>
-                                        <div class="col-6 d-grid">
                                             <button type="button" class="btn bg-gradient-danger" id="rejectAction{{ $deposit->id }}">
                                                 <i class="fas fa-times me-2"></i>Từ chối
                                             </button>
                                         </div>
+                                        <div class="col-6 d-grid">
+                                            <button type="button" class="btn bg-gradient-success" id="approveAction{{ $deposit->id }}">
+                                                <i class="fas fa-check me-2"></i>Duyệt
+                                            </button>
+                                        </div>
+                                        
                                     </div>
 
                                     <!-- Hidden forms for actions -->
