@@ -301,7 +301,7 @@
             </div>
 
             <div class="col-lg-4">
-                <div class="coins-panel">
+                <div class="coins-panel mt-3 mt-lg-0">
                     <div class="coins-balance">
                         <i class="fas fa-coins coins-icon"></i> {{ number_format(Auth::user()->coins ?? 0) }}
                     </div>
