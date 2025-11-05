@@ -61,18 +61,46 @@ class UserController extends Controller
         };
 
         $stats = [
-            'total_deposits' => $user->total_deposits,
-            'total_spent' => $user->total_chapter_spending + $user->total_story_spending,
             'balance' => $user->coins,
-            'total_withdrawn' => $user->withdrawalRequests()->where('status', 'approved')->sum('coins'),
-            'author_revenue' => $user->role === 'author' ? $user->author_revenue : 0,
-            'author_story_revenue' => $user->role === 'author' ? \App\Models\StoryPurchase::whereHas('story', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })->sum('amount_received') : 0,
-            'author_chapter_revenue' => $user->role === 'author' ? \App\Models\ChapterPurchase::whereHas('chapter.story', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })->sum('amount_received') : 0,
         ];
+
+        if ($user->role === 'author') {
+            $authorStats = DB::select("
+                SELECT 
+                    COALESCE((SELECT SUM(amount_received) FROM story_purchases sp 
+                              INNER JOIN stories s ON sp.story_id = s.id 
+                              WHERE s.user_id = ?), 0) as story_revenue,
+                    COALESCE((SELECT SUM(cp.amount_received) FROM chapter_purchases cp 
+                              INNER JOIN chapters c ON cp.chapter_id = c.id 
+                              INNER JOIN stories s ON c.story_id = s.id 
+                              WHERE s.user_id = ?), 0) as chapter_revenue
+            ", [$user->id, $user->id])[0];
+
+            $stats['author_revenue'] = $authorStats->story_revenue + $authorStats->chapter_revenue;
+            $stats['author_story_revenue'] = $authorStats->story_revenue;
+            $stats['author_chapter_revenue'] = $authorStats->chapter_revenue;
+        } else {
+            $stats['author_revenue'] = 0;
+            $stats['author_story_revenue'] = 0;
+            $stats['author_chapter_revenue'] = 0;
+        }
+
+        $userStats = DB::select("
+            SELECT 
+                COALESCE((SELECT SUM(coins) FROM deposits WHERE user_id = ? AND status = 'approved'), 0) as total_deposits,
+                COALESCE((SELECT SUM(amount_paid) FROM chapter_purchases WHERE user_id = ?), 0) as chapter_spending,
+                COALESCE((SELECT SUM(amount_paid) FROM story_purchases WHERE user_id = ?), 0) as story_spending,
+                COALESCE((SELECT SUM(coins) FROM withdrawal_requests WHERE user_id = ? AND status = 'approved'), 0) as total_withdrawn
+        ", [$user->id, $user->id, $user->id, $user->id])[0] ?? (object)[
+            'total_deposits' => 0,
+            'chapter_spending' => 0,
+            'story_spending' => 0,
+            'total_withdrawn' => 0,
+        ];
+
+        $stats['total_deposits'] = $userStats->total_deposits;
+        $stats['total_spent'] = $userStats->chapter_spending + $userStats->story_spending;
+        $stats['total_withdrawn'] = $userStats->total_withdrawn;
 
         $getPageNumber = function($tab) use ($request, $getPageName) {
             $currentTab = $request->get('tab');
@@ -114,10 +142,25 @@ class UserController extends Controller
             ->orderByDesc('created_at')
             ->paginate(25, ['*'], 'card_deposits_page', $cardDepositsPage);
 
-        $chapterPurchases = $user->chapterPurchases()
-            ->with(['chapter.story'])
-            ->orderByDesc('created_at')
-            ->paginate(25, ['*'], 'chapter_page', $chapterPage);
+        $chapterPurchasesQuery = $user->chapterPurchases()
+            ->orderByDesc('created_at');
+        
+        $chapterPurchases = $chapterPurchasesQuery->paginate(25, ['*'], 'chapter_page', $chapterPage);
+        
+        if ($chapterPurchases->count() > 0) {
+            $collection = $chapterPurchases->getCollection();
+            $chapterIds = $collection->pluck('chapter_id')->filter()->unique()->values();
+            
+            if ($chapterIds->isNotEmpty()) {
+                $chapters = \App\Models\Chapter::with('story')->whereIn('id', $chapterIds)->get()->keyBy('id');
+                
+                foreach ($collection as $purchase) {
+                    if ($purchase->chapter_id && isset($chapters[$purchase->chapter_id])) {
+                        $purchase->setRelation('chapter', $chapters[$purchase->chapter_id]);
+                    }
+                }
+            }
+        }
 
         $storyPurchases = $user->storyPurchases()
             ->with(['story'])
@@ -151,22 +194,24 @@ class UserController extends Controller
         
         if ($user->role === 'author') {
             $authorStories = \App\Models\Story::where('user_id', $user->id)
+                ->withCount(['chapters', 'bookmarks'])
                 ->orderByDesc('created_at')
                 ->paginate(25, ['*'], 'author_stories_page', $authorStoriesPage);
 
-            $authorChapterEarnings = \App\Models\ChapterPurchase::whereHas('chapter.story', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->with(['chapter.story', 'user'])
-            ->orderByDesc('created_at')
-            ->paginate(25, ['*'], 'author_chapter_earnings_page', $authorChapterEarningsPage);
+            $authorChapterEarnings = \App\Models\ChapterPurchase::select('chapter_purchases.*')
+                ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
+                ->join('stories', 'chapters.story_id', '=', 'stories.id')
+                ->where('stories.user_id', $user->id)
+                ->with(['chapter.story', 'user'])
+                ->orderByDesc('chapter_purchases.created_at')
+                ->paginate(25, ['*'], 'author_chapter_earnings_page', $authorChapterEarningsPage);
 
-            $authorStoryEarnings = \App\Models\StoryPurchase::whereHas('story', function($query) use ($user) {
-                $query->where('user_id', $user->id);
-            })
-            ->with(['story', 'user'])
-            ->orderByDesc('created_at')
-            ->paginate(25, ['*'], 'author_story_earnings_page', $authorStoryEarningsPage);
+            $authorStoryEarnings = \App\Models\StoryPurchase::select('story_purchases.*')
+                ->join('stories', 'story_purchases.story_id', '=', 'stories.id')
+                ->where('stories.user_id', $user->id)
+                ->with(['story', 'user'])
+                ->orderByDesc('story_purchases.created_at')
+                ->paginate(25, ['*'], 'author_story_earnings_page', $authorStoryEarningsPage);
 
             $authorFeaturedStories = \App\Models\StoryFeatured::where('user_id', $user->id)
                 ->where('type', \App\Models\StoryFeatured::TYPE_AUTHOR)
@@ -194,17 +239,32 @@ class UserController extends Controller
                 (SELECT COUNT(*) FROM story_featureds WHERE user_id = ? AND type = 'author') as author_featured_stories,
                 (SELECT COUNT(*) FROM stories WHERE user_id = ?) as author_stories,
                 (SELECT COUNT(*) FROM chapter_purchases cp 
-                 JOIN chapters c ON cp.chapter_id = c.id 
-                 JOIN stories s ON c.story_id = s.id 
+                 INNER JOIN chapters c ON cp.chapter_id = c.id 
+                 INNER JOIN stories s ON c.story_id = s.id 
                  WHERE s.user_id = ?) as author_chapter_earnings,
                 (SELECT COUNT(*) FROM story_purchases sp 
-                 JOIN stories s ON sp.story_id = s.id 
+                 INNER JOIN stories s ON sp.story_id = s.id 
                  WHERE s.user_id = ?) as author_story_earnings
         ", [
             $user->id, $user->id, $user->id, $user->id, $user->id, 
             $user->id, $user->id, $user->id, $user->id, $user->id,
             $user->id, $user->id, $user->id, $user->id
-        ])[0];
+        ])[0] ?? (object)[
+            'deposits' => 0,
+            'paypal_deposits' => 0,
+            'card_deposits' => 0,
+            'chapter_purchases' => 0,
+            'story_purchases' => 0,
+            'bookmarks' => 0,
+            'coin_transactions' => 0,
+            'user_daily_tasks' => 0,
+            'withdrawal_requests' => 0,
+            'coin_histories' => 0,
+            'author_featured_stories' => 0,
+            'author_stories' => 0,
+            'author_chapter_earnings' => 0,
+            'author_story_earnings' => 0,
+        ];
 
         $counts = (array) $counts;
 

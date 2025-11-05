@@ -599,35 +599,35 @@
                         <a class="nav-link active" data-bs-toggle="tab" href="#deposits" role="tab">
                             <i class="fas fa-wallet"></i>
                             <span class="d-none d-md-inline">Nạp xu </span><span class="d-md-none">Bank</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['deposits'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['deposits'] }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#paypal-deposits" role="tab">
                             <i class="fab fa-paypal"></i>
                             <span class="d-none d-md-inline">Nạp </span>PayPal
-                            <span class="badge rounded-pill ms-1">{{ $counts['paypal_deposits'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['paypal_deposits'] }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#card-deposits" role="tab">
                             <i class="fas fa-credit-card"></i>
                             <span>Nạp thẻ</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['card_deposits'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['card_deposits'] }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#story-purchases" role="tab">
                             <i class="fas fa-shopping-cart"></i>
                             <span>Mua truyện</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['story_purchases'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['story_purchases'] }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#chapter-purchases" role="tab">
                             <i class="fas fa-file-invoice-dollar"></i>
                             <span>Mua chương</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['chapter_purchases'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['chapter_purchases'] }}</span>
                         </a>
                     </li>
                     @if($user->role === 'author')
@@ -635,7 +635,7 @@
                         <a class="nav-link" data-bs-toggle="tab" href="#author-stories" role="tab">
                             <i class="fas fa-book"></i>
                             <span>Danh sách truyện</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['author_stories'] ?? 0 }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['author_stories'] ?? 0 }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -664,28 +664,28 @@
                         <a class="nav-link" data-bs-toggle="tab" href="#bookmarks" role="tab">
                             <i class="fas fa-bookmark"></i>
                             <span>Theo dõi</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['bookmarks'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['bookmarks'] }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#user-daily-tasks" role="tab">
                             <i class="fas fa-tasks"></i>
                             <span>Nhiệm vụ</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['user_daily_tasks'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['user_daily_tasks'] }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#withdrawal-requests" role="tab">
                             <i class="fas fa-money-bill-wave"></i>
                             <span>Rút tiền</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['withdrawal_requests'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['withdrawal_requests'] }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" data-bs-toggle="tab" href="#coin-transactions" role="tab">
                             <i class="fas fa-coins"></i>
                             <span class="d-none d-md-inline">Cộng/Trừ </span><span>Xu</span>
-                            <span class="badge rounded-pill ms-1">{{ $counts['coin_transactions'] }}</span>
+                            <span class="badge bg-primary rounded-pill ms-1">{{ $counts['coin_transactions'] }}</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -890,14 +890,19 @@
                                     </thead>
                                     <tbody>
                                         @forelse($chapterPurchases as $purchase)
+                                            @php
+                                                // Cache relationships to avoid multiple accesses
+                                                $chapter = $purchase->chapter;
+                                                $story = $chapter ? $chapter->story : null;
+                                            @endphp
                                             <tr>
                                                 <td>{{ $purchase->id }}</td>
                                                 <td>
-                                                    <a href="{{ route('stories.show', $purchase->chapter->story_id) }}">
-                                                        {{ $purchase->chapter->story->title ?? 'Không xác định' }}
+                                                    <a href="{{ route('stories.show', $story ? $story->id : $purchase->chapter_id) }}">
+                                                        {{ $story ? $story->title : 'Không xác định' }}
                                                     </a>
                                                 </td>
-                                                <td>Chương {{ $purchase->chapter->number }}: {{ Str::limit($purchase->chapter->title, 30) }}</td>
+                                                <td>Chương {{ $chapter ? $chapter->number : 'N/A' }}: {{ $chapter ? Str::limit($chapter->title, 30) : 'N/A' }}</td>
                                                 <td>{{ number_format($purchase->amount_paid) }}</td>
                                                 <td>{{ $purchase->created_at->format('d/m/Y H:i') }}</td>
                                             </tr>
