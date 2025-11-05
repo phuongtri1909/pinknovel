@@ -21,7 +21,7 @@
                     <div class="col-12 col-md-6 col-lg-8 col-xl-9">
                         <div class="rounded-4 bg-white p-4 h-100">
                             <div class="mb-3 text-start">
-                                <h2 class="fw-semibold color-3">{{ $story->title }}</h2>
+                                <h2 class="fw-semibold color-3 allow-copy">{{ $story->title }}</h2>
                             </div>
 
                             <div class="d-flex">
@@ -273,8 +273,8 @@
             <h5 class="mb-0">GIỚI THIỆU</h5>
         </div>
 
-        <div class="description-container">
-            <div class="description-content text-muted mt-4 mb-0 text-justify"
+        <div class="description-container allow-copy">
+            <div class="description-content allow-copy text-muted mt-4 mb-0 text-justify"
                 id="description-content-{{ $story->id }}">
                 {!! $story->description !!}
             </div>

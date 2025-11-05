@@ -214,10 +214,13 @@ class BlockDevTools
                 
             }, true);
             
-            // Chặn chuột phải (Context Menu) - Cho phép trong element được phép
+            // Chặn chuột phải (Context Menu) - Chỉ cho phép trong input, textarea, select
             document.addEventListener("contextmenu", function(e) {
-                // Cho phép context menu trong input, textarea và các element được phép
-                if (!isAllowedElement(e.target)) {
+                // Chỉ cho phép context menu trong input, textarea, select (không cho phép trong allow-copy)
+                if (e.target.tagName !== "INPUT" && 
+                    e.target.tagName !== "TEXTAREA" && 
+                    e.target.tagName !== "SELECT" &&
+                    !e.target.isContentEditable) {
                     e.preventDefault();
                     e.stopPropagation();
                     e.stopImmediatePropagation();
@@ -301,6 +304,7 @@ class BlockDevTools
                 input, textarea, select, 
                 [contenteditable="true"],
                 .allow-copy,
+                .allow-copy *,
                 .payment-info-value,
                 .payment-content-text,
                 .copy-button,
@@ -408,7 +412,11 @@ class BlockDevTools
             // Chặn cách mở DevTools bằng cách inspect element từ chuột phải
             document.addEventListener("mousedown", function(e) {
                 if (e.button === 2) { // Right click
-                    if (!isAllowedElement(e.target)) {
+                    // Chỉ cho phép right click trong input, textarea, select
+                    if (e.target.tagName !== "INPUT" && 
+                        e.target.tagName !== "TEXTAREA" && 
+                        e.target.tagName !== "SELECT" &&
+                        !e.target.isContentEditable) {
                         e.preventDefault();
                         return false;
                     }
