@@ -342,8 +342,9 @@
                         title: 'Xác nhận duyệt giao dịch?',
                         text: 'Người dùng sẽ được cộng xu vào tài khoản.',
                         showCancelButton: true,
-                        confirmButtonText: 'Duyệt',
                         cancelButtonText: 'Hủy',
+                        confirmButtonText: 'Duyệt',
+                        reverseButtons: true,
                         target: targetEl,
                         didOpen: () => {
                             const input = Swal.getInput();
@@ -376,6 +377,7 @@
                         showCancelButton: true,
                         confirmButtonText: 'Từ chối',
                         cancelButtonText: 'Hủy',
+                        reverseButtons: true,
                         target: targetEl,
                         didOpen: () => {
                             const input = Swal.getInput();

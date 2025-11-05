@@ -279,6 +279,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all bank auto deposits made by this user
+     */
+    public function bankAutoDeposits()
+    {
+        return $this->hasMany(BankAutoDeposit::class);
+    }
+
+    /**
      * Get user daily tasks
      */
     public function userDailyTasks()

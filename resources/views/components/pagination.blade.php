@@ -40,6 +40,7 @@
                     'withdrawals_page' => 'withdrawal-requests',
                     'coin_page' => 'coin-transactions',
                     'coin_histories_page' => 'coin-history',
+                    'bank_auto_deposits_page' => 'bank-auto-deposits',
                 ];
                 
                 $currentTab = request()->get('tab');

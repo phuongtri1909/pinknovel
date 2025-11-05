@@ -333,6 +333,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Duyệt',
                     cancelButtonText: 'Hủy',
+                    reverseButtons: true,
                     target: targetEl,
                     didOpen: () => {
                         const input = Swal.getInput();
@@ -367,6 +368,7 @@
                     showCancelButton: true,
                     confirmButtonText: 'Từ chối',
                     cancelButtonText: 'Hủy',
+                    reverseButtons: true,
                     target: targetEl,
                     didOpen: () => {
                         const input = Swal.getInput();

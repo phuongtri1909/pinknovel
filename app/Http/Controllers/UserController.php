@@ -54,6 +54,7 @@ class UserController extends Controller
             'withdrawal-requests' => 'withdrawals_page',
             'coin-transactions' => 'coin_page',
             'coin-history' => 'coin_histories_page',
+            'bank-auto-deposits' => 'bank_auto_deposits_page',
         ];
 
         $getPageName = function($tab) use ($tabToPageNameMap) {
@@ -128,6 +129,7 @@ class UserController extends Controller
         $authorStoryEarningsPage = $getPageNumber('author-story-earnings');
         $authorFeaturedStoriesPage = $getPageNumber('author-featured-stories');
         $coinHistoriesPage = $getPageNumber('coin-history');
+        $bankAutoDepositsPage = $getPageNumber('bank-auto-deposits');
 
         $deposits = $user->deposits()
             ->with('bank')
@@ -141,6 +143,11 @@ class UserController extends Controller
         $cardDeposits = $user->cardDeposits()
             ->orderByDesc('created_at')
             ->paginate(25, ['*'], 'card_deposits_page', $cardDepositsPage);
+
+        $bankAutoDeposits = $user->bankAutoDeposits()
+            ->with('bankAuto')
+            ->orderByDesc('created_at')
+            ->paginate(25, ['*'], 'bank_auto_deposits_page', $bankAutoDepositsPage);
 
         $chapterPurchasesQuery = $user->chapterPurchases()
             ->orderByDesc('created_at');
@@ -244,11 +251,12 @@ class UserController extends Controller
                  WHERE s.user_id = ?) as author_chapter_earnings,
                 (SELECT COUNT(*) FROM story_purchases sp 
                  INNER JOIN stories s ON sp.story_id = s.id 
-                 WHERE s.user_id = ?) as author_story_earnings
+                 WHERE s.user_id = ?) as author_story_earnings,
+                (SELECT COUNT(*) FROM bank_auto_deposits WHERE user_id = ?) as bank_auto_deposits
         ", [
             $user->id, $user->id, $user->id, $user->id, $user->id, 
             $user->id, $user->id, $user->id, $user->id, $user->id,
-            $user->id, $user->id, $user->id, $user->id
+            $user->id, $user->id, $user->id, $user->id, $user->id
         ])[0] ?? (object)[
             'deposits' => 0,
             'paypal_deposits' => 0,
@@ -264,6 +272,7 @@ class UserController extends Controller
             'author_stories' => 0,
             'author_chapter_earnings' => 0,
             'author_story_earnings' => 0,
+            'bank_auto_deposits' => 0,
         ];
 
         $counts = (array) $counts;
@@ -274,6 +283,7 @@ class UserController extends Controller
             'deposits',
             'paypalDeposits',
             'cardDeposits',
+            'bankAutoDeposits',
             'chapterPurchases',
             'storyPurchases',
             'bookmarks',
