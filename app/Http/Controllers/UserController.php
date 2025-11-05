@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 use Intervention\Image\Facades\Image;
 use App\Services\ReadingHistoryService;
@@ -23,7 +24,7 @@ use Illuminate\Support\Facades\Storage;
 class UserController extends Controller
 {
 
-    public function show($id)
+    public function show($id, Request $request)
     {
         $authUser = auth()->user();
         $user = User::findOrFail($id);
@@ -37,6 +38,27 @@ class UserController extends Controller
         if ($user->active !== 'active') {
             abort(404);
         }
+
+        $tabToPageNameMap = [
+            'deposits' => 'deposits_page',
+            'paypal-deposits' => 'paypal_deposits_page',
+            'card-deposits' => 'card_deposits_page',
+            'story-purchases' => 'story_page',
+            'chapter-purchases' => 'chapter_page',
+            'author-stories' => 'author_stories_page',
+            'author-chapter-earnings' => 'author_chapter_earnings_page',
+            'author-story-earnings' => 'author_story_earnings_page',
+            'author-featured-stories' => 'author_featured_stories_page',
+            'bookmarks' => 'bookmarks_page',
+            'user-daily-tasks' => 'daily_tasks_page',
+            'withdrawal-requests' => 'withdrawals_page',
+            'coin-transactions' => 'coin_page',
+            'coin-history' => 'coin_histories_page',
+        ];
+
+        $getPageName = function($tab) use ($tabToPageNameMap) {
+            return $tabToPageNameMap[$tab] ?? null;
+        };
 
         $stats = [
             'total_deposits' => $user->total_deposits,
@@ -52,48 +74,75 @@ class UserController extends Controller
             })->sum('amount_received') : 0,
         ];
 
+        $getPageNumber = function($tab) use ($request, $getPageName) {
+            $currentTab = $request->get('tab');
+            if ($currentTab === $tab && $request->has('page')) {
+                return $request->get('page', 1);
+            }
+            $pageName = $getPageName($tab);
+            if ($pageName && $request->has($pageName)) {
+                return $request->get($pageName, 1);
+            }
+            return 1;
+        };
+
+        $depositsPage = $getPageNumber('deposits');
+        $paypalDepositsPage = $getPageNumber('paypal-deposits');
+        $cardDepositsPage = $getPageNumber('card-deposits');
+        $chapterPage = $getPageNumber('chapter-purchases');
+        $storyPage = $getPageNumber('story-purchases');
+        $bookmarksPage = $getPageNumber('bookmarks');
+        $coinPage = $getPageNumber('coin-transactions');
+        $dailyTasksPage = $getPageNumber('user-daily-tasks');
+        $withdrawalsPage = $getPageNumber('withdrawal-requests');
+        $authorStoriesPage = $getPageNumber('author-stories');
+        $authorChapterEarningsPage = $getPageNumber('author-chapter-earnings');
+        $authorStoryEarningsPage = $getPageNumber('author-story-earnings');
+        $authorFeaturedStoriesPage = $getPageNumber('author-featured-stories');
+        $coinHistoriesPage = $getPageNumber('coin-history');
+
         $deposits = $user->deposits()
             ->with('bank')
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'deposits_page');
+            ->paginate(25, ['*'], 'deposits_page', $depositsPage);
 
         $paypalDeposits = $user->paypalDeposits()
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'paypal_deposits_page');
+            ->paginate(25, ['*'], 'paypal_deposits_page', $paypalDepositsPage);
 
         $cardDeposits = $user->cardDeposits()
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'card_deposits_page');
+            ->paginate(25, ['*'], 'card_deposits_page', $cardDepositsPage);
 
         $chapterPurchases = $user->chapterPurchases()
             ->with(['chapter.story'])
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'chapter_page');
+            ->paginate(25, ['*'], 'chapter_page', $chapterPage);
 
         $storyPurchases = $user->storyPurchases()
             ->with(['story'])
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'story_page');
+            ->paginate(25, ['*'], 'story_page', $storyPage);
 
         $bookmarks = $user->bookmarks()
             ->with(['story', 'lastChapter'])
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'bookmarks_page');
+            ->paginate(25, ['*'], 'bookmarks_page', $bookmarksPage);
 
         $coinTransactions = $user->coinTransactions()
             ->with('admin')
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'coin_page');
+            ->paginate(25, ['*'], 'coin_page', $coinPage);
 
         $userDailyTasks = $user->userDailyTasks()
             ->with('dailyTask')
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'daily_tasks_page');
+            ->paginate(25, ['*'], 'daily_tasks_page', $dailyTasksPage);
 
         $withdrawalRequests = $user->withdrawalRequests()
             ->with('processedBy')
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'withdrawals_page');
+            ->paginate(25, ['*'], 'withdrawals_page', $withdrawalsPage);
 
         $authorChapterEarnings = collect();
         $authorStoryEarnings = collect();
@@ -103,32 +152,32 @@ class UserController extends Controller
         if ($user->role === 'author') {
             $authorStories = \App\Models\Story::where('user_id', $user->id)
                 ->orderByDesc('created_at')
-                ->paginate(5, ['*'], 'author_stories_page');
+                ->paginate(25, ['*'], 'author_stories_page', $authorStoriesPage);
 
             $authorChapterEarnings = \App\Models\ChapterPurchase::whereHas('chapter.story', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->with(['chapter.story', 'user'])
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'author_chapter_earnings_page');
+            ->paginate(25, ['*'], 'author_chapter_earnings_page', $authorChapterEarningsPage);
 
             $authorStoryEarnings = \App\Models\StoryPurchase::whereHas('story', function($query) use ($user) {
                 $query->where('user_id', $user->id);
             })
             ->with(['story', 'user'])
             ->orderByDesc('created_at')
-            ->paginate(5, ['*'], 'author_story_earnings_page');
+            ->paginate(25, ['*'], 'author_story_earnings_page', $authorStoryEarningsPage);
 
             $authorFeaturedStories = \App\Models\StoryFeatured::where('user_id', $user->id)
                 ->where('type', \App\Models\StoryFeatured::TYPE_AUTHOR)
                 ->with(['story'])
                 ->orderByDesc('created_at')
-                ->paginate(5, ['*'], 'author_featured_stories_page');
+                ->paginate(25, ['*'], 'author_featured_stories_page', $authorFeaturedStoriesPage);
         }
 
         $coinHistories = $user->coinHistories()
             ->orderByDesc('created_at')
-            ->paginate(10, ['*'], 'coin_histories_page');
+            ->paginate(25, ['*'], 'coin_histories_page', $coinHistoriesPage);
 
         $counts = DB::select("
             SELECT 
@@ -352,7 +401,7 @@ class UserController extends Controller
 
         $users = $query->where('active', 'active')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(25);
 
         return view('admin.pages.users.index', compact('users', 'stats'));
     }
@@ -679,7 +728,7 @@ class UserController extends Controller
                     ]);
                 }
 
-                \Log::error('Avatar update error:', ['error' => $e->getMessage()]);
+                Log::error('Avatar update error:', ['error' => $e->getMessage()]);
                 return response()->json([
                     'status' => 'error',
                     'message' => 'Có lỗi xảy ra, vui lòng thử lại sau'

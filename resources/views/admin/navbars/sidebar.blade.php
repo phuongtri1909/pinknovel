@@ -257,16 +257,6 @@
                                     <i class="fa-solid fa-exchange-alt text-dark icon-sidebar"></i>
                                 </div>
                                 <span class="nav-link-text ms-1">Nạp xu - Bank auto
-                                    @php
-                                        try {
-                                            $pendingBankAutoCount = \App\Models\BankAutoDeposit::where('status', 'pending')->count();
-                                        } catch (\Exception $e) {
-                                            $pendingBankAutoCount = 0;
-                                        }
-                                    @endphp
-                                    @if ($pendingBankAutoCount > 0)
-                                        <span class="badge bg-danger ms-2">{{ $pendingBankAutoCount }}</span>
-                                    @endif
                                 </span>
                             </a>
                         </li>

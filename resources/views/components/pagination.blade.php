@@ -4,11 +4,77 @@
     <nav aria-label="Page navigation" class="pagination-container">
         <ul class="pagination pagination-sm flex-wrap justify-content-center gap-2">
             @php
-                $queryString = http_build_query(request()->except('page'));
-                $appendQuery = function($url) use ($queryString) {
+                $pageName = 'page';
+                
+                if ($paginator->hasPages() && $paginator->lastPage() > 1) {
+                    $testUrl = $paginator->url(2);
+                } else {
+                    $testUrl = $paginator->url(1);
+                }
+                
+                if ($testUrl) {
+                    $parsedUrl = parse_url($testUrl);
+                    if (isset($parsedUrl['query'])) {
+                        parse_str($parsedUrl['query'], $queryParams);
+                        foreach ($queryParams as $key => $value) {
+                            if ($key === 'page' || substr($key, -5) === '_page') {
+                                $pageName = $key;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                $pageNameToTabMap = [
+                    'deposits_page' => 'deposits',
+                    'paypal_deposits_page' => 'paypal-deposits',
+                    'card_deposits_page' => 'card-deposits',
+                    'story_page' => 'story-purchases',
+                    'chapter_page' => 'chapter-purchases',
+                    'author_stories_page' => 'author-stories',
+                    'author_chapter_earnings_page' => 'author-chapter-earnings',
+                    'author_story_earnings_page' => 'author-story-earnings',
+                    'author_featured_stories_page' => 'author-featured-stories',
+                    'bookmarks_page' => 'bookmarks',
+                    'daily_tasks_page' => 'user-daily-tasks',
+                    'withdrawals_page' => 'withdrawal-requests',
+                    'coin_page' => 'coin-transactions',
+                    'coin_histories_page' => 'coin-history',
+                ];
+                
+                $currentTab = request()->get('tab');
+                
+                $paginatorTab = isset($pageNameToTabMap[$pageName]) ? $pageNameToTabMap[$pageName] : null;
+                
+                $queryParams = request()->except([$pageName]);
+                
+                if ($paginatorTab) {
+                    $queryParams['tab'] = $paginatorTab;
+                } elseif ($currentTab) {
+                    $queryParams['tab'] = $currentTab;
+                }
+                
+                $appendQuery = function($url) use ($queryParams, $pageName, $paginatorTab, $pageNameToTabMap) {
                     if (!$url) return $url;
-                    if (empty($queryString)) return $url;
-                    return $url . (strpos($url, '?') !== false ? '&' : '?') . $queryString;
+                    
+                    $parsedUrl = parse_url($url);
+                    $baseUrl = $parsedUrl['path'] ?? $url;
+                    $existingParams = [];
+                    
+                    if (isset($parsedUrl['query'])) {
+                        parse_str($parsedUrl['query'], $existingParams);
+                    }
+                    
+                    $pageNumber = isset($existingParams[$pageName]) ? $existingParams[$pageName] : 1;
+                    
+                    $newParams = $queryParams;
+                    if ($pageNumber > 1) {
+                        $newParams['page'] = $pageNumber;
+                    } elseif (isset($newParams['page'])) {
+                        unset($newParams['page']);
+                    }
+                    
+                    return $baseUrl . (empty($newParams) ? '' : '?' . http_build_query($newParams));
                 };
             @endphp
             {{-- First Page Link --}}

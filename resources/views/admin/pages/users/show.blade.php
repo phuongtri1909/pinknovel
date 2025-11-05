@@ -742,14 +742,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['deposits'] > 5)
+                                @if($deposits->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$deposits" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="deposits">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -790,14 +785,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['paypal_deposits'] > 5)
+                                @if($paypalDeposits->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$paypalDeposits" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="paypal-deposits">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -838,14 +828,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['card_deposits'] > 5)
+                                @if($cardDeposits->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$cardDeposits" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="card-deposits">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -882,14 +867,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['story_purchases'] > 5)
+                                @if($storyPurchases->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$storyPurchases" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="story-purchases">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -928,14 +908,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['chapter_purchases'] > 5)
+                                @if($chapterPurchases->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$chapterPurchases" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="chapter-purchases">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -945,14 +920,9 @@
                         <!-- Author Stories Tab -->
                         <div class="tab-pane" id="author-stories" role="tabpanel">
                             @include('admin.pages.users.partials.author-stories-table', ['data' => $authorStories])
-                            @if(($counts['author_stories'] ?? 0) > 5)
+                            @if($authorStories->hasPages())
                                 <div class="d-flex justify-content-center mt-3">
                                     <x-pagination :paginator="$authorStories" />
-                                </div>
-                                <div class="text-center mt-3">
-                                    <button class="btn btn-sm btn-primary load-more" data-type="author-stories">
-                                        Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                    </button>
                                 </div>
                             @endif
                         </div>
@@ -992,14 +962,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['author_chapter_earnings'] > 5)
+                                @if($authorChapterEarnings->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$authorChapterEarnings" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="author-chapter-earnings">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -1038,14 +1003,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['author_story_earnings'] > 5)
+                                @if($authorStoryEarnings->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$authorStoryEarnings" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="author-story-earnings">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -1054,14 +1014,9 @@
                         <!-- Author Featured Stories Tab -->
                         <div class="tab-pane" id="author-featured-stories" role="tabpanel">
                             @include('admin.pages.users.partials.author-featured-stories-table', ['data' => $authorFeaturedStories])
-                            @if($counts['author_featured_stories'] > 5)
+                            @if($authorFeaturedStories->hasPages())
                                 <div class="d-flex justify-content-center mt-3">
                                     <x-pagination :paginator="$authorFeaturedStories" />
-                                </div>
-                                <div class="text-center mt-3">
-                                    <button class="btn btn-sm btn-primary load-more" data-type="author-featured-stories">
-                                        Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                    </button>
                                 </div>
                             @endif
                         </div>
@@ -1114,14 +1069,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['bookmarks'] > 5)
+                                @if($bookmarks->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$bookmarks" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="bookmarks">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -1156,14 +1106,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['user_daily_tasks'] > 5)
+                                @if($userDailyTasks->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$userDailyTasks" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="user-daily-tasks">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -1210,14 +1155,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['withdrawal_requests'] > 5)
+                                @if($withdrawalRequests->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$withdrawalRequests" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="withdrawal-requests">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -1265,14 +1205,9 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                                @if($counts['coin_transactions'] > 5)
+                                @if($coinTransactions->hasPages())
                                     <div class="d-flex justify-content-center mt-3">
                                         <x-pagination :paginator="$coinTransactions" />
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="coin-transactions">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
                                     </div>
                                 @endif
                             </div>
@@ -1348,12 +1283,7 @@
                                 <!-- Pagination -->
                                 @if($coinHistories->hasPages())
                                     <div class="d-flex justify-content-center mt-4">
-                                        {{ $coinHistories->links('components.pagination') }}
-                                    </div>
-                                    <div class="text-center mt-3">
-                                        <button class="btn btn-sm btn-primary load-more" data-type="coin-histories">
-                                            Xem thêm <i class="fas fa-chevron-down ms-1"></i>
-                                        </button>
+                                        <x-pagination :paginator="$coinHistories" />
                                     </div>
                                 @endif
                             </div>
@@ -1404,64 +1334,30 @@
         }
 
         $(document).ready(function() {
-            // Handle tab navigation with URL hash
-            const hash = window.location.hash;
-            if (hash) {
-                const triggerEl = document.querySelector(`a[href="${hash}"]`);
+            function getActiveTab() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('tab') || window.location.hash.replace('#', '') || 'deposits';
+            }
+            
+            const activeTab = getActiveTab();
+            if (activeTab) {
+                const triggerEl = document.querySelector(`a[href="#${activeTab}"]`);
                 if (triggerEl) {
-                    triggerEl.click();
+                    const tab = new bootstrap.Tab(triggerEl);
+                    tab.show();
                 }
             }
             
-            // Update URL hash when tab changes
             const tabLinks = document.querySelectorAll('.nav-link');
             tabLinks.forEach(link => {
                 link.addEventListener('click', function() {
-                    window.location.hash = this.getAttribute('href');
+                    const tabId = this.getAttribute('href').replace('#', '');
+                    const currentUrl = new URL(window.location);
+                    currentUrl.searchParams.set('tab', tabId);
+                    window.history.pushState({}, '', currentUrl);
                 });
             });
             
-            // Load more functionality
-            $('.load-more').click(function() {
-                const type = $(this).data('type');
-                const currentPage = parseInt($(this).data('page') || 1);
-                const nextPage = currentPage + 1;
-                const button = $(this);
-                
-                button.html('<i class="fas fa-spinner fa-spin"></i> Đang tải...');
-                button.prop('disabled', true);
-                
-                $.ajax({
-                    url: '{{ route('users.load-more', $user->id) }}',
-                    type: 'GET',
-                    data: {
-                        type: type,
-                        page: nextPage
-                    },
-                    success: function(response) {
-                        // Append new rows to the table
-                        $(`#${type} table tbody`).append(response.html);
-                        
-                        // Update pagination
-                        $(`#${type} .justify-content-center`).html(response.pagination);
-                        
-                        // Update the load more button
-                        button.data('page', nextPage);
-                        button.html('Xem thêm <i class="fas fa-chevron-down ms-1"></i>');
-                        button.prop('disabled', false);
-                        
-                        // Hide button if no more pages
-                        if (!response.has_more) {
-                            button.hide();
-                        }
-                    },
-                    error: function() {
-                        showToast('Có lỗi xảy ra khi tải dữ liệu', 'error');
-                        button.html('Xem thêm <i class="fas fa-chevron-down ms-1"></i>');
-                        button.prop('disabled', false);
-                    }
-                });
-            });
 
             $('.ban-toggle').change(function() {
                 const type = $(this).data('type');
