@@ -1279,6 +1279,12 @@ Nội dung chương 2 ở đây...
         });
 
         $('#batchChapterForm').on('submit', function(e) {
+            if ($('#enableSchedule').is(':checked') && $('#status_draft').is(':checked')) {
+                updateScheduleDateTime();
+            }
+            
+            updateIntervalHours();
+            
             if (editor) {
                 const htmlContent = editor.getData();
                 const plainText = stripHtmlTags(htmlContent);

@@ -1003,7 +1003,8 @@ class AuthorController extends Controller
                         $positionInList = array_search($chapter['number'], $chaptersWithoutCustomSchedule);
                         if ($positionInList !== false) {
                             $baseTime = Carbon::createFromFormat('Y-m-d\TH:i', $baseScheduleTime, 'Asia/Ho_Chi_Minh');
-                            $baseTime->addHours($positionInList * $hoursInterval);
+                            $totalMinutes = $positionInList * ($hoursInterval * 60);
+                            $baseTime->addMinutes($totalMinutes);
                             $scheduleTime = $baseTime;
                         } else {
                             $scheduleTime = Carbon::createFromFormat('Y-m-d\TH:i', $baseScheduleTime, 'Asia/Ho_Chi_Minh');
