@@ -165,20 +165,6 @@
                         <span class="text-sm font-weight-bold">Chủ tài khoản:</span>
                         <span class="text-sm">{{ $bankAutoDeposit->bankAuto->account_name }}</span>
                     </div>
-                    
-                    <div class="mb-2">
-                        <span class="text-sm font-weight-bold">Chi nhánh:</span>
-                        <span class="text-sm">{{ $bankAutoDeposit->bankAuto->branch }}</span>
-                    </div>
-                    
-                    <div class="mb-0">
-                        <span class="text-sm font-weight-bold">Trạng thái:</span>
-                        @if($bankAutoDeposit->bankAuto->status === 'active')
-                            <span class="badge badge-sm bg-gradient-success">Hoạt động</span>
-                        @else
-                            <span class="badge badge-sm bg-gradient-danger">Không hoạt động</span>
-                        @endif
-                    </div>
                 @else
                     <p class="text-sm text-muted">Không có thông tin ngân hàng</p>
                 @endif
