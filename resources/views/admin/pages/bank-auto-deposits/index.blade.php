@@ -249,11 +249,7 @@
                                 <td>
                                     <div class="d-flex flex-column justify-content-center">
                                         <h6 class="mb-0 text-sm">
-                                            {{ number_format($deposit->total_coins ?? $deposit->base_coins) }} Xu</h6>
-                                        @if ($deposit->bonus_coins > 0)
-                                            <p class="text-xs text-success mb-0">
-                                                +{{ number_format($deposit->bonus_coins) }} bonus</p>
-                                        @endif
+                                            {{ number_format($deposit->coins) }} Xu</h6>
                                     </div>
                                 </td>
                                 <td>

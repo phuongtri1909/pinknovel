@@ -48,20 +48,8 @@
                     
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label text-sm font-weight-bold">Xu cộng</label>
-                            <p class="text-sm mb-0">{{ number_format($bankAutoDeposit->base_coins) }} xu</p>
-                        </div>
-                        
-                        @if($bankAutoDeposit->bonus_coins > 0)
-                        <div class="mb-3">
-                            <label class="form-label text-sm font-weight-bold">Xu tặng</label>
-                            <p class="text-sm mb-0 text-success">+{{ number_format($bankAutoDeposit->bonus_coins) }} xu</p>
-                        </div>
-                        @endif
-                        
-                        <div class="mb-3">
-                            <label class="form-label text-sm font-weight-bold">Tổng xu</label>
-                            <p class="text-sm mb-0 font-weight-bold text-primary">{{ number_format($bankAutoDeposit->total_coins ?? $bankAutoDeposit->base_coins) }} xu</p>
+                            <label class="form-label text-sm font-weight-bold">Xu</label>
+                            <p class="text-sm mb-0">{{ number_format($bankAutoDeposit->coins) }} xu</p>
                         </div>
                         
                         <div class="mb-3">
