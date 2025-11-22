@@ -110,7 +110,7 @@
             <div class="card-body">
                 <div class="d-flex align-items-center mb-3">
                     <div class="avatar avatar-sm me-3">
-                        <img src="{{ $bankAutoDeposit->user->avatar ? Storage::url($bankAutoDeposit->user->avatar) : asset('images/defaults/avatar.jpg') }}" alt="Avatar" class="avatar-sm rounded-circle">
+                        <img src="{{ $bankAutoDeposit->user->avatar ? Storage::url($bankAutoDeposit->user->avatar) : asset('assets/images/avatar_default.jpg') }}" alt="Avatar" class="avatar-sm rounded-circle">
                     </div>
                     <div>
                         <h6 class="mb-0">{{ $bankAutoDeposit->user->username }}</h6>
