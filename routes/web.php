@@ -111,6 +111,7 @@ Route::middleware(['check.ip.ban', 'block.devtools'])->group(function () {
             Route::get('/search-chapters', [HomeController::class, 'searchChapters'])->name('chapters.search');
             Route::post('/reading/save-progress', [ReadingController::class, 'saveProgress'])
                 ->name('reading.save-progress');
+            Route::get('/api/chapter/{id}/content', [HomeController::class, 'getChapterContent'])->name('api.chapter.content');
         });
 
         Route::post('/comments/{comment}/react', [CommentController::class, 'react'])->name('comments.react');

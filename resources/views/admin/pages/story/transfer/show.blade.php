@@ -65,7 +65,7 @@
                                     <div class="row mt-3">
                                         <div class="col-12">
                                             <h6 class="text-sm mb-2">Mô tả:</h6>
-                                            <p class="text-xs">{!! Str::limit($story->description, 200) !!}</p>
+                                            <p class="text-xs">{{ Str::limit(description_for_edit($story->description), 200) }}</p>
                                         </div>
                                     </div>
 

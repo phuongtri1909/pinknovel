@@ -1642,6 +1642,69 @@ class HomeController extends Controller
         }
     }
 
+    public function getChapterContent($id)
+    {
+        $chapter = Chapter::select('id', 'story_id', 'content', 'status', 'price', 'password', 'is_free')
+            ->findOrFail($id);
+
+        $story = Story::select('id', 'user_id', 'status')->findOrFail($chapter->story_id);
+
+        $isAdmin = auth()->check() && auth()->user()->role === 'admin';
+        $isAuthor = auth()->check() && $story->user_id == auth()->id();
+
+        if ($story->status !== 'published' && !$isAdmin && !$isAuthor) {
+            return response()->json(['error' => 'Truyện chưa được xuất bản.'], 403);
+        }
+
+        if ($chapter->status !== 'published' && !$isAdmin && !$isAuthor) {
+            return response()->json(['error' => 'Chương chưa được xuất bản.'], 403);
+        }
+
+        $hasAccess = false;
+        $hasPurchasedChapter = false;
+        $hasPurchasedStory = false;
+
+        if (auth()->check()) {
+            $user = auth()->user();
+            if (
+                in_array($user->role, ['admin', 'mod']) ||
+                ($user->role == 'author' && $story->user_id == $user->id)
+            ) {
+                $hasAccess = true;
+            } else {
+                $hasPurchasedChapter = ChapterPurchase::where('user_id', $user->id)
+                    ->where('chapter_id', $chapter->id)
+                    ->exists();
+                $hasPurchasedStory = StoryPurchase::where('user_id', $user->id)
+                    ->where('story_id', $story->id)
+                    ->exists();
+                $hasAccess = $hasPurchasedChapter || $hasPurchasedStory;
+            }
+        }
+
+        if (!$chapter->price || $chapter->price == 0) {
+            $hasAccess = true;
+        }
+
+        if (!$hasAccess) {
+            return response()->json(['error' => 'Bạn không có quyền truy cập chương này.'], 403);
+        }
+
+        $hasPasswordAccess = true;
+        if ($chapter->is_free && !empty($chapter->password)) {
+            $hasPasswordAccess = false;
+            $passwordSessionKey = "chapter_password_{$chapter->id}";
+            if (session()->has($passwordSessionKey)) {
+                $hasPasswordAccess = true;
+            }
+        }
+        if (!$hasPasswordAccess) {
+            return response()->json(['error' => 'Bạn cần nhập mật khẩu để xem chương này.'], 403);
+        }
+
+        return response()->json(['content' => $chapter->content]);
+    }
+
     public function searchChapters(Request $request)
     {
         $searchTerm = $request->search;

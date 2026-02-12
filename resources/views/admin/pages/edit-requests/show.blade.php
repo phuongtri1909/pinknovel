@@ -203,13 +203,13 @@
                             <div class="comparison-column">
                                 <div class="comparison-header">Hiện tại</div>
                                 <div class="value {{ $story->description != $editRequest->description ? 'changed' : '' }}">
-                                    {!! $story->description !!}
+                                    {!! description_for_display($story->description) !!}
                                 </div>
                             </div>
                             <div class="comparison-column">
                                 <div class="comparison-header">Yêu cầu thay đổi</div>
                                 <div class="value {{ $story->description != $editRequest->description ? 'changed' : '' }}">
-                                    {!! $editRequest->description !!}
+                                    {!! description_for_display($editRequest->description) !!}
                                 </div>
                             </div>
                         </div>

@@ -241,7 +241,7 @@
                             <div class="story-detail">
                                 <h5 class="mb-3"><i class="fas fa-align-left me-2"></i> Mô tả truyện</h5>
                                 <div class="description-text">
-                                    {!! $story->description !!}
+                                    {!! description_for_display($story->description) !!}
                                 </div>
                             </div>
 

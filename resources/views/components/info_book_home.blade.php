@@ -276,7 +276,7 @@
         <div class="description-container allow-copy">
             <div class="description-content allow-copy text-muted mt-4 mb-0 text-justify"
                 id="description-content-{{ $story->id }}">
-                {!! $story->description !!}
+                {!! description_for_display($story->description) !!}
             </div>
             <div class="description-toggle-btn mt-2 text-center d-none">
                 <button class="btn btn-sm btn-link show-more-btn">Xem thêm <i class="fas fa-chevron-down"></i></button>
@@ -456,7 +456,7 @@
             text-align: justify;
             text-justify: inter-word;
             word-break: normal;
-            line-height: 1.8;
+            line-height: 1.3;
             margin-bottom: 1rem;
             hyphens: auto;
         }

@@ -402,7 +402,7 @@
                                 <label for="description" class="form-label">Mô tả <span
                                         class="text-danger">*</span></label>
                                 <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
-                                    rows="6">{{ old('description', $story->description) }}</textarea>
+                                    rows="6" placeholder="Nhập mô tả truyện (văn bản thuần)...">{{ old('description', description_for_edit($story->description)) }}</textarea>
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -1165,22 +1165,6 @@
                 allCategories: allCategories
             });
 
-            // CKEditor for description
-            CKEDITOR.replace('description', {
-                on: {
-                    change: function(evt) {
-                        this.updateElement();
-                    },
-                    instanceReady: function(evt) {
-                        // Lưu description gốc sau khi CKEditor load xong
-                        window.originalDescription = normalizeHtml(CKEDITOR.instances.description
-                            .getData());
-                    }
-                },
-                height: 200,
-                removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
-            });
-
             // CKEditor for story notice
             CKEDITOR.replace('story_notice', {
                 extraPlugins: 'image2,uploadimage,justify',
@@ -1268,12 +1252,9 @@
             function detectChanges() {
                 let changes = [];
 
-                // Get current description from CKEditor
-                const currentDescription = CKEDITOR.instances.description ? CKEDITOR.instances.description
-                .getData() : '';
-                // Use original description saved when CKEditor loaded, or fallback to JSON
-                const originalDescription = window.originalDescription || normalizeHtml(
-                    @json($story->description));
+                // Get current description from textarea
+                const currentDescription = $('#description').val() || '';
+                const originalDescription = @json(description_for_edit($story->description));
 
                 // Get current story_notice from CKEditor
                 const currentStoryNotice = CKEDITOR.instances.story_notice ? CKEDITOR.instances.story_notice.getData() : '';
@@ -1306,7 +1287,7 @@
                         '</span> → <span class="text-success">' + $('#title').val() + '</span></li>');
                 }
 
-                if (normalizeHtml(currentDescription) !== normalizeHtml(originalData.description)) {
+                if ((currentDescription || '').trim() !== (originalData.description || '').trim()) {
                     changes.push('<li>Mô tả đã được thay đổi</li>');
                 }
 

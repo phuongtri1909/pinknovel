@@ -213,8 +213,8 @@
 
                 <div class="mb-3">
                     <label for="description" class="form-label">Mô tả <span class="text-danger">*</span></label>
-                    <textarea class="form-control @error('description') is-invalid @enderror" id="description2" name="description"
-                        rows="6">{{ old('description') }}</textarea>
+                    <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description"
+                        rows="6" placeholder="Nhập mô tả truyện (văn bản thuần)...">{{ old('description') }}</textarea>
                     @error('description')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -407,17 +407,6 @@
                 tagsSelector: '#categoryTags',
                 suggestionsSelector: '#categorySuggestions',
                 allCategories: allCategories
-            });
-
-            // CKEditor for description
-            CKEDITOR.replace('description2', {
-                on: {
-                    change: function(evt) {
-                        this.updateElement();
-                    }
-                },
-                height: 200,
-                removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
             });
 
             // CKEditor for story notice

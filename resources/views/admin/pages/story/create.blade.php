@@ -27,7 +27,7 @@
                                 <div class="form-group">
                                     <label for="description">Mô tả</label>
                                     <textarea name="description" id="description" rows="5"
-                                        class="form-control @error('description') is-invalid @enderror" required>{{ old('description') }}</textarea>
+                                        class="form-control @error('description') is-invalid @enderror" required placeholder="Nhập mô tả (văn bản thuần)...">{{ old('description') }}</textarea>
                                     @error('description')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
@@ -351,17 +351,6 @@
 
     <script src="{{ asset('ckeditor/ckeditor.js') }}"></script>
     <script>
-        // CKEditor for description
-        CKEDITOR.replace('description', {
-            on: {
-                change: function(evt) {
-                    this.updateElement();
-                }
-            },
-            height: 200,
-            removePlugins: 'uploadimage,image2,uploadfile,filebrowser',
-        });
-
         // CKEditor for story notice
         CKEDITOR.replace('story_notice', {
             extraPlugins: 'image2,uploadimage,justify',

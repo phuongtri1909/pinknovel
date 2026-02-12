@@ -175,7 +175,7 @@
                             <div class="mb-3">
                                 <h6 class="text-uppercase text-xs font-weight-bolder opacity-6">Mô tả:</h6>
                                 <div class="p-3 border rounded">
-                                    {!! $story->description !!}
+                                    {!! description_for_display($story->description) !!}
                                 </div>
                             </div>
                         </div>

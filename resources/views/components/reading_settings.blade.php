@@ -266,6 +266,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
                 localStorage.setItem('dark-mode', 'false');
             }
+            requestAnimationFrame(function() {
+                document.dispatchEvent(new CustomEvent('reading-settings-changed'));
+            });
         });
     }
 
@@ -356,6 +359,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.classList.toggle('book-mode');
                 bookModeBtn.classList.toggle('active');
                 localStorage.setItem('book-mode', document.body.classList.contains('book-mode'));
+                requestAnimationFrame(function() {
+                    document.dispatchEvent(new CustomEvent('reading-settings-changed'));
+                });
             });
         }
 
@@ -363,11 +369,18 @@ document.addEventListener('DOMContentLoaded', function() {
         if (fontIncreaseBtn && fontDecreaseBtn && chapterContent) {
             let currentFontSize = parseInt(window.getComputedStyle(chapterContent).fontSize);
 
+            function dispatchReadingSettingsChanged() {
+                requestAnimationFrame(function() {
+                    document.dispatchEvent(new CustomEvent('reading-settings-changed'));
+                });
+            }
+
             fontIncreaseBtn.addEventListener('click', function() {
                 if (currentFontSize < 24) {
                     currentFontSize += 1;
                     chapterContent.style.fontSize = currentFontSize + 'px';
                     localStorage.setItem('chapter-font-size', currentFontSize);
+                    dispatchReadingSettingsChanged();
                 }
             });
 
@@ -376,6 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     currentFontSize -= 1;
                     chapterContent.style.fontSize = currentFontSize + 'px';
                     localStorage.setItem('chapter-font-size', currentFontSize);
+                    dispatchReadingSettingsChanged();
                 }
             });
         }
@@ -416,6 +430,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     // Close dropdown
                     fontFamilyDropdown.classList.remove('active');
+                    requestAnimationFrame(function() {
+                        document.dispatchEvent(new CustomEvent('reading-settings-changed'));
+                    });
                 });
             });
 
@@ -448,6 +465,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     bookModeBtn.classList.add('active');
                 }
             }
+            // Báo cho canvas vẽ lại sau khi load preferences
+            setTimeout(function() {
+                document.dispatchEvent(new CustomEvent('reading-settings-changed'));
+            }, 250);
         }
 
         // Load chapter preferences on page load

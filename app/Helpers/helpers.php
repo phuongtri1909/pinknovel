@@ -78,3 +78,27 @@ if (!function_exists('format_number_short')) {
         return Str::limit($text, $limit);
     }
 }
+
+if (!function_exists('description_for_display')) {
+    function description_for_display(?string $description): string
+    {
+        if ($description === null || $description === '') {
+            return '';
+        }
+        $text = html_entity_decode($description, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        $text = strip_tags($text);
+        return nl2br(e(trim($text)), false);
+    }
+}
+
+if (!function_exists('description_for_edit')) {
+
+    function description_for_edit(?string $description): string
+    {
+        if ($description === null || $description === '') {
+            return '';
+        }
+        $text = html_entity_decode($description, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        return trim(strip_tags($text));
+    }
+}
