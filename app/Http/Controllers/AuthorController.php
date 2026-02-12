@@ -1696,7 +1696,7 @@ class AuthorController extends Controller
 
     private function getMonthlyRevenueData($year, $month)
     {
-        $daysInMonth = cal_days_in_month(CAL_GREGORIAN, $month, $year);
+        $daysInMonth = Carbon::create($year, $month, 1)->daysInMonth;
 
         $chapterRevenue = DB::table('chapter_purchases')
             ->join('chapters', 'chapter_purchases.chapter_id', '=', 'chapters.id')
