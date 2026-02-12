@@ -825,7 +825,13 @@
         
         // Gọi API để lấy dữ liệu
         fetch(`{{ route('user.author.revenue.data') }}?year=${year}&month=${month}`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    // Ném lỗi rõ ràng để biết status khi debug
+                    throw new Error('HTTP ' + response.status + ' ' + response.statusText);
+                }
+                return response.json();
+            })
             .then(data => {
                 // Cập nhật biểu đồ
                 createOrUpdateChart(data, chartType);
@@ -844,6 +850,7 @@
                     <div class="text-center py-5">
                         <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
                         <p>Có lỗi xảy ra khi tải dữ liệu doanh thu</p>
+                        <p class="text-muted small">Chi tiết: ${error && error.message ? error.message : 'Không rõ lỗi'}</p>
                     </div>
                 `;
             });
