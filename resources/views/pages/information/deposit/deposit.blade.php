@@ -583,7 +583,7 @@
 
                             <div class="mt-3">
                                 <input type="file" class="form-control" id="transaction_image"
-                                    name="transaction_image" accept="image/*" required>
+                                    name="transaction_image" required>
                                 <div class="invalid-feedback">Vui lòng tải lên ảnh chứng minh chuyển khoản</div>
                             </div>
                         </div>
