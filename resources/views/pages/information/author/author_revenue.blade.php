@@ -808,20 +808,22 @@
     
     // Hàm tải dữ liệu doanh thu
     function loadRevenueData() {
-        const year = document.getElementById('year-filter').value;
-        const month = document.getElementById('month-filter').value;
-        const chartType = document.getElementById('chart-type').value;
+        const year = document.getElementById('year-filter') ? document.getElementById('year-filter').value : new Date().getFullYear();
+        const month = document.getElementById('month-filter') ? document.getElementById('month-filter').value : '';
+        const chartType = document.getElementById('chart-type') ? document.getElementById('chart-type').value : 'bar';
         
-        // Hiển thị loading
+        // Hiển thị loading (nếu container tồn tại)
         const chartContainer = document.querySelector('.chart-container');
-        chartContainer.innerHTML = `
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Đang tải...</span>
+        if (chartContainer) {
+            chartContainer.innerHTML = `
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Đang tải...</span>
+                    </div>
+                    <p class="mt-2">Đang tải dữ liệu doanh thu...</p>
                 </div>
-                <p class="mt-2">Đang tải dữ liệu doanh thu...</p>
-            </div>
-        `;
+            `;
+        }
         
         // Gọi API để lấy dữ liệu
         fetch(`{{ route('user.author.revenue.data') }}?year=${year}&month=${month}`)
@@ -846,13 +848,15 @@
             })
             .catch(error => {
                 console.error('Error fetching revenue data:', error);
-                chartContainer.innerHTML = `
-                    <div class="text-center py-5">
-                        <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
-                        <p>Có lỗi xảy ra khi tải dữ liệu doanh thu</p>
-                        <p class="text-muted small">Chi tiết: ${error && error.message ? error.message : 'Không rõ lỗi'}</p>
-                    </div>
-                `;
+                if (chartContainer) {
+                    chartContainer.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="fas fa-exclamation-circle fa-3x text-danger mb-3"></i>
+                            <p>Có lỗi xảy ra khi tải dữ liệu doanh thu</p>
+                            <p class="text-muted small">Chi tiết: ${error && error.message ? error.message : 'Không rõ lỗi'}</p>
+                        </div>
+                    `;
+                }
             });
     }
     
