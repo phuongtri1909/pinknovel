@@ -393,6 +393,7 @@
                     <div class="alert alert-warning mt-4">
                         <h6><i class="fas fa-exclamation-triangle me-2"></i>Lưu ý quan trọng:</h6>
                         <ul class="mb-0">
+                            <li>Nội dung chuyển khoản chỉ sử dụng cho một lần giao dịch duy nhất</li>
                             <li>Nội dung chuyển khoản phải chính xác</li>
                             <li>Số tiền chuyển khoản phải đúng với số tiền hiển thị</li>
                             <li>Sau khi chuyển khoản, hệ thống sẽ tự động cộng xu trong vòng 1-5 phút</li>

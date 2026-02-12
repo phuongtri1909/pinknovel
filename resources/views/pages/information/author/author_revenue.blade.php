@@ -1329,29 +1329,52 @@
         
         animateNumber(totalRevenueElement, totalRevenueValue);
         
-        // Thêm sự kiện cho các bộ lọc và nút tải thêm
-        document.getElementById('year-filter').addEventListener('change', loadRevenueData);
-        document.getElementById('month-filter').addEventListener('change', loadRevenueData);
-        document.getElementById('chart-type').addEventListener('change', loadRevenueData);
-        
-        document.getElementById('load-more-transactions').addEventListener('click', function() {
-            currentTransactionPage++;
-            loadTransactionHistory();
-        });
-        
-        document.getElementById('load-more-stories').addEventListener('click', function() {
-            currentStoriesPage++;
-            loadTopStories();
-        });
+        // Thêm sự kiện cho các bộ lọc và nút tải thêm (chỉ khi phần tử tồn tại để tránh lỗi trên server)
+        var yearFilterEl = document.getElementById('year-filter');
+        if (yearFilterEl) {
+            yearFilterEl.addEventListener('change', loadRevenueData);
+        }
 
-        document.getElementById('load-more-chapters').addEventListener('click', function() {
-            currentChaptersPage++;
-            loadTopChapters();
-        });
+        var monthFilterEl = document.getElementById('month-filter');
+        if (monthFilterEl) {
+            monthFilterEl.addEventListener('change', loadRevenueData);
+        }
 
-        document.getElementById('load-more-story-stats').addEventListener('click', function() {
-            loadMoreStoryStats();
-        });
+        var chartTypeEl = document.getElementById('chart-type');
+        if (chartTypeEl) {
+            chartTypeEl.addEventListener('change', loadRevenueData);
+        }
+        
+        var loadMoreTransactionsBtn = document.getElementById('load-more-transactions');
+        if (loadMoreTransactionsBtn) {
+            loadMoreTransactionsBtn.addEventListener('click', function() {
+                currentTransactionPage++;
+                loadTransactionHistory();
+            });
+        }
+        
+        var loadMoreStoriesBtn = document.getElementById('load-more-stories');
+        if (loadMoreStoriesBtn) {
+            loadMoreStoriesBtn.addEventListener('click', function() {
+                currentStoriesPage++;
+                loadTopStories();
+            });
+        }
+
+        var loadMoreChaptersBtn = document.getElementById('load-more-chapters');
+        if (loadMoreChaptersBtn) {
+            loadMoreChaptersBtn.addEventListener('click', function() {
+                currentChaptersPage++;
+                loadTopChapters();
+            });
+        }
+
+        var loadMoreStoryStatsBtn = document.getElementById('load-more-story-stats');
+        if (loadMoreStoryStatsBtn) {
+            loadMoreStoryStatsBtn.addEventListener('click', function() {
+                loadMoreStoryStats();
+            });
+        }
     });
 </script>
 @endpush 

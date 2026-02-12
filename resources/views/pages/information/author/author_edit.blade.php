@@ -858,7 +858,7 @@
                                     <strong>Không đủ xu:</strong> Bạn cần ít nhất {{ number_format($featuredPrice) }}
                                     xu để đề cử truyện.
                                     <br>
-                                    <a href="{{ route('user.deposit') }}" class="btn btn-sm btn-outline-primary mt-2">
+                                    <a href="{{ route('user.bank.auto.deposit') }}" class="btn btn-sm btn-outline-primary mt-2">
                                         <i class="fas fa-coins me-1"></i> Nạp xu ngay
                                     </a>
                                 </div>

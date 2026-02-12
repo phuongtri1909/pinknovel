@@ -18,7 +18,7 @@
                     <div id="insufficient-balance" class="alert alert-warning d-none">
                         <i class="fas fa-exclamation-triangle me-2"></i> Bạn không đủ xu để mua. Vui lòng nạp thêm.
                         <div class="mt-2">
-                            <a href="{{ route('user.deposit') }}" class="btn btn-sm btn-warning">Nạp xu ngay</a>
+                            <a href="{{ route('user.bank.auto.deposit') }}" class="btn btn-sm btn-warning">Nạp xu ngay</a>
                         </div>
                     </div>
                 </div>
