@@ -5,9 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Config;
 use App\Models\WithdrawalRequest;
 use App\Models\CoinTransaction;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class WithdrawalController extends Controller
@@ -160,6 +162,12 @@ class WithdrawalController extends Controller
             
             // Commit transaction
             DB::commit();
+
+            try {
+                TelegramService::notifyWithdrawalRequest($withdrawalRequest);
+            } catch (\Exception $telegramError) {
+                Log::error('Failed to send Telegram notification for withdrawal request: ' . $telegramError->getMessage());
+            }
             
             return redirect()->route('user.withdrawals.index')
                 ->with('success', 'Yêu cầu rút xu đã được gửi thành công và đang chờ xử lý.');

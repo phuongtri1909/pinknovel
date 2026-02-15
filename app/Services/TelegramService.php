@@ -278,5 +278,39 @@ class TelegramService
             return false;
         }
     }
+
+    /**
+     * Send a formatted notification about new withdrawal request (yêu cầu rút xu)
+     *
+     * @param \App\Models\WithdrawalRequest $withdrawal
+     * @return bool
+     */
+    public static function notifyWithdrawalRequest($withdrawal): bool
+    {
+        try {
+            $withdrawal->loadMissing('user');
+            $user = $withdrawal->user;
+            $paymentInfo = $withdrawal->payment_info ?? [];
+
+            $message = "🪙 Yêu cầu rút xu mới\n\n";
+            $message .= "👤 Người rút: {$user->name} ({$user->email})\n";
+            $message .= "💰 Số xu: " . number_format($withdrawal->coins) . " xu\n";
+            $message .= "💸 Phí: " . number_format($withdrawal->fee) . " xu\n";
+            $message .= "📤 Thực nhận: " . number_format($withdrawal->net_amount) . " xu\n";
+            if (!empty($paymentInfo['vnd_amount'])) {
+                $message .= "💵 Quy đổi: " . number_format($paymentInfo['vnd_amount']) . " VNĐ\n";
+            }
+            $message .= "🏦 Ngân hàng: " . ($paymentInfo['bank_name'] ?? 'N/A') . "\n";
+            $message .= "📋 Số TK: " . ($paymentInfo['account_number'] ?? 'N/A') . "\n";
+            $message .= "👤 Chủ TK: " . ($paymentInfo['account_name'] ?? 'N/A') . "\n";
+            $message .= "📅 Ngày gửi: " . $withdrawal->created_at->format('d/m/Y H:i') . "\n";
+            $message .= "\n🔗 Xem chi tiết: " . route('admin.withdrawals.show', $withdrawal->id);
+
+            return self::sendMessage($message, null);
+        } catch (\Exception $e) {
+            Log::error('Error sending Telegram notification for withdrawal request: ' . $e->getMessage());
+            return false;
+        }
+    }
 }
 
