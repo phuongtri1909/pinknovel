@@ -8,8 +8,10 @@
     <meta property="og:type" content="article">
     <meta property="og:title" content="Chương {{ $chapter->number }}: {{ $chapter->title }} - {{ $story->title }}">
     <meta property="og:description" content="{{ Str::limit(html_entity_decode(strip_tags($chapter->content)), 100) }}">
-    <meta property="og:image" content="{{ $story->cover_jpeg ? url(Storage::url($story->cover_jpeg)) : url(asset('assets/images/logo/logo_site.webp')) }}">
-    <meta property="og:image:secure_url" content="{{ $story->cover_jpeg ? url(Storage::url($story->cover_jpeg)) : url(asset('assets/images/logo/logo_site.webp')) }}">
+    <meta property="og:image"
+        content="{{ $story->cover_jpeg ? url(Storage::url($story->cover_jpeg)) : url(asset('assets/images/logo/logo_site.webp')) }}">
+    <meta property="og:image:secure_url"
+        content="{{ $story->cover_jpeg ? url(Storage::url($story->cover_jpeg)) : url(asset('assets/images/logo/logo_site.webp')) }}">
     <meta property="og:image:width" content="600">
     <meta property="og:image:height" content="800">
     <meta property="og:image:alt" content="Ảnh bìa truyện {{ $story->title }} - Chương {{ $chapter->number }}">
@@ -23,7 +25,7 @@
     <meta property="article:author" content="{{ $story->author_name ?? ($story->user->name ?? 'Unknown') }}">
     <meta property="article:published_time" content="{{ $chapter->created_at->format('c') }}">
     <meta property="article:section" content="{{ $story->categories->first()->name ?? 'Truyện' }}">
-    @foreach($story->categories as $category)
+    @foreach ($story->categories as $category)
         <meta property="article:tag" content="{{ $category->name }}">
     @endforeach
 
@@ -31,7 +33,8 @@
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Chương {{ $chapter->number }}: {{ $chapter->title }} - {{ $story->title }}">
     <meta name="twitter:description" content="{{ Str::limit(strip_tags($chapter->content), 160) }}">
-    <meta name="twitter:image" content="{{ $story->cover_jpeg ? url(Storage::url($story->cover_jpeg)) : url(asset('assets/images/logo/logo_site.webp')) }}">
+    <meta name="twitter:image"
+        content="{{ $story->cover_jpeg ? url(Storage::url($story->cover_jpeg)) : url(asset('assets/images/logo/logo_site.webp')) }}">
     <meta name="twitter:image:alt" content="Ảnh bìa truyện {{ $story->title }} - Chương {{ $chapter->number }}">
 @endsection
 
@@ -153,10 +156,17 @@
                 <div id="chapter-content" class="rounded-4 chapter-content mb-4">
                     @if (isset($hasAccess) && $hasAccess && isset($hasPasswordAccess) && $hasPasswordAccess)
                         <input type="hidden" id="chapter-id" value="{{ $chapter->id }}">
-                        <div id="chapter-canvas-wrapper" class="chapter-canvas-wrapper position-relative" data-watermark-url="{{ asset('assets/images/logo/logo_site.webp') }}">
-                            <div id="chapter-canvas-content" class="chapter-canvas-content" style="line-height: 2;"></div>
+                        <div id="chapter-canvas-wrapper" class="chapter-canvas-wrapper position-relative"
+                            data-watermark-url="{{ asset('assets/images/logo/logo_site.webp') }}">
+                            <div id="chapter-canvas-content" class="chapter-canvas-content" style="line-height: 2;">
+                            </div>
                         </div>
-                    @elseif (isset($hasAccess) && $hasAccess && isset($hasPasswordAccess) && !$hasPasswordAccess && $chapter->is_free && !empty($chapter->password))
+                    @elseif (isset($hasAccess) &&
+                            $hasAccess &&
+                            isset($hasPasswordAccess) &&
+                            !$hasPasswordAccess &&
+                            $chapter->is_free &&
+                            !empty($chapter->password))
                         <!-- Modal nhập mật khẩu cho chương miễn phí -->
                         <div class="password-notice bg-light p-4 rounded-3 text-center my-4">
                             <div class="mb-3">
@@ -174,8 +184,8 @@
                             <form id="passwordForm" class="password-form">
                                 @csrf
                                 <div class="input-group mb-3" style="max-width: 400px; margin: 0 auto;">
-                                    <input type="password" class="form-control" id="chapterPassword" 
-                                           placeholder="Nhập mật khẩu..." required>
+                                    <input type="password" class="form-control" id="chapterPassword"
+                                        placeholder="Nhập mật khẩu..." required>
                                     <button class="btn btn-primary" type="submit">
                                         <i class="fas fa-unlock me-1"></i> Xác nhận
                                     </button>
@@ -330,7 +340,7 @@
                 <div class="mt-4">
                     {{-- Author Facebook Link --}}
                     @include('components.author_facebook_link')
-                    
+
                     {{-- hot stories --}}
                     @include('components.hot_stories')
                 </div>
@@ -733,218 +743,296 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-    (function() {
-        function initWatermark() {
-            var wrapper = document.getElementById('chapter-canvas-wrapper');
-            if (!wrapper) return;
-            var url = wrapper.getAttribute('data-watermark-url');
-            if (!url) return;
-            var img = new Image();
-            img.crossOrigin = 'anonymous';
-            img.onload = function() {
-                window.canvasChapterRenderer.watermarkImage = img;
+        (function() {
+            function initWatermark() {
+                var wrapper = document.getElementById('chapter-canvas-wrapper');
+                if (!wrapper) return;
+                var url = wrapper.getAttribute('data-watermark-url');
+                if (!url) return;
+                var img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = function() {
+                    window.canvasChapterRenderer.watermarkImage = img;
+                };
+                img.src = url;
+            }
+
+            window.canvasChapterRenderer = {
+                cachedContent: null,
+                isRendering: false,
+                updateTimer: null,
+                lastRenderWidth: null,
+                watermarkImage: null
             };
-            img.src = url;
-        }
 
-        window.canvasChapterRenderer = {
-            cachedContent: null,
-            isRendering: false,
-            updateTimer: null,
-            lastRenderWidth: null,
-            watermarkImage: null
-        };
+            function renderContentWithCanvas() {
+                var chapterIdInput = document.getElementById('chapter-id');
+                var canvasContent = document.getElementById('chapter-canvas-content');
+                if (!chapterIdInput || !canvasContent) return;
+                var chapterId = chapterIdInput.value;
 
-        function renderContentWithCanvas() {
-            var chapterIdInput = document.getElementById('chapter-id');
-            var canvasContent = document.getElementById('chapter-canvas-content');
-            if (!chapterIdInput || !canvasContent) return;
-            var chapterId = chapterIdInput.value;
+                fetch('/api/chapter/' + chapterId + '/content')
+                    .then(function(response) {
+                        if (!response.ok) throw new Error('Không thể tải nội dung chương.');
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        window.canvasChapterRenderer.cachedContent = data.content;
+                        updateCanvasContent();
+                    })
+                    .catch(function(err) {
+                        console.error('Error loading chapter content:', err);
+                        if (canvasContent) canvasContent.innerHTML =
+                            '<p class="text-danger">Không thể tải nội dung chương. Vui lòng thử lại.</p>';
+                    });
+            }
 
-            fetch('/api/chapter/' + chapterId + '/content')
-                .then(function(response) {
-                    if (!response.ok) throw new Error('Không thể tải nội dung chương.');
-                    return response.json();
-                })
-                .then(function(data) {
-                    window.canvasChapterRenderer.cachedContent = data.content;
-                    updateCanvasContent();
-                })
-                .catch(function(err) {
-                    console.error('Error loading chapter content:', err);
-                    if (canvasContent) canvasContent.innerHTML = '<p class="text-danger">Không thể tải nội dung chương. Vui lòng thử lại.</p>';
-                });
-        }
+            function renderTextToCanvas(fullText, canvasContent, preserveScroll) {
+                if (!fullText || !canvasContent) return;
+                preserveScroll = preserveScroll !== false;
+                var scrollPosition = 0;
+                if (preserveScroll) scrollPosition = window.pageYOffset || document.documentElement.scrollTop ||
+                    document.body.scrollTop || 0;
 
-        function renderTextToCanvas(fullText, canvasContent, preserveScroll) {
-            if (!fullText || !canvasContent) return;
-            preserveScroll = preserveScroll !== false;
-            var scrollPosition = 0;
-            if (preserveScroll) scrollPosition = window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                var chapterContentContainer = canvasContent.closest('.chapter-content');
+                if (!chapterContentContainer) return;
 
-            var chapterContentContainer = canvasContent.closest('.chapter-content');
-            if (!chapterContentContainer) return;
+                canvasContent.innerHTML = '';
 
-            canvasContent.innerHTML = '';
-
-            var paragraphs = fullText.split(/\n\s*\n|<br\s*\/?>/i).filter(function(p) { return p.trim().length > 0; });
-
-            requestAnimationFrame(function() {
-                var computed = window.getComputedStyle(chapterContentContainer);
-                var textColor = computed.color || '#212529';
-                if (!textColor || textColor === 'rgba(0, 0, 0, 0)' || textColor === 'transparent') textColor = '#212529';
-                var fontSize = parseFloat(computed.fontSize) || 16;
-                var fontFamily = computed.fontFamily || 'Arial, sans-serif';
-                var fontWeight = computed.fontWeight || 'normal';
-                if (fontWeight === '400' || fontWeight === 400) fontWeight = 'normal';
-                else if (fontWeight === '700' || fontWeight === 700) fontWeight = 'bold';
-                var fontStyle = computed.fontStyle || 'normal';
-                var lineHeight = parseFloat(computed.lineHeight) || fontSize * 2;
-
-                var containerStyle = window.getComputedStyle(chapterContentContainer);
-                var padLeft = parseFloat(containerStyle.paddingLeft) || 0;
-                var padRight = parseFloat(containerStyle.paddingRight) || 0;
-                var containerWidth = chapterContentContainer.offsetWidth;
-                var maxWidth = containerWidth - padLeft - padRight;
-                window.canvasChapterRenderer.lastRenderWidth = maxWidth;
-
-                var fragment = document.createDocumentFragment();
-                var canvasElements = [];
-
-                paragraphs.forEach(function(paragraph, index) {
-                    if (index % 2 === 0) {
-                        var canvas = document.createElement('canvas');
-                        canvas.className = 'canvas-text-paragraph';
-                        canvas.style.cssText = 'width:100%;max-width:100%;height:auto;display:block;user-select:none;pointer-events:none;box-sizing:border-box;';
-                        canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
-                        canvas.addEventListener('copy', function(e) { e.preventDefault(); });
-                        canvas.addEventListener('cut', function(e) { e.preventDefault(); });
-                        canvas.addEventListener('selectstart', function(e) { e.preventDefault(); });
-                        fragment.appendChild(canvas);
-                        canvasElements.push({ canvas: canvas, paragraph: paragraph, index: index });
+                // Split content: tách theo từng line break để giữ nguyên xuống dòng từ textarea
+                var rawLines = fullText.replace(/<br\s*\/?>/gi, '\n').split('\n');
+                // Nhóm thành paragraphs: dòng trống = ngắt đoạn mới
+                var paragraphs = [];
+                var currentParagraph = [];
+                rawLines.forEach(function(line) {
+                    if (line.trim().length === 0) {
+                        if (currentParagraph.length > 0) {
+                            paragraphs.push(currentParagraph);
+                            currentParagraph = [];
+                        }
                     } else {
-                        var p = document.createElement('p');
-                        p.style.marginBottom = '1rem';
-                        p.style.whiteSpace = 'pre-wrap';
-                        p.textContent = paragraph.trim();
-                        fragment.appendChild(p);
+                        currentParagraph.push(line);
                     }
                 });
-
-                canvasContent.appendChild(fragment);
+                if (currentParagraph.length > 0) paragraphs.push(currentParagraph);
 
                 requestAnimationFrame(function() {
-                    canvasElements.forEach(function(item) {
-                        var canvas = item.canvas;
-                        var paragraph = item.paragraph;
-                        var actualCanvasWidth = canvas.offsetWidth || maxWidth;
-                        var ctx = canvas.getContext('2d', { alpha: true });
-                        ctx.imageSmoothingEnabled = true;
-                        ctx.imageSmoothingQuality = 'high';
-                        ctx.font = fontStyle + ' ' + fontWeight + ' ' + fontSize + 'px ' + fontFamily;
-                        ctx.fillStyle = textColor;
-                        ctx.textBaseline = 'top';
-                        ctx.textAlign = 'left';
+                    var computed = window.getComputedStyle(chapterContentContainer);
+                    var textColor = computed.color || '#212529';
+                    if (!textColor || textColor === 'rgba(0, 0, 0, 0)' || textColor === 'transparent')
+                        textColor = '#212529';
+                    var fontSize = parseFloat(computed.fontSize) || 16;
+                    var fontFamily = computed.fontFamily || 'Arial, sans-serif';
+                    var fontWeight = computed.fontWeight || 'normal';
+                    if (fontWeight === '400' || fontWeight === 400) fontWeight = 'normal';
+                    else if (fontWeight === '700' || fontWeight === 700) fontWeight = 'bold';
+                    var fontStyle = computed.fontStyle || 'normal';
+                    var lineHeight = parseFloat(computed.lineHeight) || fontSize * 2;
 
-                        var words = paragraph.trim().split(/\s+/);
-                        var lines = [];
-                        var currentLine = '';
-                        words.forEach(function(word) {
-                            var testLine = currentLine + (currentLine ? ' ' : '') + word;
-                            var metrics = ctx.measureText(testLine);
-                            if (metrics.width > actualCanvasWidth && currentLine) {
-                                lines.push(currentLine);
-                                currentLine = word;
-                            } else {
-                                currentLine = testLine;
-                            }
-                        });
-                        if (currentLine) lines.push(currentLine);
-
-                        var dpr = window.devicePixelRatio || 1;
-                        canvas.width = actualCanvasWidth * dpr;
-                        canvas.height = (lines.length * lineHeight + 20) * dpr;
-                        canvas.style.height = (lines.length * lineHeight + 20) + 'px';
-                        ctx.scale(dpr, dpr);
-                        ctx.font = fontStyle + ' ' + fontWeight + ' ' + fontSize + 'px ' + fontFamily;
-                        ctx.fillStyle = textColor;
-                        ctx.textBaseline = 'top';
-                        ctx.textAlign = 'left';
-                        lines.forEach(function(line, lineIndex) {
-                            ctx.fillText(line, 0.5, (lineIndex * lineHeight) + 10.5);
-                        });
-                        var wmImg = window.canvasChapterRenderer.watermarkImage;
-                        if (wmImg && wmImg.complete && wmImg.naturalWidth) {
-                            var cw = actualCanvasWidth;
-                            var ch = lines.length * lineHeight + 20;
-                            var maxW = Math.min(cw * 0.35, 100);
-                            var scale = maxW / wmImg.naturalWidth;
-                            var ww = wmImg.naturalWidth * scale;
-                            var wh = wmImg.naturalHeight * scale;
-                            var pad = 8;
-                            ctx.globalAlpha = 0.12;
-                            ctx.drawImage(wmImg, (cw - ww) / 2, (ch - wh) / 2, ww, wh);
-                            ctx.drawImage(wmImg, pad, pad, ww, wh);
-                            ctx.drawImage(wmImg, cw - ww - pad, ch - wh - pad, ww, wh);
-                            ctx.globalAlpha = 1;
-                        }
-                    });
-
-                    if (preserveScroll) requestAnimationFrame(function() { window.scrollTo(0, scrollPosition); });
-                    window.canvasChapterRenderer.isRendering = false;
-                });
-            });
-        }
-
-        window.updateCanvasContent = function(preserveScroll) {
-            var canvasContent = document.getElementById('chapter-canvas-content');
-            if (!canvasContent || !window.canvasChapterRenderer.cachedContent) return;
-            if (window.canvasChapterRenderer.updateTimer) clearTimeout(window.canvasChapterRenderer.updateTimer);
-            if (window.canvasChapterRenderer.isRendering) {
-                window.canvasChapterRenderer.updateTimer = setTimeout(function() { window.updateCanvasContent(preserveScroll); }, 10);
-                return;
-            }
-            window.canvasChapterRenderer.isRendering = true;
-            renderTextToCanvas(window.canvasChapterRenderer.cachedContent, canvasContent, preserveScroll !== false);
-        };
-
-        function initCanvasRender() {
-            if (document.getElementById('chapter-id') && document.getElementById('chapter-canvas-content')) {
-                initWatermark();
-                setTimeout(function() { renderContentWithCanvas(); }, 100);
-            }
-        }
-
-        document.addEventListener('reading-settings-changed', function() {
-            if (!window.canvasChapterRenderer.cachedContent) return;
-            requestAnimationFrame(function() {
-                requestAnimationFrame(function() {
-                    window.updateCanvasContent(true);
-                });
-            });
-        });
-
-        document.addEventListener('DOMContentLoaded', function() {
-            initCanvasRender();
-            var resizeTimer;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(function() {
-                    if (!window.canvasChapterRenderer.cachedContent) return;
-                    var canvasContent = document.getElementById('chapter-canvas-content');
-                    if (!canvasContent) return;
-                    var chapterContentContainer = canvasContent.closest('.chapter-content');
-                    if (!chapterContentContainer) return;
                     var containerStyle = window.getComputedStyle(chapterContentContainer);
                     var padLeft = parseFloat(containerStyle.paddingLeft) || 0;
                     var padRight = parseFloat(containerStyle.paddingRight) || 0;
-                    var w = chapterContentContainer.offsetWidth - padLeft - padRight;
-                    if (window.canvasChapterRenderer.lastRenderWidth !== null && Math.abs(w - window.canvasChapterRenderer.lastRenderWidth) < 5) return;
-                    window.updateCanvasContent(true);
-                }, 250);
+                    var containerWidth = chapterContentContainer.offsetWidth;
+                    var maxWidth = containerWidth - padLeft - padRight;
+                    window.canvasChapterRenderer.lastRenderWidth = maxWidth;
+
+                    var fragment = document.createDocumentFragment();
+                    var canvasElements = [];
+
+                    // Tất cả paragraph đều render thành canvas
+                    paragraphs.forEach(function(paragraphLines, index) {
+                        var canvas = document.createElement('canvas');
+                        canvas.className = 'canvas-text-paragraph';
+                        canvas.style.cssText =
+                            'width:100%;max-width:100%;height:auto;display:block;user-select:none;pointer-events:none;box-sizing:border-box;margin-bottom:0.5rem;';
+                        canvas.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                        });
+                        canvas.addEventListener('copy', function(e) {
+                            e.preventDefault();
+                        });
+                        canvas.addEventListener('cut', function(e) {
+                            e.preventDefault();
+                        });
+                        canvas.addEventListener('selectstart', function(e) {
+                            e.preventDefault();
+                        });
+                        fragment.appendChild(canvas);
+                        canvasElements.push({
+                            canvas: canvas,
+                            paragraphLines: paragraphLines,
+                            index: index
+                        });
+                    });
+
+                    canvasContent.appendChild(fragment);
+
+                    requestAnimationFrame(function() {
+                        canvasElements.forEach(function(item) {
+                            var canvas = item.canvas;
+                            var paragraphLines = item.paragraphLines;
+                            var actualCanvasWidth = canvas.offsetWidth || maxWidth;
+                            var ctx = canvas.getContext('2d', {
+                                alpha: true
+                            });
+                            ctx.imageSmoothingEnabled = true;
+                            ctx.imageSmoothingQuality = 'high';
+                            ctx.font = fontStyle + ' ' + fontWeight + ' ' + fontSize + 'px ' +
+                                fontFamily;
+                            ctx.fillStyle = textColor;
+                            ctx.textBaseline = 'top';
+                            ctx.textAlign = 'left';
+
+                            // Word-wrap từng dòng gốc, giữ nguyên xuống dòng từ textarea
+                            var allLines = [];
+                            paragraphLines.forEach(function(originalLine) {
+                                var trimmed = originalLine.trim();
+                                if (trimmed.length === 0) {
+                                    allLines.push('');
+                                    return;
+                                }
+                                var words = trimmed.split(/\s+/);
+                                var currentLine = '';
+                                words.forEach(function(word) {
+                                    var testLine = currentLine + (currentLine ?
+                                        ' ' : '') + word;
+                                    var metrics = ctx.measureText(testLine);
+                                    if (metrics.width > actualCanvasWidth &&
+                                        currentLine) {
+                                        allLines.push(currentLine);
+                                        currentLine = word;
+                                    } else {
+                                        currentLine = testLine;
+                                    }
+                                });
+                                if (currentLine) allLines.push(currentLine);
+                            });
+
+                            var dpr = window.devicePixelRatio || 1;
+                            var canvasHeight = allLines.length * lineHeight + 20;
+                            canvas.width = actualCanvasWidth * dpr;
+                            canvas.height = canvasHeight * dpr;
+                            canvas.style.height = canvasHeight + 'px';
+                            ctx.scale(dpr, dpr);
+                            ctx.font = fontStyle + ' ' + fontWeight + ' ' + fontSize + 'px ' +
+                                fontFamily;
+                            ctx.fillStyle = textColor;
+                            ctx.textBaseline = 'top';
+                            ctx.textAlign = 'left';
+
+                            // Vẽ nội dung text
+                            allLines.forEach(function(line, lineIndex) {
+                                ctx.fillText(line, 0.5, (lineIndex * lineHeight) +
+                                10.5);
+                            });
+
+                            // === Watermark ảnh logo ===
+                            var wmImg = window.canvasChapterRenderer.watermarkImage;
+                            if (wmImg && wmImg.complete && wmImg.naturalWidth) {
+                                var cw = actualCanvasWidth;
+                                var ch = canvasHeight;
+                                var maxW = Math.min(cw * 0.35, 100);
+                                var imgScale = maxW / wmImg.naturalWidth;
+                                var ww = wmImg.naturalWidth * imgScale;
+                                var wh = wmImg.naturalHeight * imgScale;
+                                var pad = 8;
+                                ctx.globalAlpha = 0.10;
+                                ctx.drawImage(wmImg, (cw - ww) / 2, (ch - wh) / 2, ww, wh);
+                                ctx.drawImage(wmImg, pad, pad, ww, wh);
+                                ctx.drawImage(wmImg, cw - ww - pad, ch - wh - pad, ww, wh);
+                                ctx.globalAlpha = 1;
+                            }
+
+                            // === Text watermark — màu tự đổi theo theme ===
+                            ctx.save();
+                            ctx.globalAlpha = 0.06;
+                            ctx.fillStyle =
+                            textColor; // lấy từ computed style → tự đổi theo dark/light mode
+                            var wmFontSize = Math.max(16, Math.min(fontSize * 1.5, 28));
+                            ctx.font = 'bold ' + wmFontSize + 'px ' + fontFamily;
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            var wmText = 'PinkNovel.com';
+                            var cw2 = actualCanvasWidth;
+                            var ch2 = canvasHeight;
+                            // Vẽ watermark text xoay chéo lặp lại
+                            var spacingX = 250;
+                            var spacingY = 150;
+                            ctx.translate(cw2 / 2, ch2 / 2);
+                            ctx.rotate(-Math.PI / 6); // xoay -30 độ
+                            var diag = Math.sqrt(cw2 * cw2 + ch2 * ch2);
+                            for (var wy = -diag; wy < diag; wy += spacingY) {
+                                for (var wx = -diag; wx < diag; wx += spacingX) {
+                                    ctx.fillText(wmText, wx, wy);
+                                }
+                            }
+                            ctx.restore();
+                        });
+
+                        if (preserveScroll) requestAnimationFrame(function() {
+                            window.scrollTo(0, scrollPosition);
+                        });
+                        window.canvasChapterRenderer.isRendering = false;
+                    });
+                });
+            }
+
+            window.updateCanvasContent = function(preserveScroll) {
+                var canvasContent = document.getElementById('chapter-canvas-content');
+                if (!canvasContent || !window.canvasChapterRenderer.cachedContent) return;
+                if (window.canvasChapterRenderer.updateTimer) clearTimeout(window.canvasChapterRenderer
+                .updateTimer);
+                if (window.canvasChapterRenderer.isRendering) {
+                    window.canvasChapterRenderer.updateTimer = setTimeout(function() {
+                        window.updateCanvasContent(preserveScroll);
+                    }, 10);
+                    return;
+                }
+                window.canvasChapterRenderer.isRendering = true;
+                renderTextToCanvas(window.canvasChapterRenderer.cachedContent, canvasContent, preserveScroll !==
+                    false);
+            };
+
+            function initCanvasRender() {
+                if (document.getElementById('chapter-id') && document.getElementById('chapter-canvas-content')) {
+                    initWatermark();
+                    setTimeout(function() {
+                        renderContentWithCanvas();
+                    }, 100);
+                }
+            }
+
+            document.addEventListener('reading-settings-changed', function() {
+                if (!window.canvasChapterRenderer.cachedContent) return;
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(function() {
+                        window.updateCanvasContent(true);
+                    });
+                });
             });
-        });
-    })();
+
+            document.addEventListener('DOMContentLoaded', function() {
+                initCanvasRender();
+                var resizeTimer;
+                window.addEventListener('resize', function() {
+                    clearTimeout(resizeTimer);
+                    resizeTimer = setTimeout(function() {
+                        if (!window.canvasChapterRenderer.cachedContent) return;
+                        var canvasContent = document.getElementById('chapter-canvas-content');
+                        if (!canvasContent) return;
+                        var chapterContentContainer = canvasContent.closest('.chapter-content');
+                        if (!chapterContentContainer) return;
+                        var containerStyle = window.getComputedStyle(chapterContentContainer);
+                        var padLeft = parseFloat(containerStyle.paddingLeft) || 0;
+                        var padRight = parseFloat(containerStyle.paddingRight) || 0;
+                        var w = chapterContentContainer.offsetWidth - padLeft - padRight;
+                        if (window.canvasChapterRenderer.lastRenderWidth !== null && Math.abs(
+                                w - window.canvasChapterRenderer.lastRenderWidth) < 5) return;
+                        window.updateCanvasContent(true);
+                    }, 250);
+                });
+            });
+        })();
     </script>
 
     <!-- Script xử lý đánh dấu trang (bookmark) -->
@@ -1067,7 +1155,7 @@
             if (passwordForm) {
                 passwordForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    
+
                     const password = document.getElementById('chapterPassword').value;
                     if (!password.trim()) {
                         Swal.fire({
@@ -1077,58 +1165,59 @@
                         });
                         return;
                     }
-                    
+
                     // Hiển thị loading
                     const submitBtn = passwordForm.querySelector('button[type="submit"]');
                     const originalText = submitBtn.innerHTML;
                     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Đang kiểm tra...';
                     submitBtn.disabled = true;
-                    
+
                     // Gửi request kiểm tra mật khẩu
-                    fetch('{{ route("chapter.check-password", ["storySlug" => $story->slug, "chapterSlug" => $chapter->slug]) }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                        },
-                        body: JSON.stringify({
-                            password: password
+                    fetch('{{ route('chapter.check-password', ['storySlug' => $story->slug, 'chapterSlug' => $chapter->slug]) }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content')
+                            },
+                            body: JSON.stringify({
+                                password: password
+                            })
                         })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Thành công!',
-                                text: data.message,
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                // Reload trang để hiển thị nội dung
-                                window.location.reload();
-                            });
-                        } else {
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Thành công!',
+                                    text: data.message,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    // Reload trang để hiển thị nội dung
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Mật khẩu không đúng!',
+                                    text: data.message
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
                             Swal.fire({
                                 icon: 'error',
-                                title: 'Mật khẩu không đúng!',
-                                text: data.message
+                                title: 'Lỗi!',
+                                text: 'Đã xảy ra lỗi khi kiểm tra mật khẩu. Vui lòng thử lại.'
                             });
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Lỗi!',
-                            text: 'Đã xảy ra lỗi khi kiểm tra mật khẩu. Vui lòng thử lại.'
+                        })
+                        .finally(() => {
+                            // Khôi phục button
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
                         });
-                    })
-                    .finally(() => {
-                        // Khôi phục button
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                    });
                 });
             }
 
