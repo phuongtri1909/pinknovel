@@ -952,7 +952,7 @@
                             ctx.font = 'bold ' + wmFontSize + 'px ' + fontFamily;
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
-                            var wmText = 'PinkNovel.com';
+                            var wmText = 'PinkNovel.net';
                             var cw2 = actualCanvasWidth;
                             var ch2 = canvasHeight;
                             // Vẽ watermark text xoay chéo lặp lại
