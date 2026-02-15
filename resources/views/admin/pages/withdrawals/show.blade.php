@@ -77,7 +77,8 @@
                                         <div class="mb-3">
                                             <strong>Tỷ giá quy đổi:</strong>
                                             <p>1 xu =
-                                                {{ number_format($withdrawal->payment_info['exchange_rate'] ?? $coinExchangeRate) }} VND
+                                                {{ number_format($withdrawal->payment_info['exchange_rate'] ?? $coinExchangeRate) }}
+                                                VND
                                             </p>
                                         </div>
 
@@ -98,7 +99,8 @@
                                         <h6 class="mb-0">Thông tin người rút</h6>
                                     </div>
                                     <div class="card-body">
-                                        <a href="{{ route('users.show', $withdrawal->user->id) }}" target="_blank" class="d-flex align-items-center mb-3">
+                                        <a href="{{ route('users.show', $withdrawal->user->id) }}" target="_blank"
+                                            class="d-flex align-items-center mb-3">
                                             <img src="{{ $withdrawal->user->avatar ? Storage::url($withdrawal->user->avatar) : asset('assets/images/avatar_default.jpg') }}"
                                                 class="avatar avatar-xl me-3" alt="user avatar">
                                             <div>
@@ -127,10 +129,17 @@
                                         </div>
 
 
-                                        @if (!empty($withdrawal->payment_info['additional_info']))
+                                        @if (!empty($withdrawal->payment_info['qr_image']))
                                             <div class="mb-3">
-                                                <strong>Thông tin bổ sung:</strong>
-                                                <p>{{ $withdrawal->payment_info['additional_info'] }}</p>
+                                                <strong>Ảnh mã QR ngân hàng:</strong>
+                                                <div class="mt-2">
+                                                    <a href="{{ Storage::url($withdrawal->payment_info['qr_image']) }}"
+                                                        target="_blank">
+                                                        <img src="{{ Storage::url($withdrawal->payment_info['qr_image']) }}"
+                                                            alt="QR Code" class="img-thumbnail"
+                                                            style="max-width: 300px; max-height: 300px;">
+                                                    </a>
+                                                </div>
                                             </div>
                                         @endif
                                     </div>
@@ -158,7 +167,8 @@
                                         </div>
                                         <div class="card-body">
                                             <p>Nhấn nút bên dưới để phê duyệt yêu cầu rút xu này.</p>
-                                            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#approveModal">
+                                            <button type="button" class="btn btn-success" data-bs-toggle="modal"
+                                                data-bs-target="#approveModal">
                                                 <i class="fas fa-check me-2"></i>Phê duyệt
                                             </button>
                                         </div>
@@ -172,7 +182,8 @@
                                         </div>
                                         <div class="card-body">
                                             <p>Nhấn nút bên dưới để từ chối yêu cầu rút xu này.</p>
-                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal">
+                                            <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                                                data-bs-target="#rejectModal">
                                                 <i class="fas fa-times me-2"></i>Từ chối
                                             </button>
                                         </div>
@@ -201,12 +212,15 @@
                         <li>Người rút: {{ $withdrawal->user->name }}</li>
                         <li>Số xu: {{ number_format($withdrawal->coins) }} xu</li>
                         <li>Thực nhận: {{ number_format($withdrawal->net_amount) }} xu</li>
-                        <li>Quy đổi: {{ number_format($withdrawal->payment_info['vnd_amount'] ?? $withdrawal->net_amount * $coinExchangeRate) }} VND</li>
+                        <li>Quy đổi:
+                            {{ number_format($withdrawal->payment_info['vnd_amount'] ?? $withdrawal->net_amount * $coinExchangeRate) }}
+                            VND</li>
                     </ul>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                    <form action="{{ route('admin.withdrawals.approve', $withdrawal->id) }}" method="POST" class="d-inline">
+                    <form action="{{ route('admin.withdrawals.approve', $withdrawal->id) }}" method="POST"
+                        class="d-inline">
                         @csrf
                         <button type="submit" class="btn btn-success">
                             <i class="fas fa-check me-2"></i>Xác nhận phê duyệt
@@ -230,7 +244,8 @@
                     <div class="modal-body">
                         <p>Vui lòng nhập lý do từ chối yêu cầu rút xu này.</p>
                         <div class="mb-3">
-                            <label for="rejection_reason" class="form-label">Lý do từ chối <span class="text-danger">*</span></label>
+                            <label for="rejection_reason" class="form-label">Lý do từ chối <span
+                                    class="text-danger">*</span></label>
                             <textarea class="form-control" id="rejection_reason" name="rejection_reason" rows="3" required></textarea>
                         </div>
                     </div>

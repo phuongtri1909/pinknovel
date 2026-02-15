@@ -16,7 +16,8 @@
                         <ul class="mb-0 ps-3">
                             <li>Số xu rút tối thiểu: {{ number_format($minWithdrawalAmount) }} xu</li>
                             {{-- <li>Tỷ giá quy đổi: 1 xu = {{ number_format($coinExchangeRate) }} VND</li> --}}
-                            <li>Phí rút xu: {{ $feePercentage }}% (đối với số xu dưới {{ number_format($feeThresholdAmount) }})</li>
+                            <li>Phí rút xu: {{ $feePercentage }}% (đối với số xu dưới
+                                {{ number_format($feeThresholdAmount) }})</li>
                             <li>Rút từ {{ number_format($feeThresholdAmount) }} xu trở lên: Miễn phí rút xu</li>
                             <li>Thời gian xử lý: 1-3 ngày làm việc</li>
                         </ul>
@@ -37,34 +38,25 @@
             </div>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
 
-        @if(session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
 
-        @if($errors->any())
+        @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
-                    @foreach($errors->all() as $error)
+                    @foreach ($errors->all() as $error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
             </div>
         @endif
 
-        <form action="{{ route('user.withdrawals.store') }}" method="POST">
+        <form action="{{ route('user.withdrawals.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-            
+
             <div class="mb-3">
                 <label for="coins" class="form-label">Số xu cần rút <span class="text-danger">*</span></label>
-                <input type="number" class="form-control" id="coins" name="coins" min="{{ $minWithdrawalAmount }}" max="{{ Auth::user()->coins }}" value="{{ old('coins') }}" required>
+                <input type="number" class="form-control" id="coins" name="coins" min="{{ $minWithdrawalAmount }}"
+                    max="{{ Auth::user()->coins }}" value="{{ old('coins') }}" required>
                 <div class="form-text">Số xu tối thiểu cần rút: {{ number_format($minWithdrawalAmount) }} xu</div>
                 @error('coins')
                     <div class="text-danger">{{ $message }}</div>
@@ -73,7 +65,8 @@
 
             <div class="mb-3">
                 <label for="account_name" class="form-label">Tên chủ tài khoản <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="account_name" name="account_name" value="{{ old('account_name') }}" required>
+                <input type="text" class="form-control" id="account_name" name="account_name"
+                    value="{{ old('account_name') }}" required>
                 @error('account_name')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
@@ -81,7 +74,8 @@
 
             <div class="mb-3">
                 <label for="account_number" class="form-label">Số tài khoản<span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="account_number" name="account_number" value="{{ old('account_number') }}" required>
+                <input type="text" class="form-control" id="account_number" name="account_number"
+                    value="{{ old('account_number') }}" required>
                 @error('account_number')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
@@ -90,7 +84,8 @@
             <div id="bank_info"">
                 <div class="mb-3">
                     <label for="bank_name" class="form-label">Tên ngân hàng <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="bank_name" name="bank_name" value="{{ old('bank_name') }}">
+                    <input type="text" class="form-control" id="bank_name" name="bank_name"
+                        value="{{ old('bank_name') }}">
                 </div>
                 @error('bank_name')
                     <div class="text-danger">{{ $message }}</div>
@@ -98,11 +93,17 @@
             </div>
 
             <div class="mb-3">
-                <label for="additional_info" class="form-label">Thông tin thêm</label>
-                <textarea class="form-control" id="additional_info" name="additional_info" rows="3">{{ old('additional_info') }}</textarea>
-                @error('additional_info')
+                <label for="qr_image" class="form-label">Ảnh mã QR ngân hàng <span class="text-danger">*</span></label>
+                <input type="file" class="form-control" id="qr_image" name="qr_image" accept="image/*" required>
+                <div class="form-text">Tải lên ảnh mã QR ngân hàng của bạn (JPG, PNG, tối đa 2MB)</div>
+                @error('qr_image')
                     <div class="text-danger">{{ $message }}</div>
                 @enderror
+                <div id="qr_preview" class="mt-3 d-none">
+                    <p class="text-muted mb-1"><small>Xem trước:</small></p>
+                    <img id="qr_preview_img" src="#" alt="QR Preview" class="img-thumbnail"
+                        style="max-width: 250px; max-height: 250px;">
+                </div>
             </div>
 
             <div class="withdrawal-summary p-3 bg-light rounded mb-4 d-none" id="summary">
@@ -119,7 +120,7 @@
                     <div class="col-6">Quy đổi sang VND:</div>
                     <div class="col-6 text-end" id="summary_vnd">0 VND</div>
                 </div>
-              
+
                 <div class="row mt-2 border-top pt-2">
                     <div class="col-6"><strong>Thực nhận:</strong></div>
                     <div class="col-6 text-end"><strong id="summary_net_vnd">0 VND</strong></div>
@@ -139,57 +140,76 @@
 @endsection
 
 @push('info_scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const coinsInput = document.getElementById('coins');
-        const bankInfoDiv = document.getElementById('bank_info');
-        const bankNameInput = document.getElementById('bank_name');
-        const summaryDiv = document.getElementById('summary');
-        const summaryAmount = document.getElementById('summary_amount');
-        const summaryFee = document.getElementById('summary_fee');
-        const summaryVnd = document.getElementById('summary_vnd');
-        const bankFeeRow = document.getElementById('bank_fee_row');
-        const summaryNetVnd = document.getElementById('summary_net_vnd');
-        const feePercentage = parseFloat(document.getElementById('fee_percentage').textContent);
-        const feeThreshold = {{ $feeThresholdAmount }};
-        const exchangeRate = {{ $coinExchangeRate }};
-        
-        // Calculate and display withdrawal summary
-        coinsInput.addEventListener('input', updateSummary);
-        
-        function updateSummary() {
-            const coins = parseInt(coinsInput.value) || 0;
-            let fee = 0;
-            
-            if (coins > 0) {
-                // Calculate withdrawal fee
-                if (coins < feeThreshold) {
-                    fee = Math.round((coins * feePercentage) / 100);
-                }
-                
-                // Calculate net coin amount
-                const netCoinAmount = coins - fee;
-                
-                // Convert to VND
-                const vndAmount = netCoinAmount * exchangeRate;
-                
-                // Calculate bank fee if applicable
-                let bankFee = 0;
-                let netVndAmount = vndAmount;
-                
-                // Update summary display
-                summaryAmount.textContent = coins.toLocaleString('vi-VN') + ' xu';
-                summaryFee.textContent = '-' + fee.toLocaleString('vi-VN') + ' xu';
-                summaryVnd.textContent = vndAmount.toLocaleString('vi-VN') + ' VND';
-                summaryNetVnd.textContent = netVndAmount.toLocaleString('vi-VN') + ' VND';
-                
-                summaryDiv.classList.remove('d-none');
-            } else {
-                summaryDiv.classList.add('d-none');
-            }
-        }
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const coinsInput = document.getElementById('coins');
+            const bankInfoDiv = document.getElementById('bank_info');
+            const bankNameInput = document.getElementById('bank_name');
+            const summaryDiv = document.getElementById('summary');
+            const summaryAmount = document.getElementById('summary_amount');
+            const summaryFee = document.getElementById('summary_fee');
+            const summaryVnd = document.getElementById('summary_vnd');
+            const bankFeeRow = document.getElementById('bank_fee_row');
+            const summaryNetVnd = document.getElementById('summary_net_vnd');
+            const feePercentage = parseFloat(document.getElementById('fee_percentage').textContent);
+            const feeThreshold = {{ $feeThresholdAmount }};
+            const exchangeRate = {{ $coinExchangeRate }};
 
-        updateSummary();
-    });
-</script>
-@endpush 
+            // Calculate and display withdrawal summary
+            coinsInput.addEventListener('input', updateSummary);
+
+            function updateSummary() {
+                const coins = parseInt(coinsInput.value) || 0;
+                let fee = 0;
+
+                if (coins > 0) {
+                    // Calculate withdrawal fee
+                    if (coins < feeThreshold) {
+                        fee = Math.round((coins * feePercentage) / 100);
+                    }
+
+                    // Calculate net coin amount
+                    const netCoinAmount = coins - fee;
+
+                    // Convert to VND
+                    const vndAmount = netCoinAmount * exchangeRate;
+
+                    // Calculate bank fee if applicable
+                    let bankFee = 0;
+                    let netVndAmount = vndAmount;
+
+                    // Update summary display
+                    summaryAmount.textContent = coins.toLocaleString('vi-VN') + ' xu';
+                    summaryFee.textContent = '-' + fee.toLocaleString('vi-VN') + ' xu';
+                    summaryVnd.textContent = vndAmount.toLocaleString('vi-VN') + ' VND';
+                    summaryNetVnd.textContent = netVndAmount.toLocaleString('vi-VN') + ' VND';
+
+                    summaryDiv.classList.remove('d-none');
+                } else {
+                    summaryDiv.classList.add('d-none');
+                }
+            }
+
+            updateSummary();
+
+            // QR image preview
+            const qrInput = document.getElementById('qr_image');
+            const qrPreview = document.getElementById('qr_preview');
+            const qrPreviewImg = document.getElementById('qr_preview_img');
+            if (qrInput) {
+                qrInput.addEventListener('change', function() {
+                    if (this.files && this.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            qrPreviewImg.src = e.target.result;
+                            qrPreview.classList.remove('d-none');
+                        };
+                        reader.readAsDataURL(this.files[0]);
+                    } else {
+                        qrPreview.classList.add('d-none');
+                    }
+                });
+            }
+        });
+    </script>
+@endpush

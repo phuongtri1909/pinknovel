@@ -14,19 +14,9 @@
             </a>
         </div>
 
-        @if(session('success'))
-            <div class="alert alert-success">
-                {{ session('success') }}
-            </div>
-        @endif
 
-        @if(session('error'))
-            <div class="alert alert-danger">
-                {{ session('error') }}
-            </div>
-        @endif
 
-        @if($withdrawalRequests->isEmpty())
+        @if ($withdrawalRequests->isEmpty())
             <div class="text-center p-5">
                 <i class="fa-solid fa-money-bill-transfer fa-3x text-muted mb-3"></i>
                 <p class="mb-0">Bạn chưa có yêu cầu rút xu nào</p>
@@ -47,7 +37,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($withdrawalRequests as $request)
+                        @foreach ($withdrawalRequests as $request)
                             <tr>
                                 <td>{{ $request->id }}</td>
                                 <td>{{ $request->created_at->format('d/m/Y H:i') }}</td>
@@ -58,19 +48,22 @@
                                     {{ number_format($request->payment_info['vnd_amount']) }} VND
                                 </td>
                                 <td>
-                                    @if($request->status == 'pending')
+                                    @if ($request->status == 'pending')
                                         <span class="badge bg-warning">Đang xử lý</span>
                                     @elseif($request->status == 'approved')
                                         <span class="badge bg-success">Đã duyệt</span>
                                     @elseif($request->status == 'rejected')
-                                        <span class="badge bg-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ $request->rejection_reason }}">
+                                        <span class="badge bg-danger" data-bs-toggle="tooltip" data-bs-placement="top"
+                                            title="{{ $request->rejection_reason }}">
                                             Đã từ chối
                                         </span>
                                     @endif
                                 </td>
-                                <td>{{ $request->processed_at ? $request->processed_at->format('d/m/Y H:i') : 'Chưa xử lý' }}</td>
+                                <td>{{ $request->processed_at ? $request->processed_at->format('d/m/Y H:i') : 'Chưa xử lý' }}
+                                </td>
                                 <td>
-                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#detailModal{{ $request->id }}">
+                                    <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal"
+                                        data-bs-target="#detailModal{{ $request->id }}">
                                         <i class="fa-solid fa-eye"></i> Chi tiết
                                     </button>
                                 </td>
@@ -87,12 +80,14 @@
     </div>
 
     <!-- Detail Modals -->
-    @foreach($withdrawalRequests as $request)
-        <div class="modal fade" id="detailModal{{ $request->id }}" tabindex="-1" aria-labelledby="detailModalLabel{{ $request->id }}" aria-hidden="true">
+    @foreach ($withdrawalRequests as $request)
+        <div class="modal fade" id="detailModal{{ $request->id }}" tabindex="-1"
+            aria-labelledby="detailModalLabel{{ $request->id }}" aria-hidden="true">
             <div class="modal-dialog modal-lg">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="detailModalLabel{{ $request->id }}">Chi tiết yêu cầu rút xu #{{ $request->id }}</h5>
+                        <h5 class="modal-title" id="detailModalLabel{{ $request->id }}">Chi tiết yêu cầu rút xu
+                            #{{ $request->id }}</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -105,7 +100,7 @@
                                     <div class="card-body">
                                         <div class="mb-3">
                                             <strong>Trạng thái:</strong>
-                                            @if($request->status == 'pending')
+                                            @if ($request->status == 'pending')
                                                 <span class="badge bg-warning">Đang xử lý</span>
                                             @elseif($request->status == 'approved')
                                                 <span class="badge bg-success">Đã duyệt</span>
@@ -117,7 +112,7 @@
                                             <strong>Ngày yêu cầu:</strong>
                                             <p>{{ $request->created_at->format('d/m/Y H:i:s') }}</p>
                                         </div>
-                                        @if($request->processed_at)
+                                        @if ($request->processed_at)
                                             <div class="mb-3">
                                                 <strong>Ngày xử lý:</strong>
                                                 <p>{{ $request->processed_at->format('d/m/Y H:i:s') }}</p>
@@ -137,7 +132,8 @@
                                         </div>
                                         <div class="mb-3">
                                             <strong>Tỷ giá quy đổi:</strong>
-                                            <p>1 xu = {{ number_format($request->payment_info['exchange_rate'] ?? 100) }} VND</p>
+                                            <p>1 xu = {{ number_format($request->payment_info['exchange_rate'] ?? 100) }}
+                                                VND</p>
                                         </div>
                                         <div class="mb-3">
                                             <strong>Số tiền quy đổi:</strong>
@@ -164,16 +160,23 @@
                                             <strong>Tên ngân hàng:</strong>
                                             <p>{{ $request->payment_info['bank_name'] ?? 'N/A' }}</p>
                                         </div>
-                                        @if(!empty($request->payment_info['additional_info']))
+                                        @if (!empty($request->payment_info['qr_image']))
                                             <div class="mb-3">
-                                                <strong>Thông tin bổ sung:</strong>
-                                                <p>{{ $request->payment_info['additional_info'] }}</p>
+                                                <strong>Ảnh mã QR ngân hàng:</strong>
+                                                <div class="mt-2">
+                                                    <a href="{{ Storage::url($request->payment_info['qr_image']) }}"
+                                                        target="_blank">
+                                                        <img src="{{ Storage::url($request->payment_info['qr_image']) }}"
+                                                            alt="QR Code" class="img-thumbnail"
+                                                            style="max-width: 250px; max-height: 250px;">
+                                                    </a>
+                                                </div>
                                             </div>
                                         @endif
                                     </div>
                                 </div>
-                                
-                                @if($request->status == 'rejected' && !empty($request->rejection_reason))
+
+                                @if ($request->status == 'rejected' && !empty($request->rejection_reason))
                                     <div class="card mt-3">
                                         <div class="card-header bg-danger text-white">
                                             <h6 class="mb-0">Lý do từ chối</h6>
@@ -196,10 +199,11 @@
 @endsection
 
 @push('info_scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-        const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
-    });
-</script>
-@endpush 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+            const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(
+                tooltipTriggerEl));
+        });
+    </script>
+@endpush

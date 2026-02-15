@@ -8,6 +8,7 @@ use App\Models\CoinTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class WithdrawalController extends Controller
 {
@@ -93,7 +94,7 @@ class WithdrawalController extends Controller
             'account_name' => 'required|string|max:255',
             'account_number' => 'required|string|max:255',
             'bank_name' => 'required|nullable|string|max:255',
-            'additional_info' => 'nullable|string|max:1000',
+            'qr_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:2048',
         ]);
         
         // Check if user has enough coins
@@ -122,12 +123,18 @@ class WithdrawalController extends Controller
         // Convert coins to VND
         $vndAmount = $netCoinAmount * $coinExchangeRate;
         
+        // Upload ảnh QR code
+        $qrImagePath = null;
+        if ($request->hasFile('qr_image')) {
+            $qrImagePath = $request->file('qr_image')->store('withdrawals/qr_codes', 'public');
+        }
+        
         // Prepare payment information
         $paymentInfo = [
             'account_name' => $validated['account_name'],
             'account_number' => $validated['account_number'],
             'bank_name' => $validated['bank_name'],
-            'additional_info' => $validated['additional_info'] ?? null,
+            'qr_image' => $qrImagePath,
             'vnd_amount' => $vndAmount,
             'exchange_rate' => $coinExchangeRate
         ];
