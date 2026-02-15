@@ -39,7 +39,8 @@
 
         @yield('content')
         @include('components.top_button')
-        @include('components.reading_settings') 
+        @include('components.reading_settings')
+        @include('components.messenger_button')
     </div>
     <div id="fb-root" class="w-100"></div>
 </body>

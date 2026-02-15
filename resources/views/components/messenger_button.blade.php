@@ -5,24 +5,27 @@
 
 @if ($messengerEnabled && $messengerUrl)
     <a href="{{ $messengerUrl }}" target="_blank" rel="noopener noreferrer" id="messengerButton"
-        class="messenger-float-btn position-fixed" title="Chat với chúng tôi qua Messenger">
+        class="messenger-float-btn position-fixed" title="Chat với chúng tôi qua Messenger" style="display: none;">
         {{-- Facebook Messenger Icon --}}
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="28" height="28">
-            <path fill="#fff"
-                d="M400 0C174.7 0 0 165.1 0 388c0 116.6 47.8 217.4 125.6 289.6a32.3 32.3 0 0 1 10.8 23.2l2.2 72.2a32.3 32.3 0 0 0 45.3 27.8l80.6-35.5a32.3 32.3 0 0 1 21.5-1.8c36.8 10.2 76 15.6 114 15.6 225.3 0 400-165.1 400-388S625.3 0 400 0z" />
-            <path fill="url(#msgGrad)"
-                d="M400 0C174.7 0 0 165.1 0 388c0 116.6 47.8 217.4 125.6 289.6a32.3 32.3 0 0 1 10.8 23.2l2.2 72.2a32.3 32.3 0 0 0 45.3 27.8l80.6-35.5a32.3 32.3 0 0 1 21.5-1.8c36.8 10.2 76 15.6 114 15.6 225.3 0 400-165.1 400-388S625.3 0 400 0z" />
-            <defs>
-                <radialGradient id="msgGrad" cx="101.9" cy="809" r="862.96"
-                    gradientTransform="matrix(1 0 0 -1 0 800)" gradientUnits="userSpaceOnUse">
-                    <stop offset="0" stop-color="#09f" />
-                    <stop offset=".61" stop-color="#a033ff" />
-                    <stop offset=".94" stop-color="#ff5280" />
-                    <stop offset="1" stop-color="#ff7061" />
-                </radialGradient>
-            </defs>
-            <path fill="#fff"
-                d="M159.8 501.5l117.5-186.4a60 60 0 0 1 86.8-16l93.5 70.1a24 24 0 0 0 29 0l126.2-95.8c16.8-12.8 38.8 7.4 27.6 25.2L522.9 484.9a60 60 0 0 1-86.8 16l-93.5-70.1a24 24 0 0 0-29 0l-126.2 95.8c-16.8 12.8-38.8-7.3-27.6-25.1z" />
+        <?xml version="1.0" encoding="UTF-8"?>
+        <svg id="Logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 502 502">
+        <defs>
+            <style>
+            .cls-1 {
+                fill: #fff;
+            }
+
+            .cls-1, .cls-2 {
+                stroke-width: 0px;
+            }
+
+            .cls-2 {
+                fill: #0866ff;
+            }
+            </style>
+        </defs>
+        <path class="cls-2" d="M501,243.5c0,139.34-109.17,242.5-250,242.5-25.29,0-49.56-3.34-72.37-9.61-4.43-1.23-9.14-.88-13.35.97l-49.62,21.91c-12.98,5.73-27.63-3.5-28.06-17.68l-1.36-44.48c-.17-5.48-2.63-10.6-6.72-14.25C30.87,379.36,1,316.39,1,243.5,1,104.16,110.17,1,251,1s250,103.16,250,242.5Z"/>
+        <path class="cls-1" d="M318.88,313.31l87.04-134.52c8.75-13.52-7.46-29.26-20.72-20.11l-90.86,62.67c-3.06,2.11-7.1,2.17-10.22.15l-80.65-52.18c-6.83-4.42-15.94-2.46-20.35,4.36l-87.05,134.52c-8.75,13.52,7.46,29.26,20.72,20.11l90.88-62.68c3.06-2.11,7.1-2.17,10.22-.15l80.63,52.17c6.83,4.42,15.94,2.46,20.36-4.36Z"/>
         </svg>
     </a>
 
@@ -34,11 +37,11 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #0695FF 0%, #A033FF 50%, #FF5880 100%);
+            background: #0084FF;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 16px rgba(6, 149, 255, 0.35);
+            box-shadow: 0 4px 16px rgba(0, 132, 255, 0.35);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-decoration: none;
             cursor: pointer;
@@ -47,7 +50,7 @@
 
         .messenger-float-btn:hover {
             transform: scale(1.12);
-            box-shadow: 0 6px 24px rgba(6, 149, 255, 0.5);
+            box-shadow: 0 6px 24px rgba(0, 132, 255, 0.5);
             animation: none;
         }
 
@@ -63,22 +66,39 @@
 
             0%,
             100% {
-                box-shadow: 0 4px 16px rgba(6, 149, 255, 0.35);
+                box-shadow: 0 4px 16px rgba(0, 132, 255, 0.35);
             }
 
             50% {
-                box-shadow: 0 4px 24px rgba(6, 149, 255, 0.55), 0 0 0 8px rgba(6, 149, 255, 0.08);
+                box-shadow: 0 4px 24px rgba(0, 132, 255, 0.55), 0 0 0 8px rgba(0, 132, 255, 0.08);
             }
         }
 
-        /* Responsive - nhỏ hơn trên mobile */
         @media (max-width: 576px) {
             .messenger-float-btn {
                 width: 45px;
                 height: 45px;
                 right: 9px;
             }
-
         }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messengerButton = document.getElementById('messengerButton');
+            let messengerLastScrollTop = 0;
+
+            window.addEventListener('scroll', function() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+                if (scrollTop < messengerLastScrollTop) {
+                    messengerButton.style.display = 'flex';
+                } else {
+                    messengerButton.style.display = 'none';
+                }
+
+                messengerLastScrollTop = scrollTop;
+            });
+        });
+    </script>
 @endif
