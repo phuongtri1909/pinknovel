@@ -369,6 +369,7 @@ class AuthorController extends Controller
                 ->with('error', 'Bạn không có quyền chỉnh sửa truyện này.');
         }
 
+        $story->load(['reviewHistories' => fn ($q) => $q->with('reviewer')->orderByDesc('reviewed_at')]);
         $categoryNames = $story->categories->pluck('name')->implode(', ');
         
         $configs = \App\Models\Config::getConfigs([

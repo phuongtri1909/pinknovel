@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use Carbon\Carbon;
 use App\Models\Story;
+use App\Models\StoryReviewHistory;
 use App\Models\Category;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
@@ -94,7 +95,7 @@ class StoryReviewController extends Controller
         }
         
         // Load related data
-        $story->load(['user', 'categories', 'chapters']);
+        $story->load(['user', 'categories', 'chapters', 'reviewHistories' => fn ($q) => $q->with('reviewer')->orderByDesc('reviewed_at')]);
         $chapterCount = $story->chapters()->count();
         
         return view('admin.pages.story-reviews.show', compact('story', 'chapterCount'));
@@ -121,11 +122,20 @@ class StoryReviewController extends Controller
         }
         
         try {
+            $reviewedAt = Carbon::now();
             // Update story status
             $story->update([
                 'status' => 'published',
                 'admin_note' => $request->admin_note,
-                'reviewed_at' => Carbon::now(),
+                'reviewed_at' => $reviewedAt,
+            ]);
+
+            // Lưu lịch sử duyệt
+            $story->reviewHistories()->create([
+                'action' => StoryReviewHistory::ACTION_APPROVED,
+                'note' => $request->admin_note,
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => $reviewedAt,
             ]);
             
             // Notify the author
@@ -166,11 +176,20 @@ class StoryReviewController extends Controller
         }
         
         try {
+            $reviewedAt = Carbon::now();
             // Update story status
             $story->update([
                 'status' => 'rejected',
                 'admin_note' => $request->admin_note,
-                'reviewed_at' => Carbon::now(),
+                'reviewed_at' => $reviewedAt,
+            ]);
+
+            // Lưu lịch sử duyệt (từ chối)
+            $story->reviewHistories()->create([
+                'action' => StoryReviewHistory::ACTION_REJECTED,
+                'note' => $request->admin_note,
+                'reviewed_by' => Auth::id(),
+                'reviewed_at' => $reviewedAt,
             ]);
             
             // Notify the author

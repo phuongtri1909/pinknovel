@@ -1010,6 +1010,50 @@
                         @endif
                     </div>
                 </div>
+
+                @if ($story->reviewHistories->isNotEmpty())
+                    <div class="card mt-4">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="fas fa-history me-2"></i>Lịch sử duyệt</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Thời gian</th>
+                                            <th>Kết quả</th>
+                                            <th>Ghi chú</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($story->reviewHistories as $history)
+                                            <tr>
+                                                <td class="text-nowrap text-muted">
+                                                    {{ $history->reviewed_at->format('H:i d/m/Y') }}
+                                                </td>
+                                                <td>
+                                                    @if ($history->action === 'approved')
+                                                        <span class="badge bg-success">Đã duyệt</span>
+                                                    @else
+                                                        <span class="badge bg-danger">Từ chối</span>
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @if ($history->note)
+                                                        <div class="small">{{ $history->note }}</div>
+                                                    @else
+                                                        <span class="text-muted">—</span>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
         </div>
     </div>

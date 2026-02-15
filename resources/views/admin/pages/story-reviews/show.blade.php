@@ -286,6 +286,54 @@
                                 @endif
                             </div>
 
+                            @if ($story->reviewHistories->isNotEmpty())
+                                <div class="story-detail mt-4">
+                                    <h5 class="mb-3"><i class="fas fa-history me-2"></i> Lịch sử duyệt</h5>
+                                    <div class="table-responsive">
+                                        <table class="table table-sm table-hover mb-0">
+                                            <thead>
+                                                <tr>
+                                                    <th>Thời gian</th>
+                                                    <th>Kết quả</th>
+                                                    <th>Người duyệt</th>
+                                                    <th>Ghi chú</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach ($story->reviewHistories as $history)
+                                                    <tr>
+                                                        <td class="text-nowrap text-muted">
+                                                            {{ $history->reviewed_at->format('H:i d/m/Y') }}
+                                                        </td>
+                                                        <td>
+                                                            @if ($history->action === 'approved')
+                                                                <span class="badge bg-success">Đã duyệt</span>
+                                                            @else
+                                                                <span class="badge bg-danger">Từ chối</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if ($history->reviewer)
+                                                                {{ $history->reviewer->name }}
+                                                            @else
+                                                                <span class="text-muted">—</span>
+                                                            @endif
+                                                        </td>
+                                                        <td>
+                                                            @if ($history->note)
+                                                                <div class="small">{{ $history->note }}</div>
+                                                            @else
+                                                                <span class="text-muted">—</span>
+                                                            @endif
+                                                        </td>
+                                                    </tr>
+                                                @endforeach
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            @endif
+
                             @if ($story->status == 'pending')
                                 <!-- Actions for pending stories -->
                                 <div class="actions-container">

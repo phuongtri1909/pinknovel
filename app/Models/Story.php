@@ -158,6 +158,14 @@ class Story extends Model
     }
 
     /**
+     * Lịch sử duyệt truyện (phê duyệt / từ chối)
+     */
+    public function reviewHistories()
+    {
+        return $this->hasMany(StoryReviewHistory::class)->orderByDesc('reviewed_at');
+    }
+
+    /**
      * Trạng thái hoàn thành để tạo combo
      */
     public function getCanCreateComboAttribute()
