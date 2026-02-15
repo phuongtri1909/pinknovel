@@ -31,6 +31,6 @@
         @endif
 
         @include('components.show_categories')
-
+        @include('components.messenger_button')
     </section>
 @endsection
